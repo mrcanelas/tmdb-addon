@@ -1,0 +1,14 @@
+{
+  "name": "tmdb.addon",
+  "version": "0.0.1",
+  "description": "TMDB API for Stremio.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "^4.17.1",
+    "fanart.tv": "^2.1.0",
+    "moviedb-promise": "^3.1.6"
+  }
+}
