@@ -6,9 +6,8 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "axios": "^0.21.1",
     "express": "^4.17.1",
-    "fanart.tv": "^2.1.0",
+    "fanart.tv-api": "^2.0.1",
     "moviedb-promise": "^3.1.6"
   }
 }

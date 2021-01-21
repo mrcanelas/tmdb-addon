@@ -14,7 +14,13 @@ var respond = function (res, data) {
 };
 
 addon.get("/manifest.json", async function (req, res) {
-  const language = undefined
+  const language = null
+  const resp = await getManifest(language)
+  respond(res, resp);
+});
+
+addon.get("/configure", async function (req, res) {
+  const language = null
   const resp = await getManifest(language)
   respond(res, resp);
 });
