@@ -13,6 +13,11 @@ var respond = function (res, data) {
   res.send(data);
 };
 
+addon.get("/manifest.json", async function (req, res) {
+  const resp = await getManifest()
+  respond(res, resp);
+});
+
 addon.get("/:language/manifest.json", async function (req, res) {
   const language = req.params.language
   const resp = await getManifest(language)
