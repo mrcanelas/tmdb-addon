@@ -24,7 +24,7 @@ addon.get("/configure", async function (req, res) {
 
 addon.get("/getLanguage", async function (req, res) {
   const language = req.query.language
-  res.redirect('stremio://' + req.headers.host + `/${language}/manifest.json`)
+  res.redirect(`/${language}/manifest.json`)
 });
 
 addon.get("/manifest.json", async function (req, res) {
