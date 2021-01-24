@@ -26,7 +26,7 @@ You can also do this through this link: [TMDB Addon Page](https://94c8cb9f702d-t
 
 Example this 2017 series, on the left the result using the standard Stremio catalog, on the right the result using TMDB Addon.
 
-<img src="https://i.imgur.com/NVrkGts.png" width="50%"><img src="https://i.imgur.com/4LbIrbT.png" width="50%">
+<img src="https://i.imgur.com/NVrkGts.png" width="50%">  <img src="https://i.imgur.com/4LbIrbT.png" width="50%">
 
 3 - You are free to correct wrong information, just correct the information on the TMDB website and the Addon will update automatically.
 
