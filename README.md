@@ -1,3 +1,3 @@
 # The Movie Database Addon
 
-![TMDB](https://i.imgur.com/E5TktMZ.png)
+![TMDB](https://i.imgur.com/xekuwF8.png)
