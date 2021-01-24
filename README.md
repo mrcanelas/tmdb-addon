@@ -10,7 +10,7 @@ To install TMDB Addons just enter the community's addons catalog, search for TMD
 
 You can also do this through this link: [TMDB Addon Page](https://94c8cb9f702d-tmdb-addon.baby-beamup.club/configure)
 
-![Configure Page](https://i.imgur.com/R0sMjGv.png)
+![Configure Page](https://i.imgur.com/R0sMjGv.png){:height="50%" width="50%"}
 
 # Pros
 
@@ -26,7 +26,7 @@ You can also do this through this link: [TMDB Addon Page](https://94c8cb9f702d-t
 
  Example this 2017 series, on the left the result using the standard Stremio catalog, on the right the result using TMDB Addon.
 
- ![Stremio](https://i.imgur.com/NVrkGts.png) ![TMDB Addon](https://i.imgur.com/4LbIrbT.png) 
+ ![Stremio](https://i.imgur.com/NVrkGts.png){:height="50%" width="50%"} ![TMDB Addon](https://i.imgur.com/4LbIrbT.png){:height="50%" width="50%"} 
 
 
 3 - You are free to correct wrong information, just correct the information on the TMDB website and the Addon will update automatically.
