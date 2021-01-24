@@ -22,7 +22,7 @@ You can also do this through this link: [TMDB Addon Page](https://94c8cb9f702d-t
  - Episode title
  - Episode description
 
- 2 - Add titles that do not exist in Stremio:
+2 - Add titles that do not exist in Stremio:
 
  Example this 2017 series, on the left the result using the standard Stremio catalog, on the right the result using TMDB Addon.
 
