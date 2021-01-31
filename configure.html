@@ -412,7 +412,11 @@
 
       function generateInstallLink() {
         const language = $('#language-select').val()
-        installLink.href = 'stremio://' + window.location.host + '/' + language + '/manifest.json';
+        if (language && language !== 'en-US') {
+          installLink.href = 'stremio://' + window.location.host + '/' + language + '/manifest.json';
+        } else {
+          installLink.href = 'stremio://' + window.location.host + '/manifest.json';
+        }
       }
     </script>
   </body>
