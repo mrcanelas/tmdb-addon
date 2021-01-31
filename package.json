@@ -1,6 +1,6 @@
 {
   "name": "tmdb.addon",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TMDB API for Stremio.",
   "scripts": {
     "start": "node server.js"
