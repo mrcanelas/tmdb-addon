@@ -29,14 +29,14 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 });
 
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
-	const language = req.params.language || DEFAULT_LANGUAGE
+  const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
   const resp = await getCatalog(type, language)
 	respond(res, resp);
 });
 
 addon.get("/:language?/catalog/:type/:id/skip=:skip.json", async function (req, res) {
-	const language = req.params.language || DEFAULT_LANGUAGE
+  const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
   const page = req.params.skip / 20 + 1
   const resp = await getCatalog(type, language, page)
@@ -44,7 +44,7 @@ addon.get("/:language?/catalog/:type/:id/skip=:skip.json", async function (req, 
 });
 
 addon.get("/:language?/catalog/:type/:id/search=:query.json", async function (req, res) {
-	const language = req.params.language || DEFAULT_LANGUAGE
+  const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
   const query = req.params.query
   const resp = await getSearch(type, language, query)
@@ -52,7 +52,7 @@ addon.get("/:language?/catalog/:type/:id/search=:query.json", async function (re
 });
 
 addon.get("/:language?/catalog/:type/:id/genre=:genre.json", async function (req, res) {
-	const language = req.params.language || DEFAULT_LANGUAGE
+  const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
   const [genre, num] = req.params.genre.split("&")
   const page = (num === undefined) ? undefined : (num.replace(/([^\d])+/gim, '')) / 20 + 1
@@ -61,7 +61,7 @@ addon.get("/:language?/catalog/:type/:id/genre=:genre.json", async function (req
 });
 
 addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
-	const language = req.params.language || DEFAULT_LANGUAGE
+  const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
   const tmdbId = req.params.id.split(":")[1];
   const resp = await getMeta(type, language, tmdbId)
