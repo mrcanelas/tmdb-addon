@@ -53,7 +53,8 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
-  const resp = await getCatalog(type, language)
+  const id = req.params.id
+  const resp = await getCatalog(type, id, language)
 	const cacheOpts = {
     cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -65,8 +66,9 @@ addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id/skip=:skip.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
+  const id = req.params.id
   const page = req.params.skip / 20 + 1
-  const resp = await getCatalog(type, language, page)
+  const resp = await getCatalog(type, id, language, page)
 	const cacheOpts = {
     cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -91,9 +93,10 @@ addon.get("/:language?/catalog/:type/:id/search=:query.json", async function (re
 addon.get("/:language?/catalog/:type/:id/genre=:genre.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE
   const type = req.params.type
+  const id = req.params.id
   const [genre, num] = req.params.genre.split("&")
   const page = (num === undefined) ? undefined : (num.replace(/([^\d])+/gim, '')) / 20 + 1
-  const resp = await getGenres(type, language, genre, page)
+  const resp = await getGenres(type, id, language, genre, page)
 	const cacheOpts = {
     cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
