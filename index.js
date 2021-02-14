@@ -47,12 +47,7 @@ addon.get("/:language?/configure", async function (req, res) {
 addon.get("/:language?/manifest.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE
   const resp = await getManifest(language)
-  const cacheOpts = {
-    cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
-    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-    staleError: 30 * 24 * 60 * 60, // 30 days
-  }
-  respond(res, resp, cacheOpts)
+  respond(res, resp)
 });
 
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
