@@ -36,8 +36,6 @@ Example this 2017 series, on the left the result using the standard Stremio cata
 
 2 - Series with a lot of seasons can take a while to show the information, because the Addon requests episodes by season.
 
-3 - Do not show stream results for movies, as the TMDB Id is used, if using the IMDB Id, it shows the information in the standard Stremio catalog as it comes before and it is impossible to uninstall it.
-
 
 
  
