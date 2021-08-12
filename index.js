@@ -144,7 +144,7 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = await getTmdb(type, imdbId)
-    const resp = await getMeta(type, language, tmdbId);
+    const resp = tmdbId !== null ? await getMeta(type, language, tmdbId) : [];
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
