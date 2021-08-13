@@ -4,9 +4,13 @@ const { getSearch } = require("./lib/getSearch");
 const { getGenres } = require("./lib/getGenres");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
+const { getTmdb } = require("./lib/getTmdb");
+const { cacheWrapMeta } = require("./lib/getCache");
 const addon = express();
 const path = require("path");
-const { getTmdb } = require("./lib/getTmdb");
+
+
+const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 12 * 60 * 60; // 12 hours
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -124,7 +128,7 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = req.params.id.split(":")[1];
-    const resp = await getMeta(type, language, tmdbId);
+    const resp = await getMeta(type, language, tmdbId)
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
