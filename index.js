@@ -5,7 +5,7 @@ const { getGenres } = require("./lib/getGenres");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
-const { cacheWrapMeta } = require("./lib/getCache");
+const { cacheWrapMeta, cacheWrapCatalog } = require("./lib/getCache");
 const addon = express();
 const path = require("path");
 
@@ -64,7 +64,9 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE;
   const type = req.params.type;
-  const resp = await getCatalog(type, language);
+  const resp = await cacheWrapCatalog(type, async () => {
+    return await getCatalog(type, language)
+  });
   const cacheOpts = {
     cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -79,7 +81,9 @@ addon.get(
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const page = req.params.skip / 20 + 1;
-    const resp = await getCatalog(type, language, page);
+    const resp = await cacheWrapCatalog(`${type}:${page}`, async () => {
+      return await getCatalog(type, language, page)
+    });
     const cacheOpts = {
       cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -113,7 +117,9 @@ addon.get(
     const [genre, num] = req.params.genre.split("&");
     const page =
       num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1;
-    const resp = await getGenres(type, language, genre, page);
+    const resp = await cacheWrapCatalog(`${type}:${genre}:${page}`, async () => {
+      return await getGenres(type, language, genre, page)
+    });
     const cacheOpts = {
       cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -128,7 +134,9 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = req.params.id.split(":")[1];
-    const resp = await getMeta(type, language, tmdbId)
+    const resp = await cacheWrapMeta(tmdbId, async () => {
+      return await getMeta(type, language, tmdbId)
+    })
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
@@ -148,7 +156,9 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = await getTmdb(type, imdbId)
-    const resp = tmdbId !== null ? await getMeta(type, language, tmdbId) : [];
+    const resp = await cacheWrapMeta(tmdbId, async () => {
+      return await getMeta(type, language, tmdbId)
+    })
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
