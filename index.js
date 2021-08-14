@@ -9,9 +9,6 @@ const { cacheWrapMeta, cacheWrapCatalog } = require("./lib/getCache");
 const addon = express();
 const path = require("path");
 
-
-const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 12 * 60 * 60; // 12 hours
-
 const getCacheHeaders = function (opts) {
   opts = opts || {};
 
@@ -64,7 +61,7 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE;
   const type = req.params.type;
-  const resp = await cacheWrapCatalog(type, async () => {
+  const resp = await cacheWrapCatalog(`${language}:${type}`, async () => {
     return await getCatalog(type, language)
   });
   const cacheOpts = {
@@ -81,7 +78,7 @@ addon.get(
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const page = req.params.skip / 20 + 1;
-    const resp = await cacheWrapCatalog(`${type}:${page}`, async () => {
+    const resp = await cacheWrapCatalog(`${language}:${type}:${page}`, async () => {
       return await getCatalog(type, language, page)
     });
     const cacheOpts = {
@@ -117,7 +114,7 @@ addon.get(
     const [genre, num] = req.params.genre.split("&");
     const page =
       num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1;
-    const resp = await cacheWrapCatalog(`${type}:${genre}:${page}`, async () => {
+    const resp = await cacheWrapCatalog(`${language}:${type}:${genre}:${page}`, async () => {
       return await getGenres(type, language, genre, page)
     });
     const cacheOpts = {
@@ -134,44 +131,20 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = req.params.id.split(":")[1];
-    const resp = await cacheWrapMeta(tmdbId, async () => {
+    const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId)
     })
-    const cacheOpts = {
-      staleRevalidate: 20 * 24 * 60 * 60, // 20 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    if (type == "movie") {
-      // cache movies for 14 days:
-      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-    } else if (type == "series") {
-      const hasEnded = !!((resp.releaseInfo || "").length > 5);
-      // cache series that ended for 14 days, otherwise 1 day:
-      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
-    }
-    respond(res, resp, cacheOpts);
+    respond(res, resp);
   }
   if (req.params.id.includes("tt")) {
     const imdbId = req.params.id.split(":")[0]
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = await getTmdb(type, imdbId)
-    const resp = await cacheWrapMeta(tmdbId, async () => {
+    const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId)
     })
-    const cacheOpts = {
-      staleRevalidate: 20 * 24 * 60 * 60, // 20 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    if (type == "movie") {
-      // cache movies for 14 days:
-      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-    } else if (type == "series") {
-      const hasEnded = !!((resp.releaseInfo || "").length > 5);
-      // cache series that ended for 14 days, otherwise 1 day:
-      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
-    }
-    respond(res, resp, cacheOpts);
+    respond(res, resp);
   }
 });
 
