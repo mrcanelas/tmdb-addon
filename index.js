@@ -170,6 +170,8 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
       cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
     }
     respond(res, resp, cacheOpts);
+    } else {
+      respond(res, {meta: {}})
     }
   }
 });
