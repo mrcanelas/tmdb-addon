@@ -153,6 +153,7 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const tmdbId = await getTmdb(type, imdbId)
+    if(tmdbId) {
     const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId)
     })
@@ -169,6 +170,7 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
       cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
     }
     respond(res, resp, cacheOpts);
+    }
   }
 });
 
