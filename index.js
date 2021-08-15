@@ -134,7 +134,19 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId)
     })
-    respond(res, resp);
+    const cacheOpts = {
+      staleRevalidate: 20 * 24 * 60 * 60, // 20 days
+      staleError: 30 * 24 * 60 * 60, // 30 days
+    };
+    if (type == "movie") {
+      // cache movies for 14 days:
+      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+    } else if (type == "series") {
+      const hasEnded = !!((resp.releaseInfo || "").length > 5);
+      // cache series that ended for 14 days, otherwise 1 day:
+      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+    }
+    respond(res, resp, cacheOpts);
   }
   if (req.params.id.includes("tt")) {
     const imdbId = req.params.id.split(":")[0]
@@ -144,7 +156,19 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId)
     })
-    respond(res, resp);
+    const cacheOpts = {
+      staleRevalidate: 20 * 24 * 60 * 60, // 20 days
+      staleError: 30 * 24 * 60 * 60, // 30 days
+    };
+    if (type == "movie") {
+      // cache movies for 14 days:
+      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+    } else if (type == "series") {
+      const hasEnded = !!((resp.releaseInfo || "").length > 5);
+      // cache series that ended for 14 days, otherwise 1 day:
+      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+    }
+    respond(res, resp, cacheOpts);
   }
 });
 
