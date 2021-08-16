@@ -61,7 +61,7 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE;
   const type = req.params.type;
-  const resp = await cacheWrapCatalog(`${language}:${type}`, async () => {
+  const metas = await cacheWrapCatalog(`${language}:${type}`, async () => {
     return await getCatalog(type, language)
   });
   const cacheOpts = {
@@ -69,7 +69,7 @@ addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
     staleError: 30 * 24 * 60 * 60, // 30 days
   };
-  respond(res, resp, cacheOpts);
+  respond(res, {metas}, cacheOpts);
 });
 
 addon.get(
@@ -78,7 +78,7 @@ addon.get(
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const page = req.params.skip / 20 + 1;
-    const resp = await cacheWrapCatalog(`${language}:${type}:${page}`, async () => {
+    const metas = await cacheWrapCatalog(`${language}:${type}:${page}`, async () => {
       return await getCatalog(type, language, page)
     });
     const cacheOpts = {
@@ -86,7 +86,7 @@ addon.get(
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
       staleError: 30 * 24 * 60 * 60, // 30 days
     };
-    respond(res, resp, cacheOpts);
+    respond(res, {metas}, cacheOpts);
   }
 );
 
@@ -114,7 +114,7 @@ addon.get(
     const [genre, num] = req.params.genre.split("&");
     const page =
       num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1;
-    const resp = await cacheWrapCatalog(`${language}:${type}:${genre}:${page}`, async () => {
+    const metas = await cacheWrapCatalog(`${language}:${type}:${genre}:${page}`, async () => {
       return await getGenres(type, language, genre, page)
     });
     const cacheOpts = {
@@ -122,7 +122,7 @@ addon.get(
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
       staleError: 30 * 24 * 60 * 60, // 30 days
     };
-    respond(res, resp, cacheOpts);
+    respond(res, {metas}, cacheOpts);
   }
 );
 
