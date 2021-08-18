@@ -77,7 +77,7 @@ addon.get(
   async function (req, res) {
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
-    const page = Math.ceil(req.params.skip / 20 + 1);
+    const page = Math.ceil(req.params.skip / 20 + 1) || 1;
     const metas = await cacheWrapCatalog(`${language}:${type}:${page}`, async () => {
       return await getCatalog(type, language, page)
     });
@@ -113,7 +113,7 @@ addon.get(
     const type = req.params.type;
     const [genre, num] = req.params.genre.split("&");
     const page = Math.ceil(
-      num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1);
+      num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1) || 1;
     const metas = await cacheWrapCatalog(`${language}:${type}:${genre}:${page}`, async () => {
       return await getGenres(type, language, genre, page)
     });
