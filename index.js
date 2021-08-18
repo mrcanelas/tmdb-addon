@@ -61,9 +61,7 @@ addon.get("/:language?/manifest.json", async function (req, res) {
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE;
   const type = req.params.type;
-  const metas = await cacheWrapCatalog(`${language}:${type}`, async () => {
-    return await getCatalog(type, language)
-  });
+  const metas = await getCatalog(type, language)
   const cacheOpts = {
     cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -78,9 +76,7 @@ addon.get(
     const language = req.params.language || DEFAULT_LANGUAGE;
     const type = req.params.type;
     const page = Math.ceil(req.params.skip / 20 + 1) || 1;
-    const metas = await cacheWrapCatalog(`${language}:${type}:${page}`, async () => {
-      return await getCatalog(type, language, page)
-    });
+    const metas = await getCatalog(type, language, page)
     const cacheOpts = {
       cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
@@ -114,9 +110,7 @@ addon.get(
     const [genre, num] = req.params.genre.split("&");
     const page = Math.ceil(
       num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1) || 1;
-    const metas = await cacheWrapCatalog(`${language}:${type}:${genre}:${page}`, async () => {
-      return await getGenres(type, language, genre, page)
-    });
+    const metas = await getGenres(type, language, genre, page)
     const cacheOpts = {
       cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
