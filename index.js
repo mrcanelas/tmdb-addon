@@ -5,7 +5,7 @@ const { getGenres } = require("./lib/getGenres");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
-const { cacheWrapMeta, cacheWrapCatalog } = require("./lib/getCache");
+const { cacheWrapMeta } = require("./lib/getCache");
 const addon = express();
 const path = require("path");
 

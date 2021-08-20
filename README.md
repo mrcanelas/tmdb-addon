@@ -34,8 +34,6 @@ Example this 2017 series, on the left the result using the standard Stremio cata
 
 1 - Some information may not be right, the Addon does not check the information it accesses the TMDB API directly.
 
-2 - Series with a lot of seasons can take a while to show the information, because the Addon requests episodes by season.
-
 
 
  
