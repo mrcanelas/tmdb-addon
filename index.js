@@ -6,6 +6,7 @@ const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
+const landingTemplate = require("./lib/getTemplate");
 const addon = express();
 const path = require("path");
 
@@ -39,23 +40,27 @@ const respond = function (res, data, opts) {
   res.send(data);
 };
 
-addon.get("/", async function (req, res) {
+addon.get("/", async function (_, res) {
   res.redirect("/configure");
 });
 
 addon.get("/:language?/configure", async function (req, res) {
-  res.sendFile(path.join(__dirname + "/configure.html"));
+  const language = req.params.language || DEFAULT_LANGUAGE;
+  const manifest = await getManifest(language);
+  const landingHTML = await landingTemplate(manifest);
+  res.setHeader("Content-Type", "text/html; charset=UTF-8")
+  res.send(landingHTML);
 });
 
 addon.get("/:language?/manifest.json", async function (req, res) {
   const language = req.params.language || DEFAULT_LANGUAGE;
-  const resp = await getManifest(language);
+  const manifest = await getManifest(language);
   const cacheOpts = {
     cacheMaxAge: 12 * 60 * 60, // 12 hours
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
     staleError: 30 * 24 * 60 * 60, // 30 days
   };
-  respond(res, resp, cacheOpts);
+  respond(res, manifest, cacheOpts);
 });
 
 addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
