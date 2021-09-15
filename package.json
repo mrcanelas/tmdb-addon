@@ -1,15 +1,15 @@
 {
   "name": "tmdb-addon",
-  "version": "2.0.3",
-  "description": "Multilingual metadata provided by TMDB.",
+  "version": "2.0.4",
+  "description": "Metadata provided by TMDB",
   "main": "server.js",
   "dependencies": {
-    "axios": "^0.21.1",
     "cache-manager": "^3.4.4",
     "cache-manager-mongodb": "^0.3.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "fanart.tv-api": "^2.0.1"
+    "fanart.tv-api": "^2.0.1",
+    "moviedb-promise": "^3.1.10"
   },
   "devDependencies": {},
   "scripts": {
