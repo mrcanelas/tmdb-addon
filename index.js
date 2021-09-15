@@ -75,53 +75,46 @@ addon.get("/:language?/catalog/:type/:id.json", async function (req, res) {
   respond(res, {metas}, cacheOpts);
 });
 
-addon.get(
-  "/:language?/catalog/:type/:id/skip=:skip.json",
-  async function (req, res) {
-    const language = req.params.language || DEFAULT_LANGUAGE;
-    const type = req.params.type;
-    const page = Math.ceil(req.params.skip / 20 + 1) || 1;
-    const metas = await getCatalog(type, language, page)
-    const cacheOpts = {
-      cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
-      staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    respond(res, {metas}, cacheOpts);
+addon.get("/:language?/catalog/:type/:id/skip=:skip.json", async function (req, res) {
+  const language = req.params.language || DEFAULT_LANGUAGE;
+  const type = req.params.type;
+  const page = Math.ceil(req.params.skip / 20 + 1) || 1;
+  const metas = await getCatalog(type, language, page)
+  const cacheOpts = {
+    cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
+    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
+    staleError: 30 * 24 * 60 * 60, // 30 days
+  };
+  respond(res, {metas}, cacheOpts);
   }
 );
 
-addon.get(
-  "/:language?/catalog/:type/:id/search=:query.json",
-  async function (req, res) {
-    const language = req.params.language || DEFAULT_LANGUAGE;
-    const type = req.params.type;
-    const query = req.params.query;
-    const resp = await getSearch(type, language, query);
-    const cacheOpts = {
-      cacheMaxAge: 3 * 24 * 60 * 60, // 3 days
-      staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    respond(res, resp, cacheOpts);
+addon.get("/:language?/catalog/:type/:id/search=:query.json", async function (req, res) {
+  const language = req.params.language || DEFAULT_LANGUAGE;
+  const type = req.params.type;
+  const query = req.params.query;
+  const resp = await getSearch(type, language, query);
+  const cacheOpts = {
+    cacheMaxAge: 3 * 24 * 60 * 60, // 3 days
+    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
+    staleError: 30 * 24 * 60 * 60, // 30 days
+  };
+  respond(res, resp, cacheOpts);
   }
 );
 
-addon.get(
-  "/:language?/catalog/:type/:id/genre=:genre.json",
-  async function (req, res) {
-    const language = req.params.language || DEFAULT_LANGUAGE;
-    const type = req.params.type;
-    const [genre, num] = req.params.genre.split("&");
-    const page = Math.ceil(
-      num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1) || 1;
-    const metas = await getGenres(type, language, genre, page)
-    const cacheOpts = {
-      cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
-      staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    respond(res, {metas}, cacheOpts);
+addon.get("/:language?/catalog/:type/:id/genre=:genre.json", async function (req, res) {
+  const language = req.params.language || DEFAULT_LANGUAGE;
+  const type = req.params.type;
+  const [genre, num] = req.params.genre.split("&");
+  const page = Math.ceil(num === undefined ? undefined : num.replace(/([^\d])+/gim, "") / 20 + 1) || 1;
+  const metas = await getGenres(type, language, genre, page)
+  const cacheOpts = {
+    cacheMaxAge: 2 * 24 * 60 * 60, // 2 days
+    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
+    staleError: 30 * 24 * 60 * 60, // 30 days
+  };
+  respond(res, {metas}, cacheOpts);
   }
 );
 
