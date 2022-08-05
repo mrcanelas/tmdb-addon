@@ -119,12 +119,15 @@ addon.get("/:language?/catalog/:type/:id/genre=:genre.json", async function (req
 );
 
 addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
+  const host = req.header('host')
+  const type = req.params.type;
+  const tmdbId = req.params.id.split(":")[1];
+  const language = req.params.language || DEFAULT_LANGUAGE;
+  const imdbId = req.params.id.split(":")[0]
+
   if (req.params.id.includes("tmdb:")) {
-    const language = req.params.language || DEFAULT_LANGUAGE;
-    const type = req.params.type;
-    const tmdbId = req.params.id.split(":")[1];
     const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId)
+      return await getMeta(type, language, tmdbId, host)
     })
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
@@ -141,13 +144,10 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
     respond(res, resp, cacheOpts);
   }
   if (req.params.id.includes("tt")) {
-    const imdbId = req.params.id.split(":")[0]
-    const language = req.params.language || DEFAULT_LANGUAGE;
-    const type = req.params.type;
     const tmdbId = await getTmdb(type, imdbId)
     if(tmdbId) {
     const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId)
+      return await getMeta(type, language, tmdbId, host)
     })
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
