@@ -1,6 +1,3 @@
-var os = require("os");
-const host = os.hostname();
-
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
     (releases) => releases.iso_3166_1 == language.split("-")[1]
@@ -73,7 +70,7 @@ function parseShareLink(title, imdb_id, type) {
   };
 }
 
-function parseGenreLink(genres, type, language) {
+function parseGenreLink(genres, host, type, language) {
   return genres.map((genre) => {
     return {
       name: genre.name,
