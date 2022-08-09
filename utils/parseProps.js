@@ -1,4 +1,5 @@
-const host = __dirname.split('/')
+var os = require("os");
+const host = os.hostname();
 
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
@@ -77,7 +78,7 @@ function parseGenreLink(genres, type, language) {
     return {
       name: genre.name,
       category: "Genres",
-      url: `stremio:///discover/http%3A%2F%2F${encodeURI(__dirname)}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
+      url: `stremio:///discover/http%3A%2F%2F${encodeURI(host)}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
     };
   });
 }
