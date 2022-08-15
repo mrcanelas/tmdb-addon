@@ -1,3 +1,5 @@
+const os = require('os')
+
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
     (releases) => releases.iso_3166_1 == language.split("-")[1]
@@ -75,7 +77,7 @@ function parseGenreLink(genres, host, type, language) {
     return {
       name: genre.name,
       category: "Genres",
-      url: `stremio:///discover/http%3A%2F%2F${encodeURI(host)}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
+      url: `stremio:///discover/http%3A%2F%2F${encodeURI(os.hostname())}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
     };
   });
 }
