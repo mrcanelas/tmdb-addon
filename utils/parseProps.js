@@ -102,7 +102,7 @@ function parseCreditsLink(credits) {
       url: `stremio:///search?search=${encodeURI(writer)}`,
     };
   });
-  return [].concat(Cast, Director, Writer);
+  return new Array(...Cast, ...Director, ...Writer);
 }
 
 function parseCoutry(production_countries) {
@@ -130,7 +130,7 @@ function parseRunTime(runtime) {
   var rhours = Math.floor(hours);
   var minutes = (hours - rhours) * 60;
   var rminutes = Math.round(minutes);
-  return rhours + "h" + rminutes + "m";
+  return rhours > 0 ? rhours + "h" + rminutes + "min" : rminutes + "min";
 }
 
 function parseCreatedBy(created_by) {
