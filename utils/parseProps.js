@@ -35,6 +35,7 @@ function parseSlug(type, title, imdb_id) {
 function parseTrailers(videos) {
   return videos.results
     .filter((el) => el.site === "YouTube")
+    .filter((el) => el.type === "Trailer")
     .map((el) => {
       return {
         source: `${el.key}`,
@@ -46,6 +47,7 @@ function parseTrailers(videos) {
 function parseTrailerStream(videos) {
   return videos.results
     .filter((el) => el.site === "YouTube")
+    .filter((el) => el.type === "Trailer")
     .map((el) => {
       return {
         title: `${el.name}`,
