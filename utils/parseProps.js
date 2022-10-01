@@ -77,7 +77,9 @@ function parseGenreLink(genres, host, type, language) {
     return {
       name: genre.name,
       category: "Genres",
-      url: `stremio:///discover/http%3A%2F%2F${encodeURI(process.env.HOST_NAME)}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
+      url: `stremio:///discover/http%3A%2F%2F${encodeURI(
+        process.env.HOST_NAME
+      )}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
     };
   });
 }
@@ -128,11 +130,13 @@ function parseYear(status, first_air_date, last_air_date) {
 }
 
 function parseRunTime(runtime) {
-  var hours = runtime / 60;
-  var rhours = Math.floor(hours);
-  var minutes = (hours - rhours) * 60;
-  var rminutes = Math.round(minutes);
-  return rhours > 0 ? rhours + "h" + rminutes + "min" : rminutes + "min";
+  if (runtime) {
+    var hours = runtime / 60;
+    var rhours = Math.floor(hours);
+    var minutes = (hours - rhours) * 60;
+    var rminutes = Math.round(minutes);
+    return rhours > 0 ? rhours + "h" + rminutes + "min" : rminutes + "min";
+  }
 }
 
 function parseCreatedBy(created_by) {
