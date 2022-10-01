@@ -77,9 +77,9 @@ function parseGenreLink(genres, host, type, language) {
     return {
       name: genre.name,
       category: "Genres",
-      url: `stremio:///discover/http%3A%2F%2F${encodeURI(
+      url: `stremio:///discover/${encodeURIComponent(
         process.env.HOST_NAME
-      )}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${genre.name}`,
+      )}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${encodeURIComponent(genre.name)}`,
     };
   });
 }
@@ -89,21 +89,21 @@ function parseCreditsLink(credits) {
     return {
       name: actor,
       category: "Cast",
-      url: `stremio:///search?search=${encodeURI(actor)}`,
+      url: `stremio:///search?search=${encodeURIComponent(actor)}`,
     };
   });
   const Director = parseDirector(credits).map((director) => {
     return {
       name: director,
       category: "Directors",
-      url: `stremio:///search?search=${encodeURI(director)}`,
+      url: `stremio:///search?search=${encodeURIComponent(director)}`,
     };
   });
   const Writer = parseWriter(credits).map((writer) => {
     return {
       name: writer,
       category: "Writers",
-      url: `stremio:///search?search=${encodeURI(writer)}`,
+      url: `stremio:///search?search=${encodeURIComponent(writer)}`,
     };
   });
   return new Array(...Cast, ...Director, ...Writer);
