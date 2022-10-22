@@ -1,6 +1,6 @@
 {
   "name": "tmdb-addon",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Metadata provided by TMDB",
   "main": "server.js",
   "dependencies": {
