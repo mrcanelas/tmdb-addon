@@ -8,6 +8,7 @@ const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
 const { landingTemplate } = require("./lib/getTemplate");
+const { getTrending } = require("./lib/getTrending");
 
 const limiter = new Bottleneck({
   maxConcurrent: process.env.LIMIT_MAX_CONCURRENT || 5,
@@ -68,18 +69,32 @@ addon.get("/:language?/manifest.json", async function (req, res) {
   respond(res, manifest, cacheOpts);
 });
 
-addon.get("/:language?/catalog/:type/:id/:extra?.json",  async function (req, res) {
-  const { language, type, id } = req.params;
-  const { genre, skip, search } = req.params.extra ? Object.fromEntries(new URLSearchParams(req.url.split("/").pop().slice(0, -5)).entries()) : {};
-  const page = skip ? Math.ceil(skip / 20 + 1 ) : 1;
-  const metas = search ? await getSearch(type, language, search) : await getCatalog(type, id, language, genre, page);
-  const cacheOpts = {
-    cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
-    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-    staleError: 30 * 24 * 60 * 60, // 30 days
-  };
-  respond(res, metas, cacheOpts);
-});
+addon.get(
+  "/:language?/catalog/:type/:id/:extra?.json",
+  async function (req, res) {
+    const { language, type, id } = req.params;
+    const { genre, skip, search } = req.params.extra
+      ? Object.fromEntries(
+          new URLSearchParams(req.url.split("/").pop().slice(0, -5)).entries()
+        )
+      : {};
+    const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
+    const metas = search
+      ? await getSearch(type, language, search)
+      : id === "tmdb.trending"
+      ? await getTrending(type, id, language, genre, page)
+      : await getCatalog(type, id, language, genre, page);
+    const cacheOpts = {
+      cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
+      staleRevalidate: 14 * 24 * 60 * 60, // 14 days
+      staleError: 30 * 24 * 60 * 60, // 30 days
+    };
+    if (id === "tmdb.trending" && genre === "Day") {
+      cacheOpts.cacheMaxAge = 1 * 24 * 60 * 60; // 1 day
+    }
+    respond(res, metas, cacheOpts);
+  }
+);
 
 addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
   const type = req.params.type;
