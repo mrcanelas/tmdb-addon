@@ -94,7 +94,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     // clone response before changing posters
     metas = JSON.parse(JSON.stringify(metas));
     metas.metas = metas.metas.map(el => {
-      el.poster = rpdbkey ? getRpdbPoster(type, el.id, language, rpdbkey) : el.poster;
+      el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:',''), language, rpdbkey) : el.poster;
       return el;
     })
   }
