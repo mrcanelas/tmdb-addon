@@ -1,5 +1,5 @@
 const express = require("express");
-const Bottleneck = require("bottleneck");
+const path = require("path")
 const addon = express();
 const { getCatalog } = require("./lib/getCatalog");
 const { getSearch } = require("./lib/getSearch");
@@ -7,14 +7,7 @@ const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
-const { landingTemplate } = require("./lib/getTemplate");
 const { getTrending } = require("./lib/getTrending");
-
-const limiter = new Bottleneck({
-  maxConcurrent: process.env.LIMIT_MAX_CONCURRENT || 5,
-  highWater: process.env.LIMIT_QUEUE_SIZE || 50,
-  strategy: Bottleneck.strategy.OVERFLOW,
-});
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -50,16 +43,13 @@ addon.get("/", async function (_, res) {
   res.redirect("/configure");
 });
 
-addon.get("/:language?/configure", async function (req, res) {
-  const language = req.params.language || DEFAULT_LANGUAGE;
-  const manifest = await getManifest(language);
-  const landingHTML = await landingTemplate(manifest);
-  res.setHeader("Content-Type", "text/html; charset=UTF-8");
-  res.send(landingHTML);
+addon.get("/:catalogChoices?/configure", async function (req, res) {
+  res.sendFile(path.join(__dirname + "/configure.html"));
 });
 
-addon.get("/:language?/manifest.json", async function (req, res) {
-  const language = req.params.language || DEFAULT_LANGUAGE;
+addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
+  const config = JSON.parse(req.params.catalogChoices)
+  const language = config.language || DEFAULT_LANGUAGE;
   const manifest = await getManifest(language);
   const cacheOpts = {
     cacheMaxAge: 12 * 60 * 60, // 12 hours
@@ -69,51 +59,51 @@ addon.get("/:language?/manifest.json", async function (req, res) {
   respond(res, manifest, cacheOpts);
 });
 
-addon.get(
-  "/:language?/catalog/:type/:id/:extra?.json",
-  async function (req, res) {
-    const { language, type, id } = req.params;
-    const { genre, skip, search } = req.params.extra
-      ? Object.fromEntries(
-          new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
-        )
-      : {};
-    const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
-    let metas = [];
-    try {
-      metas = search
-        ? await getSearch(type, language, search)
-        : id === "tmdb.trending"
-        ? await getTrending(type, id, language, genre, page)
-        : await getCatalog(type, id, language, genre, page);
-    } catch(e) {
-      res.status(404).send((e || {}).message || "Not found");
-      return;
-    }
-    const cacheOpts = {
-      cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
-      staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
-    };
-    if (id === "tmdb.trending" && genre === "Day") {
-      cacheOpts.cacheMaxAge = 1 * 24 * 60 * 60; // 1 day
-    }
-    respond(res, metas, cacheOpts);
+addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
+  const { catalogChoices, type, id } = req.params;
+  const config = JSON.parse(catalogChoices)
+  const language = config.language || DEFAULT_LANGUAGE;
+  const rpdbkey = config.rpdbkey
+  const { genre, skip, search } = req.params.extra
+    ? Object.fromEntries(
+        new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
+      )
+    : {};
+  const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
+  let metas = [];
+  try {
+    metas = search
+      ? await getSearch(type, language, search, rpdbkey)
+      : id === "tmdb.trending"
+      ? await getTrending(type, id, language, genre, page, rpdbkey)
+      : await getCatalog(type, id, language, genre, page, rpdbkey);
+  } catch(e) {
+    res.status(404).send((e || {}).message || "Not found");
+    return;
   }
-);
+  const cacheOpts = {
+    cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
+    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
+    staleError: 30 * 24 * 60 * 60, // 30 days
+  };
+  if (id === "tmdb.trending" && genre === "Day") {
+    cacheOpts.cacheMaxAge = 1 * 24 * 60 * 60; // 1 day
+  }
+  respond(res, metas, cacheOpts);
+});
 
-addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
-  const type = req.params.type;
-  const tmdbId = req.params.id.split(":")[1];
-  const language = req.params.language || DEFAULT_LANGUAGE;
+addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
+  const { catalogChoices, type, id } = req.params;
+  const config = JSON.parse(catalogChoices)
+  const tmdbId = id.split(":")[1];
+  const language = config.language || DEFAULT_LANGUAGE;
+  const rpdbkey = config.rpdbkey
   const imdbId = req.params.id.split(":")[0];
 
   if (req.params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${tmdbId}`, () =>
-      limiter.schedule(async () => {
-        return await getMeta(type, language, tmdbId);
-      })
-    );
+    const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
+      return await getMeta(type, language, tmdbId, rpdbkey)
+    });
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
@@ -131,11 +121,9 @@ addon.get("/:language?/meta/:type/:id.json", async function (req, res) {
   if (req.params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${tmdbId}`, () =>
-        limiter.schedule(async () => {
-          return await getMeta(type, language, tmdbId);
-        })
-      );
+      const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
+        return await getMeta(type, language, tmdbId, rpdbkey)
+      });
       const cacheOpts = {
         staleRevalidate: 20 * 24 * 60 * 60, // 20 days
         staleError: 30 * 24 * 60 * 60, // 30 days
