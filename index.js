@@ -101,7 +101,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const imdbId = req.params.id.split(":")[0];
 
   if (req.params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
+    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId, rpdbkey)
     });
     const cacheOpts = {
@@ -121,7 +121,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   if (req.params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${tmdbId}`, async () => {
+      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
         return await getMeta(type, language, tmdbId, rpdbkey)
       });
       const cacheOpts = {
