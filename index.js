@@ -8,6 +8,7 @@ const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
 const { getTrending } = require("./lib/getTrending");
+const { getRpdbPoster } = require("./utils/parseProps");
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -73,10 +74,10 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   let metas = [];
   try {
     metas = search
-      ? await getSearch(type, language, search, rpdbkey)
+      ? await getSearch(type, language, search)
       : id === "tmdb.trending"
-      ? await getTrending(type, id, language, genre, page, rpdbkey)
-      : await getCatalog(type, id, language, genre, page, rpdbkey);
+      ? await getTrending(type, id, language, genre, page)
+      : await getCatalog(type, id, language, genre, page);
   } catch(e) {
     res.status(404).send((e || {}).message || "Not found");
     return;
@@ -89,6 +90,14 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   if (id === "tmdb.trending" && genre === "Day") {
     cacheOpts.cacheMaxAge = 1 * 24 * 60 * 60; // 1 day
   }
+  if (rpdbkey) {
+    // clone response before changing posters
+    metas = JSON.parse(JSON.stringify(metas));
+    metas.metas = metas.metas.map(el => {
+      el.poster = rpdbkey ? getRpdbPoster(type, el.id, language, rpdbkey) : el.poster;
+      return el;
+    })
+  }
   respond(res, metas, cacheOpts);
 });
 
@@ -97,12 +106,11 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const config = JSON.parse(catalogChoices)
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey
   const imdbId = req.params.id.split(":")[0];
 
   if (req.params.id.includes("tmdb:")) {
     const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId, rpdbkey)
+      return await getMeta(type, language, tmdbId)
     });
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
@@ -122,7 +130,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId, rpdbkey)
+        return await getMeta(type, language, tmdbId)
       });
       const cacheOpts = {
         staleRevalidate: 20 * 24 * 60 * 60, // 20 days
