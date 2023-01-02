@@ -75,15 +75,21 @@ addon.get(
     const { language, type, id } = req.params;
     const { genre, skip, search } = req.params.extra
       ? Object.fromEntries(
-          new URLSearchParams(req.url.split("/").pop().slice(0, -5)).entries()
+          new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
         )
       : {};
     const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
-    const metas = search
-      ? await getSearch(type, language, search)
-      : id === "tmdb.trending"
-      ? await getTrending(type, id, language, genre, page)
-      : await getCatalog(type, id, language, genre, page);
+    let metas = [];
+    try {
+      metas = search
+        ? await getSearch(type, language, search)
+        : id === "tmdb.trending"
+        ? await getTrending(type, id, language, genre, page)
+        : await getCatalog(type, id, language, genre, page);
+    } catch(e) {
+      res.status(404).send((e || {}).message || "Not found");
+      return;
+    }
     const cacheOpts = {
       cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
       staleRevalidate: 14 * 24 * 60 * 60, // 14 days
