@@ -8,7 +8,7 @@ const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
 const { getTrending } = require("./lib/getTrending");
-const { getRpdbPoster } = require("./utils/parseProps");
+const { parseConfig, getRpdbPoster } = require("./utils/parseProps");
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -49,7 +49,7 @@ addon.get("/:catalogChoices?/configure", async function (req, res) {
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const config = JSON.parse(req.params.catalogChoices)
+  const config = parseConfig(req.params.catalogChoices);
   const language = config.language || DEFAULT_LANGUAGE;
   const manifest = await getManifest(language);
   const cacheOpts = {
@@ -62,7 +62,7 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
   const { catalogChoices, type, id } = req.params;
-  const config = JSON.parse(catalogChoices)
+  const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
   const rpdbkey = config.rpdbkey
   const { genre, skip, search } = req.params.extra
@@ -92,18 +92,20 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   }
   if (rpdbkey) {
     // clone response before changing posters
-    metas = JSON.parse(JSON.stringify(metas));
-    metas.metas = metas.metas.map(el => {
-      el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:',''), language, rpdbkey) : el.poster;
-      return el;
-    })
+    try {
+      metas = JSON.parse(JSON.stringify(metas));
+      metas.metas = metas.metas.map(el => {
+        el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:',''), language, rpdbkey) : el.poster;
+        return el;
+      })
+    } catch(e) {}
   }
   respond(res, metas, cacheOpts);
 });
 
 addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const { catalogChoices, type, id } = req.params;
-  const config = JSON.parse(catalogChoices)
+  const config = parseConfig(catalogChoices);
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
   const imdbId = req.params.id.split(":")[0];
