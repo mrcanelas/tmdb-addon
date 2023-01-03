@@ -145,6 +145,19 @@ function parseCreatedBy(created_by) {
   return created_by.map((el) => el.name);
 }
 
+function parseConfig(catalogChoices) {
+  let config = {}
+  try {
+    config = JSON.parse(catalogChoices);
+  } catch(e) {
+    if (catalogChoices) {
+      // reverse compatibility for old version of config
+      config.language = catalogChoices;
+    }
+  }
+  return config;
+}
+
 function getRpdbPoster(type, id, language, rpdbkey) {
   const tier = rpdbkey.split("-")[0]
   const lang = language.split("-")[0]
@@ -172,5 +185,6 @@ module.exports = {
   parseYear,
   parseRunTime,
   parseCreatedBy,
+  parseConfig,
   getRpdbPoster,
 };
