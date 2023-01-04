@@ -123,7 +123,7 @@ function parseGenres(genres) {
 
 function parseYear(status, first_air_date, last_air_date) {
   if (status === "Ended") {
-    return first_air_date
+    return first_air_date && last_air_date
       ? first_air_date.substr(0, 5) + last_air_date.substr(0, 4)
       : "";
   } else {
