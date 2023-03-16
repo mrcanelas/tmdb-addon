@@ -34,5 +34,15 @@
       "episodeGroupId": "5b11ba820e0a265847002c6e",
       "name": "Star Wars: The Clone Wars",
       "watchOrderOnly": true
+    },
+    {
+      "tmdbId": "46260",
+      "episodeGroupId": "5e4195943dd126001a560100",
+      "name": "Naruto"
+    },
+    {
+      "tmdbId": "31910",
+      "episodeGroupId": "5b42c9aa9251414f570161a1",
+      "name": "Naruto Shippuden"
     }
 ]

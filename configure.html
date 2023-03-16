@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<html
-  style="
-    background-image: url(https://images.metahub.space/background/medium/tt2316204/img);
-  "
->
+<html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -203,12 +199,19 @@
         color: #8a5aab;
       }
     </style>
-     <link rel="shortcut icon" href="https://github.com/mrcanelas/tmdb-addon/raw/main/images/favicon.png" type="image/x-icon">
-     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap" rel="stylesheet">
-     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
+    <link
+      rel="shortcut icon"
+      href="https://github.com/mrcanelas/tmdb-addon/raw/main/images/favicon.png"
+      type="image/x-icon"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
   </head>
 
   <body>
@@ -219,13 +222,14 @@
         />
       </div>
       <h1 class="name">The Movie Database Addon</h1>
-         <h2 class="version">3.0.9</h2>
-         <h2 class="description">Metadata provided by TMDB.</h2>
-         <div class="separator"></div>
-         <h3 class="gives">This addon has more :</h3>
-         <ul>
-            <li>Movies</li><li>Series</li>
-         </ul>
+      <h2 class="version">3.0.9</h2>
+      <h2 class="description">Metadata provided by TMDB.</h2>
+      <div class="separator"></div>
+      <h3 class="gives">This addon has more :</h3>
+      <ul>
+        <li>Movies</li>
+        <li>Series</li>
+      </ul>
 
       <div class="separator"></div>
 
@@ -465,13 +469,77 @@
       </a>
     </div>
     <script>
+      const arrayIMDB = [
+        "tt0016847",
+        "tt0049223",
+        "tt0078748",
+        "tt0090520",
+        "tt0121766",
+        "tt0285531",
+        "tt1446714",
+        "tt2316204",
+        "tt5073642",
+        "tt0017136",
+        "tt0055151",
+        "tt0080684",
+        "tt0092076",
+        "tt0129167",
+        "tt0300556",
+        "tt1454468",
+        "tt2527338",
+        "tt7329656",
+        "tt0021884",
+        "tt0055608",
+        "tt0083866",
+        "tt0092106",
+        "tt0139809",
+        "tt0816692",
+        "tt1564585",
+        "tt2557478",
+        "tt0046534",
+        "tt0061722",
+        "tt0086190",
+        "tt0096754",
+        "tt0140703",
+        "tt0910970",
+        "tt1823672",
+        "tt2719848",
+        "tt0046672",
+        "tt0065702",
+        "tt0088846",
+        "tt0102803",
+        "tt0142183",
+        "tt1104001",
+        "tt1971325",
+        "tt3371366",
+        "tt0048215",
+        "tt0071565",
+        "tt0089489",
+        "tt0116629",
+        "tt0182789",
+        "tt1318514",
+        "tt2109248",
+        "tt3741700",
+      ];
+
+      const random = Math.floor(Math.random() * arrayIMDB.length);
+
+      const background =
+        "https://images.metahub.space/background/medium/" +
+          arrayIMDB[random] +
+          "/img" || "https://dl.strem.io/addon-background.jpg";
+
+      document.querySelector(
+        "html"
+      ).style.backgroundImage = `url(${background})`;
+
       installLink.onclick = () => {
         return mainForm.reportValidity();
       };
       const updateLink = () => {
-        console.log(mainForm)
+        console.log(mainForm);
         const config = Object.fromEntries(new FormData(mainForm));
-        console.log(config)
+        console.log(config);
         installLink.href =
           "stremio://" +
           window.location.host +
