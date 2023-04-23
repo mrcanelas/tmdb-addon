@@ -4,12 +4,12 @@
   "description": "Metadata provided by TMDB",
   "main": "server.js",
   "dependencies": {
-    "cache-manager": "^3.4.4",
+    "cache-manager": "^3.6.3",
     "cache-manager-mongodb": "^0.3.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "fanart.tv-api": "^1.0.3",
-    "moviedb-promise": "^3.1.10"
+    "fanart.tv-api": "^2.0.1",
+    "moviedb-promise": "^3.4.0"
   },
   "scripts": {
     "dev": "nodemon server.js",
