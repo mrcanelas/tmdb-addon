@@ -64,21 +64,22 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const { catalogChoices, type, id } = req.params;
   const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
+  const include_adult = config.include_adult || false
   const rpdbkey = config.rpdbkey
   const { genre, skip, search } = req.params.extra
     ? Object.fromEntries(
-        new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
-      )
+      new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
+    )
     : {};
   const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
   let metas = [];
   try {
     metas = search
-      ? await getSearch(type, language, search)
+      ? await getSearch(type, language, search, include_adult)
       : id === "tmdb.trending"
-      ? await getTrending(type, id, language, genre, page)
-      : await getCatalog(type, id, language, genre, page);
-  } catch(e) {
+        ? await getTrending(type, id, language, genre, page, include_adult)
+        : await getCatalog(type, id, language, genre, page, include_adult);
+  } catch (e) {
     res.status(404).send((e || {}).message || "Not found");
     return;
   }
@@ -95,10 +96,10 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     try {
       metas = JSON.parse(JSON.stringify(metas));
       metas.metas = metas.metas.map(el => {
-        el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:',''), language, rpdbkey) : el.poster;
+        el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey) : el.poster;
         return el;
       })
-    } catch(e) {}
+    } catch (e) { }
   }
   respond(res, metas, cacheOpts);
 });

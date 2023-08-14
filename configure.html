@@ -249,6 +249,12 @@
           </label>
         </div>
         <div id="rpdb-data"></div>
+        <div class="form-element">
+          <label for="include_adult">
+            <input type="checkbox" id="include_adult" name="include_adult" value="true"/>
+            <span class="label-to-right">Enable adult content</span>
+          </label>
+        </div>
         <div class="separator"></div>
 
         <h3 class="gives">Select your language:</h3>
@@ -537,9 +543,7 @@
         return mainForm.reportValidity();
       };
       const updateLink = () => {
-        console.log(mainForm);
         const config = Object.fromEntries(new FormData(mainForm));
-        console.log(config);
         installLink.href =
           "stremio://" +
           window.location.host +
