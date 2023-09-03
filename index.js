@@ -7,7 +7,6 @@ import getSearch from "./lib/getSearch.js";
 import { getManifest, DEFAULT_LANGUAGE } from "./lib/getManifest.js";
 import getMeta from "./lib/getMeta.js";
 import getTmdb from "./lib/getTmdb.js";
-import cacheWrapMeta from "./lib/getCache.js";
 import getTrending from "./lib/getTrending.js";
 import Utils from "./utils/parseProps.js";
 const addon = express();
@@ -115,7 +114,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async ({ params }, res) => {
   const imdbId = params.id.split(":")[0];
 
   if (params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => await getMeta(type, language, tmdbId));
+    const resp = await getMeta(type, language, tmdbId);
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
@@ -133,7 +132,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async ({ params }, res) => {
   if (params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => await getMeta(type, language, tmdbId));
+      const resp = await getMeta(type, language, tmdbId);
       const cacheOpts = {
         staleRevalidate: 20 * 24 * 60 * 60, // 20 days
         staleError: 30 * 24 * 60 * 60, // 30 days
