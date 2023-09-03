@@ -77,8 +77,8 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     metas = search
       ? await getSearch(type, language, search, include_adult)
       : id === "tmdb.trending"
-        ? await getTrending(type, id, language, genre, page, include_adult)
-        : await getCatalog(type, id, language, genre, page, include_adult);
+        ? await getTrending(type, id, language, genre, page)
+        : await getCatalog(type, id, language, genre, page);
   } catch (e) {
     res.status(404).send((e || {}).message || "Not found");
     return;
