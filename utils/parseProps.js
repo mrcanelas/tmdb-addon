@@ -1,23 +1,29 @@
-function parseCertification({results}, language) {
-  return results.filter(
-    ({iso_3166_1}) => iso_3166_1 == language.split("-")[1]
+function parseCertification(release_dates, language) {
+  return release_dates.results.filter(
+    (releases) => releases.iso_3166_1 == language.split("-")[1]
   )[0].release_dates[0].certification;
 }
 
-function parseCast({cast}) {
-  return cast.slice(0, 4).map(({name}) => name);
+function parseCast(credits) {
+  return credits.cast.slice(0, 4).map((el) => {
+    return el.name;
+  });
 }
 
-function parseDirector({crew}) {
-  return crew
-    .filter(({job}) => job === "Director")
-    .map(({name}) => name);
+function parseDirector(credits) {
+  return credits.crew
+    .filter((x) => x.job === "Director")
+    .map((el) => {
+      return el.name;
+    });
 }
 
-function parseWriter({crew}) {
-  return crew
-    .filter(({job}) => job === "Writer")
-    .map(({name}) => name);
+function parseWriter(credits) {
+  return credits.crew
+    .filter((x) => x.job === "Writer")
+    .map((el) => {
+      return el.name;
+    });
 }
 
 function parseSlug(type, title, imdb_id) {
@@ -26,24 +32,28 @@ function parseSlug(type, title, imdb_id) {
   }`;
 }
 
-function parseTrailers({results}) {
-  return results
-    .filter(({site}) => site === "YouTube")
-    .filter(({type}) => type === "Trailer")
-    .map(({key, type}) => ({
-    source: `${key}`,
-    type: `${type}`
-  }));
+function parseTrailers(videos) {
+  return videos.results
+    .filter((el) => el.site === "YouTube")
+    .filter((el) => el.type === "Trailer")
+    .map((el) => {
+      return {
+        source: `${el.key}`,
+        type: `${el.type}`,
+      };
+    });
 }
 
-function parseTrailerStream({results}) {
-  return results
-    .filter(({site}) => site === "YouTube")
-    .filter(({type}) => type === "Trailer")
-    .map(({name, key}) => ({
-    title: `${name}`,
-    ytId: `${key}`
-  }));
+function parseTrailerStream(videos) {
+  return videos.results
+    .filter((el) => el.site === "YouTube")
+    .filter((el) => el.type === "Trailer")
+    .map((el) => {
+      return {
+        title: `${el.name}`,
+        ytId: `${el.key}`,
+      };
+    });
 }
 
 function parseImdbLink(vote_average, imdb_id) {
@@ -63,43 +73,52 @@ function parseShareLink(title, imdb_id, type) {
 }
 
 function parseGenreLink(genres, type, language) {
-  return genres.map(({name}) => ({
-    name,
-    category: "Genres",
-
-    url: `stremio:///discover/${encodeURIComponent(
-      process.env.HOST_NAME
-    )}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${encodeURIComponent(
-      name
-    )}`
-  }));
+  return genres.map((genre) => {
+    return {
+      name: genre.name,
+      category: "Genres",
+      url: `stremio:///discover/${encodeURIComponent(
+        process.env.HOST_NAME
+      )}%2F${language}%2Fmanifest.json/${type}/tmdb.top?genre=${encodeURIComponent(
+        genre.name
+      )}`,
+    };
+  });
 }
 
 function parseCreditsLink(credits) {
-  const Cast = parseCast(credits).map(actor => ({
-    name: actor,
-    category: "Cast",
-    url: `stremio:///search?search=${encodeURIComponent(actor)}`
-  }));
-  const Director = parseDirector(credits).map(director => ({
-    name: director,
-    category: "Directors",
-    url: `stremio:///search?search=${encodeURIComponent(director)}`
-  }));
-  const Writer = parseWriter(credits).map(writer => ({
-    name: writer,
-    category: "Writers",
-    url: `stremio:///search?search=${encodeURIComponent(writer)}`
-  }));
+  const Cast = parseCast(credits).map((actor) => {
+    return {
+      name: actor,
+      category: "Cast",
+      url: `stremio:///search?search=${encodeURIComponent(actor)}`,
+    };
+  });
+  const Director = parseDirector(credits).map((director) => {
+    return {
+      name: director,
+      category: "Directors",
+      url: `stremio:///search?search=${encodeURIComponent(director)}`,
+    };
+  });
+  const Writer = parseWriter(credits).map((writer) => {
+    return {
+      name: writer,
+      category: "Writers",
+      url: `stremio:///search?search=${encodeURIComponent(writer)}`,
+    };
+  });
   return new Array(...Cast, ...Director, ...Writer);
 }
 
 function parseCoutry(production_countries) {
-  return production_countries.map(({name}) => name).join(", ");
+  return production_countries.map((country) => country.name).join(", ");
 }
 
 function parseGenres(genres) {
-  return genres.map(({name}) => name);
+  return genres.map((el) => {
+    return el.name;
+  });
 }
 
 function parseYear(status, first_air_date, last_air_date) {
@@ -114,16 +133,16 @@ function parseYear(status, first_air_date, last_air_date) {
 
 function parseRunTime(runtime) {
   if (runtime) {
-    const hours = runtime / 60;
-    const rhours = Math.floor(hours);
-    const minutes = (hours - rhours) * 60;
-    const rminutes = Math.round(minutes);
-    return rhours > 0 ? `${rhours}h${rminutes}min` : `${rminutes}min`;
+    var hours = runtime / 60;
+    var rhours = Math.floor(hours);
+    var minutes = (hours - rhours) * 60;
+    var rminutes = Math.round(minutes);
+    return rhours > 0 ? rhours + "h" + rminutes + "min" : rminutes + "min";
   }
 }
 
 function parseCreatedBy(created_by) {
-  return created_by.map(({name}) => name);
+  return created_by.map((el) => el.name);
 }
 
 function parseConfig(catalogChoices) {
@@ -149,7 +168,19 @@ function getRpdbPoster(type, id, language, rpdbkey) {
   }
 }
 
-export default {
+async function checkIfExists(rpdbImage) {
+  return new Promise((resolve) => {
+    urlExists(rpdbImage, (err, exists) => {
+      if (exists) {
+        resolve(true)
+      } else {
+        resolve(false);
+      }
+    })
+  });
+}
+
+module.exports = {
   parseCertification,
   parseCast,
   parseDirector,
@@ -168,4 +199,5 @@ export default {
   parseCreatedBy,
   parseConfig,
   getRpdbPoster,
+  checkIfExists
 };
