@@ -1,3 +1,5 @@
+const urlExists = require("url-exists");
+
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
     (releases) => releases.iso_3166_1 == language.split("-")[1]
