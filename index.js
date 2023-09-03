@@ -1,18 +1,20 @@
-const express = require("express");
-const path = require("path")
+import express from "express";
+import urlExist from "url-exist";
+import path, { dirname } from "path";
+import { fileURLToPath } from 'url';
+import getCatalog from "./lib/getCatalog.js"
+import getSearch from "./lib/getSearch.js";
+import { getManifest, DEFAULT_LANGUAGE } from "./lib/getManifest.js";
+import getMeta from "./lib/getMeta.js";
+import getTmdb from "./lib/getTmdb.js";
+import cacheWrapMeta from "./lib/getCache.js";
+import getTrending from "./lib/getTrending.js";
+import Utils from "./utils/parseProps.js";
 const addon = express();
-const { getCatalog } = require("./lib/getCatalog");
-const { getSearch } = require("./lib/getSearch");
-const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
-const { getMeta } = require("./lib/getMeta");
-const { getTmdb } = require("./lib/getTmdb");
-const { cacheWrapMeta } = require("./lib/getCache");
-const { getTrending } = require("./lib/getTrending");
-const { parseConfig, getRpdbPoster } = require("./utils/parseProps");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const getCacheHeaders = function (opts) {
-  opts = opts || {};
-
+const getCacheHeaders = (opts = {}) => {
   if (!Object.keys(opts).length) return false;
 
   let cacheHeaders = {
@@ -25,13 +27,13 @@ const getCacheHeaders = function (opts) {
     .map((prop) => {
       const value = opts[prop];
       if (!value) return false;
-      return cacheHeaders[prop] + "=" + value;
+      return `${cacheHeaders[prop]}=${value}`;
     })
     .filter((val) => !!val)
     .join(", ");
 };
 
-const respond = function (res, data, opts) {
+const respond = (res, data, opts) => {
   const cacheControl = getCacheHeaders(opts);
   if (cacheControl) res.setHeader("Cache-Control", `${cacheControl}, public`);
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -40,16 +42,16 @@ const respond = function (res, data, opts) {
   res.send(data);
 };
 
-addon.get("/", async function (_, res) {
+addon.get("/", async (_, res) => {
   res.redirect("/configure");
 });
 
-addon.get("/:catalogChoices?/configure", async function (req, res) {
-  res.sendFile(path.join(__dirname + "/configure.html"));
+addon.get("/:catalogChoices?/configure", async (req, res) => {
+  res.sendFile(path.join(`${__dirname}/configure.html`));
 });
 
-addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const config = parseConfig(req.params.catalogChoices);
+addon.get("/:catalogChoices?/manifest.json", async ({ params }, res) => {
+  const config = Utils.parseConfig(params.catalogChoices);
   const language = config.language || DEFAULT_LANGUAGE;
   const manifest = await getManifest(language);
   const cacheOpts = {
@@ -60,15 +62,15 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
   respond(res, manifest, cacheOpts);
 });
 
-addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
-  const { catalogChoices, type, id } = req.params;
-  const config = parseConfig(catalogChoices)
+addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async ({ params, url }, res) => {
+  const { catalogChoices, type, id } = params;
+  const config = Utils.parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
   const include_adult = config.include_adult || false
   const rpdbkey = config.rpdbkey
-  const { genre, skip, search } = req.params.extra
+  const { genre, skip, search } = params.extra
     ? Object.fromEntries(
-      new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
+      new URLSearchParams(url.split("/").pop().split("?")[0].slice(0, -5)).entries()
     )
     : {};
   const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
@@ -77,8 +79,8 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     metas = search
       ? await getSearch(type, language, search, include_adult)
       : id === "tmdb.trending"
-        ? await getTrending(type, id, language, genre, page, include_adult)
-        : await getCatalog(type, id, language, genre, page, include_adult);
+        ? await getTrending(type, id, language, genre, page)
+        : await getCatalog(type, id, language, genre, page);
   } catch (e) {
     res.status(404).send((e || {}).message || "Not found");
     return;
@@ -95,26 +97,25 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     // clone response before changing posters
     try {
       metas = JSON.parse(JSON.stringify(metas));
-      metas.metas = metas.metas.map(el => {
-        el.poster = rpdbkey ? getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey) : el.poster;
+      metas.metas = await Promise.all(metas.metas.map(async (el) => {
+        const rpdbPoster = Utils.getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey)
+        el.poster = (await urlExist(rpdbPoster)) ? rpdbPoster : el.poster;
         return el;
-      })
+      }))
     } catch (e) { }
   }
   respond(res, metas, cacheOpts);
 });
 
-addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
-  const { catalogChoices, type, id } = req.params;
-  const config = parseConfig(catalogChoices);
+addon.get("/:catalogChoices?/meta/:type/:id.json", async ({ params }, res) => {
+  const { catalogChoices, type, id } = params;
+  const config = Utils.parseConfig(catalogChoices);
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
-  const imdbId = req.params.id.split(":")[0];
+  const imdbId = params.id.split(":")[0];
 
-  if (req.params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId)
-    });
+  if (params.id.includes("tmdb:")) {
+    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => await getMeta(type, language, tmdbId));
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60, // 20 days
       staleError: 30 * 24 * 60 * 60, // 30 days
@@ -129,12 +130,10 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     }
     respond(res, resp, cacheOpts);
   }
-  if (req.params.id.includes("tt")) {
+  if (params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId)
-      });
+      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => await getMeta(type, language, tmdbId));
       const cacheOpts = {
         staleRevalidate: 20 * 24 * 60 * 60, // 20 days
         staleError: 30 * 24 * 60 * 60, // 30 days
@@ -154,4 +153,4 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   }
 });
 
-module.exports = addon;
+export default addon;

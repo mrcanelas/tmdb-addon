@@ -3,13 +3,15 @@
   "version": "3.0.10",
   "description": "Metadata provided by TMDB",
   "main": "server.js",
+  "type": "module",
   "dependencies": {
-    "cache-manager": "^3.6.3",
+    "cache-manager": "^5.2.3",
     "cache-manager-mongodb": "^0.3.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "fanart.tv-api": "^2.0.1",
-    "moviedb-promise": "^3.4.1"
+    "moviedb-promise": "^4.0.0",
+    "url-exist": "^3.0.1"
   },
   "scripts": {
     "dev": "nodemon server.js",
