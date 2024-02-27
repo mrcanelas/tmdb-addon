@@ -1,63 +1,78 @@
 [
-    {
-      "tmdbId": "71446",
-      "episodeGroupId": "5eb730dfca7ec6001f7beb51",
-      "name": "Money Heist"
-    },
-    {
-      "tmdbId": "37854",
-      "episodeGroupId": "62f98314175051007c594bdf",
-      "name": "One Piece"
-    },
-    {
-      "tmdbId": "96316",
-      "episodeGroupId": "6320d555d05a03007ede7dc2",
-      "name": "Rent-a-Girlfriend"
-    },
-    {
-      "tmdbId": "79242",
-      "episodeGroupId": "5ca7dd6f0e0a264c8bf0a62e",
-      "name": "Chilling Adventures of Sabrina"
-    },
-    {
-      "tmdbId": "60554",
-      "episodeGroupId": "5b57d247c3a3685c85041004",
-      "name": "Star Wars Rebels"
-    },
-    {
-      "tmdbId": "61374",
-      "episodeGroupId": "5b0e30e092514153bc000c06",
-      "name": "Tokyo Ghoul"
-    },
-    {
-      "tmdbId": "4194",
-      "episodeGroupId": "5b11ba820e0a265847002c6e",
-      "name": "Star Wars: The Clone Wars",
-      "watchOrderOnly": true
-    },
-    {
-      "tmdbId": "46260",
-      "episodeGroupId": "5e4195943dd126001a560100",
-      "name": "Naruto"
-    },
-    {
-      "tmdbId": "31910",
-      "episodeGroupId": "5b42c9aa9251414f570161a1",
-      "name": "Naruto Shippuden"
-    },
-    {
-      "tmdbId": "105009",
-      "episodeGroupId": "63ba5aedfa404600e63aa488",
-      "name": "Tokyo Revengers"
-    },
-    {
-      "tmdbId": "46195",
-      "episodeGroupId": "6224ccddfe077a0043a57f5c",
-      "name": "Bakemonogatari"
-    },
-    {
-      "tmdbId": "95479",
-      "episodeGroupId": "64a3fc4fe9da6900ae2fa807",
-      "name": "Jujutsu Kaisen"
-    }
+  {
+    "tmdbId": "71446",
+    "episodeGroupId": "5eb730dfca7ec6001f7beb51",
+    "name": "Money Heist"
+  },
+  {
+    "tmdbId": "37854",
+    "episodeGroupId": "62f98314175051007c594bdf",
+    "name": "One Piece"
+  },
+  {
+    "tmdbId": "96316",
+    "episodeGroupId": "6320d555d05a03007ede7dc2",
+    "name": "Rent-a-Girlfriend"
+  },
+  {
+    "tmdbId": "79242",
+    "episodeGroupId": "5ca7dd6f0e0a264c8bf0a62e",
+    "name": "Chilling Adventures of Sabrina"
+  },
+  {
+    "tmdbId": "60554",
+    "episodeGroupId": "5b57d247c3a3685c85041004",
+    "name": "Star Wars Rebels"
+  },
+  {
+    "tmdbId": "61374",
+    "episodeGroupId": "5b0e30e092514153bc000c06",
+    "name": "Tokyo Ghoul"
+  },
+  {
+    "tmdbId": "4194",
+    "episodeGroupId": "5b11ba820e0a265847002c6e",
+    "name": "Star Wars: The Clone Wars",
+    "watchOrderOnly": true
+  },
+  {
+    "tmdbId": "46260",
+    "episodeGroupId": "5e4195943dd126001a560100",
+    "name": "Naruto"
+  },
+  {
+    "tmdbId": "31910",
+    "episodeGroupId": "5b42c9aa9251414f570161a1",
+    "name": "Naruto Shippuden"
+  },
+  {
+    "tmdbId": "105009",
+    "episodeGroupId": "63ba5aedfa404600e63aa488",
+    "name": "Tokyo Revengers"
+  },
+  {
+    "tmdbId": "46195",
+    "episodeGroupId": "6224ccddfe077a0043a57f5c",
+    "name": "Bakemonogatari"
+  },
+  {
+    "tmdbId": "95479",
+    "episodeGroupId": "64a3fc4fe9da6900ae2fa807",
+    "name": "Jujutsu Kaisen"
+  },
+  {
+    "tmdbId": "207250",
+    "episodeGroupId": "6599aef421621d0202353f61",
+    "name": "Boku no Kokoro no Yabai Yatsu"
+  },
+  {
+    "tmdbId": "96677",
+    "episodeGroupId": "6074e65418864b00439afa4f",
+    "name": "Lupin"
+  },
+  {
+    "tmdbId": "87093",
+    "episodeGroupId": "5e9e34cdeec5b5001a40e71f",
+    "name": "Family Reunion"
+  }
 ]
