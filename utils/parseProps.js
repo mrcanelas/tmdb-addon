@@ -160,6 +160,12 @@ function parseConfig(catalogChoices) {
   return config;
 }
 
+async function parsePoster(type, id, poster, language, rpdbkey) {
+  const rpdbImage = getRpdbPoster(type, id, language, rpdbkey)
+  const tmdbImage = `https://image.tmdb.org/t/p/w500${poster}`
+  return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
+}
+
 function getRpdbPoster(type, id, language, rpdbkey) {
   const tier = rpdbkey.split("-")[0]
   const lang = language.split("-")[0]
@@ -200,6 +206,7 @@ module.exports = {
   parseRunTime,
   parseCreatedBy,
   parseConfig,
+  parsePoster,
   getRpdbPoster,
   checkIfExists
 };
