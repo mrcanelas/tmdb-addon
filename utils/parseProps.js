@@ -161,9 +161,12 @@ function parseConfig(catalogChoices) {
 }
 
 async function parsePoster(type, id, poster, language, rpdbkey) {
-  const rpdbImage = getRpdbPoster(type, id, language, rpdbkey)
   const tmdbImage = `https://image.tmdb.org/t/p/w500${poster}`
-  return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
+  if(rpdbkey) {
+    const rpdbImage = getRpdbPoster(type, id, language, rpdbkey)
+    return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
+  }
+  return tmdbImage;
 }
 
 function getRpdbPoster(type, id, language, rpdbkey) {
