@@ -1,0 +1,75 @@
+{
+    "en-US": {
+      "popular": "Popular",
+      "year": "Year",
+      "language": "Language",
+      "trending": "Trending"
+    },
+    "pt-BR": {
+      "popular": "Popular",
+      "year": "Ano",
+      "language": "Idioma",
+      "trending": "Tendências"
+    },
+    "es-ES": {
+      "popular": "Popular",
+      "year": "Año",
+      "language": "Idioma",
+      "trending": "Tendencias"
+    },
+    "fr-FR": {
+      "popular": "Populaire",
+      "year": "Année",
+      "language": "Langue",
+      "trending": "Tendances"
+    },
+    "de-DE": {
+      "popular": "Beliebt",
+      "year": "Jahr",
+      "language": "Sprache",
+      "trending": "Im Trend"
+    },
+    "it-IT": {
+      "popular": "Popolare",
+      "year": "Anno",
+      "language": "Lingua",
+      "trending": "Di tendenza"
+    },
+    "ru-RU": {
+      "popular": "Популярное",
+      "year": "Год",
+      "language": "Язык",
+      "trending": "Тренды"
+    },
+    "ja-JP": {
+      "popular": "人気",
+      "year": "年",
+      "language": "言語",
+      "trending": "トレンド"
+    },
+    "zh-CN": {
+      "popular": "热门",
+      "year": "年份",
+      "language": "语言",
+      "trending": "趋势"
+    },
+    "ko-KR": {
+      "popular": "인기",
+      "year": "년도",
+      "language": "언어",
+      "trending": "트렌드"
+    },
+    "hi-IN": {
+      "popular": "लोकप्रिय",
+      "year": "साल",
+      "language": "भाषा",
+      "trending": "प्रवृत्ति"
+    },
+    "ar-SA": {
+      "popular": "شائع",
+      "year": "السنة",
+      "language": "اللغة",
+      "trending": "الشائع"
+    }
+  }
+  

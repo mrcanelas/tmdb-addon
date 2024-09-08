@@ -49,9 +49,9 @@ addon.get("/:catalogChoices?/configure", async function (req, res) {
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const config = parseConfig(req.params.catalogChoices);
-  const language = config.language || DEFAULT_LANGUAGE;
-  const manifest = await getManifest(language);
+  const { catalogChoices } = req.params;
+  const config = parseConfig(catalogChoices);
+  const manifest = await getManifest(config);
   const cacheOpts = {
     cacheMaxAge: 12 * 60 * 60, // 12 hours
     staleRevalidate: 14 * 24 * 60 * 60, // 14 days
