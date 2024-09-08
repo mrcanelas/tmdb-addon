@@ -29,9 +29,8 @@ function parseWriter(credits) {
 }
 
 function parseSlug(type, title, imdb_id) {
-  return `${type}/${title.toLowerCase().replace(/ /g, "-")}-${
-    imdb_id ? imdb_id.replace("tt", "") : ""
-  }`;
+  return `${type}/${title.toLowerCase().replace(/ /g, "-")}-${imdb_id ? imdb_id.replace("tt", "") : ""
+    }`;
 }
 
 function parseTrailers(videos) {
@@ -134,12 +133,17 @@ function parseYear(status, first_air_date, last_air_date) {
 }
 
 function parseRunTime(runtime) {
-  if (runtime) {
-    var hours = runtime / 60;
-    var rhours = Math.floor(hours);
-    var minutes = (hours - rhours) * 60;
-    var rminutes = Math.round(minutes);
-    return rhours > 0 ? rhours + "h" + rminutes + "min" : rminutes + "min";
+  if (runtime === 0 || !runtime) {
+    return "";
+  }
+  
+  const hours = Math.floor(runtime / 60);
+  const minutes = runtime % 60;
+
+  if (runtime > 60) {
+    return hours > 0 ? `${hours}h${minutes}min` : `${minutes}min`;
+  } else {
+    return `${runtime}min`;
   }
 }
 
@@ -151,7 +155,7 @@ function parseConfig(catalogChoices) {
   let config = {}
   try {
     config = JSON.parse(catalogChoices);
-  } catch(e) {
+  } catch (e) {
     if (catalogChoices) {
       // reverse compatibility for old version of config
       config.language = catalogChoices;
@@ -162,7 +166,7 @@ function parseConfig(catalogChoices) {
 
 async function parsePoster(type, id, poster, language, rpdbkey) {
   const tmdbImage = `https://image.tmdb.org/t/p/w500${poster}`
-  if(rpdbkey) {
+  if (rpdbkey) {
     const rpdbImage = getRpdbPoster(type, id, language, rpdbkey)
     return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
   }
@@ -172,7 +176,7 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
 function getRpdbPoster(type, id, language, rpdbkey) {
   const tier = rpdbkey.split("-")[0]
   const lang = language.split("-")[0]
-  if(tier === "t1" || lang === "en") {
+  if (tier === "t1" || lang === "en") {
     return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true`
   } else {
     return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true&lang=${lang}`
