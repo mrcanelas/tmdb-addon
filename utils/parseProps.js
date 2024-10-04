@@ -176,7 +176,7 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
 function getRpdbPoster(type, id, language, rpdbkey) {
   const tier = rpdbkey.split("-")[0]
   const lang = language.split("-")[0]
-  if (tier === "t1" || lang === "en") {
+  if (tier === "t0" || tier === "t1" || lang === "en") {
     return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true`
   } else {
     return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true&lang=${lang}`
