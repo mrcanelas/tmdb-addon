@@ -10,6 +10,7 @@
     "express": "^4.18.2",
     "fanart.tv-api": "^2.0.1",
     "moviedb-promise": "^4.0.7",
+    "transliteration": "^2.3.5",
     "url-exists": "^1.0.3"
   },
   "scripts": {
