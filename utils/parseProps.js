@@ -186,7 +186,7 @@ function parseMedia(el, type, genre_id = []) { // Definindo um valor padrão par
     posterShape: "regular",
     imdbRating: el.vote_average ? el.vote_average.toFixed(1) : 'N/A', // Verifica se existe vote_average
     year: type === 'movie' ? (el.release_date ? el.release_date.substr(0, 4) : "") : (el.first_air_date ? el.first_air_date.substr(0, 4) : ""),
-    type: type,
+    type: type === 'movie' ? type : 'series',
     description: el.overview,
   };
 }
