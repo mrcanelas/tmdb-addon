@@ -236,7 +236,7 @@
       <img src="https://github.com/mrcanelas/tmdb-addon/raw/main/images/logo.png" alt="Logo" />
     </div>
     <h1 class="name">The Movie Database Addon</h1>
-    <h2 class="version">3.0.16</h2>
+    <h2 class="version">3.0.17</h2>
     <h2 class="description">Metadata provided by TMDB.</h2>
     <div class="separator"></div>
     <h3 class="gives">This addon has more :</h3>
@@ -481,6 +481,10 @@
       </select>
     </form>
     <div class="separator"></div>
+    <a id="tmdb-login" class="install-link" href="#">
+      <button>LOGIN WITH TMDB</button>
+    </a>
+    <div class="separator"></div>
     <a id="installLink" class="install-link" href="#">
       <button name="Install">INSTALL</button>
     </a>
@@ -489,6 +493,17 @@
     </div>
   </div>
   <script>
+    async function createSession() {
+      const response = await fetch('/request_token');
+      const requestToken = await response.text();
+
+      document.getElementById("tmdb-login").addEventListener("click", function () {
+        const tmdbAuthUrl = `https://www.themoviedb.org/authenticate/${requestToken}?redirect_to=${window.location.href}`;
+        window.location.href = tmdbAuthUrl;
+      });
+    }
+
+    createSession();
     const arrayIMDB = [
       "tt0016847",
       "tt0049223",
@@ -556,8 +571,18 @@
     installLink.onclick = () => {
       return mainForm.reportValidity();
     };
-    const updateLink = () => {
+
+    const updateLink = async () => {
       const config = Object.fromEntries(new FormData(mainForm));
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestToken = urlParams.get('request_token');
+
+      if (requestToken) {
+        const response = await fetch(`/session_id?request_token=${requestToken}`);
+        const sessionId = await response.text();
+        config.sessionId = sessionId
+      }
+
       installLink.href =
         "stremio://" +
         window.location.host +
@@ -565,6 +590,7 @@
         encodeURIComponent(JSON.stringify(config)) +
         "/manifest.json";
     };
+    
     mainForm.onchange = updateLink;
 
     if (typeof updateLink === "function") updateLink();

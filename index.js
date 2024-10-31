@@ -9,6 +9,8 @@ const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
 const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
+const { getRequestToken, getSessionId } = require("./lib/getSession");
+const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -44,6 +46,17 @@ addon.get("/", async function (_, res) {
   res.redirect("/configure");
 });
 
+addon.get("/request_token", async function (req, res) {
+  const requestToken = await getRequestToken()
+  respond(res, requestToken);
+});
+
+addon.get("/session_id", async function (req, res) {
+  const requestToken = req.query.request_token
+  const sessionId = await getSessionId(requestToken)
+  respond(res, sessionId);
+});
+
 addon.get("/:catalogChoices?/configure", async function (req, res) {
   res.sendFile(path.join(__dirname + "/configure.html"));
 });
@@ -66,6 +79,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const language = config.language || DEFAULT_LANGUAGE;
   const include_adult = config.include_adult || false
   const rpdbkey = config.rpdbkey
+  const sessionId = config.sessionId
   const { genre, skip, search } = req.params.extra
     ? Object.fromEntries(
       new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
@@ -74,11 +88,26 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
   let metas = [];
   try {
-    metas = search
-      ? await getSearch(type, language, search, include_adult)
-      : id === "tmdb.trending"
-        ? await getTrending(type, id, language, genre, page)
-        : await getCatalog(type, id, language, genre, page);
+    const args = [type, language, page];
+
+    if (search) {
+      metas = await getSearch(type, language, search, include_adult);
+    } else {
+      switch (id) {
+        case "tmdb.trending":
+          metas = await getTrending(...args, genre);
+          break;
+        case "tmdb.favorites":
+          metas = await getFavorites(...args, sessionId);
+          break;
+        case "tmdb.watchlist":
+          metas = await getWatchList(...args, sessionId);
+          break;
+        default:
+          metas = await getCatalog(...args, id, genre);
+          break;
+      }
+    }
   } catch (e) {
     res.status(404).send((e || {}).message || "Not found");
     return;
