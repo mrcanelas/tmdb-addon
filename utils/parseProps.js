@@ -172,9 +172,9 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
   return tmdbImage;
 }
 
-function parseMedia(el, type, genre_id = []) { // Definindo um valor padrão para genre_id
+function parseMedia(el, type, genreList = []) {
   const genres = Array.isArray(el.genre_ids) 
-    ? el.genre_ids.map(genre => genre_id.find((x) => x.id === genre)?.name || 'Unknown') // Usando optional chaining e valor padrão
+    ? el.genre_ids.map(genre => genreList.find((x) => x.id === genre)?.name || 'Unknown')
     : [];
 
   return {
@@ -184,7 +184,7 @@ function parseMedia(el, type, genre_id = []) { // Definindo um valor padrão par
     poster: `https://image.tmdb.org/t/p/w500${el.poster_path}`,
     background: `https://image.tmdb.org/t/p/original${el.backdrop_path}`,
     posterShape: "regular",
-    imdbRating: el.vote_average ? el.vote_average.toFixed(1) : 'N/A', // Verifica se existe vote_average
+    imdbRating: el.vote_average ? el.vote_average.toFixed(1) : 'N/A',
     year: type === 'movie' ? (el.release_date ? el.release_date.substr(0, 4) : "") : (el.first_air_date ? el.first_air_date.substr(0, 4) : ""),
     type: type === 'movie' ? type : 'series',
     description: el.overview,
