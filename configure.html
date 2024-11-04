@@ -494,7 +494,8 @@
   </div>
   <script>
     async function createSession() {
-      const response = await fetch('/request_token');
+      const uuid = crypto.randomUUID()
+      const response = await fetch(`/request_token?${uuid}`);
       const requestToken = await response.text();
 
       document.getElementById("tmdb-login").addEventListener("click", function () {
