@@ -10,7 +10,7 @@ To install TMDB Addons just enter the community's addons catalog, search for TMD
 
 You can also do this through this link: [TMDB Addon Page](https://94c8cb9f702d-tmdb-addon.baby-beamup.club/configure)
 
-<img src="https://i.imgur.com/R0sMjGv.png" width="60%">
+<img src="https://i.imgur.com/f9IeLmC.png" width="100%">
 
 # Pros
 
