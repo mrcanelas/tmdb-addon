@@ -94,5 +94,14 @@
     "trending": "الشائع",
     "favorites": "المفضلة",
     "watchlist": "الاهتمامات"
+  },
+  "sr-RS": {
+    "popular": "Популарно",
+    "year": "Година",
+    "language": "Језик",
+    "trending": "У тренду",
+    "favorites": "Омиљени",
+    "watchlist": "Листа за гледање"
   }
+  
 }
