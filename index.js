@@ -113,13 +113,10 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     return;
   }
   const cacheOpts = {
-    cacheMaxAge: 7 * 24 * 60 * 60, // 7 days
-    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-    staleError: 30 * 24 * 60 * 60, // 30 days
+    cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
+    staleRevalidate: 7 * 24 * 60 * 60, // 7 days
+    staleError: 14 * 24 * 60 * 60, // 14 days
   };
-  if (id === "tmdb.trending" && genre === "Day") {
-    cacheOpts.cacheMaxAge = 1 * 24 * 60 * 60; // 1 day
-  }
   if (rpdbkey) {
     // clone response before changing posters
     try {
