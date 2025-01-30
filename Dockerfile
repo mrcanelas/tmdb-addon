@@ -11,14 +11,18 @@ RUN npm run build
 FROM node:16
 
 WORKDIR /app
+
+# Instalar dependências do backend
 COPY ./package.json ./package-lock.json ./
 RUN npm install
-COPY ./ ./
+
+# Copiar o código do backend para o contêiner
+COPY ./server.js ./
 
 # Copiar a build do frontend da etapa anterior
-COPY --from=build-configure /app/configure/build /app/configure/build
+COPY --from=build-frontend /app/configure/build /app/configure/build
 
-# Expor a porta do servidor
+# Expor a porta 7000
 EXPOSE 7000
 
 # Comando para rodar o servidor
