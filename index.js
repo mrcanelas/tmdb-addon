@@ -58,10 +58,9 @@ addon.get("/session_id", async function (req, res) {
 });
 
 addon.use('/configure', express.static(path.join(__dirname, 'configure/dist')));
-addon.use('/assets', express.static(path.join(__dirname, 'configure/dist/assets')));
 
-addon.get(["/configure", "/configure/*"], async function (req, res) {
-  res.sendFile(path.join(__dirname, 'configure/dist/index.html'));
+addon.get("/:catalogChoices?/configure", async function (req, res) {
+  res.sendFile(path.join(__dirname + "/configure.html"));
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
