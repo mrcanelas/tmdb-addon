@@ -1,22 +1,22 @@
 # Etapa 1: Construção do frontend
 FROM node:16 AS build-frontend
 
-WORKDIR /app/frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./
+WORKDIR /app/configure
+COPY ./configure/package.json ./configure/package-lock.json ./
 RUN npm install
-COPY ./frontend ./
+COPY ./configure ./
 RUN npm run build
 
 # Etapa 2: Servir o backend Express com a build do frontend
 FROM node:16
 
-WORKDIR /app/backend
-COPY ./backend/package.json ./backend/package-lock.json ./
+WORKDIR /app
+COPY ./package.json ./package-lock.json ./
 RUN npm install
-COPY ./backend ./
+COPY ./ ./
 
 # Copiar a build do frontend da etapa anterior
-COPY --from=build-frontend /app/frontend/build /app/backend/frontend/build
+COPY --from=build-configure /app/configure/build /app/configure/build
 
 # Expor a porta do servidor
 EXPOSE 7000
