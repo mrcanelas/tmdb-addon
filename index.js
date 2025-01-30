@@ -57,8 +57,11 @@ addon.get("/session_id", async function (req, res) {
   respond(res, sessionId);
 });
 
-addon.get("/:catalogChoices?/configure", async function (req, res) {
-  res.sendFile(path.join(__dirname + "/configure.html"));
+addon.use('/configure', express.static(path.join(__dirname, 'configure/dist')));
+addon.use('/assets', express.static(path.join(__dirname, 'configure/dist/assets')));
+
+addon.get(["/configure", "/configure/*"], async function (req, res) {
+  res.sendFile(path.join(__dirname, 'configure/dist/index.html'));
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
@@ -66,9 +69,9 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
   const config = parseConfig(catalogChoices);
   const manifest = await getManifest(config);
   const cacheOpts = {
-    cacheMaxAge: 12 * 60 * 60, // 12 hours
-    staleRevalidate: 14 * 24 * 60 * 60, // 14 days
-    staleError: 30 * 24 * 60 * 60, // 30 days
+    cacheMaxAge: 12 * 60 * 60,
+    staleRevalidate: 14 * 24 * 60 * 60, 
+    staleError: 30 * 24 * 60 * 60, 
   };
   respond(res, manifest, cacheOpts);
 });
@@ -77,7 +80,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const { catalogChoices, type, id } = req.params;
   const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
-  const include_adult = config.include_adult || false
+  const includeAdult = config.includeAdult || false
   const rpdbkey = config.rpdbkey
   const sessionId = config.sessionId
   const { genre, skip, search } = req.params.extra
@@ -91,7 +94,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     const args = [type, language, page];
 
     if (search) {
-      metas = await getSearch(type, language, search, include_adult);
+      metas = await getSearch(type, language, search, includeAdult);
     } else {
       switch (id) {
         case "tmdb.trending":
@@ -113,12 +116,11 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     return;
   }
   const cacheOpts = {
-    cacheMaxAge: 1 * 24 * 60 * 60, // 1 days
-    staleRevalidate: 7 * 24 * 60 * 60, // 7 days
-    staleError: 14 * 24 * 60 * 60, // 14 days
+    cacheMaxAge: 1 * 24 * 60 * 60, 
+    staleRevalidate: 7 * 24 * 60 * 60,
+    staleError: 14 * 24 * 60 * 60,
   };
   if (rpdbkey) {
-    // clone response before changing posters
     try {
       metas = JSON.parse(JSON.stringify(metas));
       metas.metas = await Promise.all(metas.metas.map(async (el) => {
@@ -144,15 +146,13 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
       return await getMeta(type, language, tmdbId, rpdbkey)
     });
     const cacheOpts = {
-      staleRevalidate: 20 * 24 * 60 * 60, // 20 days
-      staleError: 30 * 24 * 60 * 60, // 30 days
+      staleRevalidate: 20 * 24 * 60 * 60,
+      staleError: 30 * 24 * 60 * 60,
     };
     if (type == "movie") {
-      // cache movies for 14 days:
       cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
     } else if (type == "series") {
       const hasEnded = !!((resp.releaseInfo || "").length > 5);
-      // cache series that ended for 14 days, otherwise 1 day:
       cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
     }
     respond(res, resp, cacheOpts);
@@ -164,15 +164,13 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
         return await getMeta(type, language, tmdbId, rpdbkey)
       });
       const cacheOpts = {
-        staleRevalidate: 20 * 24 * 60 * 60, // 20 days
-        staleError: 30 * 24 * 60 * 60, // 30 days
+        staleRevalidate: 20 * 24 * 60 * 60, 
+        staleError: 30 * 24 * 60 * 60, 
       };
       if (type == "movie") {
-        // cache movies for 14 days:
         cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
       } else if (type == "series") {
         const hasEnded = !!((resp.releaseInfo || "").length > 5);
-        // cache series that ended for 14 days, otherwise 1 day:
         cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
       }
       respond(res, resp, cacheOpts);

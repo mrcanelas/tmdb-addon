@@ -1,0 +1,153 @@
+{
+  "default": {
+    "top": {
+      "nameKey": "popular",
+      "extraSupported": ["genre", "skip", "search"]
+    },
+    "year": {
+      "nameKey": "year",
+      "extraSupported": ["genre", "skip"]
+    },
+    "language": {
+      "nameKey": "language",
+      "extraSupported": ["genre", "skip"]
+    },
+    "trending": {
+      "nameKey": "trending",
+      "extraSupported": ["genre", "skip"],
+      "defaultOptions": ["Day", "Week"]
+    }
+  },
+  "auth": {
+    "favorites": {
+      "nameKey": "favorites",
+      "extraSupported": ["genre", "skip"],
+      "defaultOptions": ["Top"],
+      "requiresAuth": true
+    },
+    "watchlist": {
+      "nameKey": "watchlist",
+      "extraSupported": ["genre", "skip"],
+      "defaultOptions": ["Top"],
+      "requiresAuth": true
+    }
+  },
+  "streaming": {
+    "nfx": {
+      "nameKey": "nfx",
+      "networkId": 213,
+      "watchProviderId": 8,
+      "extraSupported": ["genre", "skip"]
+    },
+    "nfk": {
+      "nameKey": "nfk",
+      "watchProviderId": 175,
+      "extraSupported": ["genre", "skip"]
+    },
+    "hbm": {
+      "nameKey": "hbm",
+      "watchProviderId": 384,
+      "extraSupported": ["genre", "skip"]
+    },
+    "dnp": {
+      "nameKey": "dnp",
+      "watchProviderId": 337,
+      "extraSupported": ["genre", "skip"]
+    },
+    "amp": {
+      "nameKey": "amp",
+      "watchProviderId": 9,
+      "extraSupported": ["genre", "skip"]
+    },
+    "atp": {
+      "nameKey": "atp",
+      "watchProviderId": 350,
+      "extraSupported": ["genre", "skip"]
+    },
+    "pmp": {
+      "nameKey": "pmp",
+      "watchProviderId": 531,
+      "extraSupported": ["genre", "skip"]
+    },
+    "pcp": {
+      "nameKey": "pcp",
+      "watchProviderId": 386,
+      "extraSupported": ["genre", "skip"]
+    },
+    "hlu": {
+      "nameKey": "hlu",
+      "watchProviderId": 15,
+      "extraSupported": ["genre", "skip"]
+    },
+    "cts": {
+      "nameKey": "cts",
+      "watchProviderId": 190,
+      "extraSupported": ["genre", "skip"]
+    },
+    "mgl": {
+      "nameKey": "mgl",
+      "watchProviderId": 551,
+      "extraSupported": ["genre", "skip"]
+    },
+    "cru": {
+      "nameKey": "cru",
+      "watchProviderId": 283,
+      "extraSupported": ["genre", "skip"]
+    },
+    "hay": {
+      "nameKey": "hay",
+      "watchProviderId": 223,
+      "extraSupported": ["genre", "skip"]
+    },
+    "clv": {
+      "nameKey": "clv",
+      "watchProviderId": 167,
+      "extraSupported": ["genre", "skip"]
+    },
+    "gop": {
+      "nameKey": "gop",
+      "watchProviderId": 307,
+      "extraSupported": ["genre", "skip"]
+    },
+    "hst": {
+      "nameKey": "hst",
+      "watchProviderId": 122,
+      "extraSupported": ["genre", "skip"]
+    },
+    "zee": {
+      "nameKey": "zee",
+      "watchProviderId": 232,
+      "extraSupported": ["genre", "skip"]
+    },
+    "nlz": {
+      "nameKey": "nlz",
+      "watchProviderId": 472,
+      "extraSupported": ["genre", "skip"]
+    },
+    "vil": {
+      "nameKey": "vil",
+      "watchProviderId": 72,
+      "extraSupported": ["genre", "skip"]
+    },
+    "sst": {
+      "nameKey": "sst",
+      "watchProviderId": 1773,
+      "extraSupported": ["genre", "skip"]
+    },
+    "blv": {
+      "nameKey": "blv",
+      "watchProviderId": 341,
+      "extraSupported": ["genre", "skip"]
+    },
+    "cpd": {
+      "nameKey": "cpd",
+      "watchProviderId": 381,
+      "extraSupported": ["genre", "skip"]
+    },
+    "dpe": {
+      "nameKey": "dpe",
+      "watchProviderId": 510,
+      "extraSupported": ["genre", "skip"]
+    }
+  }
+}
