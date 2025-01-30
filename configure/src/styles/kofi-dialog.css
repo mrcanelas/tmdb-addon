@@ -1,0 +1,4 @@
+/* Estilo para o dialog do Ko-fi */
+[role="dialog"]:has(#kofiframe) {
+  height: 95vh !important;
+}
