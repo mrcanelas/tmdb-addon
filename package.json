@@ -1,6 +1,6 @@
 {
   "name": "tmdb-addon",
-  "version": "3.1.0",
+  "version": "3.0.18",
   "description": "Metadata provided by TMDB",
   "main": "server.js",
   "dependencies": {
@@ -14,13 +14,8 @@
     "url-exists": "^1.0.3"
   },
   "scripts": {
-    "install:frontend": "cd configure && npm install",
-    "build:configure": "cd configure && npm install && npm run build",
-    "prestart": "npm run install:frontend && npm run build:configure",
-    "start": "node server.js",
-    "dev:configure": "cd configure && npm run dev",
-    "dev:server": "nodemon server.js",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:configure\""
+    "dev": "nodemon server.js",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -38,7 +33,6 @@
   },
   "homepage": "https://github.com/mrcanelas/tmdb-addon#readme",
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "nodemon": "^3.1.4"
   }
 }

@@ -5,30 +5,7 @@
     "language": "Language",
     "trending": "Trending",
     "favorites": "Favorites",
-    "watchlist": "Watchlist",
-    "nfx": "Netflix",
-    "nfk": "Netflix Kids",
-    "hbm": "HBO Max",
-    "dnp": "Disney+",
-    "amp": "Prime Video",
-    "atp": "Apple TV+",
-    "pmp": "Paramount+",
-    "pcp": "Peacock Premium",
-    "hlu": "Hulu",
-    "cts": "Curiosity Stream",
-    "mgl": "MagellanTV",
-    "cru": "Crunchyroll",
-    "hay": "Hayu",
-    "clv": "Clarovideo",
-    "gop": "Globoplay",
-    "hst": "Hotstar",
-    "zee": "Zee5",
-    "nlz": "NLZIET",
-    "vil": "Videoland",
-    "sst": "SkyShowtime",
-    "blv": "BluTV",
-    "cpd": "Canal+",
-    "dpe": "Discovery+"
+    "watchlist": "Watchlist"
   },
   "pt-BR": {
     "popular": "Popular",
@@ -126,4 +103,5 @@
     "favorites": "Омиљени",
     "watchlist": "Листа за гледање"
   }
+  
 }
