@@ -14,8 +14,9 @@
     "url-exists": "^1.0.3"
   },
   "scripts": {
+    "install:frontend": "cd configure && npm install",
     "build:configure": "cd configure && npm install && npm run build",
-    "prestart": "npm run build:configure",
+    "prestart": "npm run install:frontend && npm run build:configure",
     "start": "node server.js",
     "dev:configure": "cd configure && npm run dev",
     "dev:server": "nodemon server.js",
