@@ -7,6 +7,9 @@ RUN npm install
 COPY ./configure ./
 RUN npm run build
 
+# Verifique se a pasta dist foi criada corretamente
+RUN ls -la /app/configure/dist
+
 # Etapa 2: Servir o backend Express com a build do frontend
 FROM node:16
 
@@ -20,7 +23,7 @@ RUN npm install
 COPY ./server.js ./
 
 # Copiar a build do frontend da etapa anterior
-COPY --from=build-frontend /app/configure/build /app/configure/build
+COPY --from=build-frontend /app/configure/dist /app/configure/dist
 
 # Expor a porta 7000
 EXPOSE 7000
