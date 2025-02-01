@@ -42,7 +42,7 @@ const respond = function (res, data, opts) {
   res.send(data);
 };
 
-addon.get("/", async function (_, res) {
+addon.get("/", function (_, res) {
   res.redirect("/configure");
 });
 
@@ -57,10 +57,10 @@ addon.get("/session_id", async function (req, res) {
   respond(res, sessionId);
 });
 
-addon.use('/configure', express.static(path.join(__dirname, 'configure/dist')));
+addon.use(express.static('../dist'));
 
-addon.get("/:catalogChoices?/configure", async function (req, res) {
-  res.sendFile(path.join(__dirname + "/configure.html"));
+addon.get("/:catalogChoices?/configure", function (req, res) {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
