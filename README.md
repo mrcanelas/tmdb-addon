@@ -25,7 +25,7 @@ You can also do this through the source link: [TMDB Addon Page](https://tmdb-add
     <h2>Home</h2>
 </div>
 
-On homepage, you choose the language you want your metadata in. Supported languages are all the languages that themoviedb.org supports. On each homepage visit, you will be greeted with the backdrop of one of the most popular titles by the time you're visiting the website.
+On the homepage, you choose the language you want your metadata in. Supported languages are all the languages that themoviedb.org supports. On each homepage visit, you will be greeted with the backdrop of one of the most popular titles by the time you visit the website.
 
 <br>
 
