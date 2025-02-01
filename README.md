@@ -3,8 +3,10 @@
 </div>
 
 ![TMDB](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg)
+
 <br>
 
+<div align="justify">
 **The Movie Database Addon** was intended to address some deficiencies in Stremio, such as title information in other languages and to add new titles that do not exist in Stremio, as well as improve your experience by connecting to personal TMDB account, but has grown much more. Not to forget, the new design is here : )
 
 <br><br>
@@ -73,6 +75,7 @@ To finish the configuration and use it in your setup you just have to click on t
 <div align="center">
     <h2>1 - Metadata in your language</h2>
 </div>
+<div align="justify">
 Metadata such as title name, poster, description, trailer etc. will be in the language you've chosen during configuration.
 
 <br>
