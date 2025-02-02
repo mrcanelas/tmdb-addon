@@ -46,7 +46,7 @@
     },
     "hbm": {
       "nameKey": "hbm",
-      "watchProviderId": 384,
+      "watchProviderId": 1899,
       "extraSupported": ["genre", "skip"]
     },
     "dnp": {
@@ -56,7 +56,7 @@
     },
     "amp": {
       "nameKey": "amp",
-      "watchProviderId": 9,
+      "watchProviderId": 119,
       "extraSupported": ["genre", "skip"]
     },
     "atp": {
