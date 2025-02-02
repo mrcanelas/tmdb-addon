@@ -6,6 +6,7 @@
   "dependencies": {
     "cache-manager": "^3.6.3",
     "cache-manager-mongodb": "^0.3.0",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "fanart.tv-api": "^1.0.3",
     "moviedb-promise": "^4.0.7",
@@ -32,7 +33,6 @@
   },
   "homepage": "https://github.com/mrcanelas/tmdb-addon#readme",
   "devDependencies": {
-    "dotenv": "^16.4.7",
     "nodemon": "^3.1.4"
   }
 }
