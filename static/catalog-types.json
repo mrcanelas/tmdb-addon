@@ -32,121 +32,143 @@
       "requiresAuth": true
     }
   },
-  "streaming": {
+ "streaming": {
     "nfx": {
       "nameKey": "nfx",
-      "networkId": 213,
       "watchProviderId": 8,
+      "country": "GB",
       "extraSupported": ["genre", "skip"]
     },
     "nfk": {
       "nameKey": "nfk",
       "watchProviderId": 175,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "hbm": {
       "nameKey": "hbm",
       "watchProviderId": 1899,
+      "country": "NL",
       "extraSupported": ["genre", "skip"]
     },
     "dnp": {
       "nameKey": "dnp",
       "watchProviderId": 337,
+      "country": "GB",
       "extraSupported": ["genre", "skip"]
     },
     "amp": {
       "nameKey": "amp",
       "watchProviderId": 119,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "atp": {
       "nameKey": "atp",
       "watchProviderId": 350,
+      "country": "GB",
       "extraSupported": ["genre", "skip"]
     },
     "pmp": {
       "nameKey": "pmp",
       "watchProviderId": 531,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "pcp": {
       "nameKey": "pcp",
       "watchProviderId": 386,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "hlu": {
       "nameKey": "hlu",
       "watchProviderId": 15,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "cts": {
       "nameKey": "cts",
       "watchProviderId": 190,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "mgl": {
       "nameKey": "mgl",
       "watchProviderId": 551,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "cru": {
       "nameKey": "cru",
       "watchProviderId": 283,
+      "country": "US",
       "extraSupported": ["genre", "skip"]
     },
     "hay": {
       "nameKey": "hay",
       "watchProviderId": 223,
+      "country": "GB",
       "extraSupported": ["genre", "skip"]
     },
     "clv": {
       "nameKey": "clv",
       "watchProviderId": 167,
+      "country": "BR",
       "extraSupported": ["genre", "skip"]
     },
     "gop": {
       "nameKey": "gop",
       "watchProviderId": 307,
+      "country": "BR",
       "extraSupported": ["genre", "skip"]
     },
     "hst": {
       "nameKey": "hst",
       "watchProviderId": 122,
+      "country": "IN",
       "extraSupported": ["genre", "skip"]
     },
     "zee": {
       "nameKey": "zee",
       "watchProviderId": 232,
+      "country": "IN",
       "extraSupported": ["genre", "skip"]
     },
     "nlz": {
       "nameKey": "nlz",
       "watchProviderId": 472,
+      "country": "NL",
       "extraSupported": ["genre", "skip"]
     },
     "vil": {
       "nameKey": "vil",
       "watchProviderId": 72,
+      "country": "NL",
       "extraSupported": ["genre", "skip"]
     },
     "sst": {
       "nameKey": "sst",
       "watchProviderId": 1773,
+      "country": "NL",
       "extraSupported": ["genre", "skip"]
     },
     "blv": {
       "nameKey": "blv",
       "watchProviderId": 341,
+      "country": "TR",
       "extraSupported": ["genre", "skip"]
     },
     "cpd": {
       "nameKey": "cpd",
       "watchProviderId": 381,
+      "country": "FR",
       "extraSupported": ["genre", "skip"]
     },
     "dpe": {
       "nameKey": "dpe",
       "watchProviderId": 510,
+      "country": "GB",
       "extraSupported": ["genre", "skip"]
     }
   }
