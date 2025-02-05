@@ -133,5 +133,13 @@
     "trending": "Trendy",
     "favorites": "Ulubione",
     "watchlist": "Do obejrzenia"
+  },
+  "he-IL": {
+    "popular": "פופולרי",
+    "year": "שנה",
+    "language": "שפה",
+    "trending": "טרנדי",
+    "favorites": "מועדפים",
+    "watchlist": "רשימת צפייה"
   }
 }
