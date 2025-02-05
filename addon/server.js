@@ -1,6 +1,6 @@
 // require serverless version
 const addon = require('./index.js')
-const PORT = process.env.PORT || 7000
+const PORT = process.env.PORT
 
 // create local server
 addon.listen(PORT, function () {

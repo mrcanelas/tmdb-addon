@@ -36,7 +36,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/configure/public ./public
 
 # Exposição da porta
-EXPOSE 7000
+EXPOSE 1337
 
 # Comando para iniciar o servidor
 CMD ["node", "addon/server.js"]
