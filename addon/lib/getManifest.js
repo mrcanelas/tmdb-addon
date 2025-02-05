@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
-const package = require("../package.json");
+const packageJson = require("../../package.json");
 const catalogsTranslations = require("../static/translations.json");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 const DEFAULT_LANGUAGE = "en-US";
@@ -139,13 +139,13 @@ async function getManifest(config) {
   const descriptionSuffix = language && language !== DEFAULT_LANGUAGE ? ` with ${language} language.` : ".";
 
   return {
-    id: package.name,
-    version: package.version,
+    id: packageJson.name,
+    version: packageJson.version,
     favicon: "https://github.com/mrcanelas/tmdb-addon/raw/main/images/favicon.png",
     logo: "https://github.com/mrcanelas/tmdb-addon/raw/main/images/logo.png",
     background: "https://github.com/mrcanelas/tmdb-addon/raw/main/images/background.png",
     name: "The Movie Database Addon",
-    description: package.description + descriptionSuffix,
+    description: packageJson.description + descriptionSuffix,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
     idPrefixes: provideImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
