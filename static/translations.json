@@ -125,5 +125,13 @@
     "trending": "У тренду",
     "favorites": "Омиљени",
     "watchlist": "Листа за гледање"
+  },
+  "pl-PL": {
+    "popular": "Popularne",
+    "year": "Rok",
+    "language": "Język",
+    "trending": "Trendy",
+    "favorites": "Ulubione",
+    "watchlist": "Do obejrzenia"
   }
 }
