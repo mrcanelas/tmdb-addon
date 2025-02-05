@@ -42,5 +42,5 @@ export function generateAddonUrl(config: AddonConfig): string {
   // Converter o objeto em string e codificar para URL
   const encodedConfig = encodeURIComponent(JSON.stringify(cleanConfig));
   
-  return `/${encodedConfig}/manifest.json`;
+  return `${window.location.host}/${encodedConfig}/manifest.json`;
 }
