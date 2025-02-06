@@ -59,7 +59,7 @@
     },
     "amp": {
       "nameKey": "amp",
-      "watchProviderId": 119,
+      "watchProviderId": 9,
       "country": "US",
       "extraSupported": ["genre", "skip"]
     },
