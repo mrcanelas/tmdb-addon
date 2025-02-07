@@ -62,7 +62,7 @@ addon.use('/streaming', express.static(path.join(__dirname, '../public/streaming
 
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
 
-addon.get('/configure/*', function (req, res) {
+addon.get('/:catalogChoices?/configure', function (req, res) {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 

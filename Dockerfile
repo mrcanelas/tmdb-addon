@@ -35,8 +35,5 @@ COPY --from=builder /app/dist ./dist
 # Copia a pasta public com as imagens
 COPY --from=builder /app/configure/public ./public
 
-# Exposição da porta
-EXPOSE 1337
-
 # Comando para iniciar o servidor
-CMD ["node", "addon/server.js"]
+ENTRYPOINT ["node", "addon/server.js"]
