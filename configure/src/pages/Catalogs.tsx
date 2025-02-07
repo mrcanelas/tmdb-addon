@@ -1,7 +1,15 @@
 import { useEffect } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
 import { baseCatalogs, authCatalogs, mdblistCatalogs, streamingCatalogs } from "@/data/catalogs";
-import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import { 
+  DndContext, 
+  DragEndEvent, 
+  closestCenter,
+  TouchSensor,
+  MouseSensor,
+  useSensor,
+  useSensors 
+} from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { SortableCatalogCard } from "@/components/SortableCatalogCard";
 
@@ -11,10 +19,15 @@ const CatalogColumn = ({
   catalogConfigs,
   onCatalogChange,
   onDragEnd,
+  sensors
 }) => (
   <div className="flex flex-col gap-6">
     <h2 className="text-lg font-semibold">{title}</h2>
-    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext 
+      sensors={sensors}
+      collisionDetection={closestCenter} 
+      onDragEnd={onDragEnd}
+    >
       <SortableContext
         items={catalogs.map((c) => `${c.id}-${c.type}`)}
         strategy={verticalListSortingStrategy}
@@ -38,6 +51,24 @@ const CatalogColumn = ({
 
 const Catalogs = () => {
   const { sessionId, mdblistkey, streaming, catalogs, setCatalogs } = useConfig();
+
+  // Configuração dos sensores
+  const mouseSensor = useSensor(MouseSensor, {
+    // Aumentar um pouco a distância mínima para evitar cliques acidentais
+    activationConstraint: {
+      distance: 10,
+    },
+  });
+  
+  const touchSensor = useSensor(TouchSensor, {
+    // Configurar um delay para distinguir entre toque e scroll
+    activationConstraint: {
+      delay: 250,
+      tolerance: 5,
+    },
+  });
+
+  const sensors = useSensors(mouseSensor, touchSensor);
 
   useEffect(() => {
     const allCatalogs = [
@@ -107,6 +138,7 @@ const Catalogs = () => {
           catalogConfigs={catalogConfigs}
           onCatalogChange={handleCatalogChange}
           onDragEnd={handleDragEnd}
+          sensors={sensors}
         />
         <CatalogColumn
           title="TV Shows"
@@ -114,6 +146,7 @@ const Catalogs = () => {
           catalogConfigs={catalogConfigs}
           onCatalogChange={handleCatalogChange}
           onDragEnd={handleDragEnd}
+          sensors={sensors}
         />
       </div>
     </main>
