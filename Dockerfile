@@ -1,5 +1,5 @@
 # Etapa de construção do frontend
-FROM node:22-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Etapa de produção
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
@@ -35,5 +35,8 @@ COPY --from=builder /app/dist ./dist
 # Copia a pasta public com as imagens
 COPY --from=builder /app/configure/public ./public
 
+# Exposição da porta
+EXPOSE 1337
+
 # Comando para iniciar o servidor
-ENTRYPOINT ["node", "addon/server.js"]
+ENTRYPOINT ["node", "addon/server.js"] 
