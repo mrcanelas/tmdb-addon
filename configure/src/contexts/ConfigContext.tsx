@@ -1,5 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ConfigContext, type ConfigContextType, type CatalogConfig } from "./config";
+import { 
+  baseCatalogs, 
+  authCatalogs, 
+  mdblistCatalogs, 
+  streamingCatalogs 
+} from "@/data/catalogs";
+
+// Combina todos os catálogos em uma única lista
+const allCatalogs = [
+  ...baseCatalogs,
+  ...authCatalogs,
+  ...mdblistCatalogs,
+  ...Object.values(streamingCatalogs).flat()
+];
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
@@ -14,23 +28,37 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const loadConfigFromUrl = () => {
     try {
-      // Pega o primeiro segmento da URL após o domínio
       const path = window.location.pathname.split('/')[1];
-      
-      // Decodifica a URL
       const decodedConfig = decodeURIComponent(path);
-      
-      // Parse do JSON
       const config = JSON.parse(decodedConfig);
       
-      // Atualiza os estados com as configurações da URL
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
-      if (config.streaming) setStreaming(config.streaming);
-      if (config.catalogs) setCatalogs(config.catalogs);
       
-      // Remove as configurações da URL sem recarregar a página
+      // Adiciona os nomes aos catálogos usando a lista completa
+      if (config.catalogs) {
+        const catalogsWithNames = config.catalogs.map(catalog => {
+          const existingCatalog = allCatalogs.find(
+            c => c.id === catalog.id && c.type === catalog.type
+          );
+          return {
+            ...catalog,
+            name: existingCatalog?.name || catalog.id
+          };
+        });
+        setCatalogs(catalogsWithNames);
+
+        // Extrai os serviços de streaming dos catálogos selecionados
+        const selectedStreamingServices = new Set(
+          catalogsWithNames
+            .filter(catalog => catalog.id.startsWith('streaming.'))
+            .map(catalog => catalog.id.split('.')[1])
+        );
+
+        setStreaming(Array.from(selectedStreamingServices) as string[]);
+      }
+      
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
       console.error('Error loading config from URL:', error);

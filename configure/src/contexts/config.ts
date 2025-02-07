@@ -1,11 +1,11 @@
 import { createContext } from 'react';
 
-export interface CatalogConfig {
+export type CatalogConfig = {
   id: string;
-  type: "movie" | "series";
-  enabled: boolean;
+  type: string;
+  name?: string;
   showInHome: boolean;
-}
+};
 
 export interface ConfigContextType {
   rpdbkey: string;

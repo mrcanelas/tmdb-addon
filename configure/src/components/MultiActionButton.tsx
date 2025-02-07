@@ -11,14 +11,37 @@ import {
 import { generateAddonUrl } from "@/lib/config";
 import { useConfig } from "@/contexts/ConfigContext";
 
-const MultiActionButton = () => {
+export function MultiActionButton() {
   const { toast } = useToast();
-  const config = useConfig();
+  const { 
+    rpdbkey,
+    mdblistkey,
+    includeAdult,
+    provideImdbId,
+    tmdbPrefix,
+    language,
+    sessionId,
+    catalogs 
+  } = useConfig();
   const [currentAction, setCurrentAction] = useState<number>(0);
+
+  const config = {
+    rpdbkey,
+    mdblistkey,
+    includeAdult,
+    provideImdbId,
+    tmdbPrefix,
+    language,
+    sessionId,
+    catalogs: catalogs.map(catalog => ({
+      ...catalog,
+      enabled: true
+    }))
+  };
   
   const handleInstall = () => {
     const url = generateAddonUrl(config);
-    window.location.href = url.replace(/^https?:\/\//, "stremio://");
+    window.location.href = url;
   };
 
   const handleInstallWeb = () => {
@@ -76,6 +99,6 @@ const MultiActionButton = () => {
       </DropdownMenu>
     </div>
   );
-};
+}
 
 export default MultiActionButton;
