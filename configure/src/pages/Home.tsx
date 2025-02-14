@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import packageJson from "../../../package.json";
 
 const languages = [
   { value: "ab-AB", label: "Abkhazian" },
@@ -281,7 +282,7 @@ export default function Home() {
 
           <p className="text-xl sm:text-2xl text-gray-300 mb-8">
             Explore a vast catalog of movies and TV shows with metadata provided by TMDB.
-            Version 3.1.2
+            Version {packageJson.version}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
