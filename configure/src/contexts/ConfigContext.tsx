@@ -15,6 +15,14 @@ const allCatalogs = [
   ...Object.values(streamingCatalogs).flat()
 ];
 
+// Catálogos que devem ser habilitados por padrão
+const defaultCatalogIds = [
+  'tmdb.top',
+  'tmdb.year',
+  'tmdb.language',
+  'tmdb.trending'
+];
+
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
@@ -27,6 +35,16 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [catalogs, setCatalogs] = useState<CatalogConfig[]>([]);
   const [ageRating, setAgeRating] = useState<string | undefined>(undefined);
   const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
+
+  // Função para carregar os catálogos padrão
+  const loadDefaultCatalogs = () => {
+    const defaultCatalogs = baseCatalogs.map(catalog => ({
+      ...catalog,
+      enabled: true,
+      showInHome: true
+    }));
+    setCatalogs(defaultCatalogs);
+  };
 
   const loadConfigFromUrl = () => {
     try {
@@ -59,6 +77,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         );
 
         setStreaming(Array.from(selectedStreamingServices) as string[]);
+      } else {
+        loadDefaultCatalogs(); // Carrega catálogos padrão se não houver na URL
       }
       
       if (config.searchEnabled) setSearchEnabled(config.searchEnabled === "true");
@@ -66,12 +86,18 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
       console.error('Error loading config from URL:', error);
+      loadDefaultCatalogs(); // Carrega catálogos padrão em caso de erro
     }
   };
 
   // Carrega as configurações da URL quando o componente montar
   useEffect(() => {
-    loadConfigFromUrl();
+    const path = window.location.pathname;
+    if (path.includes('configure')) {
+      loadConfigFromUrl();
+    } else {
+      loadDefaultCatalogs();
+    }
   }, []);
 
   const value = {
