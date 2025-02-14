@@ -96,7 +96,7 @@ async function getManifest(config) {
   const tmdbPrefix = config.tmdbPrefix === "true";
   const provideImdbId = config.provideImdbId === "true";
   const sessionId = config.sessionId;
-  const userCatalogs = config.catalogs || [];
+  const userCatalogs = config.catalogs || getDefaultCatalogs();
   const translatedCatalogs = loadTranslations(language);
 
   const years = generateArrayOfYears(20);
@@ -177,6 +177,19 @@ async function getManifest(config) {
     },
     catalogs,
   };
+}
+
+function getDefaultCatalogs() {
+  const defaultTypes = ['movie', 'series'];
+  const defaultCatalogs = Object.keys(CATALOG_TYPES.default);
+  
+  return defaultCatalogs.flatMap(id => 
+    defaultTypes.map(type => ({
+      id: `tmdb.${id}`,
+      type,
+      showInHome: true
+    }))
+  );
 }
 
 module.exports = { getManifest, DEFAULT_LANGUAGE };

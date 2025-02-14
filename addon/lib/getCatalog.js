@@ -3,7 +3,6 @@ const { MovieDb } = require("moviedb-promise");
 const moviedb = new MovieDb(process.env.TMDB_API);
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
-const { getTrending } = require("./getTrending");
 const { parseMedia } = require("../utils/parseProps");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
@@ -22,10 +21,10 @@ async function getCatalog(type, language, page, id, genre, config) {
 
 async function buildParameters(type, language, page, id, genre, genreList, config) {
   const languages = await getLanguages();
-  const parameters = { language, page };
+  const parameters = { language, page, 'vote_count.gte': 10 };;
 
   if (config.ageRating) {
-    switch(config.ageRating) {
+    switch (config.ageRating) {
       case "G":
         parameters.certification_country = "US";
         parameters.certification = type === "movie" ? "G" : "TV-G";
@@ -58,7 +57,7 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
     switch (id) {
       case "tmdb.top":
         parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
-        if (type === "tv") {
+        if (type === "series") {
           parameters.watch_region = language.split("-")[1];
           parameters.with_watch_monetization_types = "flatrate|free|ads|rent|buy";
         }
