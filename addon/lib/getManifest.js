@@ -114,27 +114,49 @@ async function getManifest(config) {
   const filterLanguages = setOrderLanguage(language, languagesArray);
   const options = { years, genres_movie, genres_series, filterLanguages };
 
-  const catalogs = userCatalogs
-  .filter(userCatalog => {
-    const catalogDef = getCatalogDefinition(userCatalog.id);
-    if (!catalogDef) return false;
-    if (catalogDef.requiresAuth && !sessionId) return false;
-    return true;
-  })
-  .map(userCatalog => {
-    const catalogDef = getCatalogDefinition(userCatalog.id);
-    const catalogOptions = getOptionsForCatalog(catalogDef, userCatalog.type, userCatalog.showInHome, options);
-    
-    return createCatalog(
-      userCatalog.id,
-      userCatalog.type,
-      catalogDef,
-      catalogOptions,
-      tmdbPrefix,
-      translatedCatalogs,
-      userCatalog.showInHome
-    );
-  });
+  // Criar catálogos base
+  let catalogs = userCatalogs
+    .filter(userCatalog => {
+      const catalogDef = getCatalogDefinition(userCatalog.id);
+      if (!catalogDef) return false;
+      if (catalogDef.requiresAuth && !sessionId) return false;
+      return true;
+    })
+    .map(userCatalog => {
+      const catalogDef = getCatalogDefinition(userCatalog.id);
+      const catalogOptions = getOptionsForCatalog(catalogDef, userCatalog.type, userCatalog.showInHome, options);
+      
+      return createCatalog(
+        userCatalog.id,
+        userCatalog.type,
+        catalogDef,
+        catalogOptions,
+        tmdbPrefix,
+        translatedCatalogs,
+        userCatalog.showInHome
+      );
+    });
+
+  // Adicionar catálogo de busca se searchEnabled não for false
+  if (config.searchEnabled !== "false") {
+    const searchCatalogMovie = {
+      id: "tmdb.search",
+      type: "movie",
+      name: `${tmdbPrefix ? "TMDB - " : ""}${translatedCatalogs.search}`,
+      pageSize: 20,
+      extra: [{ name: "search" }]
+    };
+
+    const searchCatalogSeries = {
+      id: "tmdb.search",
+      type: "series",
+      name: `${tmdbPrefix ? "TMDB - " : ""}${translatedCatalogs.search}`,
+      pageSize: 20,
+      extra: [{ name: "search" }]
+    };
+
+    catalogs = [...catalogs, searchCatalogMovie, searchCatalogSeries];
+  }
 
   const descriptionSuffix = language && language !== DEFAULT_LANGUAGE ? ` with ${language} language.` : ".";
 

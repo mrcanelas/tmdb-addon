@@ -7,6 +7,7 @@ interface AddonConfig {
   language?: string;
   sessionId?: string;
   ageRating?: string;
+  searchEnabled?: boolean;
   catalogs?: Array<{
     id: string;
     type: string;
@@ -28,7 +29,8 @@ export function generateAddonUrl(config: AddonConfig): string {
     })) || undefined,
     includeAdult: config.includeAdult === true ? "true" : undefined,
     provideImdbId: config.provideImdbId === true ? "true" : undefined,
-    tmdbPrefix: config.tmdbPrefix === true ? "true" : undefined
+    tmdbPrefix: config.tmdbPrefix === true ? "true" : undefined,
+    searchEnabled: config.searchEnabled === false ? "false" : undefined,
   };
 
   // Remover propriedades undefined/null

@@ -26,6 +26,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [streaming, setStreaming] = useState<string[]>([]);
   const [catalogs, setCatalogs] = useState<CatalogConfig[]>([]);
   const [ageRating, setAgeRating] = useState<string | undefined>(undefined);
+  const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
 
   const loadConfigFromUrl = () => {
     try {
@@ -60,6 +61,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         setStreaming(Array.from(selectedStreamingServices) as string[]);
       }
       
+      if (config.searchEnabled) setSearchEnabled(config.searchEnabled === "true");
+      
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
       console.error('Error loading config from URL:', error);
@@ -82,6 +85,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     streaming,
     catalogs,
     ageRating,
+    searchEnabled,
     setRpdbkey,
     setMdblistkey,
     setIncludeAdult,
@@ -92,6 +96,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setStreaming,
     setCatalogs,
     setAgeRating,
+    setSearchEnabled,
     loadConfigFromUrl
   };
 

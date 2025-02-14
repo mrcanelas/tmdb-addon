@@ -7,7 +7,7 @@ export type CatalogConfig = {
   showInHome: boolean;
 };
 
-export interface ConfigContextType {
+export type ConfigContextType = {
   rpdbkey: string;
   mdblistkey: string;
   includeAdult: boolean;
@@ -17,17 +17,20 @@ export interface ConfigContextType {
   sessionId: string;
   streaming: string[];
   catalogs: CatalogConfig[];
-  ageRating: string;
-  setRpdbkey: (value: string) => void;
-  setMdblistkey: (value: string) => void;
-  setIncludeAdult: (value: boolean) => void;
-  setProvideImdbId: (value: boolean) => void;
-  setTmdbPrefix: (value: boolean) => void;
-  setLanguage: (value: string) => void;
-  setSessionId: (value: string) => void;
-  setStreaming: (value: string[]) => void;
-  setCatalogs: (value: CatalogConfig[] | ((prev: CatalogConfig[]) => CatalogConfig[])) => void;
-  setAgeRating: (value: string) => void;
-}
+  ageRating: string | undefined;
+  searchEnabled: boolean;
+  setRpdbkey: (rpdbkey: string) => void;
+  setMdblistkey: (mdblistkey: string) => void;
+  setIncludeAdult: (includeAdult: boolean) => void;
+  setProvideImdbId: (provideImdbId: boolean) => void;
+  setTmdbPrefix: (tmdbPrefix: boolean) => void;
+  setLanguage: (language: string) => void;
+  setSessionId: (sessionId: string) => void;
+  setStreaming: (streaming: string[]) => void;
+  setCatalogs: (catalogs: CatalogConfig[]) => void;
+  setAgeRating: (ageRating: string | undefined) => void;
+  setSearchEnabled: (enabled: boolean) => void;
+  loadConfigFromUrl: () => void;
+};
 
 export const ConfigContext = createContext<ConfigContextType | undefined>(undefined); 

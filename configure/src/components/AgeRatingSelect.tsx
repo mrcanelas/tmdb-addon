@@ -22,7 +22,7 @@ export function AgeRatingSelect() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">Age Rating</label>
+        <label className="text-sm font-semibold mb-1">Age Rating</label>
         <div className="flex items-center text-xs text-muted-foreground">
           <Info className="h-3 w-3 mr-1" />
           Not available for trending catalogs

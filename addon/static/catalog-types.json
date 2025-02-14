@@ -2,7 +2,7 @@
   "default": {
     "top": {
       "nameKey": "popular",
-      "extraSupported": ["genre", "skip", "search"]
+      "extraSupported": ["genre", "skip"]
     },
     "year": {
       "nameKey": "year",

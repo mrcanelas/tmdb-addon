@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useConfig } from "@/contexts/ConfigContext";
 import { AgeRatingSelect } from "@/components/AgeRatingSelect";
+import { SearchToggle } from "@/components/SearchToggle";
 
 const Others = () => {
   const { includeAdult, setIncludeAdult } = useConfig();
@@ -17,20 +18,15 @@ const Others = () => {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <AgeRatingSelect />
-        </Card>
+        <SearchToggle />
         <Card className="flex flex-row items-center justify-between p-6">
           <div className="space-y-0.5">
-            <h2 className="text-sm font-medium">Enable adult content</h2>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-sm font-semibold mb-1">Enable adult content</h1>
+            <p className="text-gray-500 text-sm">
               Include adult content in search results
             </p>
           </div>
-          <Switch
-            checked={includeAdult}
-            onCheckedChange={setIncludeAdult}
-          />
+          <Switch checked={includeAdult} onCheckedChange={setIncludeAdult} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
@@ -38,7 +34,8 @@ const Others = () => {
               Provide IMDB metadata
             </h1>
             <p className="text-gray-500 text-sm">
-              Include IMDB IDs in metadata for better integration with other addons.
+              Include IMDB IDs in metadata for better integration with other
+              addons.
             </p>
           </div>
           <Switch
@@ -48,9 +45,7 @@ const Others = () => {
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold mb-1">
-              Use TMDB prefix
-            </h1>
+            <h1 className="text-sm font-semibold mb-1">Use TMDB prefix</h1>
             <p className="text-gray-500 text-sm">
               Add "TMDB -" prefix to all catalog names for better organization.
             </p>
@@ -59,6 +54,9 @@ const Others = () => {
             checked={tmdbPrefix}
             onCheckedChange={() => setTmdbPrefix(!tmdbPrefix)}
           />
+        </Card>
+        <Card className="p-6">
+          <AgeRatingSelect />
         </Card>
       </div>
     </main>
