@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useConfig } from "@/contexts/ConfigContext";
+import { AgeRatingSelect } from "@/components/AgeRatingSelect";
 
 const Others = () => {
   const { includeAdult, setIncludeAdult } = useConfig();
@@ -16,16 +17,19 @@ const Others = () => {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
+        <Card className="p-6">
+          <AgeRatingSelect />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-6">
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold mb-1">Enable adult content</h1>
-            <p className="text-gray-500 text-sm">
-              Include adult content in search results.
+            <h2 className="text-sm font-medium">Enable adult content</h2>
+            <p className="text-sm text-muted-foreground">
+              Include adult content in search results
             </p>
           </div>
           <Switch
             checked={includeAdult}
-            onCheckedChange={() => setIncludeAdult(!includeAdult)}
+            onCheckedChange={setIncludeAdult}
           />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">

@@ -25,6 +25,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [sessionId, setSessionId] = useState("");
   const [streaming, setStreaming] = useState<string[]>([]);
   const [catalogs, setCatalogs] = useState<CatalogConfig[]>([]);
+  const [ageRating, setAgeRating] = useState<string | undefined>(undefined);
 
   const loadConfigFromUrl = () => {
     try {
@@ -80,6 +81,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     sessionId,
     streaming,
     catalogs,
+    ageRating,
     setRpdbkey,
     setMdblistkey,
     setIncludeAdult,
@@ -89,6 +91,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setSessionId,
     setStreaming,
     setCatalogs,
+    setAgeRating,
     loadConfigFromUrl
   };
 

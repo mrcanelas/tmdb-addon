@@ -7,11 +7,9 @@ const { getTrending } = require("./getTrending");
 const { parseMedia } = require("../utils/parseProps");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
-async function getCatalog(type, language, page, id, genre) {
-  if (id === "tmdb.top" && !genre) return await getTrending(type, language, page, "week");
-
+async function getCatalog(type, language, page, id, genre, config) {
   const genreList = await getGenreList(language, type);
-  const parameters = await buildParameters(type, language, page, id, genre, genreList);
+  const parameters = await buildParameters(type, language, page, id, genre, genreList, config);
 
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
@@ -22,9 +20,32 @@ async function getCatalog(type, language, page, id, genre) {
     .catch(console.error);
 }
 
-async function buildParameters(type, language, page, id, genre, genreList) {
+async function buildParameters(type, language, page, id, genre, genreList, config) {
   const languages = await getLanguages();
-  const parameters = { language, page, 'vote_count.gte': 10 };
+  const parameters = { language, page };
+
+  if (config.ageRating) {
+    switch(config.ageRating) {
+      case "G":
+        parameters.certification_country = "US";
+        parameters.certification = type === "movie" ? "G" : "TV-G";
+        break;
+      case "PG":
+        parameters.certification_country = "US";
+        parameters.certification = type === "movie" ? ["G", "PG"].join("|") : ["TV-G", "TV-PG"].join("|");
+        break;
+      case "PG-13":
+        parameters.certification_country = "US";
+        parameters.certification = type === "movie" ? ["G", "PG", "PG-13"].join("|") : ["TV-G", "TV-PG", "TV-14"].join("|");
+        break;
+      case "R":
+        parameters.certification_country = "US";
+        parameters.certification = type === "movie" ? ["G", "PG", "PG-13", "R"].join("|") : ["TV-G", "TV-PG", "TV-14", "TV-MA"].join("|");
+        break;
+      case "NC-17":
+        break;
+    }
+  }
 
   if (id.includes("streaming")) {
     const provider = findProvider(id.split(".")[1]);

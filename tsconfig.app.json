@@ -9,8 +9,8 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
-    "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
 
@@ -18,13 +18,13 @@
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
 
     "baseUrl": ".",
     "paths": {
       "@/*": ["./configure/src/*"]
-    }
+    },
+    "types": ["vite/client", "react", "react-dom"]
   },
-  "include": ["src"]
+  "include": ["configure/src"]
 }

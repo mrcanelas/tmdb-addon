@@ -82,7 +82,6 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const { catalogChoices, type, id } = req.params;
   const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
-  const includeAdult = config.includeAdult || false
   const rpdbkey = config.rpdbkey
   const sessionId = config.sessionId
   const { genre, skip, search } = req.params.extra
@@ -96,7 +95,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     const args = [type, language, page];
 
     if (search) {
-      metas = await getSearch(type, language, search, includeAdult);
+      metas = await getSearch(type, language, search, config);
     } else {
       switch (id) {
         case "tmdb.trending":
@@ -109,7 +108,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           metas = await getWatchList(...args, sessionId);
           break;
         default:
-          metas = await getCatalog(...args, id, genre);
+          metas = await getCatalog(...args, id, genre, config);
           break;
       }
     }

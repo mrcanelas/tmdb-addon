@@ -8,18 +8,44 @@ function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
 }
 
-async function getSearch(type, language, query, include_adult) {
+async function getSearch(type, language, query, config) {
   let searchQuery = query;
 
   if (isNonLatin(query)) {
     searchQuery = transliterate(query);
   }
 
+  const parameters = {
+    query: searchQuery,
+    language,
+    include_adult: config.includeAdult
+  };
+
+  // Adicionar filtro de classificação etária
+  if (config.ageRating) {
+    parameters.certification_country = "US";
+    switch(config.ageRating) {
+      case "G":
+        parameters.certification = type === "movie" ? "G" : "TV-G";
+        break;
+      case "PG":
+        parameters.certification = type === "movie" ? ["G", "PG"].join("|") : ["TV-G", "TV-PG"].join("|");
+        break;
+      case "PG-13":
+        parameters.certification = type === "movie" ? ["G", "PG", "PG-13"].join("|") : ["TV-G", "TV-PG", "TV-14"].join("|");
+        break;
+      case "R":
+        parameters.certification = type === "movie" ? ["G", "PG", "PG-13", "R"].join("|") : ["TV-G", "TV-PG", "TV-14", "TV-MA"].join("|");
+        break;
+      // NC-17 não tem filtro (mostra tudo)
+    }
+  }
+
   if (type === "movie") {
     const searchMovie = [];
 
     await moviedb
-      .searchMovie({ query, language, include_adult })
+      .searchMovie(parameters)
       .then((res) => {
         res.results.map((el) => {searchMovie.push(parseMedia(el, 'movie'));});
       })
@@ -61,7 +87,7 @@ async function getSearch(type, language, query, include_adult) {
     const searchTv = [];
 
     await moviedb
-      .searchTv({ query, language, include_adult })
+      .searchTv(parameters)
       .then((res) => {
         res.results.map((el) => {searchTv.push(parseMedia(el, 'tv'))});
       })

@@ -21,6 +21,7 @@ export function MultiActionButton() {
     tmdbPrefix,
     language,
     sessionId,
+    ageRating,
     catalogs 
   } = useConfig();
   const [currentAction, setCurrentAction] = useState<number>(0);
@@ -33,6 +34,7 @@ export function MultiActionButton() {
     tmdbPrefix,
     language,
     sessionId,
+    ageRating,
     catalogs: catalogs.map(catalog => ({
       ...catalog,
       enabled: true

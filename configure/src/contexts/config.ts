@@ -17,6 +17,7 @@ export interface ConfigContextType {
   sessionId: string;
   streaming: string[];
   catalogs: CatalogConfig[];
+  ageRating: string;
   setRpdbkey: (value: string) => void;
   setMdblistkey: (value: string) => void;
   setIncludeAdult: (value: boolean) => void;
@@ -26,6 +27,7 @@ export interface ConfigContextType {
   setSessionId: (value: string) => void;
   setStreaming: (value: string[]) => void;
   setCatalogs: (value: CatalogConfig[] | ((prev: CatalogConfig[]) => CatalogConfig[])) => void;
+  setAgeRating: (value: string) => void;
 }
 
 export const ConfigContext = createContext<ConfigContextType | undefined>(undefined); 
