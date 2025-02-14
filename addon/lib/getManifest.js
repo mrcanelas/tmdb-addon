@@ -137,27 +137,6 @@ async function getManifest(config) {
       );
     });
 
-  // Adicionar catálogo de busca se searchEnabled não for false
-  if (config.searchEnabled !== "false") {
-    const searchCatalogMovie = {
-      id: "tmdb.search",
-      type: "movie",
-      name: `${tmdbPrefix ? "TMDB - " : ""}${translatedCatalogs.search}`,
-      pageSize: 20,
-      extra: [{ name: "search" }]
-    };
-
-    const searchCatalogSeries = {
-      id: "tmdb.search",
-      type: "series",
-      name: `${tmdbPrefix ? "TMDB - " : ""}${translatedCatalogs.search}`,
-      pageSize: 20,
-      extra: [{ name: "search" }]
-    };
-
-    catalogs = [...catalogs, searchCatalogMovie, searchCatalogSeries];
-  }
-
   const descriptionSuffix = language && language !== DEFAULT_LANGUAGE ? ` with ${language} language.` : ".";
 
   return {
