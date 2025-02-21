@@ -47,9 +47,9 @@ function createCatalog(id, type, catalogDef, options, tmdbPrefix, translatedCata
         }
         return translatedCatalogs[option] || option;
       });
-      extra.push({ name: "genre", options: formattedOptions });
+      extra.push({ name: "genre", options: formattedOptions, isRequired: showInHome ? false : true });
     } else {
-      extra.push({ name: "genre", options });
+      extra.push({ name: "genre", options, isRequired: showInHome ? false : true });
     }
   }
   if (catalogDef.extraSupported.includes("search")) {
