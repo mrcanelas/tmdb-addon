@@ -43,7 +43,7 @@ export function MultiActionButton() {
   
   const handleInstall = () => {
     const url = generateAddonUrl(config);
-    window.location.href = url;
+    window.location.href = url.replace(/^https?:\/\//, "stremio://");
   };
 
   const handleInstallWeb = () => {
