@@ -40,9 +40,12 @@ function createCatalog(id, type, catalogDef, options, tmdbPrefix, translatedCata
       const formattedOptions = catalogDef.defaultOptions.map(option => {
         if (option.includes('.')) {
           const [field, order] = option.split('.');
-          return `${translatedCatalogs[field]} (${translatedCatalogs[order]})`;
+          if (translatedCatalogs[field] && translatedCatalogs[order]) {
+            return `${translatedCatalogs[field]} (${translatedCatalogs[order]})`;
+          }
+          return option;
         }
-        return translatedCatalogs[option];
+        return translatedCatalogs[option] || option;
       });
       extra.push({ name: "genre", options: formattedOptions });
     } else {
