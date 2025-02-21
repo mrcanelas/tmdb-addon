@@ -79,12 +79,12 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
 });
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
-  const { catalogChoices, type, id } = req.params;
+  const { catalogChoices, type, id, extra } = req.params;
   const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
   const rpdbkey = config.rpdbkey
   const sessionId = config.sessionId
-  const { genre, skip, search } = req.params.extra
+  const { genre, skip, search } = extra
     ? Object.fromEntries(
       new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
     )
@@ -102,10 +102,10 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           metas = await getTrending(...args, genre);
           break;
         case "tmdb.favorites":
-          metas = await getFavorites(...args, sessionId);
+          metas = await getFavorites(...args, genre, sessionId);
           break;
         case "tmdb.watchlist":
-          metas = await getWatchList(...args, sessionId);
+          metas = await getWatchList(...args, genre, sessionId);
           break;
         default:
           metas = await getCatalog(...args, id, genre, config);

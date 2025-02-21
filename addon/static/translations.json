@@ -29,7 +29,13 @@
     "sst": "SkyShowtime",
     "blv": "BluTV",
     "cpd": "Canal+",
-    "dpe": "Discovery+"
+    "dpe": "Discovery+",
+    "added_date": "Date Added",
+    "popularity": "Popularity",
+    "release_date": "Release Date",
+    "random": "Random",
+    "desc": "Newest First",
+    "asc": "Oldest First"
   },
   "pt-BR": {
     "popular": "Popular",
@@ -37,7 +43,13 @@
     "language": "Idioma",
     "trending": "Tendências",
     "favorites": "Favoritos",
-    "watchlist": "Interesses"
+    "watchlist": "Interesses",
+    "added_date": "Data de Adição",
+    "popularity": "Popularidade",
+    "release_date": "Data de Lançamento",
+    "random": "Aleatório",
+    "desc": "Descendente",
+    "asc": "Ascendente"
   },
   "es-ES": {
     "popular": "Popular",

@@ -2,7 +2,7 @@
   "default": {
     "top": {
       "nameKey": "popular",
-      "extraSupported": ["genre", "skip", "search"]
+      "extraSupported": ["genre", "skip"]
     },
     "year": {
       "nameKey": "year",
@@ -22,14 +22,30 @@
     "favorites": {
       "nameKey": "favorites",
       "extraSupported": ["genre", "skip"],
-      "defaultOptions": ["Top"],
-      "requiresAuth": true
+      "requiresAuth": true,
+      "defaultOptions": [
+        "added_date.desc",
+        "added_date.asc",
+        "popularity.desc",
+        "popularity.asc",
+        "release_date.desc",
+        "release_date.asc",
+        "random"
+      ]
     },
     "watchlist": {
       "nameKey": "watchlist",
       "extraSupported": ["genre", "skip"],
-      "defaultOptions": ["Top"],
-      "requiresAuth": true
+      "requiresAuth": true,
+      "defaultOptions": [
+        "added_date.desc",
+        "added_date.asc",
+        "popularity.desc",
+        "popularity.asc",
+        "release_date.desc",
+        "release_date.asc",
+        "random"
+      ]
     }
   },
  "streaming": {
