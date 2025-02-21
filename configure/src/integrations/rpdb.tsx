@@ -16,7 +16,6 @@ export default function RPDB() {
 
   useEffect(() => {
     setTempKey(rpdbkey);
-    // Se tiver uma chave existente, vamos validá-la
     if (rpdbkey) {
       validateRPDBKey(rpdbkey);
     }

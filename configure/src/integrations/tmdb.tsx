@@ -19,7 +19,6 @@ export default function TMDB() {
       const sessionId = await response.text();
       setSessionId(sessionId);
       
-      // Limpa os parâmetros da URL sem mudar a página
       window.history.replaceState({}, '', window.location.pathname);
     } catch (e) {
       console.error(e);

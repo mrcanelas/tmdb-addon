@@ -39,7 +39,7 @@ const CatalogColumn = ({
             catalog={catalog}
             name={catalog.name} 
             config={catalogConfigs[`${catalog.id}-${catalog.type}`]}
-            onChange={(enabled, showInHome) =>
+            onChange={(enabled, showInHome) => 
               onCatalogChange(catalog.id, catalog.type, enabled, showInHome)
             }
           />
@@ -52,16 +52,13 @@ const CatalogColumn = ({
 const Catalogs = () => {
   const { sessionId, mdblistkey, streaming, catalogs, setCatalogs } = useConfig();
 
-  // Configuração dos sensores
   const mouseSensor = useSensor(MouseSensor, {
-    // Aumentar um pouco a distância mínima para evitar cliques acidentais
     activationConstraint: {
       distance: 10,
     },
   });
   
   const touchSensor = useSensor(TouchSensor, {
-    // Configurar um delay para distinguir entre toque e scroll
     activationConstraint: {
       delay: 250,
       tolerance: 5,
@@ -88,13 +85,20 @@ const Catalogs = () => {
 
       return [
         ...prev,
-        ...newCatalogs.map((c) => ({ id: c.id, type: c.type, name: c.name, enabled: true, showInHome: true })),
+        ...newCatalogs.map((c) => ({ 
+          id: c.id, 
+          type: c.type, 
+          name: c.name, 
+          enabled: false,
+          showInHome: false 
+        })),
       ];
     });
   }, [sessionId, mdblistkey, streaming]);
 
   const catalogConfigs = catalogs.reduce((acc, config) => {
-    acc[`${config.id}-${config.type}`] = {
+    const key = `${config.id}-${config.type}`;
+    acc[key] = {
       enabled: config.enabled,
       showInHome: config.showInHome,
     };
@@ -102,13 +106,13 @@ const Catalogs = () => {
   }, {});
 
   const handleCatalogChange = (catalogId, type, enabled, showInHome) => {
-    setCatalogs((prev) =>
-      prev.map((c) =>
+    setCatalogs((prev) => {
+      return prev.map((c) =>
         c.id === catalogId && c.type === type
-          ? { ...c, enabled, showInHome }
+          ? { ...c, enabled: enabled === true, showInHome }
           : c
-      )
-    );
+      );
+    });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {

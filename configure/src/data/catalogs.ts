@@ -11,7 +11,6 @@ export interface Catalog {
   extraRequired?: boolean;
 }
 
-// Catálogos base que sempre estarão disponíveis
 export const baseCatalogs: Catalog[] = [
   { id: "tmdb.top", name: "Popular", type: "movie" },
   { id: "tmdb.top", name: "Popular", type: "series" },
@@ -23,7 +22,6 @@ export const baseCatalogs: Catalog[] = [
   { id: "tmdb.trending", name: "Trending", type: "series" },
 ];
 
-// Catálogos que requerem autenticação
 export const authCatalogs: Catalog[] = [
   { id: "tmdb.favorites", name: "Favorites", type: "movie" },
   { id: "tmdb.favorites", name: "Favorites", type: "series" },
@@ -31,7 +29,6 @@ export const authCatalogs: Catalog[] = [
   { id: "tmdb.watchlist", name: "Watchlist", type: "series" },
 ];
 
-// Catálogos do MDBList
 export const mdblistCatalogs: Catalog[] = [
   { id: "mdblist.lists", name: "MDBList Lists", type: "movie" },
   { id: "mdblist.lists", name: "MDBList Lists", type: "series" },
@@ -41,7 +38,6 @@ export const mdblistCatalogs: Catalog[] = [
   { id: "mdblist.watchlist", name: "MDBList Watchlist", type: "series" },
 ];
 
-// Catálogos de streaming
 export const streamingCatalogs: Record<string, Catalog[]> = {
   nfx: [
     { id: "streaming.nfx", name: "Netflix", type: "movie" },

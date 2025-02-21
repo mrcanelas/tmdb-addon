@@ -5,6 +5,7 @@ export type CatalogConfig = {
   type: string;
   name?: string;
   showInHome: boolean;
+  enabled: boolean;
 };
 
 export type ConfigContextType = {
@@ -27,7 +28,7 @@ export type ConfigContextType = {
   setLanguage: (language: string) => void;
   setSessionId: (sessionId: string) => void;
   setStreaming: (streaming: string[]) => void;
-  setCatalogs: (catalogs: CatalogConfig[]) => void;
+  setCatalogs: (catalogs: CatalogConfig[] | ((prev: CatalogConfig[]) => CatalogConfig[])) => void;
   setAgeRating: (ageRating: string | undefined) => void;
   setSearchEnabled: (enabled: boolean) => void;
   loadConfigFromUrl: () => void;

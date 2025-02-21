@@ -7,20 +7,11 @@ import {
   streamingCatalogs 
 } from "@/data/catalogs";
 
-// Combina todos os catálogos em uma única lista
 const allCatalogs = [
   ...baseCatalogs,
   ...authCatalogs,
   ...mdblistCatalogs,
   ...Object.values(streamingCatalogs).flat()
-];
-
-// Catálogos que devem ser habilitados por padrão
-const defaultCatalogIds = [
-  'tmdb.top',
-  'tmdb.year',
-  'tmdb.language',
-  'tmdb.trending'
 ];
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
@@ -36,7 +27,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [ageRating, setAgeRating] = useState<string | undefined>(undefined);
   const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
 
-  // Função para carregar os catálogos padrão
   const loadDefaultCatalogs = () => {
     const defaultCatalogs = baseCatalogs.map(catalog => ({
       ...catalog,
@@ -56,7 +46,6 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
       
-      // Adiciona os nomes aos catálogos usando a lista completa
       if (config.catalogs) {
         const catalogsWithNames = config.catalogs.map(catalog => {
           const existingCatalog = allCatalogs.find(
@@ -64,12 +53,12 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           );
           return {
             ...catalog,
-            name: existingCatalog?.name || catalog.id
+            name: existingCatalog?.name || catalog.id,
+            enabled: catalog.enabled || false 
           };
         });
         setCatalogs(catalogsWithNames);
 
-        // Extrai os serviços de streaming dos catálogos selecionados
         const selectedStreamingServices = new Set(
           catalogsWithNames
             .filter(catalog => catalog.id.startsWith('streaming.'))
@@ -78,7 +67,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
         setStreaming(Array.from(selectedStreamingServices) as string[]);
       } else {
-        loadDefaultCatalogs(); // Carrega catálogos padrão se não houver na URL
+        loadDefaultCatalogs(); 
       }
       
       if (config.searchEnabled) setSearchEnabled(config.searchEnabled === "true");
@@ -86,11 +75,10 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
       console.error('Error loading config from URL:', error);
-      loadDefaultCatalogs(); // Carrega catálogos padrão em caso de erro
+      loadDefaultCatalogs(); 
     }
   };
 
-  // Carrega as configurações da URL quando o componente montar
   useEffect(() => {
     const path = window.location.pathname;
     if (path.includes('configure')) {

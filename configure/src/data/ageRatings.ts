@@ -72,5 +72,4 @@ export const ageRatings: AgeRating[] = [
   }
 ];
 
-// Ordenar por ordem
 ageRatings.sort((a, b) => a.order - b.order); 

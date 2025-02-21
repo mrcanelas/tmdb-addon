@@ -44,8 +44,8 @@ export function SortableCatalogCard({ catalog, config, onChange, id }: SortableC
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const isEnabled = config?.enabled ?? true;
-  const showInHome = config?.showInHome ?? true;
+  const isEnabled = config?.enabled || false;
+  const showInHome = config?.showInHome || false;
   let integration = getIntegrationInfo(catalog.id);
 
   if (integration.id === "streaming") {
