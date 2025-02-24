@@ -1,121 +1,112 @@
-<div align="center">
-    <h1>The Movie Database Addon</h1>
-</div>
+# TMDB Addon for Stremio
 
 ![TMDB](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg)
 
-<br>
+> A powerful Stremio addon that enhances your streaming experience with TMDB metadata
 
-<div align="justify">
-**The Movie Database Addon** was intended to address some deficiencies in Stremio, such as title information in other languages and to add new titles that do not exist in Stremio, as well as improve your experience by connecting to personal TMDB account, but has grown much more. Not to forget, the new design is here : )
+## 🌟 Features
 
-<br><br>
+- **Multi-language Support**: Get metadata in your preferred language
+- **Extended Catalog**: Access titles not available in Stremio's default catalog
+- **Rich Metadata**: High-quality posters, backgrounds, and detailed information
+- **TMDB Integration**: Connect with your TMDB account for personalized experience
+- **Integrations**: Watchlist Sync, Rating Support, Custom Lists
+- **Modern UI**: Beautiful and intuitive configuration interface
+- **IMDb Support**: Full compatibility with IMDb-based addons
 
-<div align="center">
-    <h1>How to install</h1>
-</div>
+## 📥 Installation
 
-To install TMDB Addons just enter the community's addons catalog, search for TMDB Addon, click on configure, configure the addon as you like and click on install, you will be redirected to Stremio and just click on install. You can find more about addon configuration in the following section.
+### Quick Install
 
-<br>
+1. Visit the [TMDB Addon Configuration Page](https://94c8cb9f702d-tmdb-addon.baby-beamup.club/)
+2. Configure your preferences
+3. Click "Install"
+4. Approve the installation in Stremio
 
-You can also do this through the source link: [TMDB Addon Page](https://tmdb-addon-config-page.vercel.app/)
+## ⚙️ Configuration
 
-<div align="center">
-    <h2>Home</h2>
-</div>
+### Language Settings
+Choose from any language supported by TMDB for your metadata.
 
-On the homepage, you choose the language you want your metadata in. Supported languages are all the languages that themoviedb.org supports. On each homepage visit, you will be greeted with the backdrop of one of the most popular titles by the time you visit the website.
+### Catalog Options
+Customize which catalogs appear on your Stremio:
+- Movies
+  - Popular
+  - Year
+  - Language
+  - Trending
+- TV Shows
+  - Popular
+  - Year
+  - Language
+  - Trending
 
-<br>
+### Integration Features
+- TMDB Account Connection
+- Watchlist Sync
+- Rating Posters Support
+- Custom Lists
 
-![tmdb-addon-config-page vercel app_ (1)](https://github.com/user-attachments/assets/1e0d08b5-a061-43d5-a107-0a8e4dd2235f)
+## 🛠️ Self-Hosting
 
-<div align="center">
-    <h2>Catalogs</h2>
-</div>
-On the catalogs page you choose which catalogs you want displayed on Stremio homescreen and Discover page. The titles are divided into Movies and Shows.
+For detailed instructions on hosting your own instance, check our [Self-Hosting Guide](docs/self-hosting.md).
 
-<br>
+### Quick Start with Docker
+```bash
+docker run -d \
+  --name tmdb-addon \
+  -p 1337:1337 \
+  -e MONGODB_URI=your_mongodb_uri \
+  -e FANART_API=your_fanart_key \
+  -e TMDB_API=your_tmdb_key \
+  -e HOST_NAME=http://your_domain:1337 \
+  mrcanelas/tmdb-addon:latest
+```
 
-![tmdb-addon-config-page vercel app_ (2)](https://github.com/user-attachments/assets/26a80bc8-b7ea-40b1-8f3a-ff12ae9ba41a)
+## 📚 Documentation
 
-<div align="center">
-    <h2>Integrations</h2>
-</div>
-This is a new feature which offers you to connect to one of the provided services and benefit from each of them. Each intergation has it's description in order for you to find out what it does. We will work on integrating more services with the addon in the future.
+- [Self-Hosting Guide](docs/self-hosting.md) - Complete instructions for hosting your own instance
+- [Development Guide](docs/development.md) - Guide for developers and contributors
+- [Contributing Guide](docs/contributing.md) - How to contribute to the project
+- [API Documentation](docs/api.md) - Complete API reference
 
-<br>
+## 🤝 Contributing
 
-![tmdb-addon-config-page vercel app_ (3)](https://github.com/user-attachments/assets/1d051dde-3a71-4059-bfe6-35b266b5ff75)
+We welcome contributions! Please read our [Contributing Guide](docs/contributing.md) to get started.
 
-<div align="center">
-    <h2>Others</h2>
-</div>
-The page which provides you with additional options to fine-tune your experience. 
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/mrcanelas/tmdb-addon.git
 
-<br>
+# Install dependencies
+npm install
 
-![tmdb-addon-config-page vercel app_ (4)](https://github.com/user-attachments/assets/e29d304e-4b67-4d42-8015-f93cec7a67f5)
+# Start development servers
+npm run dev:server  # Backend
+npm run dev         # Frontend
+```
 
-<div align="center">
-    <h2>Cherry on top</h2>
-</div>
-To finish the configuration and use it in your setup you just have to click on the install button and approve the installation in Stremio.
+## ⚖️ License
 
-<br><br>
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🙏 Acknowledgments
 
+- [TMDB](https://www.themoviedb.org/) for providing the metadata
+- [Fanart.tv](https://fanart.tv/) for additional artwork
+- [Stremio](https://www.stremio.com/) for the amazing streaming platform
+- All our [contributors](https://github.com/mrcanelas/tmdb-addon/graphs/contributors)
 
-<div align="center">
-    <h1>Features</h1>
+## ⚠️ Disclaimer
 
+The metadata is provided by [TMDB](https://themoviedb.org/) and is subject to change. We cannot guarantee data validity and are not responsible for any inconveniences caused by invalid or inappropriate metadata.
 
+---
 
-<div align="center">
-    <h2>1 - Metadata in your language</h2>
-</div>
-<div align="justify">
-Metadata such as title name, poster, description, trailer etc. will be in the language you've chosen during configuration.
-
-<br>
-
-<div align="center">
-    <h2>2 - Add titles that do not exist in default Stremio catalog</h2>
-</div>
-
-Many Anime aren't available in Stremio's generic catalog because of a lack of metadata on IMDb's end. With the TMDB add-on, you can access a large number of titles that aren't available on IMDb, not just Anime.
-
-<br>
-
-<div align="center">
-    <h2>3 - Correct all the wrong info</h2>
-</div>
-You are free to correct all the wrong information you can find, just correct the information on the themoviedb.org website and the addon will update automatically.
-
-<br>
-
-<div align="center">
-    <h2>4 - Integrations</h2>
-</div>
-The addon integrates with many services to supercharge your experience.
-
-<br>
-
-<div align="center">
-    <h2>5 - IMDbID support</h2>
-</div>
-Some addons rely on IMDb for thier metadata and that won't be problem with the TMDB Addon, simply enable the option Provide IMDb metadata and relax.
-
-<br><br>
-
-
-
-<div align="center">
-    <h1>Disclaimer</h1>
-</div>
-
-Metadata **is not** provided by us, but by [TMDB](https://themoviedb.org/) and therefore is subject to change. That is the same reason for why we can't guarantee data validity. We are not responsible for any inconveniences caused by invalid or inappropriate metadata.
+<p align="center">
+Made with ❤️ by the TMDB Addon community
+</p>
 
 
 
