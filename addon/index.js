@@ -11,6 +11,11 @@ const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
+const analyticsMiddleware = require('./middleware/analytics.middleware');
+const stats = require('./utils/stats');
+
+addon.use(analyticsMiddleware());
+addon.use(express.static(path.join(__dirname, '../dist')));
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
@@ -57,25 +62,47 @@ addon.get("/session_id", async function (req, res) {
   respond(res, sessionId);
 });
 
-addon.use(express.static(path.join(__dirname, '../dist')));
+addon.get('/api/stats', (req, res) => {
+  respond(res, stats.getStats());
+});
+
 addon.use('/streaming', express.static(path.join(__dirname, '../public/streaming')));
 
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
+
+addon.use('/configure', (req, res, next) => {
+  const config = parseConfig(req.params.catalogChoices);
+  const analytics = require('./utils/analytics');
+  
+  analytics.trackConfigUpdate({
+    language: config.language || DEFAULT_LANGUAGE,
+    catalogs: config.catalogs || [],
+    integrations: {
+      rpdb: !!config.rpdbkey,
+      tmdb: !!config.sessionId
+    }
+  });
+  
+  next();
+});
 
 addon.get('/:catalogChoices?/configure', function (req, res) {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const { catalogChoices } = req.params;
-  const config = parseConfig(catalogChoices);
-  const manifest = await getManifest(config);
-  const cacheOpts = {
-    cacheMaxAge: 12 * 60 * 60,
-    staleRevalidate: 14 * 24 * 60 * 60, 
-    staleError: 30 * 24 * 60 * 60, 
-  };
-  respond(res, manifest, cacheOpts);
+    const { catalogChoices } = req.params;
+    const config = parseConfig(catalogChoices);
+    const manifest = await getManifest(config);
+    
+    stats.trackInstallation(req.ip);
+    
+    const cacheOpts = {
+        cacheMaxAge: 12 * 60 * 60,
+        staleRevalidate: 14 * 24 * 60 * 60, 
+        staleError: 30 * 24 * 60 * 60, 
+    };
+    respond(res, manifest, cacheOpts);
 });
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
