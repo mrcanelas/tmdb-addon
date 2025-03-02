@@ -72,9 +72,6 @@ async function getMeta(type, language, tmdbId, rpdbkey) {
       .tvInfo({id: tmdbId, language, append_to_response: "videos,credits,external_ids",})
       .then(async (res) => {
         const imdbRating = res.external_ids.imdb_id ? await getImdbRating(res.external_ids.imdb_id, type) : res.vote_average.toFixed(1);
-        const validRuntime = Array.isArray(res.episode_run_time)
-          ? res.episode_run_time.find(runtime => runtime && runtime > 0)
-          : null;
         const resp = {
           cast: Utils.parseCast(res.credits),
           country: Utils.parseCoutry(res.production_countries),
@@ -85,7 +82,7 @@ async function getMeta(type, language, tmdbId, rpdbkey) {
           name: res.name,
           poster: await Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
           released: new Date(res.first_air_date),
-          runtime: Utils.parseRunTime(validRuntime),
+          runtime: Utils.parseRunTime(res.last_episode_to_air.runtime),
           status: res.status,
           type: type,
           writer: Utils.parseCreatedBy(res.created_by),
