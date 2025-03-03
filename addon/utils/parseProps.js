@@ -59,7 +59,7 @@ function parseTrailerStream(videos) {
 
 function parseImdbLink(vote_average, imdb_id) {
   return {
-    name: vote_average.toFixed(1),
+    name: vote_average,
     category: "imdb",
     url: `https://imdb.com/title/${imdb_id}`,
   };
