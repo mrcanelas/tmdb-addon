@@ -17,9 +17,7 @@ async function getMeta(type, language, tmdbId, rpdbkey) {
     const meta = await moviedb
       .movieInfo({id: tmdbId, language, append_to_response: "videos,credits",})
       .then(async (res) => {
-        const imdbRating = res.imdb_id
-          ? await getImdbRating(res.imdb_id, type) ?? res.vote_average.toString()
-          : res.vote_average.toString();
+        const imdbRating = (res.external_ids.imdb_id && await getImdbRating(res.external_ids.imdb_id, type)) || res.vote_average.toFixed(1);
         const resp = {
           imdb_id: res.imdb_id,
           cast: Utils.parseCast(res.credits),
@@ -73,9 +71,7 @@ async function getMeta(type, language, tmdbId, rpdbkey) {
     const meta = await moviedb
       .tvInfo({id: tmdbId, language, append_to_response: "videos,credits,external_ids",})
       .then(async (res) => {
-        const imdbRating = res.external_ids.imdb_id
-          ? await getImdbRating(res.external_ids.imdb_id, type) ?? res.vote_average.toString()
-          : res.vote_average.toString();
+        const imdbRating = (res.external_ids.imdb_id && await getImdbRating(res.external_ids.imdb_id, type)) || res.vote_average.toFixed(1);
         const runtime = res.episode_run_time?.[0] ?? res.last_episode_to_air?.runtime ?? res.next_episode_to_air?.runtime ?? null;
         const resp = {
           cast: Utils.parseCast(res.credits),
