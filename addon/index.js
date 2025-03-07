@@ -66,9 +66,7 @@ addon.get('/stats', async (req, res) => {
   try {
       const uniqueUsers = await analytics.getUniqueUserCount();
 
-      res.json({ 
-          uniqueUsers,
-      });
+      res.json(uniqueUsers);
   } catch (error) {
       res.status(500).json({ error: 'Erro ao obter estatísticas' });
   }

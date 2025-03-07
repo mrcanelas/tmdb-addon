@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 
 export function Stats() {
-    const [stats, setStats] = useState({ uniqueInstalls: 0, totalInstalls: 0 });
+    const [stats, setStats] = useState({ uniqueUserCount: 0 });
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch('/api/stats');
+                const response = await fetch('/stats');
                 const data = await response.json();
                 setStats(data);
             } catch (error) {
