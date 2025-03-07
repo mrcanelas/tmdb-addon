@@ -1,3 +1,4 @@
+require('dotenv').config()
 const Mixpanel = require('mixpanel');
 const axios = require('axios');
 
@@ -8,69 +9,19 @@ class Analytics {
     static instance;
     constructor() {
         if (!Analytics.instance) {
+            if (!MIXPANEL_TOKEN) {
+                console.warn("Mixpanel não inicializado: Token não definido.");
+                return;
+            }
+    
             this.mixpanel = Mixpanel.init(MIXPANEL_TOKEN);
             Analytics.instance = this;
         }
         return Analytics.instance;
     }
 
-    // Busca dados históricos do Mixpanel usando a API Export
-    async getHistoricalInstalls() {
-        try {
-            if (!MIXPANEL_API_SECRET) {
-                console.warn('MIXPANEL_API_SECRET não configurados. Dados históricos não disponíveis.');
-                return { uniqueIps: [], totalInstalls: 0 };
-            }
-
-            const endDate = new Date();
-            const startDate = new Date('2011-07-10'); // Data mínima suportada pelo Mixpanel
-
-            const response = await axios.get('https://data-eu.mixpanel.com/api/2.0/export', {
-                params: {
-                    event: JSON.stringify(['Addon Installed']),
-                    from_date: startDate.toISOString().split('T')[0], 
-                    to_date: endDate.toISOString().split('T')[0]
-                },
-                headers: {
-                    'Authorization': `Basic ${Buffer.from(`${MIXPANEL_API_SECRET}`).toString('base64')}`
-                }
-            });
-            
-            const events = response.data.split("\n").filter(line => line).map(line => JSON.parse(line));
-            const uniqueIps = new Set();
-            let totalInstalls = events.length;
-
-            events.forEach(event => {
-                if (event.properties && event.properties.$ip) { // Mixpanel geralmente usa `$ip` ao invés de `ip`
-                    uniqueIps.add(event.properties.$ip);
-                }
-            });
-            
-            console.log(`Dados históricos carregados com sucesso: ${uniqueIps.size} instalações únicas, ${totalInstalls} instalações totais`);
-
-            return {
-                uniqueIps: Array.from(uniqueIps),
-                totalInstalls
-            };
-        } catch (error) {
-            console.error('Erro ao buscar dados do Mixpanel:', error.message);
-        
-            if (error.response) {
-                console.error(`Status: ${error.response.status}`);
-                console.error('Resposta:', error.response.data);
-            } else {
-                console.error('Erro desconhecido:', error);
-            }
-        
-            return { uniqueIps: [], totalInstalls: 0 };
-        }
-        
-    }
-
-    // Track addon installation
     trackInstall(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
     
@@ -80,10 +31,8 @@ class Analytics {
         });
     }
 
-    // Track catalog access
     trackCatalogAccess(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -93,10 +42,8 @@ class Analytics {
         });
     }
 
-    // Track metadata requests
     trackMetadataRequest(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -106,10 +53,8 @@ class Analytics {
         });
     }
 
-    // Track configuration changes
     trackConfigUpdate(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -119,10 +64,8 @@ class Analytics {
         });
     }
 
-    // Track errors
     trackError(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -132,10 +75,8 @@ class Analytics {
         });
     }
 
-    // Track API performance
     trackAPIPerformance(data) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -145,10 +86,8 @@ class Analytics {
         });
     }
 
-    // Track active users
     trackActiveUsers(count) {
         if (!this.mixpanel) {
-            console.warn("Mixpanel não inicializado corretamente.");
             return;
         }
 
@@ -157,6 +96,54 @@ class Analytics {
             timestamp: new Date().toISOString()
         });
     }
+
+    trackUsers(ip) {
+        if (!this.mixpanel) {
+
+            return;
+        }
+    
+        this.mixpanel.people.set(ip, {
+            $last_seen: new Date().toISOString()
+        });
+    
+        this.mixpanel.track('Users', {
+            ip,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    async getUniqueUserCount() {
+        try {
+            if (!MIXPANEL_API_SECRET) {
+                return { uniqueUserCount: 0 };
+            }
+    
+            const endDate = new Date();
+            const startDate = new Date('2011-07-10');
+    
+            const response = await axios.get('https://data-eu.mixpanel.com/api/2.0/export', {
+                params: {
+                    event: JSON.stringify(['Users']),
+                    from_date: startDate.toISOString().split('T')[0],
+                    to_date: endDate.toISOString().split('T')[0]
+                },
+                headers: {
+                    'Authorization': `Basic ${Buffer.from(MIXPANEL_API_SECRET).toString('base64')}`
+                }
+            });
+    
+            const lines = response.data.trim().split('\n');
+            const events = lines.map(line => JSON.parse(line));
+    
+            const uniqueUsers = new Set(events.map(event => event.properties.distinct_id));
+    
+            return { uniqueUserCount: uniqueUsers.size };
+        } catch (error) {
+            console.error('Erro ao buscar usuários únicos:', error.response ? error.response.data : error.message);
+            return { uniqueUserCount: 0 };
+        }
+    }    
 }
 
 module.exports = new Analytics();

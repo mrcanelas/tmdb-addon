@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path")
 const addon = express();
+const analytics = require('./utils/analytics');
 const { getCatalog } = require("./lib/getCatalog");
 const { getSearch } = require("./lib/getSearch");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
@@ -12,7 +13,6 @@ const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProp
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 const analyticsMiddleware = require('./middleware/analytics.middleware');
-const stats = require('./utils/stats');
 
 addon.use(analyticsMiddleware());
 addon.use(express.static(path.join(__dirname, '../dist')));
@@ -62,8 +62,16 @@ addon.get("/session_id", async function (req, res) {
   respond(res, sessionId);
 });
 
-addon.get('/api/stats', (req, res) => {
-  respond(res, stats.getStats());
+addon.get('/stats', async (req, res) => {
+  try {
+      const uniqueUsers = await analytics.getUniqueUserCount();
+
+      res.json({ 
+          uniqueUsers,
+      });
+  } catch (error) {
+      res.status(500).json({ error: 'Erro ao obter estatísticas' });
+  }
 });
 
 addon.use('/streaming', express.static(path.join(__dirname, '../public/streaming')));
@@ -94,8 +102,6 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
     const { catalogChoices } = req.params;
     const config = parseConfig(catalogChoices);
     const manifest = await getManifest(config);
-    
-    stats.trackInstallation(req.ip);
     
     const cacheOpts = {
         cacheMaxAge: 12 * 60 * 60,
