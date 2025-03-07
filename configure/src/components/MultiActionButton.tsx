@@ -13,30 +13,8 @@ import { useConfig } from "@/contexts/ConfigContext";
 
 export function MultiActionButton() {
   const { toast } = useToast();
-  const { 
-    rpdbkey,
-    mdblistkey,
-    includeAdult,
-    provideImdbId,
-    tmdbPrefix,
-    language,
-    sessionId,
-    ageRating,
-    catalogs 
-  } = useConfig();
+  const config = useConfig();
   const [currentAction, setCurrentAction] = useState<number>(0);
-
-  const config = {
-    rpdbkey,
-    mdblistkey,
-    includeAdult,
-    provideImdbId,
-    tmdbPrefix,
-    language,
-    sessionId,
-    ageRating,
-    catalogs: [...catalogs]
-  };
 
   const handleInstall = () => {
     const url = generateAddonUrl(config);
