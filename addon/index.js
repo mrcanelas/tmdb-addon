@@ -1,4 +1,5 @@
 const express = require("express");
+const favicon = require('serve-favicon');
 const path = require("path")
 const addon = express();
 const analytics = require('./utils/analytics');
@@ -16,6 +17,8 @@ const { blurImage } = require('./utils/imageProcessor');
 const analyticsMiddleware = require('./middleware/analytics.middleware');
 
 addon.use(analyticsMiddleware());
+addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
+addon.use(express.static(path.join(__dirname, '../public')));
 addon.use(express.static(path.join(__dirname, '../dist')));
 
 const getCacheHeaders = function (opts) {
@@ -72,8 +75,6 @@ addon.get('/stats', async (req, res) => {
       res.status(500).json({ error: 'Erro ao obter estatísticas' });
   }
 });
-
-addon.use('/streaming', express.static(path.join(__dirname, '../public/streaming')));
 
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
 

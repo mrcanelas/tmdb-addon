@@ -33,7 +33,7 @@ COPY --from=builder /app/addon ./addon
 COPY --from=builder /app/dist ./dist
 
 # Copia a pasta public com as imagens
-COPY --from=builder /app/configure/public ./public
+COPY --from=builder /app/public ./public
 
 # Exposição da porta
 EXPOSE 1337

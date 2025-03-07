@@ -166,9 +166,9 @@ async function getManifest(config) {
   return {
     id: packageJson.name,
     version: packageJson.version,
-    favicon: "https://github.com/mrcanelas/tmdb-addon/raw/main/addon/images/favicon.png",
-    logo: "https://github.com/mrcanelas/tmdb-addon/raw/main/addon/images/logo.png",
-    background: "https://github.com/mrcanelas/tmdb-addon/raw/main/addon/images/background.png",
+    favicon: `${process.env.HOST_NAME}/favicon.png`,
+    logo: `${process.env.HOST_NAME}/logo.png`,
+    background: `${process.env.HOST_NAME}/background.png`,  
     name: "The Movie Database Addon",
     description: packageJson.description + descriptionSuffix,
     resources: ["catalog", "meta"],
