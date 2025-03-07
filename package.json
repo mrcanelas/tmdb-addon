@@ -58,6 +58,7 @@
     "react-dom": "^18.3.1",
     "react-kofi": "^0.0.2",
     "react-router-dom": "^6.26.2",
+    "sharp": "^0.33.5",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "transliteration": "^2.3.5",

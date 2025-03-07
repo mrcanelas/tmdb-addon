@@ -5,6 +5,7 @@ import { AgeRatingSelect } from "@/components/AgeRatingSelect";
 import { SearchToggle } from "@/components/SearchToggle";
 
 const Others = () => {
+  const { hideEpisodeThumbnails, setHideEpisodeThumbnails } = useConfig();
   const { includeAdult, setIncludeAdult } = useConfig();
   const { provideImdbId, setProvideImdbId } = useConfig();
   const { tmdbPrefix, setTmdbPrefix } = useConfig();
@@ -28,6 +29,15 @@ const Others = () => {
           </div>
           <Switch checked={includeAdult} onCheckedChange={setIncludeAdult} />
         </Card>
+        <Card className="flex flex-row items-center justify-between p-6">
+          <div className="space-y-0.5">
+            <label className="text-sm font-semibold mb-1">Hide Episode Thumbnails</label>
+            <p className="text-gray-500 text-sm">
+              Avoid spoilers by hiding episode preview images
+            </p>
+          </div>
+          <Switch checked={hideEpisodeThumbnails} onCheckedChange={setHideEpisodeThumbnails} />
+        </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
             <h1 className="text-sm font-semibold mb-1">
@@ -38,10 +48,7 @@ const Others = () => {
               addons.
             </p>
           </div>
-          <Switch
-            checked={provideImdbId}
-            onCheckedChange={() => setProvideImdbId(!provideImdbId)}
-          />
+          <Switch checked={provideImdbId} onCheckedChange={() => setProvideImdbId(!provideImdbId)} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
@@ -50,10 +57,7 @@ const Others = () => {
               Add "TMDB -" prefix to all catalog names for better organization.
             </p>
           </div>
-          <Switch
-            checked={tmdbPrefix}
-            onCheckedChange={() => setTmdbPrefix(!tmdbPrefix)}
-          />
+          <Switch checked={tmdbPrefix} onCheckedChange={() => setTmdbPrefix(!tmdbPrefix)} />
         </Card>
         <Card className="p-6">
           <AgeRatingSelect />

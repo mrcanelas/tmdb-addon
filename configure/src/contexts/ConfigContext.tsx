@@ -20,6 +20,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
   const [tmdbPrefix, setTmdbPrefix] = useState(false);
+  const [hideEpisodeThumbnails, setHideEpisodeThumbnails] = useState(false);
   const [language, setLanguage] = useState("en-US");
   const [sessionId, setSessionId] = useState("");
   const [streaming, setStreaming] = useState<string[]>([]);
@@ -94,6 +95,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     includeAdult,
     provideImdbId,
     tmdbPrefix,
+    hideEpisodeThumbnails,
     language,
     sessionId,
     streaming,
@@ -105,6 +107,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setIncludeAdult,
     setProvideImdbId,
     setTmdbPrefix,
+    setHideEpisodeThumbnails,
     setLanguage,
     setSessionId,
     setStreaming,

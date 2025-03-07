@@ -12,6 +12,7 @@ const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
+const { blurImage } = require('./utils/imageProcessor');
 const analyticsMiddleware = require('./middleware/analytics.middleware');
 
 addon.use(analyticsMiddleware());
@@ -170,12 +171,14 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const config = parseConfig(catalogChoices);
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey
+  const rpdbkey = config.rpdbkey;
   const imdbId = req.params.id.split(":")[0];
 
   if (req.params.id.includes("tmdb:")) {
     const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId, rpdbkey)
+      return await getMeta(type, language, tmdbId, rpdbkey, {
+        hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
+      });
     });
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60,
@@ -193,11 +196,13 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId, rpdbkey)
+        return await getMeta(type, language, tmdbId, rpdbkey, {
+          hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
+        });
       });
       const cacheOpts = {
-        staleRevalidate: 20 * 24 * 60 * 60, 
-        staleError: 30 * 24 * 60 * 60, 
+        staleRevalidate: 20 * 24 * 60 * 60,
+        staleError: 30 * 24 * 60 * 60,
       };
       if (type == "movie") {
         cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
@@ -209,6 +214,30 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     } else {
       respond(res, { meta: {} });
     }
+  }
+});
+
+addon.get("/api/image/blur", async function (req, res) {
+  const imageUrl = req.query.url;
+  
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'URL da imagem não fornecida' });
+  }
+
+  try {
+    const blurredImageBuffer = await blurImage(imageUrl);
+    
+    if (!blurredImageBuffer) {
+      return res.status(500).json({ error: 'Erro ao processar imagem' });
+    }
+
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    
+    res.send(blurredImageBuffer);
+  } catch (error) {
+    console.error('Erro na rota de blur:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 

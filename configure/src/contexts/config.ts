@@ -14,6 +14,7 @@ export type ConfigContextType = {
   includeAdult: boolean;
   provideImdbId: boolean;
   tmdbPrefix: boolean;
+  hideEpisodeThumbnails: boolean;
   language: string;
   sessionId: string;
   streaming: string[];
@@ -25,6 +26,7 @@ export type ConfigContextType = {
   setIncludeAdult: (includeAdult: boolean) => void;
   setProvideImdbId: (provideImdbId: boolean) => void;
   setTmdbPrefix: (tmdbPrefix: boolean) => void;
+  setHideEpisodeThumbnails: (hideEpisodeThumbnails: boolean) => void;
   setLanguage: (language: string) => void;
   setSessionId: (sessionId: string) => void;
   setStreaming: (streaming: string[]) => void;

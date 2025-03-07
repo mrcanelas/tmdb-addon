@@ -12,7 +12,7 @@ const blacklistLogoUrls = [
   "https://assets.fanart.tv/fanart/tv/0/hdtvlogo/-60a02798b7eea.png",
 ];
 
-async function getMeta(type, language, tmdbId, rpdbkey) {
+async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
   if (type === "movie") {
     const meta = await moviedb
       .movieInfo({id: tmdbId, language, append_to_response: "videos,credits",})
@@ -120,7 +120,13 @@ async function getMeta(type, language, tmdbId, rpdbkey) {
           resp.logo = resp.logo.replace("http://", "https://")
         }
         try {
-          resp.videos = await getEpisodes(language, tmdbId, res.external_ids.imdb_id, res.seasons);
+          resp.videos = await getEpisodes(
+            language, 
+            tmdbId, 
+            res.external_ids.imdb_id, 
+            res.seasons,
+            { hideEpisodeThumbnails: config.hideEpisodeThumbnails }
+          );
         } catch(e) {
           console.log(`warning: episodes could not be retrieved for ${tmdbId} - ${type}`);
           console.log((e || {}).message || "unknown error");

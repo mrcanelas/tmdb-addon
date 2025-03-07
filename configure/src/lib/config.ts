@@ -4,6 +4,7 @@ interface AddonConfig {
   includeAdult?: boolean;
   provideImdbId?: boolean;
   tmdbPrefix?: boolean;
+  hideEpisodeThumbnails?: boolean;
   language?: string;
   sessionId?: string;
   ageRating?: string;
@@ -32,6 +33,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     includeAdult: config.includeAdult === true ? "true" : undefined,
     provideImdbId: config.provideImdbId === true ? "true" : undefined,
     tmdbPrefix: config.tmdbPrefix === true ? "true" : undefined,
+    hideEpisodeThumbnails: config.hideEpisodeThumbnails === true ? "true" : undefined,
     searchEnabled: config.searchEnabled === false ? "false" : undefined,
   };
 
