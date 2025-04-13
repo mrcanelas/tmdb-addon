@@ -14,9 +14,22 @@ const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProp
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 const { blurImage } = require('./utils/imageProcessor');
-const analyticsMiddleware = require('./middleware/analytics.middleware');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const requestIp = require('request-ip');
 
-addon.use(analyticsMiddleware());
+const router = express.Router();
+router.use(cors());
+
+const limiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 300,
+    headers: false,
+    keyGenerator: (req) => requestIp.getClientIp(req)
+});
+
+router.use(limiter);
+addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
 addon.use(express.static(path.join(__dirname, '../public')));
 addon.use(express.static(path.join(__dirname, '../dist')));
@@ -66,31 +79,10 @@ addon.get("/session_id", async function (req, res) {
   respond(res, sessionId);
 });
 
-addon.get('/stats', async (req, res) => {
-  try {
-      const uniqueUsers = await analytics.getUniqueUserCount();
-
-      res.json(uniqueUsers);
-  } catch (error) {
-      res.status(500).json({ error: 'Erro ao obter estatísticas' });
-  }
-});
-
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
 
 addon.use('/configure', (req, res, next) => {
   const config = parseConfig(req.params.catalogChoices);
-  const analytics = require('./utils/analytics');
-  
-  analytics.trackConfigUpdate({
-    language: config.language || DEFAULT_LANGUAGE,
-    catalogs: config.catalogs || [],
-    integrations: {
-      rpdb: !!config.rpdbkey,
-      tmdb: !!config.sessionId
-    }
-  });
-  
   next();
 });
 
@@ -240,6 +232,23 @@ addon.get("/api/image/blur", async function (req, res) {
     console.error('Erro na rota de blur:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
+});
+
+addon.get('/stats', async (req, res) => {
+    try {
+        const [uniqueUsers, swaggerStats] = await Promise.all([
+            analytics.getUniqueUsers(),
+            analytics.getStats()
+        ]);
+        
+        res.json({
+            ...uniqueUsers,
+            ...swaggerStats
+        });
+    } catch (error) {
+        console.error('Erro ao obter estatísticas:', error);
+        res.status(500).json({ error: 'Erro ao obter estatísticas' });
+    }
 });
 
 module.exports = addon;

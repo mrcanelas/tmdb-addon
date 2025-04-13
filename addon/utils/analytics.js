@@ -1,149 +1,193 @@
-require('dotenv').config()
-const Mixpanel = require('mixpanel');
-const axios = require('axios');
-
-const MIXPANEL_TOKEN = process.env.MIXPANEL_TOKEN || '';
-const MIXPANEL_API_SECRET = process.env.MIXPANEL_API_SECRET || '';
+require('dotenv').config();
+const swaggerStats = require('swagger-stats');
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const packageJson = require("../../package.json");
 
 class Analytics {
     static instance;
     constructor() {
         if (!Analytics.instance) {
-            if (!MIXPANEL_TOKEN) {
-                console.warn("Mixpanel não inicializado: Token não definido.");
-                return;
+            this.app = express();
+            
+            // Validar URI do MongoDB
+            const mongodbUri = process.env.MONGODB_METRICS;
+            if (!mongodbUri || !mongodbUri.startsWith('mongodb://') && !mongodbUri.startsWith('mongodb+srv://')) {
+                throw new Error('URI do MongoDB inválida ou não configurada. Verifique a variável de ambiente MONGODB_METRICS');
             }
-    
-            this.mixpanel = Mixpanel.init(MIXPANEL_TOKEN);
+
+            this.middleware = swaggerStats.getMiddleware({
+                name: 'TMDB Addon',
+                version: '3.1.3',
+                timelineBucketDuration: 60000,
+                uriPath: '/stats/ui',
+                authentication: false,
+                onAuthenticate: (req, username, password) => {
+                    return true;
+                },
+                elasticsearch: false,
+                mongodb: {
+                    uri: mongodbUri,
+                    collectionPrefix: 'stats_'
+                },
+                swaggerSpec: {
+                    info: {
+                        title: 'TMDB Addon API',
+                        version: '3.1.3'
+                    }
+                }
+            });
+            this.app.use(this.middleware);
+            
+            // Configurar conexão com MongoDB
+            this.client = new MongoClient(mongodbUri, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            });
+            
+            // Conectar ao MongoDB e criar coleção se não existir
+            this.client.connect().then(async () => {
+                const db = this.client.db();
+                const collections = await db.listCollections().toArray();
+                const collectionExists = collections.some(c => c.name === 'stats_requests');
+                
+                if (!collectionExists) {
+                    console.log('Criando coleção stats_requests...');
+                    await db.createCollection('stats_requests');
+                    // Inserir um documento vazio para inicializar a coleção
+                    await db.collection('stats_requests').insertOne({
+                        ip: '127.0.0.1',
+                        ts: new Date(),
+                        status: 200
+                    });
+                }
+            }).catch(err => {
+                console.error('Erro ao conectar ao MongoDB:', err);
+            });
+            
             Analytics.instance = this;
         }
         return Analytics.instance;
     }
 
-    trackInstall(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-    
-        this.mixpanel.track('Addon Installed', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackCatalogAccess(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('Catalog Accessed', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackMetadataRequest(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('Metadata Requested', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackConfigUpdate(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('Configuration Updated', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackError(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('Error Occurred', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackAPIPerformance(data) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('API Performance', {
-            ...data,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackActiveUsers(count) {
-        if (!this.mixpanel) {
-            return;
-        }
-
-        this.mixpanel.track('Active Users', {
-            count,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    trackUsers(ip) {
-        if (!this.mixpanel) {
-
-            return;
-        }
-    
-        this.mixpanel.people.set(ip, {
-            $last_seen: new Date().toISOString()
-        });
-    
-        this.mixpanel.track('Users', {
-            ip,
-            timestamp: new Date().toISOString()
-        });
-    }
-
-    async getUniqueUserCount() {
+    async getUniqueUsers() {
         try {
-            if (!MIXPANEL_API_SECRET) {
+            if (!this.client) {
+                console.error('Cliente MongoDB não está inicializado');
                 return { uniqueUserCount: 0 };
             }
-    
-            const endDate = new Date();
-            const startDate = new Date('2011-07-10');
-    
-            const response = await axios.get('https://data-eu.mixpanel.com/api/2.0/export', {
-                params: {
-                    event: JSON.stringify(['Users']),
-                    from_date: startDate.toISOString().split('T')[0],
-                    to_date: endDate.toISOString().split('T')[0]
+
+            const db = this.client.db();
+            const collection = db.collection('stats_requests');
+            
+            // Verificar se a coleção existe
+            const collections = await db.listCollections().toArray();
+            const collectionExists = collections.some(c => c.name === 'stats_requests');
+            
+            if (!collectionExists) {
+                console.log('Coleção stats_requests não existe ainda');
+                return { uniqueUserCount: 0 };
+            }
+
+            const result = await collection.aggregate([
+                {
+                    $group: {
+                        _id: "$ip",
+                        lastSeen: { $max: "$ts" }
+                    }
                 },
-                headers: {
-                    'Authorization': `Basic ${Buffer.from(MIXPANEL_API_SECRET).toString('base64')}`
+                {
+                    $count: "uniqueUserCount"
                 }
-            });
-    
-            const lines = response.data.trim().split('\n');
-            const events = lines.map(line => JSON.parse(line));
-    
-            const uniqueUsers = new Set(events.map(event => event.properties.distinct_id));
-    
-            return { uniqueUserCount: uniqueUsers.size };
+            ]).toArray();
+
+            return { uniqueUserCount: result[0]?.uniqueUserCount || 0 };
         } catch (error) {
-            console.error('Erro ao buscar usuários únicos:', error.response ? error.response.data : error.message);
+            console.error('Erro ao obter usuários únicos:', error);
             return { uniqueUserCount: 0 };
         }
-    }    
+    }
+
+    async getStats() {
+        try {
+            if (!this.client) {
+                console.error('Cliente MongoDB não está inicializado');
+                return {
+                    requests: { total: 0 },
+                    responses: { '2xx': 0, '4xx': 0, '5xx': 0 },
+                    timeline: { last60: 0 }
+                };
+            }
+
+            const db = this.client.db();
+            const collection = db.collection('stats_requests');
+            
+            // Verificar se a coleção existe
+            const collections = await db.listCollections().toArray();
+            const collectionExists = collections.some(c => c.name === 'stats_requests');
+            
+            if (!collectionExists) {
+                console.log('Coleção stats_requests não existe ainda');
+                return {
+                    requests: { total: 0 },
+                    responses: { '2xx': 0, '4xx': 0, '5xx': 0 },
+                    timeline: { last60: 0 }
+                };
+            }
+
+            const stats = await collection.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalRequests: { $sum: 1 },
+                        successRequests: {
+                            $sum: {
+                                $cond: [{ $gte: ["$status", 200] }, 1, 0]
+                            }
+                        },
+                        errorRequests: {
+                            $sum: {
+                                $cond: [{ $gte: ["$status", 400] }, 1, 0]
+                            }
+                        },
+                        last60: {
+                            $sum: {
+                                $cond: [
+                                    { $gte: ["$ts", new Date(Date.now() - 60000)] },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]).toArray();
+
+            const result = stats[0] || {
+                totalRequests: 0,
+                successRequests: 0,
+                errorRequests: 0,
+                last60: 0
+            };
+
+            return {
+                requests: { total: result.totalRequests },
+                responses: {
+                    '2xx': result.successRequests,
+                    '4xx': result.errorRequests,
+                    '5xx': 0
+                },
+                timeline: { last60: result.last60 }
+            };
+        } catch (error) {
+            console.error('Erro ao obter estatísticas:', error);
+            return {
+                requests: { total: 0 },
+                responses: { '2xx': 0, '4xx': 0, '5xx': 0 },
+                timeline: { last60: 0 }
+            };
+        }
+    }
 }
 
-module.exports = new Analytics();
+module.exports = new Analytics(); 
