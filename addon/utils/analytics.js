@@ -17,15 +17,15 @@ class Analytics {
             }
 
             this.middleware = swaggerStats.getMiddleware({
-                name: 'TMDB Addon',
-                version: '3.1.3',
+                name: packageJson.name,
+                version: packageJson.version,
                 timelineBucketDuration: 60000,
                 uriPath: '/stats/ui',
-                authentication: false,
+                authentication: true,
                 onAuthenticate: (req, username, password) => {
-                    return true;
+                  return username === process.env.METRICS_USER
+                      && password === process.env.METRICS_PASSWORD
                 },
-                elasticsearch: false,
                 mongodb: {
                     uri: mongodbUri,
                     collectionPrefix: 'stats_'
@@ -33,7 +33,7 @@ class Analytics {
                 swaggerSpec: {
                     info: {
                         title: 'TMDB Addon API',
-                        version: '3.1.3'
+                        version: packageJson.version
                     }
                 }
             });
