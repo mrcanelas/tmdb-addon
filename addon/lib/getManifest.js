@@ -161,7 +161,14 @@ async function getManifest(config) {
     catalogs = [...catalogs, searchCatalogMovie, searchCatalogSeries];
   }
 
-  const descriptionSuffix = language && language !== DEFAULT_LANGUAGE ? ` with ${language} language.` : ".";
+  const activeConfigs = [
+    `Language: ${language}`,
+    `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
+    `IMDb Integration: ${provideImdbId ? 'Enabled' : 'Disabled'}`,
+    `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,
+    `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
+    `Active Catalogs: ${catalogs.length}`
+  ].join(' | ');
 
   return {
     id: packageJson.name,
@@ -170,7 +177,7 @@ async function getManifest(config) {
     logo: `${process.env.HOST_NAME}/logo.png`,
     background: `${process.env.HOST_NAME}/background.png`,  
     name: "The Movie Database Addon",
-    description: packageJson.description + descriptionSuffix,
+    description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
     idPrefixes: provideImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
