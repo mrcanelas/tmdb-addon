@@ -14,21 +14,7 @@ const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProp
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 const { blurImage } = require('./utils/imageProcessor');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
-const requestIp = require('request-ip');
 
-const router = express.Router();
-router.use(cors());
-
-const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 300,
-    headers: false,
-    keyGenerator: (req) => requestIp.getClientIp(req)
-});
-
-router.use(limiter);
 addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
 addon.use(express.static(path.join(__dirname, '../public')));
