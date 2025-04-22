@@ -1,45 +1,34 @@
-const cacheManager = require('cache-manager');
-const mangodbStore = require('cache-manager-mongodb');
+const Redis = require('ioredis');
 
 const GLOBAL_KEY_PREFIX = 'tmdb-addon';
 const META_KEY_PREFIX = `${GLOBAL_KEY_PREFIX}|meta`;
 const CATALOG_KEY_PREFIX = `${GLOBAL_KEY_PREFIX}|catalog`;
 
-const META_TTL = process.env.META_TTL || 7 * 24 * 60 * 60; // 7 day
-const CATALOG_TTL = process.env.CATALOG_TTL || 1 * 24 * 60 * 60; // 1 day
+const META_TTL = parseInt(process.env.META_TTL || `${7 * 24 * 60 * 60}`); // 7 days
+const CATALOG_TTL = parseInt(process.env.CATALOG_TTL || `${1 * 24 * 60 * 60}`); // 1 day
 
-const MONGO_URI = process.env.MONGODB_URI;
-const NO_CACHE = process.env.NO_CACHE || false;
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const NO_CACHE = process.env.NO_CACHE === 'true';
 
-const cache = initiateCache();
+const redis = NO_CACHE ? null : new Redis(REDIS_URL);
 
-function initiateCache() {
-  if (NO_CACHE) {
-    return null;
-  } else if (!NO_CACHE && MONGO_URI) {
-    return cacheManager.caching({
-      store: mangodbStore,
-      uri: MONGO_URI,
-      options: {
-        collection: 'tmdb_collection',
-        ttl: META_TTL
-      },
-      ttl: META_TTL,
-      ignoreCacheErrors: true
-    });
-  } else {
-    return cacheManager.caching({
-      store: 'memory',
-      ttl: META_TTL
-    });
-  }
-}
-
-function cacheWrap(key, method, options) {
-  if (NO_CACHE || !cache) {
+async function cacheWrap(key, method, options) {
+  if (NO_CACHE || !redis) {
     return method();
   }
-  return cache.wrap(key, method, options);
+
+  const cached = await redis.get(key);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (err) {
+      console.error(`Error parsing cache key: ${key}`, err);
+    }
+  }
+
+  const result = await method();
+  await redis.set(key, JSON.stringify(result), 'EX', options.ttl);
+  return result;
 }
 
 function cacheWrapCatalog(id, method) {
