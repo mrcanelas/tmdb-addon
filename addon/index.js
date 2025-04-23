@@ -44,7 +44,7 @@ const getCacheHeaders = function (opts) {
 
 const respond = function (res, data, opts) {
   const cacheControl = getCacheHeaders(opts);
-  if (cacheControl) res.setHeader("Cache-Control", ${cacheControl}, public);
+  if (cacheControl) res.setHeader("Cache-Control", `${cacheControl}, public`);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
   res.setHeader("Content-Type", "application/json");
@@ -175,7 +175,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   console.log("🧠 /meta route hit", { id, type, tmdbId, imdbId });
 
   if (id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(${language}:${type}:${tmdbId}, async () => {
+    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId, rpdbkey, {
         hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
       });
@@ -189,7 +189,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   } else if (id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
-      const resp = await cacheWrapMeta(${language}:${type}:${tmdbId}, async () => {
+      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
         return await getMeta(type, language, tmdbId, rpdbkey, {
           hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
         });
@@ -245,3 +245,4 @@ addon.get('/stats', async (req, res) => {
 });
 
 module.exports = addon;
+
