@@ -65,7 +65,6 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey) => {
 
   return {
     imdb_id: res.imdb_id,
-    cast: Utils.parseCast(res.credits),
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
     director: Utils.parseDirector(res.credits),
@@ -90,7 +89,10 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey) => {
       defaultVideoId: res.imdb_id ? res.imdb_id : `tmdb:${res.id}`,
       hasScheduledVideos: false
     },
-    logo: processLogo(logo)
+    logo: processLogo(logo),
+    app_extras: {
+      cast: Utils.parseCast(res.credits)
+    }
   };
 };
 
@@ -124,7 +126,6 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config) => 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
 
   return {
-    cast: Utils.parseCast(res.credits),
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
     genre: Utils.parseGenres(res.genres),
@@ -151,7 +152,10 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config) => 
       defaultVideoId: null,
       hasScheduledVideos: true
     },
-    logo: processLogo(logo)
+    logo: processLogo(logo),
+    app_extras: {
+      cast: Utils.parseCast(res.credits)
+    }
   };
 };
 
