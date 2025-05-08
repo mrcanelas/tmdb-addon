@@ -7,8 +7,12 @@ function parseCertification(release_dates, language) {
 }
 
 function parseCast(credits) {
-  return credits.cast.slice(0, 4).map((el) => {
-    return el.name;
+  return credits.cast.map((el) => {
+    return {
+      name: el.name,
+      character: el.character,
+      photo: el.profile_path ? `https://image.tmdb.org/t/p/w276_and_h350_face${el.profile_path}` : null
+    };
   });
 }
 
@@ -88,11 +92,12 @@ function parseGenreLink(genres, type, language) {
 }
 
 function parseCreditsLink(credits) {
-  const Cast = parseCast(credits).map((actor) => {
+  const castData = parseCast(credits);
+  const Cast = castData.map((actor) => {
     return {
-      name: actor,
+      name: actor.name,
       category: "Cast",
-      url: `stremio:///search?search=${encodeURIComponent(actor)}`,
+      url: `stremio:///search?search=${encodeURIComponent(actor.name)}`
     };
   });
   const Director = parseDirector(credits).map((director) => {
