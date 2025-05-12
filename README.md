@@ -3,6 +3,8 @@ THIS IS BASED ON THE OFFICIAL TMDB ADDON WITH NO CHANGES EXCEPT FOR THE INCLUSIO
 
 IMAGE IS ON DOCKER HUB doesitblend1/tmdb-addon:latest  Current Version is TMDB ADDON 3.1.4
 
+IF ANYONE HOST THIS FOR THE COMMUNITY LET ME KNOW SO I CAN INCLUDE IT IN THIS README FOR THOSE NOT WANTING TO SELF HOST
+
 ![TMDB](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg)
 
 > A powerful Stremio addon that enhances your streaming experience with TMDB metadata
