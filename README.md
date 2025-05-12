@@ -19,13 +19,6 @@ IMAGE IS ON DOCKER HUB doesitblend1/tmdb-addon:latest  Current Version is TMDB A
 
 ## 📥 Installation
 
-### Quick Install
-
-1. Visit the [TMDB Addon Configuration Page](https://94c8cb9f702d-tmdb-addon.baby-beamup.club/)
-2. Configure your preferences
-3. Click "Install"
-4. Approve the installation in Stremio
-
 ## ⚙️ Configuration
 
 ### Language Settings
@@ -66,21 +59,10 @@ docker run -d \
   mrcanelas/tmdb-addon:latest
 ```
 
-## 📚 Documentation
-
-- [Self-Hosting Guide](docs/self-hosting.md) - Complete instructions for hosting your own instance
-- [Development Guide](docs/development.md) - Guide for developers and contributors
-- [Contributing Guide](docs/contributing.md) - How to contribute to the project
-- [API Documentation](docs/api.md) - Complete API reference
-
-## 🤝 Contributing
-
-We welcome contributions! Please read our [Contributing Guide](docs/contributing.md) to get started.
-
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/mrcanelas/tmdb-addon.git
+git clone https://github.com/doesitblend1/tmdb-addon.git
 
 # Install dependencies
 npm install
