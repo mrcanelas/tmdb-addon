@@ -220,21 +220,4 @@ addon.get("/api/image/blur", async function (req, res) {
   }
 });
 
-addon.get('/stats', async (req, res) => {
-    try {
-        const [uniqueUsers, swaggerStats] = await Promise.all([
-            analytics.getUniqueUsers(),
-            analytics.getStats()
-        ]);
-        
-        res.json({
-            ...uniqueUsers,
-            ...swaggerStats
-        });
-    } catch (error) {
-        console.error('Erro ao obter estatísticas:', error);
-        res.status(500).json({ error: 'Erro ao obter estatísticas' });
-    }
-});
-
 module.exports = addon;

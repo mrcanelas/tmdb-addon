@@ -10,7 +10,6 @@ import {
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import packageJson from "../../../package.json";
-import { Stats } from "@/components/Stats";
 
 const languages = [
   { value: "ab-AB", label: "Abkhazian" },
@@ -316,7 +315,6 @@ export default function Home() {
               className="w-full sm:w-auto"
             />
           </div>
-          <Stats />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
             <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-xl font-semibold mb-2">Movies</h3>
