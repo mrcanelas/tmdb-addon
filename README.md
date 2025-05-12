@@ -58,7 +58,7 @@ docker run -d \
   -e FANART_API=your_fanart_key \
   -e TMDB_API=your_tmdb_key \
   -e HOST_NAME=http://your_domain:1337 \
-  mrcanelas/tmdb-addon:latest
+  doesitblend1/tmdb-addon:latest
 ```
 
 ### Development Setup
