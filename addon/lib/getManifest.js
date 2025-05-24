@@ -70,13 +70,13 @@ function createCatalog(id, type, catalogDef, options, tmdbPrefix, translatedCata
 
 function getCatalogDefinition(catalogId) {
   const [provider, type] = catalogId.split('.');
-  
+
   for (const category of Object.keys(CATALOG_TYPES)) {
     if (CATALOG_TYPES[category][type]) {
       return CATALOG_TYPES[category][type];
     }
   }
-  
+
   return null;
 }
 
@@ -85,7 +85,7 @@ function getOptionsForCatalog(catalogDef, type, showInHome, { years, genres_movi
 
   const movieGenres = showInHome ? [...genres_movie] : ["Top", ...genres_movie];
   const seriesGenres = showInHome ? [...genres_series] : ["Top", ...genres_series];
-  
+
   switch (catalogDef.nameKey) {
     case 'year':
       return years;
@@ -106,17 +106,22 @@ async function getManifest(config) {
   const userCatalogs = config.catalogs || getDefaultCatalogs();
   const translatedCatalogs = loadTranslations(language);
 
+  const stremioAddonsConfig = {
+    issuer: "https://stremio-addons.net",
+    signature: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..DTiTHmYyIbuTMPJB35cqsw.S2C6xuCL9OoHJbtX97v-2w3IM4iFqr2Qy4xRRlvyzIY2fZAcwmm6JUMdsc2LSTigIPQeGPomaqX53ECt23cJKuH-IKs4hHLH4sLYRZNL_VC0YefQNrWjMRZ75Yz-bVx3.DJZBtIb1bOCq6Z62AMUGvw"
+  }
+
   const years = generateArrayOfYears(20);
   const genres_movie = await getGenreList(language, "movie").then(genres => {
     const sortedGenres = genres.map(el => el.name).sort();
     return sortedGenres;
   });
-  
+
   const genres_series = await getGenreList(language, "series").then(genres => {
     const sortedGenres = genres.map(el => el.name).sort();
     return sortedGenres;
   });
-  
+
   const languagesArray = await getLanguages();
   const filterLanguages = setOrderLanguage(language, languagesArray);
   const options = { years, genres_movie, genres_series, filterLanguages };
@@ -131,7 +136,7 @@ async function getManifest(config) {
     .map(userCatalog => {
       const catalogDef = getCatalogDefinition(userCatalog.id);
       const catalogOptions = getOptionsForCatalog(catalogDef, userCatalog.type, userCatalog.showInHome, options);
-      
+
       return createCatalog(
         userCatalog.id,
         userCatalog.type,
@@ -175,12 +180,13 @@ async function getManifest(config) {
     version: packageJson.version,
     favicon: `${process.env.HOST_NAME}/favicon.png`,
     logo: `${process.env.HOST_NAME}/logo.png`,
-    background: `${process.env.HOST_NAME}/background.png`,  
+    background: `${process.env.HOST_NAME}/background.png`,
     name: "The Movie Database",
-    description: "Fork of the TMDB addon for use with Omni (https://omni.stkc.win). Current settings: " + activeConfigs,
+    description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
     idPrefixes: provideImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
+    stremioAddonsConfig,
     behaviorHints: {
       configurable: true,
       configurationRequired: false,
@@ -192,8 +198,8 @@ async function getManifest(config) {
 function getDefaultCatalogs() {
   const defaultTypes = ['movie', 'series'];
   const defaultCatalogs = Object.keys(CATALOG_TYPES.default);
-  
-  return defaultCatalogs.flatMap(id => 
+
+  return defaultCatalogs.flatMap(id =>
     defaultTypes.map(type => ({
       id: `tmdb.${id}`,
       type,
