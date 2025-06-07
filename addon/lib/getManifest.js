@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
+const { getGenresFromMDBList } = require("../utils/mdbList");
 const packageJson = require("../../package.json");
 const catalogsTranslations = require("../static/translations.json");
 const CATALOG_TYPES = require("../static/catalog-types.json");
@@ -98,6 +99,23 @@ function getOptionsForCatalog(catalogDef, type, showInHome, { years, genres_movi
   }
 }
 
+async function createMDBListCatalog(userCatalog, mdblistKey) {
+  const listId = userCatalog.id.split(".")[1];
+  const genres = await getGenresFromMDBList(listId, mdblistKey);
+
+  return {
+    id: userCatalog.id,
+    type: userCatalog.type,
+    name: userCatalog.name,
+    pageSize: 20,
+    extra: [
+      { name: "genre", options: genres, isRequired: false },
+      { name: "skip" },
+    ],
+    showInHome: userCatalog.showInHome,
+  };
+}
+
 async function getManifest(config) {
   const language = config.language || DEFAULT_LANGUAGE;
   const tmdbPrefix = config.tmdbPrefix === "true";
@@ -124,16 +142,21 @@ async function getManifest(config) {
 
   const languagesArray = await getLanguages();
   const filterLanguages = setOrderLanguage(language, languagesArray);
+  const isMDBList = (id) => id.startsWith("mdblist.");
   const options = { years, genres_movie, genres_series, filterLanguages };
 
-  let catalogs = userCatalogs
+  let catalogs = await Promise.all(userCatalogs
     .filter(userCatalog => {
       const catalogDef = getCatalogDefinition(userCatalog.id);
+      if (isMDBList(userCatalog.id)) return true;
       if (!catalogDef) return false;
       if (catalogDef.requiresAuth && !sessionId) return false;
       return true;
     })
     .map(userCatalog => {
+      if (isMDBList(userCatalog.id)) {
+        return createMDBListCatalog(userCatalog, config.mdblistkey);
+      }
       const catalogDef = getCatalogDefinition(userCatalog.id);
       const catalogOptions = getOptionsForCatalog(catalogDef, userCatalog.type, userCatalog.showInHome, options);
 
@@ -146,7 +169,7 @@ async function getManifest(config) {
         translatedCatalogs,
         userCatalog.showInHome
       );
-    });
+    }));
 
   if (config.searchEnabled !== "false") {
     const searchCatalogMovie = {
@@ -169,6 +192,7 @@ async function getManifest(config) {
   const activeConfigs = [
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
+    `MDBList Integration: ${config.mdblistkey ? 'Connected' : 'Not Connected'}`,
     `IMDb Integration: ${provideImdbId ? 'Enabled' : 'Disabled'}`,
     `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,
     `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
