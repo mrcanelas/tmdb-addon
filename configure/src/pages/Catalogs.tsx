@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
-import { baseCatalogs, authCatalogs, mdblistCatalogs, streamingCatalogs } from "@/data/catalogs";
+import { baseCatalogs, authCatalogs, streamingCatalogs } from "@/data/catalogs";
 import { 
   DndContext, 
   DragEndEvent, 
@@ -71,7 +71,6 @@ const Catalogs = () => {
     const allCatalogs = [
       ...baseCatalogs,
       ...(sessionId ? authCatalogs : []),
-      ...(mdblistkey ? mdblistCatalogs : []),
       ...(streaming?.length
         ? streaming.flatMap((serviceId) => streamingCatalogs[serviceId] || [])
         : []),
@@ -94,7 +93,7 @@ const Catalogs = () => {
         })),
       ];
     });
-  }, [sessionId, mdblistkey, streaming]);
+  }, [sessionId, mdblistkey, streaming, setCatalogs]);
 
   const catalogConfigs = catalogs.reduce((acc, config) => {
     const key = `${config.id}-${config.type}`;

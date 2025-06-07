@@ -3,14 +3,12 @@ import { ConfigContext, type ConfigContextType, type CatalogConfig } from "./con
 import { 
   baseCatalogs, 
   authCatalogs, 
-  mdblistCatalogs, 
   streamingCatalogs 
 } from "@/data/catalogs";
 
 const allCatalogs = [
   ...baseCatalogs,
   ...authCatalogs,
-  ...mdblistCatalogs,
   ...Object.values(streamingCatalogs).flat()
 ];
 
