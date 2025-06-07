@@ -12,6 +12,7 @@ interface AddonConfig {
   catalogs?: Array<{
     id: string;
     type: string;
+    name: string;
     enabled: boolean;
     showInHome: boolean;
   }>;
@@ -25,9 +26,10 @@ export function generateAddonUrl(config: AddonConfig): string {
     sessionId: config.sessionId || undefined,
     catalogs: config.catalogs
       ?.filter(catalog => catalog.enabled === false ? false : true)
-      .map(({ id, type, showInHome }) => ({
+      .map(({ id, type, name, showInHome }) => ({
         id,
         type,
+        name,
         showInHome
       })),
     includeAdult: config.includeAdult === true ? "true" : undefined,
