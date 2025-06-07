@@ -4,7 +4,7 @@ const getPosterPath = (url) => url.split("/").pop();
 async function fetchMDBListItems(listId, apiKey, language, page) {
     const offset = (page * 20) - 20;
   try {
-    const url = `https://api.mdblist.com/lists/${listId}/items?language=${'pt-BR'}&limit=20&offset=${offset}&apikey=${apiKey}&append_to_response=genre,poster`;
+    const url = `https://api.mdblist.com/lists/${listId}/items?language=${language}&limit=20&offset=${offset}&apikey=${apiKey}&append_to_response=genre,poster`;
     const response = await axios.get(url);
     return [
       ...(response.data.movies || []),
@@ -37,6 +37,7 @@ async function getGenresFromMDBList(listId, apiKey) {
 }
 
 function parseMDBListItems(items, type, genreFilter) {
+    console.log(items)
   const availableGenres = [
     ...new Set(
       items.flatMap(item =>
