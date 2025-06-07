@@ -42,6 +42,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const config = JSON.parse(decodedConfig);
       
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
+      if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
       
