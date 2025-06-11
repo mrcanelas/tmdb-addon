@@ -110,7 +110,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     } else {
       switch (id) {
         case "tmdb.trending":
-          metas = await getTrending(...args, genre);
+          metas = await getTrending(...args, genre, config);
           break;
         case "tmdb.favorites":
           metas = await getFavorites(...args, genre, sessionId);
