@@ -1,5 +1,5 @@
 const axios = require("axios");
-const getPosterPath = (url) => url.split("/").pop();
+const { getMeta } = require("../lib/getMeta");
 
 async function fetchMDBListItems(listId, apiKey, language, page) {
     const offset = (page * 20) - 20;
@@ -36,8 +36,7 @@ async function getGenresFromMDBList(listId, apiKey) {
   }
 }
 
-function parseMDBListItems(items, type, genreFilter) {
-    console.log(items)
+async function parseMDBListItems(items, type, genreFilter, language, rpdbkey) {
   const availableGenres = [
     ...new Set(
       items.flatMap(item =>
@@ -64,29 +63,29 @@ function parseMDBListItems(items, type, genreFilter) {
     );
   }
 
-  const metas = filteredItems
+  const filteredItemsByType = filteredItems
     .filter(item => {
       if (type === "series") return item.mediatype === "show";
       if (type === "movie") return item.mediatype === "movie";
       return false;
     })
     .map(item => ({
-      id: item.id
-        ? `tmdb:${item.id}`
-        : item.imdb_id
-        ? `tt${item.imdb_id}`
-        : undefined,
-      name: item.title,
-      type,
-      poster: `https://image.tmdb.org/t/p/w500/${getPosterPath(item.poster)}`,
-      genre: item.genre,
-      year: item.release_year,
-      imdb_id: item.imdb_id
-    }))
-    .filter(meta => meta.id && meta.name && meta.poster);
+      id: item.id,
+      type: type
+    }));
+
+  const metaPromises = filteredItemsByType.map(item => 
+    getMeta(item.type, language, item.id, rpdbkey)
+      .then(result => result.meta)
+      .catch(err => {
+        console.error(`Erro ao buscar metadados para ${item.id}:`, err.message);
+        return null;
+      })
+  );
+
+  const metas = (await Promise.all(metaPromises)).filter(Boolean);
 
   return { metas, availableGenres };
 }
-
 
 module.exports = { fetchMDBListItems, getGenresFromMDBList, parseMDBListItems };
