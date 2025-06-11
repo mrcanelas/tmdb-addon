@@ -5,6 +5,7 @@ const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { parseMedia } = require("../utils/parseProps");
 const { fetchMDBListItems, parseMDBListItems } = require("../utils/mdbList");
+const { getMeta } = require("./getMeta");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
 async function getCatalog(type, language, page, id, genre, config) {
@@ -13,7 +14,7 @@ async function getCatalog(type, language, page, id, genre, config) {
   if (id.startsWith("mdblist.")) {
     const listId = id.split(".")[1];
     const results = await fetchMDBListItems(listId, mdblistKey, language, page);
-    const parseResults = parseMDBListItems(results, type, genre);
+    const parseResults = await parseMDBListItems(results, type, genre, language, config.rpdbkey);
 
     return parseResults
   }
@@ -24,9 +25,20 @@ async function getCatalog(type, language, page, id, genre, config) {
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
   return fetchFunction(parameters)
-    .then((res) => ({
-      metas: res.results.map(el => parseMedia(el, type, genreList))
-    }))
+    .then(async (res) => {
+      const metaPromises = res.results.map(item => 
+        getMeta(type, language, item.id, config.rpdbkey)
+          .then(result => result.meta)
+          .catch(err => {
+            console.error(`Erro ao buscar metadados para ${item.id}:`, err.message);
+            return null;
+          })
+      );
+
+      const metas = (await Promise.all(metaPromises)).filter(Boolean);
+
+      return { metas };
+    })
     .catch(console.error);
 }
 
