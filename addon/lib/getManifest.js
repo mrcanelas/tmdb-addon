@@ -109,10 +109,9 @@ async function createMDBListCatalog(userCatalog, mdblistKey) {
     name: userCatalog.name,
     pageSize: 20,
     extra: [
-      { name: "genre", options: genres, isRequired: false },
+      { name: "genre", options: genres, isRequired: userCatalog.showInHome ? false : true },
       { name: "skip" },
     ],
-    showInHome: userCatalog.showInHome,
   };
 }
 
