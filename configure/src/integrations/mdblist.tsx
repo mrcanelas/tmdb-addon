@@ -4,21 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function MDBListIntegration() {
   const { mdblistkey, setMdblistkey, catalogs, setCatalogs } = useConfig();
   const [tempKey, setTempKey] = useState(mdblistkey || "");
-  const [error, setError] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+
+  const [customListUrl, setCustomListUrl] = useState("");
 
   const validateApiKey = useCallback(
     async (key: string): Promise<boolean> => {
       if (!key) {
         setIsValid(false);
-        setError("");
         return false;
       }
 
@@ -33,35 +33,27 @@ export default function MDBListIntegration() {
 
         const lists = await response.json();
 
-        const newCatalogs: Array<{
-          id: string;
-          type: string;
-          name: string;
-          enabled: boolean;
-          showInHome: boolean;
-        }> = [];
-
-        for (const list of lists) {
-          const type = list.mediatype === "movie" ? "movie" : "series";
-          newCatalogs.push({
-            id: `mdblist.${list.id}.${type}`,
-            type,
-            name: list.name,
-            enabled: true,
-            showInHome: false,
-          });
-        }
+        const newCatalogs = lists.map((list) => ({
+          id: `mdblist.${list.id}.${list.mediatype === "movie" ? "movie" : "series"}`,
+          type: list.mediatype === "movie" ? "movie" : "series",
+          name: list.name,
+          enabled: true,
+          showInHome: false,
+        }));
 
         setCatalogs([
           ...catalogs.filter((c) => !c.id.startsWith("mdblist.")),
           ...newCatalogs,
         ]);
 
-        setError("");
         setIsValid(true);
         return true;
       } catch (error) {
-        setError((error as Error).message || "Failed to validate API key");
+        const message = (error as Error).message || "Failed to validate API key";
+        toast({
+          title: "Failed to validate API key",
+          description: message,
+        });
         setIsValid(false);
         return false;
       } finally {
@@ -79,8 +71,53 @@ export default function MDBListIntegration() {
 
   const handleCancel = () => {
     setTempKey(mdblistkey || "");
-    setError("");
     setIsValid(!!mdblistkey);
+  };
+
+  const handleAddCustomList = async () => {
+    try {
+      const url = new URL(customListUrl);
+      const listId = url.searchParams.get("list");
+      if (!listId) {
+        throw new Error("Invalid URL");
+      }
+
+      const response = await fetch(
+        `https://api.mdblist.com/lists/${listId}?apikey=${tempKey}`
+      );
+      if (!response.ok) {
+        throw new Error("Error fetching list");
+      }
+
+      const [list] = await response.json();
+      const type = list.mediatype === "movie" ? "movie" : "series";
+
+      const newCatalog = {
+        id: `mdblist.${list.id}.${type}`,
+        type,
+        name: list.name,
+        enabled: true,
+        showInHome: false,
+      };
+
+      setCatalogs((prev) => {
+        if (prev.some((c) => c.id === newCatalog.id)) return prev;
+        return [...prev, newCatalog];
+      });
+
+      toast({
+        title: "List added",
+        description: `The list "${list.name}" has been added successfully.`,
+      });
+
+      setCustomListUrl("");
+    } catch (err) {
+      const message = (err as Error).message || "Error adding list";
+      toast({
+        title: "Error adding list",
+        description: message,
+      });
+    }
   };
 
   return (
@@ -105,19 +142,43 @@ export default function MDBListIntegration() {
             onChange={(e) => {
               setTempKey(e.target.value);
               setIsValid(false);
-              setError("");
             }}
             placeholder="Enter your MDBList API key"
           />
         </div>
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
       </div>
+
+      {isValid && (
+        <div className="flex flex-col space-y-4">
+          <div className="space-x-2 justify-between flex items-end">
+            <div className="space-y-4 flex flex-col w-full">
+              <Label htmlFor="customListUrl">
+                Add list by URL (Ex:{" "}
+                <a
+                  href="https://mdblist.com/?list=123"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://mdblist.com/?list=123
+                </a>
+                )
+              </Label>
+              <Input
+                id="customListUrl"
+                value={customListUrl}
+                onChange={(e) => {
+                  setCustomListUrl(e.target.value);
+                }}
+                placeholder="Paste MDBList list URL here"
+              />
+            </div>
+            <Button onClick={handleAddCustomList} variant="outline">
+              Add List
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end space-x-2">
         <DialogClose asChild>
