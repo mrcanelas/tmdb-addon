@@ -189,6 +189,24 @@ async function getManifest(config) {
     catalogs = [...catalogs, searchCatalogMovie, searchCatalogSeries];
   }
 
+  if (config.geminikey) {
+    const aiSearchCatalogMovie = {
+      id: "tmdb.aisearch",
+      type: "movie",
+      name: `${tmdbPrefix ? "TMDB - " : ""}AI Search`,
+      extra: [{ name: "search", isRequired: true, options: [] }]
+    };
+
+    const aiSearchCatalogSeries = {
+      id: "tmdb.aisearch",
+      type: "series",
+      name: `${tmdbPrefix ? "TMDB - " : ""}AI Search`,
+      extra: [{ name: "search", isRequired: true, options: [] }]
+    };
+
+    catalogs = [...catalogs, aiSearchCatalogMovie, aiSearchCatalogSeries];
+  }
+
   const activeConfigs = [
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,

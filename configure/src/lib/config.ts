@@ -1,5 +1,6 @@
 interface AddonConfig {
   rpdbkey?: string;
+  geminikey?: string;
   mdblistkey?: string;
   includeAdult?: boolean;
   provideImdbId?: boolean;
@@ -22,6 +23,7 @@ export function generateAddonUrl(config: AddonConfig): string {
   const configToEncode = {
     ...config,
     rpdbkey: config.rpdbkey || undefined,
+    geminikey: config.geminikey || undefined,
     mdblistkey: config.mdblistkey || undefined,
     sessionId: config.sessionId || undefined,
     catalogs: config.catalogs

@@ -10,6 +10,7 @@ export type CatalogConfig = {
 
 export type ConfigContextType = {
   rpdbkey: string;
+  geminikey: string;
   mdblistkey: string;
   includeAdult: boolean;
   provideImdbId: boolean;
@@ -22,6 +23,7 @@ export type ConfigContextType = {
   ageRating: string | undefined;
   searchEnabled: boolean;
   setRpdbkey: (rpdbkey: string) => void;
+  setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
   setIncludeAdult: (includeAdult: boolean) => void;
   setProvideImdbId: (provideImdbId: boolean) => void;

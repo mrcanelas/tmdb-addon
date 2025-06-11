@@ -106,7 +106,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     const args = [type, language, page];
 
     if (search) {
-      metas = await getSearch(type, language, search, config);
+      metas = await getSearch(id, type, language, search, config);
     } else {
       switch (id) {
         case "tmdb.trending":

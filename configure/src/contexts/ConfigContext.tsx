@@ -14,6 +14,7 @@ const allCatalogs = [
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
+  const [geminikey, setGeminiKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
@@ -90,6 +91,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     rpdbkey,
+    geminikey,
     mdblistkey,
     includeAdult,
     provideImdbId,
@@ -102,6 +104,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     ageRating,
     searchEnabled,
     setRpdbkey,
+    setGeminiKey,
     setMdblistkey,
     setIncludeAdult,
     setProvideImdbId,
