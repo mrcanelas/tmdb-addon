@@ -27,7 +27,7 @@ async function getSearch(id, type, language, query, config) {
 
       const genreList = await getGenreList(language, type);
       
-      for (const title of titles) {
+      const searchPromises = titles.map(async (title) => {
         try {
           const parameters = {
             query: title,
@@ -38,18 +38,23 @@ async function getSearch(id, type, language, query, config) {
           if (type === "movie") {
             const res = await moviedb.searchMovie(parameters);
             if (res.results && res.results.length > 0) {
-              searchResults.push(parseMedia(res.results[0], 'movie', genreList));
+              return parseMedia(res.results[0], 'movie', genreList);
             }
           } else {
             const res = await moviedb.searchTv(parameters);
             if (res.results && res.results.length > 0) {
-              searchResults.push(parseMedia(res.results[0], 'tv', genreList));
+              return parseMedia(res.results[0], 'tv', genreList);
             }
           }
+          return null;
         } catch (error) {
           console.error(`Erro ao buscar detalhes para título "${title}":`, error);
+          return null;
         }
-      }
+      });
+
+      const results = await Promise.all(searchPromises);
+      searchResults = results.filter(result => result !== null);
 
     } catch (error) {
       console.error('Erro ao processar busca com IA:', error);
