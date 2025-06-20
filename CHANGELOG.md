@@ -1,3 +1,10 @@
+## [3.1.10](https://github.com/aves-omni/tmdb-addon/compare/v3.1.9...v3.1.10) (2025-06-20)
+
+
+### Bug Fixes
+
+* configure Git settings in Docker deployment workflow ([6fe7efe](https://github.com/aves-omni/tmdb-addon/commit/6fe7efe6b4d45ba7e8f3dddc6a34f2108456bd5d))
+
 ## [3.1.9](https://github.com/aves-omni/tmdb-addon/compare/v3.1.8...v3.1.9) (2025-06-20)
 
 
