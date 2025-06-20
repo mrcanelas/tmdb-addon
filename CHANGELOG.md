@@ -1,3 +1,10 @@
+## [3.1.13](https://github.com/aves-omni/tmdb-addon/compare/v3.1.12...v3.1.13) (2025-06-20)
+
+
+### Bug Fixes
+
+* add version verification steps in Docker deployment workflow ([0ed827d](https://github.com/aves-omni/tmdb-addon/commit/0ed827de75248f71016149de7568d945dd5f1f2c))
+
 ## [3.1.12](https://github.com/aves-omni/tmdb-addon/compare/v3.1.11...v3.1.12) (2025-06-20)
 
 
