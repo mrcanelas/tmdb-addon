@@ -12,6 +12,15 @@
 
 ### Bug Fixes
 
+* comment out build context in docker-compose.yml for tmdb-addon service ([91e5881](https://github.com/aves-omni/tmdb-addon/commit/91e58811dece8f20d748af95cdf6506481664b8b))
+* update Docker deployment workflow to disable caching during build ([979a5ff](https://github.com/aves-omni/tmdb-addon/commit/979a5ff09f8c5c732ec3933988366fbe2d617082))
+* update Docker deployment workflow to include artifact upload and download steps ([6bcf1ed](https://github.com/aves-omni/tmdb-addon/commit/6bcf1ed5073218b88ef201e86c4a274f2a9f968a))
+
+## [3.1.9](https://github.com/aves-omni/tmdb-addon/compare/v3.1.8...v3.1.9) (2025-06-20)
+
+
+### Bug Fixes
+
 * update Docker deployment workflow to include artifact upload and download steps ([6bcf1ed](https://github.com/aves-omni/tmdb-addon/commit/6bcf1ed5073218b88ef201e86c4a274f2a9f968a))
 
 ## [3.1.8](https://github.com/aves-omni/tmdb-addon/compare/v3.1.7...v3.1.8) (2025-06-20)
