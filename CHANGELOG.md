@@ -1,3 +1,10 @@
+## [3.1.11](https://github.com/aves-omni/tmdb-addon/compare/v3.1.10...v3.1.11) (2025-06-20)
+
+
+### Bug Fixes
+
+* update Docker deployment workflow to include additional semantic-release plugins ([b56cfaa](https://github.com/aves-omni/tmdb-addon/commit/b56cfaafad96a81b4bfb490bfafb4c582b32e420))
+
 ## [3.1.10](https://github.com/aves-omni/tmdb-addon/compare/v3.1.9...v3.1.10) (2025-06-20)
 
 
