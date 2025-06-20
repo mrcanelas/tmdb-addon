@@ -1,3 +1,11 @@
+## [3.1.12](https://github.com/aves-omni/tmdb-addon/compare/v3.1.11...v3.1.12) (2025-06-20)
+
+
+### Bug Fixes
+
+* update .releaserc.json to disable npm publishing in semantic-release configuration ([6d49752](https://github.com/aves-omni/tmdb-addon/commit/6d4975243eb61739cf84965182e90a336ed3c390))
+* update semantic-release configuration in .releaserc.json and Docker deployment workflow ([ccdabc5](https://github.com/aves-omni/tmdb-addon/commit/ccdabc5663429c99f143b71559c5007be915cbdf))
+
 ## [3.1.11](https://github.com/aves-omni/tmdb-addon/compare/v3.1.10...v3.1.11) (2025-06-20)
 
 
