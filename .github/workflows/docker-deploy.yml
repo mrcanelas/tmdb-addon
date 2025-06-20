@@ -45,6 +45,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Verify package.json version after release
+        run: |
+          echo "Version in release job is: $(cat package.json | grep version)"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -66,6 +70,10 @@ jobs:
         with:
           name: source-code
           path: .
+
+      - name: Verify package.json version after download
+        run: |
+          echo "Version in docker job is: $(cat package.json | grep version)"
 
       # Configure git
       - name: Configure Git
