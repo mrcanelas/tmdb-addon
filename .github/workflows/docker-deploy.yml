@@ -1,4 +1,4 @@
-name: Release and Deploy Docker image
+name: Release
 
 on:
   push:
@@ -7,36 +7,71 @@ on:
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      packages: write
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
         with:
-          fetch-depth: 0 # Needed for tags
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        id: semantic # Need an `id` for output variables
         with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run semantic-release
+          tag_format: v${version}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
 
-      - name: Get version
-        id: get_version
-        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+  docker:
+    name: Build and Push Docker Image
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      id-token: write
+    steps:
+      # Checkout the repository with the specific tag
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: v${{ needs.release.outputs.new_release_version }}
 
+      # Configure git
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      # Set up QEMU for multi-platform builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Get tagged version
+        run: echo "VERSION=v${{ needs.release.outputs.new_release_version }}" >> $GITHUB_ENV
+
+      # Log in to GitHub Container Registry (GHCR)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -44,11 +79,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Build and push Docker image to GHCR
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository }}/tmdb-addon:${{ env.VERSION }}
-            ghcr.io/${{ github.repository }}/tmdb-addon:latest
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+          build-args: |
+            VERSION=${{ env.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
