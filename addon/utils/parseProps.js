@@ -7,7 +7,9 @@ function parseCertification(release_dates, language) {
 }
 
 function parseCast(credits) {
-  return credits.cast.slice(0, 5).map((el) => {
+  const castLimit = process.env.CAST_LIMIT ? parseInt(process.env.CAST_LIMIT, 10) : undefined;
+  const castArray = typeof castLimit === 'number' && !isNaN(castLimit) ? credits.cast.slice(0, castLimit) : credits.cast;
+  return castArray.map((el) => {
     return {
       name: el.name,
       character: el.character,
@@ -141,7 +143,7 @@ function parseRunTime(runtime) {
   if (runtime === 0 || !runtime) {
     return "";
   }
-  
+
   const hours = Math.floor(runtime / 60);
   const minutes = runtime % 60;
 
@@ -178,7 +180,7 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
 }
 
 function parseMedia(el, type, genreList = []) {
-  const genres = Array.isArray(el.genre_ids) 
+  const genres = Array.isArray(el.genre_ids)
     ? el.genre_ids.map(genre => genreList.find((x) => x.id === genre)?.name || 'Unknown')
     : [];
 
