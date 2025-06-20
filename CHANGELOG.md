@@ -1,3 +1,10 @@
+## [3.1.9](https://github.com/aves-omni/tmdb-addon/compare/v3.1.8...v3.1.9) (2025-06-20)
+
+
+### Bug Fixes
+
+* update Docker deployment workflow to include artifact upload and download steps ([6bcf1ed](https://github.com/aves-omni/tmdb-addon/commit/6bcf1ed5073218b88ef201e86c4a274f2a9f968a))
+
 ## [3.1.8](https://github.com/aves-omni/tmdb-addon/compare/v3.1.7...v3.1.8) (2025-06-20)
 
 
