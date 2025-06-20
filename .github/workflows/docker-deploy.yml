@@ -42,13 +42,6 @@ jobs:
         id: semantic # Need an `id` for output variables
         with:
           tag_format: v${version}
-          extra_plugins: |
-            @semantic-release/commit-analyzer
-            @semantic-release/release-notes-generator
-            @semantic-release/changelog
-            @semantic-release/npm
-            @semantic-release/git
-            @semantic-release/github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
