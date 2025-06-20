@@ -1,41 +1,42 @@
-name: Deploy Docker image to GitHub Container Registry and Docker Hub
+name: Release and Deploy Docker image
 
 on:
   push:
-    tags:
-      - 'v*' # Trigger on any tag that starts with 'v'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag for the Docker image (e.g., v1.0.0)'
-        required: true
+    branches:
+      - main
 
 jobs:
-  docker:
+  release:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for tags
 
-      # Determine tag name
-      - name: Set tag name
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
-          else
-            echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      # Set up QEMU for multi-platform builds
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Log in to GitHub Container Registry (GHCR)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -43,21 +44,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Log in to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Build and push Docker image to both GHCR and Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ secrets.GHCR_USERNAME }}/tmdb-addon:${{ env.TAG }}
-            ghcr.io/${{ secrets.GHCR_USERNAME }}/tmdb-addon:latest
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tmdb-addon:${{ env.TAG }}
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tmdb-addon:latest
+            ghcr.io/${{ github.repository }}/tmdb-addon:${{ env.VERSION }}
+            ghcr.io/${{ github.repository }}/tmdb-addon:latest
