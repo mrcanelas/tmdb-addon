@@ -55,12 +55,11 @@ jobs:
       contents: read
       id-token: write
     steps:
-      # Checkout the repository with the specific tag
+      # Checkout the repository. The release job has already pushed the new tag and version bump.
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: v${{ needs.release.outputs.new_release_version }}
 
       # Configure git
       - name: Configure Git

@@ -1,6 +1,6 @@
 services:
   tmdb-addon:
-    #image: ghcr.io/aves-omni/tmdb-addon:v1.0.0
+    image: ghcr.io/aves-omni/tmdb-addon:latest
     build:
       context: .
       dockerfile: Dockerfile
