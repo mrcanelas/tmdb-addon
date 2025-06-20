@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrcanelas/tmdb-addon"
+    "url": "git+https://github.com/aves-omni/tmdb-addon"
   },
   "keywords": [
     "tmdb",
@@ -24,9 +24,9 @@
   "author": "mrcanelas",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/mrcanelas/tmdb-addon/issues"
+    "url": "https://github.com/aves-omni/tmdb-addon/issues"
   },
-  "homepage": "https://github.com/mrcanelas/tmdb-addon#readme",
+  "homepage": "https://github.com/aves-omni/tmdb-addon#readme",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
