@@ -1,3 +1,10 @@
+## [3.1.7](https://github.com/aves-omni/tmdb-addon/compare/v3.1.6...v3.1.7) (2025-06-20)
+
+
+### Bug Fixes
+
+* update Docker image tag in docker-compose.yml to v1.0.0 ([75b0497](https://github.com/aves-omni/tmdb-addon/commit/75b049731ef70b29c008c49591b5eaee5c617abd))
+
 # 1.0.0 (2025-06-20)
 
 
