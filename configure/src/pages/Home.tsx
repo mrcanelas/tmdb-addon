@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import packageJson from "../../../package.json";
 
 const languages = [
   { value: "ab-AB", label: "Abkhazian" },
@@ -221,6 +220,8 @@ interface Movie {
   background: string;
 }
 
+const appVersion = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
+
 export default function Home() {
   const { language, setLanguage } = useConfig();
   const [backgroundUrl, setBackgroundUrl] = useState("");
@@ -230,13 +231,13 @@ export default function Home() {
       try {
         const response = await fetch('https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json');
         const data = await response.json();
-        
+
         const moviesWithId = data.metas.filter(movie => movie.imdb_id);
-        
+
         if (moviesWithId.length > 0) {
           const randomIndex = Math.floor(Math.random() * moviesWithId.length);
           const randomMovie = moviesWithId[randomIndex];
-          
+
           const highQualityImageUrl = `https://images.metahub.space/background/medium/${randomMovie.imdb_id}/img`;
           setBackgroundUrl(highQualityImageUrl);
         }
@@ -253,7 +254,7 @@ export default function Home() {
     <div className="relative min-h-screen overflow-hidden">
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80 z-10" />
-        <div 
+        <div
           className="absolute inset-0 blur-sm"
           style={{
             backgroundImage: `url(${backgroundUrl})`,
@@ -282,7 +283,7 @@ export default function Home() {
 
           <p className="text-xl sm:text-2xl text-gray-300 mb-8">
             Explore a vast catalog of movies and TV shows with metadata provided by TMDB.
-            Version {packageJson.version}
+            Version {appVersion}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">

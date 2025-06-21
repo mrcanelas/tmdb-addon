@@ -21,6 +21,8 @@ COPY tailwind.config.ts ./
 COPY postcss.config.js ./
 
 # Build the application
+ARG VERSION
+ENV VERSION=$VERSION
 RUN npm run build
 
 # Production stage
