@@ -1,3 +1,10 @@
+## [3.1.14](https://github.com/aves-omni/tmdb-addon/compare/v3.1.13...v3.1.14) (2025-06-21)
+
+
+### Bug Fixes
+
+* update .releaserc.json and Docker deployment workflow ([82722e2](https://github.com/aves-omni/tmdb-addon/commit/82722e2ad4622460db8aa372c4af806360166dfa))
+
 ## [3.1.13](https://github.com/aves-omni/tmdb-addon/compare/v3.1.12...v3.1.13) (2025-06-20)
 
 
