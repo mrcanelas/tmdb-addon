@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/aves-omni/tmdb-addon/compare/v3.1.15...v3.2.0) (2025-06-21)
+
+
+### Features
+
+* add versioning support to Dockerfile and Vite configuration ([6f9eee1](https://github.com/aves-omni/tmdb-addon/commit/6f9eee1c775c333de9b1ef8d6cb5569733e70090))
+
 ## [3.1.15](https://github.com/aves-omni/tmdb-addon/compare/v3.1.14...v3.1.15) (2025-06-21)
 
 
