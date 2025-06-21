@@ -2,6 +2,12 @@
     "branches": [
         "main"
     ],
+    "dryRun": false,
+    "ci": true,
+    "tagFormat": "v${version}",
+    "lastRelease": {
+        "version": "require('./package.json').version"
+    },
     "plugins": [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",

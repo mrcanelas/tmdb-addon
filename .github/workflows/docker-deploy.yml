@@ -20,14 +20,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
 
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
       - name: Cache npm dependencies
         uses: actions/cache@v3
@@ -45,16 +42,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify package.json version after release
-        run: |
-          echo "Version in release job is: $(cat package.json | grep version)"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: source-code
-          path: .
-
   docker:
     name: Build and Push Docker Image
     needs: release
@@ -65,11 +52,11 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          name: source-code
-          path: .
+          fetch-depth: 0
+          ref: v${{ needs.release.outputs.new_release_version }}
 
       - name: Verify package.json version after download
         run: |
