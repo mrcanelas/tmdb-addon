@@ -1,3 +1,10 @@
+## [3.1.15](https://github.com/aves-omni/tmdb-addon/compare/v3.1.14...v3.1.15) (2025-06-21)
+
+
+### Bug Fixes
+
+* update Dockerfile and docker-compose.yml for improved build process ([acaebe6](https://github.com/aves-omni/tmdb-addon/commit/acaebe61c83f51c5be1cb9801c97bb8c453c1957))
+
 ## [3.1.14](https://github.com/aves-omni/tmdb-addon/compare/v3.1.13...v3.1.14) (2025-06-21)
 
 
