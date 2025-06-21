@@ -1,9 +1,9 @@
 services:
   tmdb-addon:
     image: ghcr.io/aves-omni/tmdb-addon:latest
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - 3000:3000

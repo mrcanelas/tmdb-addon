@@ -1,42 +1,50 @@
-# Etapa de construção do frontend
-FROM node:20-alpine AS builder
+# Build stage
+FROM node:24.0.2-alpine AS builder
 
 WORKDIR /app
 
-# Copia os arquivos de configuração primeiro
+# Copy package files first and install dependencies
+# This creates a separate layer that will be cached unless package files change
 COPY package*.json ./
+RUN npm ci
 
-# Instala as dependências
-RUN npm install
+# Copy the rest of the source code
+COPY addon/ ./addon/
+COPY public/ ./public/
+COPY configure/ ./configure/
+COPY components.json ./
+COPY now.json ./
+COPY index.html ./
+COPY vite.config.ts ./
+COPY tsconfig*.json ./
+COPY tailwind.config.ts ./
+COPY postcss.config.js ./
 
-# Copia o restante do código fonte
-COPY . .
-
-# Build da aplicação React
+# Build the application
 RUN npm run build
 
-# Etapa de produção
-FROM node:20-alpine AS runner
+# Production stage
+FROM node:24.0.2-alpine AS runner
 
 WORKDIR /app
 
-# Copia apenas os arquivos necessários
+# Copy package files and install only production dependencies
 COPY package*.json ./
-
-# Instala apenas dependências de produção
 RUN npm install --production
 
-# Copia os arquivos do servidor
+# Copy server files and built assets from builder stage
 COPY --from=builder /app/addon ./addon
-
-# Copia os arquivos buildados do React
 COPY --from=builder /app/dist ./dist
-
-# Copia a pasta public com as imagens
 COPY --from=builder /app/public ./public
 
-# Exposição da porta
+# Add build args for version information
+ARG VERSION
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.description="TMDB Addon (Multi-architecture)"
+LABEL org.opencontainers.image.source="https://github.com/aves-omni/tmdb-addon"
+
+# Expose port
 EXPOSE 1337
 
-# Comando para iniciar o servidor
-ENTRYPOINT ["node", "addon/server.js"] 
+# Command to start the server
+ENTRYPOINT ["node", "addon/server.js"]
