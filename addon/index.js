@@ -1,8 +1,7 @@
 const express = require("express");
 const favicon = require('serve-favicon');
-const path = require("path");
+const path = require("path")
 const addon = express();
-
 const analytics = require('./utils/analytics');
 const { getCatalog } = require("./lib/getCatalog");
 const { getSearch } = require("./lib/getSearch");
@@ -52,20 +51,17 @@ const respond = function (res, data, opts) {
 };
 
 addon.get("/", function (_, res) {
-  console.log("🔁 Redirecting to /configure");
   res.redirect("/configure");
 });
 
 addon.get("/request_token", async function (req, res) {
-  console.log("🔐 Requesting token");
-  const requestToken = await getRequestToken();
+  const requestToken = await getRequestToken()
   respond(res, requestToken);
 });
 
 addon.get("/session_id", async function (req, res) {
-  const requestToken = req.query.request_token;
-  console.log("🪪 Getting session ID", { requestToken });
-  const sessionId = await getSessionId(requestToken);
+  const requestToken = req.query.request_token
+  const sessionId = await getSessionId(requestToken)
   respond(res, sessionId);
 });
 
@@ -76,54 +72,45 @@ addon.use('/configure', (req, res, next) => {
   next();
 });
 
-addon.get("/:catalogChoices?/configure", function (req, res) {
+addon.get('/:catalogChoices?/configure', function (req, res) {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const { catalogChoices } = req.params;
-  const config = parseConfig(catalogChoices);
-  const manifest = await getManifest(config);
-
-  console.log("📄 Serving manifest.json", { catalogChoices });
-
-  const cacheOpts = {
-    cacheMaxAge: 12 * 60 * 60,
-    staleRevalidate: 14 * 24 * 60 * 60,
-    staleError: 30 * 24 * 60 * 60,
-  };
-  respond(res, manifest, cacheOpts);
+    const { catalogChoices } = req.params;
+    const config = parseConfig(catalogChoices);
+    const manifest = await getManifest(config);
+    
+    const cacheOpts = {
+        cacheMaxAge: 12 * 60 * 60,
+        staleRevalidate: 14 * 24 * 60 * 60, 
+        staleError: 30 * 24 * 60 * 60, 
+    };
+    respond(res, manifest, cacheOpts);
 });
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
   const { catalogChoices, type, id, extra } = req.params;
-  const config = parseConfig(catalogChoices);
+  const config = parseConfig(catalogChoices)
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey;
-  const sessionId = config.sessionId;
-
+  const rpdbkey = config.rpdbkey
+  const sessionId = config.sessionId
   const { genre, skip, search } = extra
     ? Object.fromEntries(
       new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
     )
     : {};
-
   const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
-
-  // Log the incoming parameters
-  console.log("🎬 /catalog route hit", { type, id, language, genre, page, search });
-
   let metas = [];
   try {
     const args = [type, language, page];
 
     if (search) {
-      console.log("🔍 Searching for:", search); // Log search query
-      metas = await getSearch(type, language, search, config); // Trigger the search function
+      metas = await getSearch(id, type, language, search, config);
     } else {
       switch (id) {
         case "tmdb.trending":
-          metas = await getTrending(...args, genre);
+          metas = await getTrending(...args, genre, config);
           break;
         case "tmdb.favorites":
           metas = await getFavorites(...args, genre, sessionId);
@@ -137,30 +124,24 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
       }
     }
   } catch (e) {
-    console.error("❌ Error in catalog route:", e.message);
     res.status(404).send((e || {}).message || "Not found");
     return;
   }
-
   const cacheOpts = {
-    cacheMaxAge: 1 * 24 * 60 * 60,
+    cacheMaxAge: 1 * 24 * 60 * 60, 
     staleRevalidate: 7 * 24 * 60 * 60,
     staleError: 14 * 24 * 60 * 60,
   };
-
   if (rpdbkey) {
     try {
       metas = JSON.parse(JSON.stringify(metas));
       metas.metas = await Promise.all(metas.metas.map(async (el) => {
-        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey);
+        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey) 
         el.poster = await checkIfExists(rpdbImage) ? rpdbImage : el.poster;
         return el;
-      }));
-    } catch (e) {
-      console.error("⚠️ RPDB image fallback error:", e.message);
-    }
+      }))
+    } catch (e) { }
   }
-
   respond(res, metas, cacheOpts);
 });
 
@@ -170,11 +151,9 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
   const rpdbkey = config.rpdbkey;
-  const imdbId = id.split(":")[0];
+  const imdbId = req.params.id.split(":")[0];
 
-  console.log("🧠 /meta route hit", { id, type, tmdbId, imdbId });
-
-  if (id.includes("tmdb:")) {
+  if (req.params.id.includes("tmdb:")) {
     const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId, rpdbkey, {
         hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
@@ -184,9 +163,15 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
       staleRevalidate: 20 * 24 * 60 * 60,
       staleError: 30 * 24 * 60 * 60,
     };
-    cacheOpts.cacheMaxAge = (type === "movie" || (type === "series" && (resp.releaseInfo || "").length > 5)) ? 14 * 24 * 60 * 60 : 1 * 24 * 60 * 60;
+    if (type == "movie") {
+      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+    } else if (type == "series") {
+      const hasEnded = !!((resp.releaseInfo || "").length > 5);
+      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+    }
     respond(res, resp, cacheOpts);
-  } else if (id.includes("tt")) {
+  }
+  if (req.params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
@@ -198,7 +183,12 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
         staleRevalidate: 20 * 24 * 60 * 60,
         staleError: 30 * 24 * 60 * 60,
       };
-      cacheOpts.cacheMaxAge = (type === "movie" || (type === "series" && (resp.releaseInfo || "").length > 5)) ? 14 * 24 * 60 * 60 : 1 * 24 * 60 * 60;
+      if (type == "movie") {
+        cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+      } else if (type == "series") {
+        const hasEnded = !!((resp.releaseInfo || "").length > 5);
+        cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+      }
       respond(res, resp, cacheOpts);
     } else {
       respond(res, { meta: {} });
@@ -208,19 +198,21 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
 
 addon.get("/api/image/blur", async function (req, res) {
   const imageUrl = req.query.url;
-
+  
   if (!imageUrl) {
     return res.status(400).json({ error: 'URL da imagem não fornecida' });
   }
 
   try {
     const blurredImageBuffer = await blurImage(imageUrl);
+    
     if (!blurredImageBuffer) {
       return res.status(500).json({ error: 'Erro ao processar imagem' });
     }
 
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000');
+    
     res.send(blurredImageBuffer);
   } catch (error) {
     console.error('Erro na rota de blur:', error);
@@ -228,21 +220,4 @@ addon.get("/api/image/blur", async function (req, res) {
   }
 });
 
-addon.get('/stats', async (req, res) => {
-  try {
-    const [uniqueUsers, swaggerStats] = await Promise.all([
-      analytics.getUniqueUsers(),
-      analytics.getStats()
-    ]);
-    res.json({
-      ...uniqueUsers,
-      ...swaggerStats
-    });
-  } catch (error) {
-    console.error('Erro ao obter estatísticas:', error);
-    res.status(500).json({ error: 'Erro ao obter estatísticas' });
-  }
-});
-
 module.exports = addon;
-

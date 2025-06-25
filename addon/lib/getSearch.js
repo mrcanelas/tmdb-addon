@@ -1,128 +1,173 @@
 require("dotenv").config();
 const { MovieDb } = require("moviedb-promise");
 const moviedb = new MovieDb(process.env.TMDB_API);
+const geminiService = require("../utils/gemini-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
 const { getGenreList } = require("./getGenreList");
-
-const DEBUG = process.env.DEBUG === "true";
-
-function log(level, ...args) {
-  if (!DEBUG) return;
-  const time = new Date().toISOString();
-  console[level](`[${time}]`, ...args);
-}
 
 function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
 }
 
-async function searchPersonCredits(searchQuery, type, language, genreList) {
-  const results = [];
+async function getSearch(id, type, language, query, config) {
+  let searchQuery = query;
+  if (isNonLatin(searchQuery)) {
+    searchQuery = transliterate(searchQuery);
+  }
 
-  try {
-    const personSearch = await moviedb.searchPerson({ query: searchQuery, language });
-    if (personSearch.results.length > 1) {
-      log("info", `Multiple people found for "${searchQuery}" — using first result "${personSearch.results[0].name}"`);
-    }
+  const isAISearch = id === "tmdb.aisearch";
+  let searchResults = [];
 
-    const person = personSearch.results[0];
-    if (!person) return results;
+  if (isAISearch && config.geminikey) {
+    try {
+      await geminiService.initialize(config.geminikey);
+      
+      const titles = await geminiService.searchWithAI(query, type);
 
-    if (type === "movie") {
-      const credits = await moviedb.personMovieCredits({ id: person.id, language });
-      credits.cast.forEach((el) => {
-        if (!results.find((meta) => meta.id === `tmdb:${el.id}`)) {
-          results.push(parseMedia(el, 'movie', genreList));
+      const genreList = await getGenreList(language, type);
+      
+      const searchPromises = titles.map(async (title) => {
+        try {
+          const parameters = {
+            query: title,
+            language,
+            include_adult: config.includeAdult
+          };
+
+          if (type === "movie") {
+            const res = await moviedb.searchMovie(parameters);
+            if (res.results && res.results.length > 0) {
+              return parseMedia(res.results[0], 'movie', genreList);
+            }
+          } else {
+            const res = await moviedb.searchTv(parameters);
+            if (res.results && res.results.length > 0) {
+              return parseMedia(res.results[0], 'tv', genreList);
+            }
+          }
+          return null;
+        } catch (error) {
+          console.error(`Erro ao buscar detalhes para título "${title}":`, error);
+          return null;
         }
       });
-      credits.crew.forEach((el) => {
-        if (el.job === "Director" || el.job === "Writer") {
-          if (!results.find((meta) => meta.id === `tmdb:${el.id}`)) {
-            results.push(parseMedia(el, 'movie', genreList));
-          }
+
+      const results = await Promise.all(searchPromises);
+      searchResults = results.filter(result => result !== null);
+
+    } catch (error) {
+      console.error('Erro ao processar busca com IA:', error);
+    }
+  }
+
+  if (searchResults.length === 0) {
+    const genreList = await getGenreList(language, type);
+
+    const parameters = {
+      query: searchQuery,
+      language,
+      include_adult: config.includeAdult
+    };
+
+    if (config.ageRating) {
+      parameters.certification_country = "US";
+      switch(config.ageRating) {
+        case "G":
+          parameters.certification = type === "movie" ? "G" : "TV-G";
+          break;
+        case "PG":
+          parameters.certification = type === "movie" ? ["G", "PG"].join("|") : ["TV-G", "TV-PG"].join("|");
+          break;
+        case "PG-13":
+          parameters.certification = type === "movie" ? ["G", "PG", "PG-13"].join("|") : ["TV-G", "TV-PG", "TV-14"].join("|");
+          break;
+        case "R":
+          parameters.certification = type === "movie" ? ["G", "PG", "PG-13", "R"].join("|") : ["TV-G", "TV-PG", "TV-14", "TV-MA"].join("|");
+          break;
+      }
+    }
+
+    if (type === "movie") {
+      await moviedb
+        .searchMovie(parameters)
+        .then((res) => {
+          res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+        })
+        .catch(console.error);
+
+      if (searchResults.length === 0) {
+        await moviedb
+          .searchMovie({ query: searchQuery, language, include_adult: config.includeAdult })
+          .then((res) => {
+            res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+          })
+          .catch(console.error);
+      }
+
+      await moviedb.searchPerson({ query: searchQuery, language }).then(async (res) => {
+        if (res.results[0]) {
+          await moviedb
+            .personMovieCredits({ id: res.results[0].id, language })
+            .then((credits) => {
+              credits.cast.map((el) => {
+                if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
+                  searchResults.push(parseMedia(el, 'movie', genreList));
+                }
+              });
+              credits.crew.map((el) => {
+                if (el.job === "Director" || el.job === "Writer") {
+                  if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
+                    searchResults.push(parseMedia(el, 'movie', genreList));
+                  }
+                }
+              });
+            });
         }
       });
     } else {
-      const credits = await moviedb.personTvCredits({ id: person.id, language });
-      credits.cast.forEach((el) => {
-        if (!results.find((meta) => meta.id === `tmdb:${el.id}`)) {
-          results.push(parseMedia(el, 'tv', genreList));
-        }
-      });
-      credits.crew.forEach((el) => {
-        if (el.job === "Director" || el.job === "Writer") {
-          if (!results.find((meta) => meta.id === `tmdb:${el.id}`)) {
-            results.push(parseMedia(el, 'tv', genreList));
-          }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Error during person search:", err);
-  }
+      await moviedb
+        .searchTv(parameters)
+        .then((res) => {
+          res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+        })
+        .catch(console.error);
 
-  return results;
-}
-
-async function getSearch(type, language, query, config) {
-  log("info", `🔍 Searching for: ${query}`);
-
-  const genreList = await getGenreList(language, type);
-  let searchQuery = isNonLatin(query) ? transliterate(query) : query;
-
-  const parameters = {
-    query,
-    language,
-    include_adult: config.includeAdult
-  };
-
-  if (config.ageRating) {
-    parameters.certification_country = "US";
-    const certs = {
-      G: type === "movie" ? "G" : "TV-G",
-      PG: type === "movie" ? "G|PG" : "TV-G|TV-PG",
-      "PG-13": type === "movie" ? "G|PG|PG-13" : "TV-G|TV-PG|TV-14",
-      R: type === "movie" ? "G|PG|PG-13|R" : "TV-G|TV-PG|TV-14|TV-MA"
-    };
-    parameters.certification = certs[config.ageRating];
-  }
-
-  const resultList = [];
-
-  try {
-    const searchResults = type === "movie"
-      ? await moviedb.searchMovie(parameters)
-      : await moviedb.searchTv(parameters);
-
-    searchResults.results.forEach(el => {
-      resultList.push(parseMedia(el, type, genreList));
-    });
-
-    if (resultList.length === 0) {
-      log("warn", `No ${type} results found, retrying with fallback transliterated query...`);
-      const fallbackResults = type === "movie"
-        ? await moviedb.searchMovie({ query: searchQuery, language, include_adult: config.includeAdult })
-        : await moviedb.searchTv({ query: searchQuery, language, include_adult: config.includeAdult });
-
-      fallbackResults.results.forEach(el => {
-        resultList.push(parseMedia(el, type, genreList));
-      });
-    }
-
-    const personCredits = await searchPersonCredits(searchQuery, type, language, genreList);
-    personCredits.forEach(el => {
-      if (!resultList.find(meta => meta.id === el.id)) {
-        resultList.push(el);
+      if (searchResults.length === 0) {
+        await moviedb
+          .searchTv({ query: searchQuery, language, include_adult: config.includeAdult })
+          .then((res) => {
+            res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+          })
+          .catch(console.error);
       }
-    });
 
-  } catch (error) {
-    console.error("Search error:", error);
+      await moviedb.searchPerson({ query: searchQuery, language }).then(async (res) => {
+        if (res.results[0]) {
+          await moviedb
+            .personTvCredits({ id: res.results[0].id, language })
+            .then((credits) => {
+              credits.cast.map((el) => {
+                if (el.episode_count >= 5) {
+                  if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
+                    searchResults.push(parseMedia(el, 'tv', genreList));
+                  }
+                }
+              });
+              credits.crew.map((el) => {
+                if (el.job === "Director" || el.job === "Writer") {
+                  if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
+                    searchResults.push(parseMedia(el, 'tv', genreList));
+                  }
+                }
+              });
+            });
+        }
+      });
+    }
   }
 
-  return Promise.resolve({ query, metas: resultList });
+  return Promise.resolve({ query, metas: searchResults });
 }
 
 module.exports = { getSearch };
-

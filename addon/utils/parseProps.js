@@ -7,7 +7,7 @@ function parseCertification(release_dates, language) {
 }
 
 function parseCast(credits) {
-  return credits.cast.map((el) => {
+  return credits.cast.slice(0, 5).map((el) => {
     return {
       name: el.name,
       character: el.character,

@@ -7,16 +7,15 @@ const fanart = new FanartTvApi({ api_key, baseUrl });
 const { MovieDb } = require("moviedb-promise");
 const moviedb = new MovieDb(process.env.TMDB_API);
 
-function pickLogo(resp, language, original_language) {  
-  if (resp.find((data) => data.lang === language.split("-")[0]) != undefined) {
-    return resp.find((data) => data.lang === language.split("-")[0]);
-  } else if (resp.find((data) => data.lang === original_language) != undefined) {
-    return resp.find((data) => data.lang === original_language);
-  } else if (resp.find((data) => data.lang === "en") != undefined) {
-    return resp.find((data) => data.lang === "en");
-  } else {
-    return resp[0];
-  }
+function pickLogo(logos, language, originalLanguage) {
+  const lang = language.split("-")[0];
+
+  return (
+    logos.find(l => l.lang === lang) ||
+    logos.find(l => l.lang === originalLanguage) ||
+    logos.find(l => l.lang === "en") ||
+    logos[0]
+  );
 }
 
 async function getLogo(tmdbId, language, originalLanguage) {
@@ -24,88 +23,77 @@ async function getLogo(tmdbId, language, originalLanguage) {
     throw new Error(`TMDB ID not available for logo: ${tmdbId}`);
   }
 
-  const fanartLogo = await fanart
-    .getMovieImages(tmdbId)
-    .then((response) => {
-      const logos = response.hdmovielogo;
-      if (logos) {
-        const logo = pickLogo(logos, language, originalLanguage);
-        return logo.url;
-      }
-      return '';
-    })
-    .catch(() => undefined);
+  const [fanartRes, tmdbRes] = await Promise.all([
+    fanart
+      .getMovieImages(tmdbId)
+      .then(res => res.hdmovielogo || [])
+      .catch(() => []),
 
-  if (fanartLogo) {
-    return fanartLogo;
-  }
+    moviedb
+      .movieImages({ id: tmdbId })
+      .then(res => res.logos || [])
+      .catch(() => [])
+  ]);
 
-  const tmdbLogo = await moviedb
-    .movieImages({ id: tmdbId })
-    .then((response) => {
-      const logos = response.logos;
-      if (logos && logos.length > 0) {
-        const logo = logos.find(
-          (logo) =>
-            logo.iso_639_1 === language.split('-')[0] ||
-            logo.iso_639_1 === originalLanguage ||
-            logo.iso_639_1 === 'en'
-        );
+  const fanartLogos = fanartRes.map(l => ({
+    url: l.url,
+    lang: l.lang || 'en',
+    source: 'fanart'
+  }));
 
-        return logo ? `https://image.tmdb.org/t/p/original${logo.file_path}` : '';
-      }
-      return '';
-    })
-    .catch(() => '');
+  const tmdbLogos = tmdbRes.map(l => ({
+    url: `https://image.tmdb.org/t/p/original${l.file_path}`,
+    lang: l.iso_639_1 || 'en',
+    source: 'tmdb'
+  }));
 
-  return tmdbLogo;
+  const combined = [...fanartLogos, ...tmdbLogos];
+
+  if (combined.length === 0) return '';
+
+  const picked = pickLogo(combined, language, originalLanguage);
+  return picked?.url || '';
 }
 
-async function getTvLogo(tvdb_id, tmdbId, language, original_language) {
+async function getTvLogo(tvdb_id, tmdbId, language, originalLanguage) {
   if (!tvdb_id && !tmdbId) {
-    return Promise.reject(Error(`TVDB ID and TMDB ID not available for logos.`));
+    throw new Error(`TVDB ID and TMDB ID not available for logos.`);
   }
 
-  const fanartLogo = await fanart
-    .getShowImages(tvdb_id)
-    .then((res) => {
-      const resp = res.hdtvlogo;
-      if (resp !== undefined) {
-        const { url } = pickLogo(resp, language, original_language);
-        return url;
-      } else {
-        return '';
-      }
-    })
-    .catch((err) => {
-      console.error("Error fetching TV logo from Fanart.tv:", err);
-      return '';
-    });
+  const [fanartRes, tmdbRes] = await Promise.all([
+    tvdb_id
+      ? fanart
+          .getShowImages(tvdb_id)
+          .then(res => res.hdtvlogo || [])
+          .catch(() => [])
+      : Promise.resolve([]),
 
-  if (fanartLogo) {
-    return fanartLogo;
-  } else if (tmdbId) {
-    const tmdbLogo = await moviedb.tvImages({ id: tmdbId })
-      .then((res) => {
-        if (res.logos && res.logos.length > 0) {
-          const logo = res.logos.find(
-            (logo) => logo.iso_639_1 === language.split("-")[0]
-          ) || res.logos.find((logo) => logo.iso_639_1 === original_language) || res.logos.find((logo) => logo.iso_639_1 === "en");
+    tmdbId
+      ? moviedb
+          .tvImages({ id: tmdbId })
+          .then(res => res.logos || [])
+          .catch(() => [])
+      : Promise.resolve([])
+  ]);
 
-          const logoUrl = logo ? `https://image.tmdb.org/t/p/original${logo.file_path}` : '';
-          return logoUrl;
-        }
-        return '';
-      })
-      .catch((err) => {
-        console.error("Error fetching TV logo from TMDB:", err);
-        return '';
-      });
+  const fanartLogos = fanartRes.map(l => ({
+    url: l.url,
+    lang: l.lang || 'en',
+    source: 'fanart'
+  }));
 
-    return tmdbLogo;
-  }
+  const tmdbLogos = tmdbRes.map(l => ({
+    url: `https://image.tmdb.org/t/p/original${l.file_path}`,
+    lang: l.iso_639_1 || 'en',
+    source: 'tmdb'
+  }));
 
-  return '';
+  const combined = [...fanartLogos, ...tmdbLogos];
+
+  if (combined.length === 0) return '';
+
+  const picked = pickLogo(combined, language, originalLanguage);
+  return picked?.url || '';
 }
 
 module.exports = { getLogo, getTvLogo };

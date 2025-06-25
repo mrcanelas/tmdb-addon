@@ -3,19 +3,18 @@ import { ConfigContext, type ConfigContextType, type CatalogConfig } from "./con
 import { 
   baseCatalogs, 
   authCatalogs, 
-  mdblistCatalogs, 
   streamingCatalogs 
 } from "@/data/catalogs";
 
 const allCatalogs = [
   ...baseCatalogs,
   ...authCatalogs,
-  ...mdblistCatalogs,
   ...Object.values(streamingCatalogs).flat()
 ];
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
+  const [geminikey, setGeminiKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
@@ -44,6 +43,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const config = JSON.parse(decodedConfig);
       
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
+      if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
       
@@ -91,6 +91,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     rpdbkey,
+    geminikey,
     mdblistkey,
     includeAdult,
     provideImdbId,
@@ -103,6 +104,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     ageRating,
     searchEnabled,
     setRpdbkey,
+    setGeminiKey,
     setMdblistkey,
     setIncludeAdult,
     setProvideImdbId,
