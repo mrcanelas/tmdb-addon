@@ -1,3 +1,5 @@
+import { compressToEncodedURIComponent } from 'lz-string';
+
 interface AddonConfig {
   rpdbkey?: string;
   geminikey?: string;
@@ -49,7 +51,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     Object.entries(configToEncode).filter(([_, value]) => value !== undefined && value !== null)
   );
 
-  const encodedConfig = encodeURIComponent(JSON.stringify(cleanConfig));
+  const compressed = compressToEncodedURIComponent(JSON.stringify(cleanConfig));
   
-  return `${window.location.origin}/${encodedConfig}/manifest.json`;
+  return `${window.location.origin}/${compressed}/manifest.json`;
 }

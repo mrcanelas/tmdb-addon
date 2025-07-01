@@ -1,4 +1,5 @@
 const urlExists = require("url-exists");
+const { decompressFromEncodedURIComponent } = require('lz-string');
 
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
@@ -166,12 +167,18 @@ function parseCreatedBy(created_by) {
 }
 
 function parseConfig(catalogChoices) {
-  let config = {}
+  let config = {};
   try {
-    config = JSON.parse(catalogChoices);
+    // Tenta descomprimir com lz-string
+    const decoded = decompressFromEncodedURIComponent(catalogChoices);
+    config = JSON.parse(decoded);
   } catch (e) {
-    if (catalogChoices) {
-      config.language = catalogChoices;
+    try {
+      config = JSON.parse(catalogChoices);
+    } catch {
+      if (catalogChoices) {
+        config.language = catalogChoices;
+      }
     }
   }
   return config;
