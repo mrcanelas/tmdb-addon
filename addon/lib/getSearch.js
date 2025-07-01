@@ -65,7 +65,7 @@ async function getSearch(id, type, language, query, config) {
     const genreList = await getGenreList(language, type);
 
     const parameters = {
-      query: searchQuery,
+      query: query,
       language,
       include_adult: config.includeAdult
     };
@@ -105,7 +105,7 @@ async function getSearch(id, type, language, query, config) {
           .catch(console.error);
       }
 
-      await moviedb.searchPerson({ query: searchQuery, language }).then(async (res) => {
+      await moviedb.searchPerson({ query: query, language }).then(async (res) => {
         if (res.results[0]) {
           await moviedb
             .personMovieCredits({ id: res.results[0].id, language })
@@ -142,7 +142,7 @@ async function getSearch(id, type, language, query, config) {
           .catch(console.error);
       }
 
-      await moviedb.searchPerson({ query: searchQuery, language }).then(async (res) => {
+      await moviedb.searchPerson({ query: query, language }).then(async (res) => {
         if (res.results[0]) {
           await moviedb
             .personTvCredits({ id: res.results[0].id, language })
