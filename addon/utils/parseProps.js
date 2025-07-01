@@ -6,8 +6,18 @@ function parseCertification(release_dates, language) {
   )[0].release_dates[0].certification;
 }
 
-function parseCast(credits) {
-  return credits.cast.slice(0, 5).map((el) => {
+function parseCast(credits, count) {
+  console.log(count)
+  if (count === undefined || count === null) {
+    return credits.cast.map((el) => {
+      return {
+        name: el.name,
+        character: el.character,
+        photo: el.profile_path ? `https://image.tmdb.org/t/p/w276_and_h350_face${el.profile_path}` : null
+      };
+    });
+  }
+  return credits.cast.slice(0, count).map((el) => {
     return {
       name: el.name,
       character: el.character,

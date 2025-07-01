@@ -9,6 +9,8 @@ const Others = () => {
   const { includeAdult, setIncludeAdult } = useConfig();
   const { provideImdbId, setProvideImdbId } = useConfig();
   const { tmdbPrefix, setTmdbPrefix } = useConfig();
+  const { hideInCinemaTag, setHideInCinemaTag } = useConfig();
+  const { castCount, setCastCount } = useConfig();
 
   return (
     <main className="md:p-12 px-2 py-12">
@@ -58,6 +60,36 @@ const Others = () => {
             </p>
           </div>
           <Switch checked={tmdbPrefix} onCheckedChange={() => setTmdbPrefix(!tmdbPrefix)} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-6">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1">Hide 'In Cinema' tag</h1>
+            <p className="text-gray-500 text-sm">
+              Hide the 'In Cinema' tag from posters
+            </p>
+          </div>
+          <Switch checked={hideInCinemaTag} onCheckedChange={setHideInCinemaTag} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-6">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1">Cast count to show</h1>
+            <p className="text-gray-500 text-sm">
+              Number of cast members to display (minimum 5, maximum 15, or Unlimited)
+            </p>
+          </div>
+          <select
+            className="border rounded px-2 py-1 text-sm"
+            value={castCount === undefined ? "Unlimited" : castCount}
+            onChange={e => {
+              const value = e.target.value;
+              setCastCount(value === "Unlimited" ? undefined : Number(value));
+            }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value="Unlimited">Unlimited</option>
+          </select>
         </Card>
         <Card className="p-6">
           <AgeRatingSelect />
