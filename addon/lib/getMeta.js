@@ -5,6 +5,7 @@ const moviedb = new MovieDb(process.env.TMDB_API);
 const { getEpisodes } = require("./getEpisodes");
 const { getLogo, getTvLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
+const { checkSeasonsAndReport } = require("../utils/checkSeasons");
 
 // Configuration
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
@@ -164,6 +165,18 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     }
   };
   if (hideInCinemaTag) delete response.imdb_id;
+
+  // Checagem de seasons (sem abrir issue)
+  if (response.imdb_id && response.videos && response.name) {
+    // Chama a checagem, mas comenta a parte do Issue dentro da função
+    checkSeasonsAndReport(
+      tmdbId,
+      response.imdb_id,
+      { meta: response },
+      response.name
+    );
+  }
+
   return response;
 };
 
