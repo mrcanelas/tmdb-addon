@@ -26,6 +26,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [catalogs, setCatalogs] = useState<CatalogConfig[]>([]);
   const [ageRating, setAgeRating] = useState<string | undefined>(undefined);
   const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
+  const [hideInCinemaTag, setHideInCinemaTag] = useState(false);
+  const [castCount, setCastCount] = useState<number | undefined>(5);
 
   const loadDefaultCatalogs = () => {
     const defaultCatalogs = baseCatalogs.map(catalog => ({
@@ -52,6 +54,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.ageRating) setAgeRating(config.ageRating);
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
+      if (config.hideInCinemaTag) setHideInCinemaTag(config.hideInCinemaTag === "true" || config.hideInCinemaTag === true);
+      if (config.castCount !== undefined) setCastCount(config.castCount === "Unlimited" ? undefined : Number(config.castCount));
       
       if (config.catalogs) {
         const catalogsWithNames = config.catalogs.map(catalog => {
@@ -109,6 +113,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     catalogs,
     ageRating,
     searchEnabled,
+    hideInCinemaTag,
+    castCount,
     setRpdbkey,
     setGeminiKey,
     setMdblistkey,
@@ -122,6 +128,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setCatalogs,
     setAgeRating,
     setSearchEnabled,
+    setHideInCinemaTag,
+    setCastCount,
     loadConfigFromUrl
   };
 
