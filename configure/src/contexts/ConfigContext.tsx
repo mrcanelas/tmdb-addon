@@ -44,6 +44,12 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
+      if (config.geminikey) setGeminiKey(config.geminikey);
+      if (config.provideImdbId) setProvideImdbId(config.provideImdbId === "true");
+      if (config.tmdbPrefix) setTmdbPrefix(config.tmdbPrefix === "true");
+      if (config.hideEpisodeThumbnails) setHideEpisodeThumbnails(config.hideEpisodeThumbnails === "true");
+      if (config.sessionId) setSessionId(config.sessionId);
+      if (config.ageRating) setAgeRating(config.ageRating);
       if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
       if (config.language) setLanguage(config.language);
       
