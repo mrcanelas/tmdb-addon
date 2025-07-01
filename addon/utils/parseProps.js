@@ -7,7 +7,6 @@ function parseCertification(release_dates, language) {
 }
 
 function parseCast(credits, count) {
-  console.log(count)
   if (count === undefined || count === null) {
     return credits.cast.map((el) => {
       return {
