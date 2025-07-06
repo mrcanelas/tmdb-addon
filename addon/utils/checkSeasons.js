@@ -6,10 +6,12 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = process.env.GITHUB_REPO; // Ex: 'mrcanelas/tmdb-addon'
 
 async function getLastChecked(tmdbId) {
+  if (!cache) return null;
   return await cache.get(`lastChecked:${tmdbId}`);
 }
 
 async function setLastChecked(tmdbId, data) {
+  if (!cache) return;
   await cache.set(`lastChecked:${tmdbId}`, data, { ttl: 365 * 24 * 60 * 60 });
 }
 
@@ -37,6 +39,12 @@ async function issueExistsOnGithub(title) {
 }
 
 async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
+  // Se não há cache disponível, pula a verificação
+  if (!cache) {
+    console.log("Cache not available, skipping season check");
+    return;
+  }
+
   const cacheData = await getLastChecked(tmdbId);
   const now = new Date();
   const lastChecked = cacheData && cacheData.lastChecked ? new Date(cacheData.lastChecked) : null;
