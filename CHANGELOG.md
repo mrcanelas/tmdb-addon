@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/aves-omni/tmdb-addon/compare/v1.0.1...v1.0.2) (2025-07-06)
+
+
+### Bug Fixes
+
+* update addon name and description for Omni fork ([38e4209](https://github.com/aves-omni/tmdb-addon/commit/38e420970d42e082f885b59e5d758b9fed80c500))
+
 ## [1.0.1](https://github.com/aves-omni/tmdb-addon/compare/v1.0.0...v1.0.1) (2025-07-06)
 
 
