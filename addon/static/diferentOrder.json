@@ -154,5 +154,10 @@
     "tmdbId": "1433",
     "episodeGroupId": "6268161a7cffda006544e4cf",
     "name": "American Dad!"
+  },
+  {
+    "tmdbId": "90686",
+    "episodeGroupId": "67e5e95ea6dd9b0808005b50",
+    "name": "Cold Case Files"
   }
 ]
