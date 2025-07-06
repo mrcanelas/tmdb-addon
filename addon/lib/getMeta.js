@@ -5,6 +5,7 @@ const moviedb = new MovieDb(process.env.TMDB_API);
 const { getEpisodes } = require("./getEpisodes");
 const { getLogo, getTvLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
+const { checkSeasonsAndReport } = require("../utils/checkSeasons");
 
 // Configuration
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
@@ -51,7 +52,7 @@ const fetchMovieData = async (tmdbId, language) => {
   });
 };
 
-const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey) => {
+const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
   const [poster, logo, imdbRatingRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getLogo(tmdbId, language, res.original_language).catch(e => {
@@ -62,8 +63,10 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey) => {
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
+  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
-  return {
+  const response = {
     imdb_id: res.imdb_id,
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
@@ -91,9 +94,11 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey) => {
     },
     logo: processLogo(logo),
     app_extras: {
-      cast: Utils.parseCast(res.credits)
+      cast: Utils.parseCast(res.credits, castCount)
     }
   };
+  if (hideInCinemaTag) delete response.imdb_id;
+  return response;
 };
 
 // TV show specific functions
@@ -105,7 +110,7 @@ const fetchTvData = async (tmdbId, language) => {
   });
 };
 
-const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config) => {
+const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
   const runtime = res.episode_run_time?.[0] ?? res.last_episode_to_air?.runtime ?? res.next_episode_to_air?.runtime ?? null;
 
   const [poster, logo, imdbRatingRaw, episodes] = await Promise.all([
@@ -124,8 +129,10 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config) => 
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
+  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
-  return {
+  const response = {
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
     genre: Utils.parseGenres(res.genres),
@@ -154,9 +161,23 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config) => 
     },
     logo: processLogo(logo),
     app_extras: {
-      cast: Utils.parseCast(res.credits)
+      cast: Utils.parseCast(res.credits, castCount)
     }
   };
+  if (hideInCinemaTag) delete response.imdb_id;
+
+  // Checagem de seasons (sem abrir issue)
+  if (response.imdb_id && response.videos && response.name) {
+    // Chama a checagem, mas comenta a parte do Issue dentro da função
+    checkSeasonsAndReport(
+      tmdbId,
+      response.imdb_id,
+      { meta: response },
+      response.name
+    );
+  }
+
+  return response;
 };
 
 // Main function
@@ -170,7 +191,7 @@ async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
 
   try {
     const meta = await (type === "movie" ? 
-      fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, rpdbkey)) :
+      fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, rpdbkey, config)) :
       fetchTvData(tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, rpdbkey, config))
     );
 

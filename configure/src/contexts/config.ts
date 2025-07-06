@@ -22,6 +22,8 @@ export type ConfigContextType = {
   catalogs: CatalogConfig[];
   ageRating: string | undefined;
   searchEnabled: boolean;
+  hideInCinemaTag: boolean;
+  castCount: number | undefined;
   setRpdbkey: (rpdbkey: string) => void;
   setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
@@ -35,6 +37,8 @@ export type ConfigContextType = {
   setCatalogs: (catalogs: CatalogConfig[] | ((prev: CatalogConfig[]) => CatalogConfig[])) => void;
   setAgeRating: (ageRating: string | undefined) => void;
   setSearchEnabled: (enabled: boolean) => void;
+  setHideInCinemaTag: (hide: boolean) => void;
+  setCastCount: (count: number | undefined) => void;
   loadConfigFromUrl: () => void;
 };
 

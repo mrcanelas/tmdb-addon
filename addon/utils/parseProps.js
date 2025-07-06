@@ -1,4 +1,5 @@
 const urlExists = require("url-exists");
+const { decompressFromEncodedURIComponent } = require('lz-string');
 
 function parseCertification(release_dates, language) {
   return release_dates.results.filter(
@@ -6,10 +7,17 @@ function parseCertification(release_dates, language) {
   )[0].release_dates[0].certification;
 }
 
-function parseCast(credits) {
-  const castLimit = process.env.CAST_LIMIT ? parseInt(process.env.CAST_LIMIT, 10) : undefined;
-  const castArray = typeof castLimit === 'number' && !isNaN(castLimit) ? credits.cast.slice(0, castLimit) : credits.cast;
-  return castArray.map((el) => {
+function parseCast(credits, count) {
+  if (count === undefined || count === null) {
+    return credits.cast.map((el) => {
+      return {
+        name: el.name,
+        character: el.character,
+        photo: el.profile_path ? `https://image.tmdb.org/t/p/w276_and_h350_face${el.profile_path}` : null
+      };
+    });
+  }
+  return credits.cast.slice(0, count).map((el) => {
     return {
       name: el.name,
       character: el.character,
@@ -159,12 +167,24 @@ function parseCreatedBy(created_by) {
 }
 
 function parseConfig(catalogChoices) {
-  let config = {}
+  let config = {};
+
+  // Se catalogChoices for null, undefined ou vazio, retorna objeto vazio
+  if (!catalogChoices) {
+    return config;
+  }
+
   try {
-    config = JSON.parse(catalogChoices);
+    // Tenta descomprimir com lz-string
+    const decoded = decompressFromEncodedURIComponent(catalogChoices);
+    config = JSON.parse(decoded);
   } catch (e) {
-    if (catalogChoices) {
-      config.language = catalogChoices;
+    try {
+      config = JSON.parse(catalogChoices);
+    } catch {
+      if (catalogChoices) {
+        config.language = catalogChoices;
+      }
     }
   }
   return config;

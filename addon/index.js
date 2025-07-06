@@ -68,7 +68,7 @@ addon.get("/session_id", async function (req, res) {
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
 
 addon.use('/configure', (req, res, next) => {
-  const config = parseConfig(req.params.catalogChoices);
+  const config = parseConfig(req.params.catalogChoices) || {};
   next();
 });
 
@@ -78,7 +78,7 @@ addon.get('/:catalogChoices?/configure', function (req, res) {
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
     const { catalogChoices } = req.params;
-    const config = parseConfig(catalogChoices);
+    const config = parseConfig(catalogChoices) || {};
     const manifest = await getManifest(config);
     
     const cacheOpts = {
@@ -91,7 +91,7 @@ addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
   const { catalogChoices, type, id, extra } = req.params;
-  const config = parseConfig(catalogChoices)
+  const config = parseConfig(catalogChoices) || {};
   const language = config.language || DEFAULT_LANGUAGE;
   const rpdbkey = config.rpdbkey
   const sessionId = config.sessionId
@@ -147,7 +147,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
 
 addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const { catalogChoices, type, id } = req.params;
-  const config = parseConfig(catalogChoices);
+  const config = parseConfig(catalogChoices) || {};
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
   const rpdbkey = config.rpdbkey;

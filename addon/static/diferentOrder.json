@@ -37,7 +37,7 @@
   },
   {
     "tmdbId": "46260",
-    "episodeGroupId": "5e4195943dd126001a560100",
+    "episodeGroupId": "5f24dcdc869e75003658360e",
     "name": "Naruto"
   },
   {
@@ -52,7 +52,7 @@
   },
   {
     "tmdbId": "46195",
-    "episodeGroupId": "6224ccddfe077a0043a57f5c",
+    "episodeGroupId": "63b834c6f44f2700bddedc3a",
     "name": "Bakemonogatari"
   },
   {
@@ -104,5 +104,125 @@
     "tmdbId": "220542",
     "episodeGroupId": "6782169d78cfcd77ed4e89be",
     "name": "The Apothecary Diaries"
+  },
+  {
+    "tmdbId": "223500",
+    "episodeGroupId": "67ef098e8b1f32eb79d90c4b",
+    "name": "WIND BREAKER"
+  },
+  {
+    "tmdbId": "240411",
+    "episodeGroupId": "6867281200716e516c5e35b0",
+    "name": "DAN DA DAN"
+  },
+  {
+    "tmdbId": "60572",
+    "episodeGroupId": "659b9819b4a54300ee29cc1a",
+    "name": "Pokémon"
+  },
+  {
+    "tmdbId": "2122",
+    "episodeGroupId": "63b9d955875d1a00838f005c",
+    "name": "King of the Hill"
+  },
+  {
+    "tmdbId": "30983",
+    "episodeGroupId": "62e1220aaa659e0050fc947d",
+    "name": "Detective Conan"
+  },
+  {
+    "tmdbId": "1533",
+    "episodeGroupId": "65947ba946f354121b531b5b",
+    "name": "Caméra café"
+  },
+  {
+    "tmdbId": "72879",
+    "episodeGroupId": "67297aa3433c82ea267e5217",
+    "name": "Tomorrow Is Ours"
+  },
+  {
+    "tmdbId": "67460",
+    "episodeGroupId": "62886d89ec455274c289e1b1",
+    "name": "Yu-Gi-Oh! Arc-V"
+  },
+  {
+    "tmdbId": "4271",
+    "episodeGroupId": "5bf8aff80e0a263ab800376b",
+    "name": "Farscape"
+  },
+  {
+    "tmdbId": "1433",
+    "episodeGroupId": "6268161a7cffda006544e4cf",
+    "name": "American Dad!"
+  },
+  {
+    "tmdbId": "90686",
+    "episodeGroupId": "67e5e95ea6dd9b0808005b50",
+    "name": "Cold Case Files"
+  },
+  {
+    "tmdbId": "30984",
+    "episodeGroupId": "663fb548c10d4be3e80b2f6d",
+    "name": "Bleach"
+  },
+  {
+    "tmdbId": "65931",
+    "episodeGroupId": "63c878632f3b17007d6a4e13",
+    "name": "Bungo Stray Dogs"
+  },
+  {
+    "tmdbId": "76123",
+    "episodeGroupId": "6685f386333f5f3daa3342d2",
+    "name": "Fate/Extra Last Encore"
+  },
+  {
+    "tmdbId": "223564",
+    "episodeGroupId": "6784fcdf2256023dfd4e696a",
+    "name": "The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You"
+  },
+  {
+    "tmdbId": "12609",
+    "episodeGroupId": "5b2d76b00e0a263877001115",
+    "name": "Dragon Ball"
+  },
+  {
+    "tmdbId": "62715",
+    "episodeGroupId": "607d7b58e6d3cc00775bab01",
+    "name": "Dragon Ball Super"
+  },
+  {
+    "tmdbId": "33238",
+    "episodeGroupId": "5f6559b3dbcade00361fda38",
+    "name": "Running Man"
+  },
+  {
+    "tmdbId": "204832",
+    "episodeGroupId": "65edb5c4e93e950161e0a6b1",
+    "name": "Mashle: Magic and Muscles"
+  },
+  {
+    "tmdbId": "34163",
+    "episodeGroupId": "67072f66c92c2e56d8611630",
+    "name": "Urusei Yatsura"
+  },
+  {
+    "tmdbId": "57706",
+    "episodeGroupId": "61ae6fa8af85de0043620bba",
+    "name": "Ranma ½"
+  },
+  {
+    "tmdbId": "35894",
+    "episodeGroupId": "5aebcea99251417f6e0016b3",
+    "name": "Zatch Bell!"
+  },
+  {
+    "tmdbId": "61709",
+    "episodeGroupId": "655b804bf6787a00e30c815c",
+    "name": "Dragon Ball Z Kai"
+  },
+  {
+    "tmdbId": "44593",
+    "episodeGroupId": "5bdac7a2c3a368079900a9a2",
+    "name": "Pac-Man and the Ghostly Adventures"
   }
 ]
