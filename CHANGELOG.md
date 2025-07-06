@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/aves-omni/tmdb-addon/compare/v1.0.0...v1.0.1) (2025-07-06)
+
+
+### Bug Fixes
+
+* update package version to 3.1.7 ([b9d5d1e](https://github.com/aves-omni/tmdb-addon/commit/b9d5d1e0058c8a9b9be6bdda8f9ba8d252a9355c))
+
 # 1.0.0 (2025-07-06)
 
 
