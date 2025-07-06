@@ -24,7 +24,7 @@ async function openGithubIssue(title, body, labels = []) {
 
 async function issueExistsOnGithub(title) {
   if (!GITHUB_TOKEN || !GITHUB_REPO) return false;
-  const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?state=open&labels=season-mismatch&per_page=100`;
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?labels=season-mismatch&per_page=100`;
   try {
     const resp = await axios.get(url, {
       headers: { Authorization: `token ${GITHUB_TOKEN}` }
