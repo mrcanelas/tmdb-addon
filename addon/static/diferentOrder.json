@@ -189,5 +189,10 @@
     "tmdbId": "12609",
     "episodeGroupId": "5b2d76b00e0a263877001115",
     "name": "Dragon Ball"
+  },
+  {
+    "tmdbId": "62715",
+    "episodeGroupId": "607d7b58e6d3cc00775bab01",
+    "name": "Dragon Ball Super"
   }
 ]
