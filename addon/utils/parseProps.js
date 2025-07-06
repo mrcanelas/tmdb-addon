@@ -168,6 +168,12 @@ function parseCreatedBy(created_by) {
 
 function parseConfig(catalogChoices) {
   let config = {};
+  
+  // Se catalogChoices for null, undefined ou vazio, retorna objeto vazio
+  if (!catalogChoices) {
+    return config;
+  }
+  
   try {
     // Tenta descomprimir com lz-string
     const decoded = decompressFromEncodedURIComponent(catalogChoices);
