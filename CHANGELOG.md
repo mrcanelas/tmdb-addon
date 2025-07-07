@@ -1,3 +1,19 @@
+# [1.1.0](https://github.com/aves-omni/tmdb-addon/compare/v1.0.2...v1.1.0) (2025-07-07)
+
+
+### Features
+
+* **diferentOrder:** add new entry for "A Will Eternal" ([319701d](https://github.com/aves-omni/tmdb-addon/commit/319701d5da3e18f398a47524c8580a2c7ff558af)), closes [#1138](https://github.com/aves-omni/tmdb-addon/issues/1138)
+* **diferentOrder:** add new entry for "Blue Lock" ([6ef4861](https://github.com/aves-omni/tmdb-addon/commit/6ef486152c1c25a107076111af56273ffd3601c7)), closes [#1178](https://github.com/aves-omni/tmdb-addon/issues/1178)
+* **diferentOrder:** add new entry for "Fate/stay night [Unlimited Blade Works]" ([4d904ce](https://github.com/aves-omni/tmdb-addon/commit/4d904cef0b55dce5bea85fb452ac0ded0c146084)), closes [#1179](https://github.com/aves-omni/tmdb-addon/issues/1179)
+* **diferentOrder:** add new entry for "Go! Go! Loser Ranger!" ([7e45751](https://github.com/aves-omni/tmdb-addon/commit/7e45751af5e19f82e242a231a8412a04bfdd085a)), closes [#1183](https://github.com/aves-omni/tmdb-addon/issues/1183)
+* **diferentOrder:** add new entry for "My Dress-Up Darling" ([aa71b79](https://github.com/aves-omni/tmdb-addon/commit/aa71b79e07f6b20322d7927b5b9ea69f10bf5601))
+* **diferentOrder:** add new entry for "Rurouni Kenshin" ([b6e5531](https://github.com/aves-omni/tmdb-addon/commit/b6e55319c9a906ade4b5b854ccd05e8078e82305)), closes [#1146](https://github.com/aves-omni/tmdb-addon/issues/1146)
+* **diferentOrder:** add new entry for "Sister Wives" ([9b8efa8](https://github.com/aves-omni/tmdb-addon/commit/9b8efa8c6b8878af4fa4ef46b5e1f174d82c3fbd)), closes [#1169](https://github.com/aves-omni/tmdb-addon/issues/1169)
+* **diferentOrder:** add new entry for "Yu-Gi-Oh! 5D's" ([fa8fa9c](https://github.com/aves-omni/tmdb-addon/commit/fa8fa9c921a2c1095048925c63e1813f3b5b98ae)), closes [#1176](https://github.com/aves-omni/tmdb-addon/issues/1176)
+* **diferentOrder:** add new entry for "Yu-Gi-Oh! Duel Monsters" ([f66a7a0](https://github.com/aves-omni/tmdb-addon/commit/f66a7a06b5e915ec9c6f303c7df20c0a92aeb5a5)), closes [#1172](https://github.com/aves-omni/tmdb-addon/issues/1172)
+* **diferentOrder:** add new entry for "Yu-Gi-Oh! GX" ([e54eef1](https://github.com/aves-omni/tmdb-addon/commit/e54eef10f8336466b15dd9c1599b7fe7190e65d9)), closes [#1174](https://github.com/aves-omni/tmdb-addon/issues/1174)
+
 ## [1.0.2](https://github.com/aves-omni/tmdb-addon/compare/v1.0.1...v1.0.2) (2025-07-06)
 
 
