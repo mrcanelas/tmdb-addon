@@ -5,6 +5,7 @@ import {
   authCatalogs, 
   streamingCatalogs 
 } from "@/data/catalogs";
+import { decompressFromEncodedURIComponent } from 'lz-string';
 
 const allCatalogs = [
   ...baseCatalogs,
@@ -41,8 +42,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const loadConfigFromUrl = () => {
     try {
       const path = window.location.pathname.split('/')[1];
-      const decodedConfig = decodeURIComponent(path);
-      const config = JSON.parse(decodedConfig);
+      const decompressedConfig = decompressFromEncodedURIComponent(path);
+      const config = JSON.parse(decompressedConfig);
       
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
@@ -65,7 +66,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           return {
             ...catalog,
             name: existingCatalog?.name || catalog.id,
-            enabled: catalog.enabled || false 
+            enabled: catalog.enabled !== undefined ? catalog.enabled : true 
           };
         });
         setCatalogs(catalogsWithNames);
