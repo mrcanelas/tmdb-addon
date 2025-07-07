@@ -254,5 +254,10 @@
     "tmdbId": "12536",
     "episodeGroupId": "63fb685457176f00db7fb04d",
     "name": "Yu-Gi-Oh! GX"
+  },
+  {
+    "tmdbId": "902",
+    "episodeGroupId": "5e6c3236357c000011410876",
+    "name": "Yu-Gi-Oh! Duel Monsters"
   }
 ]
