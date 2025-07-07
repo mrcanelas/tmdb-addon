@@ -224,5 +224,55 @@
     "tmdbId": "44593",
     "episodeGroupId": "5bdac7a2c3a368079900a9a2",
     "name": "Pac-Man and the Ghostly Adventures"
+  },
+  {
+    "tmdbId": "123249",
+    "episodeGroupId": "686959991181ff7f66cedd4a",
+    "name": "My Dress-Up Darling"
+  },
+  {
+    "tmdbId": "215799",
+    "episodeGroupId": "67fb06b21bc639566adad3a2",
+    "name": "Go! Go! Loser Ranger!"
+  },
+  {
+    "tmdbId": "61415",
+    "episodeGroupId": "5f053b7bdd25890037a0b338",
+    "name": "Fate/stay night [Unlimited Blade Works]"
+  },
+  {
+    "tmdbId": "131041",
+    "episodeGroupId": "66ffc8659ebea19006f80f07",
+    "name": "Blue Lock"
+  },
+  {
+    "tmdbId": "20695",
+    "episodeGroupId": "64246653a3e4ba0111489ca3",
+    "name": "Yu-Gi-Oh! 5D's"
+  },
+  {
+    "tmdbId": "12536",
+    "episodeGroupId": "63fb685457176f00db7fb04d",
+    "name": "Yu-Gi-Oh! GX"
+  },
+  {
+    "tmdbId": "902",
+    "episodeGroupId": "5e6c3236357c000011410876",
+    "name": "Yu-Gi-Oh! Duel Monsters"
+  },
+  {
+    "tmdbId": "34045",
+    "episodeGroupId": "5ae93165c3a3683bac002f3e",
+    "name": "Sister Wives"
+  },
+  {
+    "tmdbId": "210879",
+    "episodeGroupId": "66fbdc94f2b9c97c1dd63513",
+    "name": "Rurouni Kenshin"
+  },
+  {
+    "tmdbId": "107371",
+    "episodeGroupId": "6580f4c53a48c556a0af6c00",
+    "name": "A Will Eternal"
   }
 ]
