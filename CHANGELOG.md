@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/aves-omni/tmdb-addon/compare/v1.1.0...v1.1.1) (2025-07-07)
+
+
+### Bug Fixes
+
+* disable github release comments in semantic-release ([257d281](https://github.com/aves-omni/tmdb-addon/commit/257d281a9c440633d4602efb87ab06ab68bc5fac))
+
 # [1.1.0](https://github.com/aves-omni/tmdb-addon/compare/v1.0.2...v1.1.0) (2025-07-07)
 
 
