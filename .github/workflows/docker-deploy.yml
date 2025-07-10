@@ -2,13 +2,8 @@ name: Deploy Docker image to GitHub Container Registry
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag for the Docker image (e.g., v1.0.0)'
-        required: true
+    branches:
+      - main
 
 jobs:
   docker:
@@ -16,14 +11,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set tag name
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
-          else
-            echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-          fi
+        run: echo "TAG=latest" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -41,6 +33,8 @@ jobs:
       - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v6
         with:
+          context: .                 # Explicit build context (root directory)
+          file: ./Dockerfile         # Explicit Dockerfile path
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
