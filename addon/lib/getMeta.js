@@ -36,11 +36,11 @@ const processLogo = (logo) => {
   return logo.replace("http://", "https://");
 };
 
-const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language) => [
+const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language, castCount) => [
   Utils.parseImdbLink(imdbRating, imdbId),
   Utils.parseShareLink(title, imdbId, type),
   ...Utils.parseGenreLink(genres, type, language),
-  ...Utils.parseCreditsLink(credits)
+  ...Utils.parseCreditsLink(credits, castCount)
 ];
 
 // Movie specific functions
@@ -87,7 +87,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     genres: Utils.parseGenres(res.genres),
     releaseInfo: res.release_date ? res.release_date.substr(0, 4) : "",
     trailerStreams: Utils.parseTrailerStream(res.videos),
-    links: buildLinks(imdbRating, res.imdb_id, res.title, type, res.genres, res.credits, language),
+    links: buildLinks(imdbRating, res.imdb_id, res.title, type, res.genres, res.credits, language, castCount),
     behaviorHints: {
       defaultVideoId: res.imdb_id ? res.imdb_id : `tmdb:${res.id}`,
       hasScheduledVideos: false
@@ -152,7 +152,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     genres: Utils.parseGenres(res.genres),
     releaseInfo: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
     videos: episodes || [],
-    links: buildLinks(imdbRating, res.external_ids.imdb_id, res.name, type, res.genres, res.credits, language),
+    links: buildLinks(imdbRating, res.external_ids.imdb_id, res.name, type, res.genres, res.credits, language, castCount),
     trailers: Utils.parseTrailers(res.videos),
     trailerStreams: Utils.parseTrailerStream(res.videos),
     behaviorHints: {
