@@ -1,3 +1,12 @@
+# [1.2.0](https://github.com/aves-omni/tmdb-addon/compare/v1.1.1...v1.2.0) (2025-07-17)
+
+
+### Features
+
+* **ConfigContext:** update loadConfigFromUrl to use decompression and improve catalog enabled logic ([f8011b9](https://github.com/aves-omni/tmdb-addon/commit/f8011b965f7eafd865341871c3cef18dc2ba1b04))
+* **getMeta:** add castCount parameter in buildLinks and update parseCreditsLink ([23e1c69](https://github.com/aves-omni/tmdb-addon/commit/23e1c6971b0ef43436bef04da6dfa7170325e40d))
+* **MDBListIntegration:** enable display of lists on the home page and fix the logic for retrieving custom lists ([87e2481](https://github.com/aves-omni/tmdb-addon/commit/87e2481760e22a7e3335e9b892cbb82db526411f)), closes [#1200](https://github.com/aves-omni/tmdb-addon/issues/1200)
+
 ## [1.1.1](https://github.com/aves-omni/tmdb-addon/compare/v1.1.0...v1.1.1) (2025-07-07)
 
 
