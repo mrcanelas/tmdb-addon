@@ -101,8 +101,8 @@ function parseGenreLink(genres, type, language) {
   });
 }
 
-function parseCreditsLink(credits) {
-  const castData = parseCast(credits);
+function parseCreditsLink(credits, castCount) {
+  const castData = parseCast(credits, castCount);
   const Cast = castData.map((actor) => {
     return {
       name: actor.name,
