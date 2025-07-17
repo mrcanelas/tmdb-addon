@@ -130,13 +130,11 @@ async function getManifest(config) {
 
   const years = generateArrayOfYears(20);
   const genres_movie = await getGenreList(language, "movie").then(genres => {
-    const sortedGenres = genres.map(el => el.name).sort();
-    return sortedGenres;
+    return genres.map(el => el.name).sort();
   });
 
   const genres_series = await getGenreList(language, "series").then(genres => {
-    const sortedGenres = genres.map(el => el.name).sort();
-    return sortedGenres;
+    return genres.map(el => el.name).sort();
   });
 
   const languagesArray = await getLanguages();
@@ -215,6 +213,12 @@ async function getManifest(config) {
     `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
     `Active Catalogs: ${catalogs.length}`
   ].join(' | ');
+  
+  const idPrefixes = ["tmdb:"];
+  if (provideImdbId) {
+    idPrefixes.push("tt");
+    idPrefixes.push("tvdb:"); 
+  }
 
   return {
     id: packageJson.name,
@@ -223,10 +227,10 @@ async function getManifest(config) {
     logo: `${process.env.HOST_NAME}/logo.png`,
     background: `${process.env.HOST_NAME}/background.png`,
     name: "The Movie Database Addon",
-    description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
+    description: "A powerful hybrid metadata addon for Stremio. It uses TMDB for movies and discovery, and TVmaze for superior TV show metadata, ensuring the most accurate and up-to-date information.",
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
-    idPrefixes: provideImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
+    idPrefixes: idPrefixes, 
     stremioAddonsConfig,
     behaviorHints: {
       configurable: true,

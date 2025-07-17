@@ -109,7 +109,6 @@ async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
     }
   }
 
-  // 4. Update lastChecked
   await setLastChecked(tmdbId, { lastChecked: now.toISOString() });
   console.log("Last checked updated")
 }

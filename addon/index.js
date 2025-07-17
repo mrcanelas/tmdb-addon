@@ -1,14 +1,14 @@
 const express = require("express");
 const favicon = require('serve-favicon');
-const path = require("path")
+const path = require("path");
 const addon = express();
 const analytics = require('./utils/analytics');
 const { getCatalog } = require("./lib/getCatalog");
 const { getSearch } = require("./lib/getSearch");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
-const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
+const { getImdbIdFromTmdb, getImdbIdFromTvdb } = require("./lib/get-imdb-id");
 const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
@@ -22,15 +22,12 @@ addon.use(express.static(path.join(__dirname, '../dist')));
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
-
   if (!Object.keys(opts).length) return false;
-
   let cacheHeaders = {
     cacheMaxAge: "max-age",
     staleRevalidate: "stale-while-revalidate",
     staleError: "stale-if-error",
   };
-
   return Object.keys(cacheHeaders)
     .map((prop) => {
       const value = opts[prop];
@@ -50,42 +47,17 @@ const respond = function (res, data, opts) {
   res.send(data);
 };
 
-addon.get("/", function (_, res) {
-  res.redirect("/configure");
-});
-
-addon.get("/request_token", async function (req, res) {
-  const requestToken = await getRequestToken()
-  respond(res, requestToken);
-});
-
-addon.get("/session_id", async function (req, res) {
-  const requestToken = req.query.request_token
-  const sessionId = await getSessionId(requestToken)
-  respond(res, sessionId);
-});
-
+addon.get("/", function (_, res) { res.redirect("/configure"); });
+addon.get("/request_token", async function (req, res) { const r = await getRequestToken(); respond(res, r); });
+addon.get("/session_id", async function (req, res) { const s = await getSessionId(req.query.request_token); respond(res, s); });
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
-
-addon.use('/configure', (req, res, next) => {
-  const config = parseConfig(req.params.catalogChoices) || {};
-  next();
-});
-
-addon.get('/:catalogChoices?/configure', function (req, res) {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
-});
+addon.get('/:catalogChoices?/configure', function (req, res) { res.sendFile(path.join(__dirname, '../dist/index.html')); });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
     const { catalogChoices } = req.params;
     const config = parseConfig(catalogChoices) || {};
     const manifest = await getManifest(config);
-    
-    const cacheOpts = {
-        cacheMaxAge: 12 * 60 * 60,
-        staleRevalidate: 14 * 24 * 60 * 60, 
-        staleError: 30 * 24 * 60 * 60, 
-    };
+    const cacheOpts = { cacheMaxAge: 12 * 60 * 60, staleRevalidate: 14 * 24 * 60 * 60, staleError: 30 * 24 * 60 * 60 };
     respond(res, manifest, cacheOpts);
 });
 
@@ -93,130 +65,110 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const { catalogChoices, type, id, extra } = req.params;
   const config = parseConfig(catalogChoices) || {};
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey
-  const sessionId = config.sessionId
-  const { genre, skip, search } = extra
-    ? Object.fromEntries(
-      new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
-    )
-    : {};
-  const page = Math.ceil(skip ? skip / 20 + 1 : undefined) || 1;
+  const sessionId = config.sessionId;
+  let search = null;
+  if (extra && extra.startsWith('search=')) {
+      search = decodeURIComponent(extra.substring('search='.length));
+  }
+  const { genre, skip } = extra ? Object.fromEntries(new URLSearchParams(extra)) : {};
+  const page = skip ? Math.ceil(parseInt(skip) / 20 + 1) : 1;
   let metas = [];
+
   try {
     const args = [type, language, page];
-
     if (search) {
       metas = await getSearch(id, type, language, search, config);
     } else {
       switch (id) {
-        case "tmdb.trending":
-          metas = await getTrending(...args, genre, config);
-          break;
-        case "tmdb.favorites":
-          metas = await getFavorites(...args, genre, sessionId);
-          break;
-        case "tmdb.watchlist":
-          metas = await getWatchList(...args, genre, sessionId);
-          break;
-        default:
-          metas = await getCatalog(...args, id, genre, config);
-          break;
+        case "tmdb.trending": metas = await getTrending(...args, genre, config); break;
+        case "tmdb.favorites": metas = await getFavorites(...args, genre, sessionId); break;
+        case "tmdb.watchlist": metas = await getWatchList(...args, genre, sessionId); break;
+        default: metas = await getCatalog(...args, id, genre, config); break;
       }
     }
   } catch (e) {
-    res.status(404).send((e || {}).message || "Not found");
-    return;
+    console.error(e);
+    return res.status(404).send((e || {}).message || "Not found");
   }
-  const cacheOpts = {
-    cacheMaxAge: 1 * 24 * 60 * 60, 
-    staleRevalidate: 7 * 24 * 60 * 60,
-    staleError: 14 * 24 * 60 * 60,
-  };
-  if (rpdbkey) {
+
+  if (config.rpdbkey) {
     try {
-      metas = JSON.parse(JSON.stringify(metas));
       metas.metas = await Promise.all(metas.metas.map(async (el) => {
-        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey) 
+        const idToUse = (el.id || '').replace(/tmdb:|tt|tvdb:/g, '');
+        if (!idToUse) return el;
+        const rpdbImage = getRpdbPoster(type, idToUse, language, config.rpdbkey);
         el.poster = await checkIfExists(rpdbImage) ? rpdbImage : el.poster;
         return el;
       }))
-    } catch (e) { }
+    } catch (e) { console.error("Error replacing posters:", e); }
   }
+
+  const cacheOpts = { cacheMaxAge: 1 * 60 * 60, staleRevalidate: 24 * 60 * 60, staleError: 7 * 24 * 60 * 60 };
   respond(res, metas, cacheOpts);
 });
 
 addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
-  const { catalogChoices, type, id } = req.params;
+  const { catalogChoices, type, id: stremioId } = req.params;
   const config = parseConfig(catalogChoices) || {};
-  const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey;
-  const imdbId = req.params.id.split(":")[0];
+  const fullConfig = { ...config, rpdbkey: config.rpdbkey, hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true" };
 
-  if (req.params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId, rpdbkey, {
-        hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
-      });
-    });
-    const cacheOpts = {
-      staleRevalidate: 20 * 24 * 60 * 60,
-      staleError: 30 * 24 * 60 * 60,
-    };
-    if (type == "movie") {
-      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-    } else if (type == "series") {
-      const hasEnded = !!((resp.releaseInfo || "").length > 5);
-      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
-    }
-    respond(res, resp, cacheOpts);
-  }
-  if (req.params.id.includes("tt")) {
-    const tmdbId = await getTmdb(type, imdbId);
-    if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId, rpdbkey, {
-          hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
-        });
-      });
-      const cacheOpts = {
-        staleRevalidate: 20 * 24 * 60 * 60,
-        staleError: 30 * 24 * 60 * 60,
-      };
-      if (type == "movie") {
-        cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-      } else if (type == "series") {
-        const hasEnded = !!((resp.releaseInfo || "").length > 5);
-        cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+  try {
+    // The router's only job: Find the IMDb ID.
+    // We will use the Stremio ID as the primary key for our application cache.
+    const result = await cacheWrapMeta(stremioId, async () => {
+      let imdbId;
+      if (stremioId.startsWith("tt")) {
+        imdbId = stremioId;
+      } else if (stremioId.startsWith("tmdb:")) {
+        const tmdbId = stremioId.split(":")[1];
+        imdbId = await getImdbIdFromTmdb(tmdbId, type);
+      } else if (stremioId.startsWith("tvdb:")) {
+        const tvdbId = stremioId.split(":")[1];
+        imdbId = await getImdbIdFromTvdb(tvdbId);
+      } else {
+        throw new Error("Invalid ID format");
       }
-      respond(res, resp, cacheOpts);
-    } else {
-      respond(res, { meta: {} });
+      
+      if (!imdbId) {
+        throw new Error(`Could not resolve ${stremioId} to an IMDb ID`);
+      }
+
+      return await getMeta(type, language, imdbId, fullConfig);
+    });
+
+    if (!result || !result.meta) {
+      return respond(res, { meta: null });
     }
+    
+    // Dynamic HTTP cache settings based on content type and status
+    const cacheOpts = { staleRevalidate: 20 * 24 * 60 * 60, staleError: 30 * 24 * 60 * 60 };
+    if (type === "movie") {
+      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+    } else if (type === "series") {
+      const hasEnded = result.meta.status === 'Ended';
+      cacheOpts.cacheMaxAge = (hasEnded ? 7 : 1) * 24 * 60 * 60; // 7 days for ended, 1 day for running
+    }
+    
+    respond(res, result, cacheOpts);
+    
+  } catch (error) {
+    console.error(`CRITICAL ERROR in meta route for ${stremioId}:`, error.message);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 addon.get("/api/image/blur", async function (req, res) {
   const imageUrl = req.query.url;
-  
-  if (!imageUrl) {
-    return res.status(400).json({ error: 'URL da imagem não fornecida' });
-  }
-
+  if (!imageUrl) { return res.status(400).send('Image URL not provided'); }
   try {
     const blurredImageBuffer = await blurImage(imageUrl);
-    
-    if (!blurredImageBuffer) {
-      return res.status(500).json({ error: 'Erro ao processar imagem' });
-    }
-
     res.setHeader('Content-Type', 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-    
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // Cache blurred images forever
     res.send(blurredImageBuffer);
   } catch (error) {
-    console.error('Erro na rota de blur:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Error in blur route:', error);
+    res.status(500).send('Error processing image');
   }
 });
 
