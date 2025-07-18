@@ -102,13 +102,12 @@ async function buildSeriesResponseFromTvmaze(tvmazeShow, language, config) {
 
   const tmdbLikeCredits = {
     cast: (tvmazeShow?._embedded?.cast || []).map(c => ({
-      name: c.person.name, character: c.character.name, profile_path: c.person.image?.medium
+      name: c.person.name, character: c.character.name, profile_path: c.person.image?.medium.replace('https://static.tvmaze.com/uploads/images/', '')
     })),
     crew: (tvmazeShow?._embedded?.cast || []).filter(c => c.type === 'Creator').map(c => ({
         name: c.person.name, job: 'Creator'
     }))
   };
-  
 
   const videos = (tvmazeShow?._embedded?.episodes || []).map(episode => ({
     id: `${imdbId}:${episode.season}:${episode.number}`,
@@ -138,7 +137,6 @@ async function buildSeriesResponseFromTvmaze(tvmazeShow, language, config) {
     logo: processLogo(logoUrl), videos,
     links: Utils.buildLinks(imdbRating, imdbId, name, 'series', tvmazeShow.genres.map(g => ({ name: g })), tmdbLikeCredits, language, castCount),
     behaviorHints: { defaultVideoId: null, hasScheduledVideos: true },
-    app_extras: { cast: Utils.parseCast(tmdbLikeCredits, castCount) }
   };
 
   if (meta.imdb_id && meta.videos && meta.name) {

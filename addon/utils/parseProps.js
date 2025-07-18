@@ -25,11 +25,22 @@ function parseCast(credits, count) {
   if (!credits || !Array.isArray(credits.cast)) return [];
   const cast = credits.cast;
   const toParse = count === undefined || count === null ? cast : cast.slice(0, count);
-  return toParse.map((el) => ({
-    name: el.name,
-    character: el.character,
-    photo: el.profile_path ? `https://image.tmdb.org/t/p/w276_and_h350_face${el.profile_path}` : null
-  }));
+
+  return toParse.map((el) => {
+    let photoUrl = null;
+    if (el.profile_path) {
+      if (el.profile_path.startsWith('http')) {
+        photoUrl = el.profile_path;
+      } else {
+        photoUrl = `https://image.tmdb.org/t/p/w276_and_h350_face${el.profile_path}`;
+      }
+    }
+    return {
+      name: el.name,
+      character: el.character,
+      photo: photoUrl
+    };
+  });
 }
 
 function parseDirector(credits) {
