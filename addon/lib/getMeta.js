@@ -58,7 +58,7 @@ async function getSeriesMetaByImdbId(imdbId, language, config) {
 async function buildMovieResponse(movieData, language, config) {
   const { id: tmdbId, title, external_ids, poster_path, credits } = movieData;
   const imdbId = external_ids?.imdb_id;
-  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? Number(config.castCount) : 5);
   const [logoUrl, imdbRatingValue] = await Promise.all([
     getLogo('movie', { tmdbId }, language, movieData.original_language),
     getImdbRating(imdbId, 'movie')
@@ -92,8 +92,10 @@ async function buildSeriesResponseFromTvmaze(tvmazeShow, language, config) {
   const imdbId = externals.imdb;
   const tmdbId = externals.themoviedb;
   const tvdbId = externals.thetvdb;
-  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
-
+  console.log(typeof config.castCount);
+  console.log(config.castCount);
+  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? Number(config.castCount) : 5);
+  console.log("Cast count (series) is: " + castCount);
   const [logoUrl, imdbRatingValue] = await Promise.all([
     getLogo('series', { tmdbId, tvdbId }, language, tvmazeShow.language),
     getImdbRating(imdbId, 'series')
