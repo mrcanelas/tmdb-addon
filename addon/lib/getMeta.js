@@ -9,7 +9,7 @@ const { checkSeasonsAndReport } = require("../utils/checkSeasons");
 
 // Configuration
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
-const blacklistLogoUrls = [ "https://assets.fanart.tv/fanart/tv/0/hdtvlogo/-60a02798b7eea.png" ];
+const blacklistLogoUrls = ["https://assets.fanart.tv/fanart/tv/0/hdtvlogo/-60a02798b7eea.png"];
 
 // Cache
 const cache = new Map();
@@ -28,7 +28,7 @@ async function getCachedImdbRating(imdbId, type) {
 }
 
 // Helper functions
-const getCacheKey = (type, language, tmdbId, rpdbkey) => 
+const getCacheKey = (type, language, tmdbId, rpdbkey) =>
   `${type}-${language}-${tmdbId}-${rpdbkey}`;
 
 const processLogo = (logo) => {
@@ -63,7 +63,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
-  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const castCount = config.castCount !== undefined ? Math.max(1, Number(config.castCount)) : undefined;
   const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
   const response = {
@@ -129,7 +129,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
-  const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const castCount = config.castCount !== undefined ? Math.max(1, Number(config.castCount)) : undefined;
   const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
   const response = {
@@ -184,13 +184,13 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
 async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
   const cacheKey = getCacheKey(type, language, tmdbId, rpdbkey);
   const cachedData = cache.get(cacheKey);
-  
+
   if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TTL) {
     return Promise.resolve({ meta: cachedData.data });
   }
 
   try {
-    const meta = await (type === "movie" ? 
+    const meta = await (type === "movie" ?
       fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, rpdbkey, config)) :
       fetchTvData(tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, rpdbkey, config))
     );
