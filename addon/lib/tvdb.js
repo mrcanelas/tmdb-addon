@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { cacheWrapTvdbApi } = require('./getCache');
 const { to3LetterCode } = require('./language-map');
 const fetch = require('node-fetch');
 
@@ -68,22 +69,22 @@ async function searchPeople(query) {
 }
 
 async function getSeriesExtended(tvdbId) {
-  const token = await getAuthToken();
-  if (!token) return null;
+  // Use the cache wrapper! The key is simple and unique.
+  return cacheWrapTvdbApi(`series-extended:${tvdbId}`, async () => {
+    const token = await getAuthToken();
+    if (!token) return null;
 
-  const url = `${TVDB_API_URL}/series/${tvdbId}/extended?meta=translations`;
-
-  try {
-    const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.data;
-  } catch(error) {
-    console.error(`Error fetching extended series data for TVDB ID ${tvdbId}:`, error.message);
-    return null;
-  }
+    const url = `${TVDB_API_URL}/series/${tvdbId}/extended?meta=translations`;
+    try {
+      const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.data;
+    } catch(error) {
+      console.error(`Error fetching extended series data for TVDB ID ${tvdbId}:`, error.message);
+      return null; // Return null on failure so the cache doesn't store a bad result
+    }
+  });
 }
 
 async function getPersonExtended(personId) {
@@ -103,43 +104,44 @@ async function getPersonExtended(personId) {
 }
 
 async function getSeriesEpisodes(tvdbId, language = 'en-US', seasonType = 'official') {
-  const token = await getAuthToken();
-  if (!token) return null;
-  
-  const langCode2 = language.split('-')[0];
-  const langCode3 = await to3LetterCode(langCode2);
-  
-  let allEpisodes = [];
-  let page = 0;
-  let hasNextPage = true;
+  // Use the cache wrapper! The key includes the language for translated results.
+  return cacheWrapTvdbApi(`series-episodes:${tvdbId}:${language}`, async () => {
+    const token = await getAuthToken();
+    if (!token) return null;
+    
+    const langCode2 = language.split('-')[0];
+    const langCode3 = await to3LetterCode(langCode2);
+    
+    let allEpisodes = [];
+    let page = 0;
+    let hasNextPage = true;
 
-  while(hasNextPage) {
-    const url = `${TVDB_API_URL}/series/${tvdbId}/episodes/${seasonType}/${langCode3}?page=${page}`;
-    try {
-      const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!response.ok) {
-        // If the first page fails, try to fall back to English
-        if (page === 0 && langCode3 !== 'eng') {
-          console.warn(`Could not fetch episodes in '${langCode3}' for TVDB ID ${tvdbId}, falling back to 'eng'.`);
-          return await getSeriesEpisodes(tvdbId, 'en-US');
+    while(hasNextPage) {
+      const url = `${TVDB_API_URL}/series/${tvdbId}/episodes/${seasonType}/${langCode3}?page=${page}`;
+      try {
+        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!response.ok) {
+          if (page === 0 && langCode3 !== 'eng') {
+            console.warn(`Could not fetch episodes in '${langCode3}', falling back to 'eng'.`);
+            // If the primary language fails, we call the function again for English.
+            return getSeriesEpisodes(tvdbId, 'en-US');
+          }
+          hasNextPage = false;
+          continue;
         }
-        hasNextPage = false; // Stop if any subsequent page fails
-        continue;
+        const data = await response.json();
+        if (data.data && data.data.episodes) {
+          allEpisodes.push(...data.data.episodes);
+        }
+        hasNextPage = data.links && data.links.next;
+        page++;
+      } catch(error) {
+        console.error(`Error fetching page ${page} of episodes for TVDB ID ${tvdbId}:`, error.message);
+        hasNextPage = false;
       }
-      const data = await response.json();
-      if (data.data && data.data.episodes) {
-        allEpisodes.push(...data.data.episodes);
-      }
-      
-      hasNextPage = data.links && data.links.next;
-      page++;
-    } catch(error) {
-      console.error(`Error fetching page ${page} of episodes for TVDB ID ${tvdbId}:`, error.message);
-      hasNextPage = false; 
     }
-  }
-
-  return { episodes: allEpisodes };
+    return { episodes: allEpisodes };
+  });
 }
 
 module.exports = {
