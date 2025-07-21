@@ -19,12 +19,16 @@ async function parseTvdbSearchResult(extendedRecord, language) {
 
   const langCode = language.split('-')[0];
   const langCode3 = await to3LetterCode(langCode);
-  
+  const overviewTranslations = extendedRecord.translations?.overviewTranslations || [];
   const nameTranslations = extendedRecord.translations?.nameTranslations || [];
   const translatedName = nameTranslations.find(t => t.language === langCode3)?.name
                        || nameTranslations.find(t => t.language === 'eng')?.name
                        || extendedRecord.name;
 
+  const overview = overviewTranslations.find(t => t.language === langCode3)?.overview
+                   || overviewTranslations.find(t => t.language === 'eng')?.overview
+                   || extendedRecord.overview;
+  
   return {
     id: `tvdb:${extendedRecord.id}`,
     type: 'series',

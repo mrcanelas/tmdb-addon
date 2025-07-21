@@ -163,35 +163,49 @@ function parseConfig(catalogChoices) {
 }
 
 function getRpdbPoster(type, ids, language, rpdbkey) {
-    const lang = language.split("-")[0];
+    const tier = rpdbkey.split("-")[0]
+    const lang = language.split("-")[0]
     const { tmdbId, tvdbId } = ids;
+    let baseUrl = `https://api.ratingposterdb.com`;
+    let idType = null;
+    let fullMediaId = null;
     if (type === 'movie' && tmdbId) {
-        return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/movie-${tmdbId}.jpg?fallback=true&lang=${lang}`;
+        idType = 'tmdb';
+        fullMediaId = `movie-${tmdbId}`;
+    } else if (type === 'series') {
+        if (tvdbId) {
+            idType = 'tvdb';
+            fullMediaId = tvdbId;
+        } else if (tmdbId) {
+            idType = 'tmdb';
+            fullMediaId = `series-${tmdbId}`;
+        }
     }
-    if (type === 'series' && tvdbId) {
-        return `https://api.ratingposterdb.com/${rpdbkey}/tvdb/poster-default/series-${tvdbId}.jpg?fallback=true&lang=${lang}`;
+    if (!idType || !fullMediaId) {
+        return null;
     }
-    if (type === 'series' && tmdbId) {
-        return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/series-${tmdbId}.jpg?fallback=true&lang=${lang}`;
+
+    const urlPath = `${baseUrl}/${rpdbkey}/${idType}/poster-default/${fullMediaId}.jpg`;
+
+    if (tier === "t0" || tier === "t1" || lang === "en") {
+        return `${urlPath}?fallback=true`;
+    } else {
+        return `${urlPath}?fallback=true&lang=${lang}`;
     }
-    return null; 
 }
 
 async function checkIfExists(url) {
   try { await axios.head(url); return true; } catch (error) { return false; }
 }
 
-async function parsePoster(type, ids, fallbackPosterPath, language, rpdbkey) {
-  const { tmdbId, tvdbId } = ids;
-  const fallbackImage = `https://image.tmdb.org/t/p/w500${fallbackPosterPath}`;
-
+async function parsePoster(type, ids, fallbackFullUrl, language, rpdbkey) {
   if (rpdbkey) {
-    const rpdbImage = getRpdbPoster(type, { tmdbId, tvdbId }, language, rpdbkey);
+    const rpdbImage = getRpdbPoster(type, ids, language, rpdbkey);
     if (rpdbImage && await checkIfExists(rpdbImage)) {
       return rpdbImage;
     }
   }
-  return fallbackImage;
+  return fallbackFullUrl;
 }
 
 module.exports = {
