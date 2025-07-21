@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { MovieDb } = require("moviedb-promise");
 const { getGenreList } = require("./getGenreList");
-const { parseMedia } = require("../utils/parseProps");
+const Utils = require("../utils/parseProps");
 const tvdb = require("./tvdb");
 const { to3LetterCode } = require("./language-map"); 
 
@@ -14,7 +14,7 @@ function sanitizeQuery(query) {
 
 
 
-async function parseTvdbSearchResult(extendedRecord, language) {
+async function parseTvdbSearchResult(extendedRecord, language, config) {
   if (!extendedRecord || !extendedRecord.id || !extendedRecord.name) return null;
 
   const langCode = language.split('-')[0];
@@ -29,34 +29,53 @@ async function parseTvdbSearchResult(extendedRecord, language) {
                    || overviewTranslations.find(t => t.language === 'eng')?.overview
                    || extendedRecord.overview;
   
+  const tmdbId = extendedRecord.remoteIds?.find(id => id.sourceName === 'TheMovieDB')?.id;
+  const tvdbId = extendedRecord.id;
   return {
     id: `tvdb:${extendedRecord.id}`,
     type: 'series',
     name: translatedName, 
-    poster: extendedRecord.image,
+    poster: await Utils.parsePoster('series', { tmdbId, tvdbId }, extendedRecord.image, language, config.rpdbkey),
     year: extendedRecord.year,
-    description: extendedRecord.overview,
+    description: overview
   };
 }
 
 async function performMovieSearch(query, language, config, genreList) {
     const searchResults = new Map();
-    const addResult = (media) => {
-        const parsed = parseMedia(media, 'movie', genreList);
-        if (parsed && !searchResults.has(parsed.id)) searchResults.set(parsed.id, parsed);
+    const rawResults = new Map();
+
+    const addRawResult = (media) => {
+        if (media && media.id && !rawResults.has(media.id)) {
+            rawResults.set(media.id, media);
+        }
     };
+
     const movieRes = await moviedb.searchMovie({ query, language, include_adult: config.includeAdult });
-    movieRes.results.forEach(addResult);
+    movieRes.results.forEach(addRawResult);
+
     const personRes = await moviedb.searchPerson({ query, language });
     if (personRes.results?.[0]) {
         const credits = await moviedb.personMovieCredits({ id: personRes.results[0].id, language });
-        credits.cast.forEach(addResult);
-        credits.crew.forEach(media => { if (media.job === "Director" || media.job === "Writer") addResult(media); });
+        credits.cast.forEach(addRawResult);
+        credits.crew.forEach(media => { if (media.job === "Director" || media.job === "Writer") addRawResult(media); });
     }
+
+    const hydrationPromises = Array.from(rawResults.values()).map(async (media) => {
+        const parsed = Utils.parseMedia(media, 'movie', genreList);
+        parsed.poster = await Utils.parsePoster('movie', { tmdbId: media.id }, media.poster_path, language, config.rpdbkey);
+        return parsed;
+    });
+
+    const hydratedMetas = await Promise.all(hydrationPromises);
+    hydratedMetas.forEach(parsed => {
+        if(parsed && !searchResults.has(parsed.id)) searchResults.set(parsed.id, parsed);
+    });
+    
     return Array.from(searchResults.values());
 }
 
-async function performSeriesSearch(query, language) {
+async function performSeriesSearch(query, language, config) {
   const sanitizedQuery = sanitizeQuery(query);
   if (!sanitizedQuery) return [];
 
@@ -91,7 +110,7 @@ async function performSeriesSearch(query, language) {
   const detailPromises = uniqueIds.map(id => tvdb.getSeriesExtended(id));
   const detailedResults = await Promise.all(detailPromises);
   
-  const parsePromises = detailedResults.map(record => parseTvdbSearchResult(record, language));
+  const parsePromises = detailedResults.map(record => parseTvdbSearchResult(record, language, config));
   return (await Promise.all(parsePromises)).filter(Boolean);
 }
 
@@ -106,7 +125,7 @@ async function getSearch(id, type, language, query, config) {
       const sanitizedQuery = sanitizeQuery(query);
       metas = await performMovieSearch(sanitizedQuery, language, config, genreList);
     } else {
-      metas = await performSeriesSearch(query, language);
+      metas = await performSeriesSearch(query, language, config);
     }
     return { metas };
   } catch (error) {

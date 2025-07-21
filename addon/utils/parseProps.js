@@ -186,7 +186,7 @@ function getRpdbPoster(type, ids, language, rpdbkey) {
     }
 
     const urlPath = `${baseUrl}/${rpdbkey}/${idType}/poster-default/${fullMediaId}.jpg`;
-
+    console.log(urlPath);
     if (tier === "t0" || tier === "t1" || lang === "en") {
         return `${urlPath}?fallback=true`;
     } else {
@@ -201,6 +201,7 @@ async function checkIfExists(url) {
 async function parsePoster(type, ids, fallbackFullUrl, language, rpdbkey) {
   if (rpdbkey) {
     const rpdbImage = getRpdbPoster(type, ids, language, rpdbkey);
+    console.log(rpdbImage);
     if (rpdbImage && await checkIfExists(rpdbImage)) {
       return rpdbImage;
     }
