@@ -114,46 +114,16 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const fullConfig = { ...config, rpdbkey: config.rpdbkey, hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true" };
 
   try {
-    // The router's only job: Find the IMDb ID.
-    // We will use the Stremio ID as the primary key for our application cache.
-    const result = await cacheWrapMeta(stremioId, async () => {
-      let imdbId;
-      if (stremioId.startsWith("tt")) {
-        imdbId = stremioId;
-      } else if (stremioId.startsWith("tmdb:")) {
-        const tmdbId = stremioId.split(":")[1];
-        imdbId = await getImdbIdFromTmdb(tmdbId, type);
-      } else if (stremioId.startsWith("tvdb:")) {
-        const tvdbId = stremioId.split(":")[1];
-        imdbId = await getImdbIdFromTvdb(tvdbId);
-      } else {
-        throw new Error("Invalid ID format");
-      }
-      
-      if (!imdbId) {
-        throw new Error(`Could not resolve ${stremioId} to an IMDb ID`);
-      }
-
-      return await getMeta(type, language, imdbId, fullConfig);
-    });
+    const result = await getMeta(type, language, stremioId, fullConfig);
 
     if (!result || !result.meta) {
       return respond(res, { meta: null });
     }
     
-    // Dynamic HTTP cache settings based on content type and status
-    const cacheOpts = { staleRevalidate: 20 * 24 * 60 * 60, staleError: 30 * 24 * 60 * 60 };
-    if (type === "movie") {
-      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-    } else if (type === "series") {
-      const hasEnded = result.meta.status === 'Ended';
-      cacheOpts.cacheMaxAge = (hasEnded ? 7 : 1) * 24 * 60 * 60; // 7 days for ended, 1 day for running
-    }
-    
-    respond(res, result, cacheOpts);
+    respond(res, result);
     
   } catch (error) {
-    console.error(`CRITICAL ERROR in meta route for ${stremioId}:`, error.message);
+    console.error(`CRITICAL ERROR in meta route for ${stremioId}:`, error);
     res.status(500).send("Internal Server Error");
   }
 });

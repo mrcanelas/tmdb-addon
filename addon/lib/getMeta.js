@@ -2,54 +2,77 @@ require("dotenv").config();
 const { MovieDb } = require("moviedb-promise");
 const Utils = require("../utils/parseProps");
 const moviedb = new MovieDb(process.env.TMDB_API);
-const tvmaze = require("./tvmaze");
+const tvdb = require("./tvdb");
 const { getLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
-const { getEpisodeThumbnail } = require("../utils/getEpisodeThumbnail");
-const { checkSeasonsAndReport } = require("../utils/checkSeasons");
+const { to3LetterCode } = require('./language-map');
+
+const TVDB_IMAGE_BASE = 'https://artworks.thetvdb.com';
 
 const processLogo = (logoUrl) => {
   if (!logoUrl) return null;
   return logoUrl.replace(/^http:/, "https:");
 };
 
-
-async function getMeta(type, language, imdbId, config = {}) {
+// --- Main Orchestrator ---
+async function getMeta(type, language, stremioId, config = {}) {
   try {
     let meta;
     if (type === 'movie') {
-      meta = await getMovieMetaByImdbId(imdbId, language, config);
-    } else { // 'series'
-      meta = await getSeriesMetaByImdbId(imdbId, language, config);
+      meta = await getMovieMeta(stremioId, language, config);
+    } else { 
+      meta = await getSeriesMeta(stremioId, language, config);
     }
     return { meta };
   } catch (error) {
-    console.error(`Failed to get meta for ${type} with IMDb ID ${imdbId}:`, error.message);
+    console.error(`Failed to get meta for ${type} with ID ${stremioId}:`, error.message);
     return { meta: null };
   }
 }
 
 // --- Movie Worker ---
-async function getMovieMetaByImdbId(imdbId, language, config) {
-  const findResults = await moviedb.find({ id: imdbId, external_source: 'imdb_id' });
-  const movieTmdb = findResults.movie_results?.[0];
-  if (!movieTmdb) throw new Error(`Movie with IMDb ID ${imdbId} not found on TMDB.`);
-  
-  const movieData = await moviedb.movieInfo({ id: movieTmdb.id, language, append_to_response: "videos,credits,external_ids" });
+async function getMovieMeta(stremioId, language, config) {
+  let tmdbId = stremioId.replace('tmdb:', '');
+  if (stremioId.startsWith('tt')) {
+    const findResults = await moviedb.find({ id: stremioId, external_source: 'imdb_id' });
+    const movieTmdb = findResults.movie_results?.[0];
+    if (!movieTmdb) throw new Error(`Movie with IMDb ID ${stremioId} not found on TMDB.`);
+    tmdbId = movieTmdb.id;
+  }
+  const movieData = await moviedb.movieInfo({ id: tmdbId, language, append_to_response: "videos,credits,external_ids" });
   return buildMovieResponse(movieData, language, config);
 }
 
-// --- Series Worker ---
-async function getSeriesMetaByImdbId(imdbId, language, config) {
-  const tvmazeShow = await tvmaze.getShowByImdbId(imdbId);
-  if (!tvmazeShow) {
-    throw new Error(`Series with IMDb ID ${imdbId} not found on TVmaze.`);
+// --- Series Worker (TVDB Version) ---
+async function getSeriesMeta(stremioId, language, config) {
+  let tvdbId;
+
+  if (stremioId.startsWith('tvdb:')) {
+    tvdbId = stremioId.split(':')[1];
+  } else {
+    
+    const tmdbIdToFind = stremioId.startsWith('tmdb:') ? stremioId.split(':')[1] : (await moviedb.find({ id: stremioId, external_source: 'imdb_id' })).tv_results[0]?.id;
+    if (!tmdbIdToFind) throw new Error(`Could not resolve ${stremioId} to a TMDB ID.`);
+    
+    const tmdbInfo = await moviedb.tvInfo({ id: tmdbIdToFind, append_to_response: 'external_ids' });
+    tvdbId = tmdbInfo.external_ids?.tvdb_id;
   }
-  const tvmazeDetails = await tvmaze.getShowDetails(tvmazeShow.id);
-  if (!tvmazeDetails) {
-    throw new Error(`Could not fetch details for TVmaze ID ${tvmazeShow.id}.`);
+
+  if (!tvdbId) {
+    throw new Error(`Could not resolve ${stremioId} to a TVDB ID.`);
   }
-  return buildSeriesResponseFromTvmaze(tvmazeDetails, language, config);
+
+  
+  const [baseData, episodesData] = await Promise.all([
+    tvdb.getSeriesExtended(tvdbId),
+    tvdb.getSeriesEpisodes(tvdbId, language)
+  ]);
+
+  if (!baseData || !episodesData) {
+    throw new Error(`Could not fetch complete data for TVDB ID ${tvdbId}.`);
+  }
+
+  return buildSeriesResponseFromTvdb(baseData, episodesData, language, config);
 }
 
 
@@ -58,14 +81,17 @@ async function getSeriesMetaByImdbId(imdbId, language, config) {
 async function buildMovieResponse(movieData, language, config) {
   const { id: tmdbId, title, external_ids, poster_path, credits } = movieData;
   const imdbId = external_ids?.imdb_id;
-  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? Number(config.castCount) : 5);
+  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? config.castCount : 5);
   const [logoUrl, imdbRatingValue] = await Promise.all([
     getLogo('movie', { tmdbId }, language, movieData.original_language),
     getImdbRating(imdbId, 'movie')
   ]);
   const imdbRating = imdbRatingValue || movieData.vote_average?.toFixed(1) || "N/A";
   return {
-    id: `tmdb:${tmdbId}`, type: 'movie', name: title, imdb_id: imdbId,
+    id: `tmdb:${tmdbId}`,
+    type: 'movie',
+    name: title,
+    imdb_id: imdbId,
     slug: Utils.parseSlug('movie', title, imdbId),
     genres: Utils.parseGenres(movieData.genres),
     description: movieData.overview,
@@ -87,67 +113,76 @@ async function buildMovieResponse(movieData, language, config) {
   };
 }
 
-async function buildSeriesResponseFromTvmaze(tvmazeShow, language, config) {
-  const { name, premiered, image, summary, externals } = tvmazeShow;
-  const imdbId = externals.imdb;
-  const tmdbId = externals.themoviedb;
-  const tvdbId = externals.thetvdb;
-  console.log(typeof config.castCount);
-  console.log(config.castCount);
-  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? Number(config.castCount) : 5);
-  console.log("Cast count (series) is: " + castCount);
+async function buildSeriesResponseFromTvdb(tvdbShow, tvdbEpisodes, language, config) {
+  const { year, image, remoteIds, characters, episodes } = tvdbShow;
+  const langCode = language.split('-')[0];
+  const langCode3 = await to3LetterCode(langCode);
+  const nameTranslations = tvdbShow.translations?.nameTranslations || [];
+  const overviewTranslations = tvdbShow.translations?.overviewTranslations || [];
+  const translatedName = nameTranslations.find(t => t.language === langCode3)?.name
+             || nameTranslations.find(t => t.language === 'eng')?.name
+             || tvdbShow.name;
+             
+  const overview = overviewTranslations.find(t => t.language === langCode3)?.overview
+                   || overviewTranslations.find(t => t.language === 'eng')?.overview
+                   || tvdbShow.overview;
+  const imdbId = remoteIds?.find(id => id.sourceName === 'IMDB')?.id;
+  const tmdbId = remoteIds?.find(id => id.sourceName === 'TheMovieDB')?.id;
+  const tvdbId = tvdbShow.id;
+  const castCount = config.castCount === 'unlimited' ? undefined : ([5, 10, 15].includes(config.castCount) ? config.castCount : 5);
+
   const [logoUrl, imdbRatingValue] = await Promise.all([
-    getLogo('series', { tmdbId, tvdbId }, language, tvmazeShow.language),
+    getLogo('series', { tmdbId: tmdbId?.toString(), tvdbId: tvdbId?.toString() }, language, tvdbShow.originalLanguage),
     getImdbRating(imdbId, 'series')
   ]);
-  const imdbRating = imdbRatingValue || tvmazeShow.rating?.average?.toFixed(1) || "N/A";
+  const imdbRating = imdbRatingValue || (tvdbShow.score > 0 ? tvdbShow.score.toFixed(1) : "N/A");
 
   const tmdbLikeCredits = {
-    cast: (tvmazeShow?._embedded?.cast || []).map(c => ({
-      name: c.person.name, character: c.character.name, profile_path: c.person.image?.medium
+    cast: (characters || []).map(c => ({
+      name: c.personName,
+      character: c.name,
+      profile_path: c.image 
     })),
-    crew: (tvmazeShow?._embedded?.cast || []).filter(c => c.type === 'Creator').map(c => ({
-        name: c.person.name, job: 'Creator'
-    }))
+    crew: []
   };
-  
 
-  const videos = (tvmazeShow?._embedded?.episodes || []).map(episode => ({
-    id: `${imdbId}:${episode.season}:${episode.number}`,
-    title: episode.name || `Episode ${episode.number}`,
-    season: episode.season,
-    episode: episode.number,
-    thumbnail: getEpisodeThumbnail(episode.image?.medium, config.hideEpisodeThumbnails),
-    overview: episode.summary ? episode.summary.replace(/<[^>]*>?/gm, '') : '',
-    released: new Date(episode.airstamp),
-    available: new Date(episode.airstamp) < new Date(),
-  }));
+  const videos = (tvdbEpisodes.episodes || [])
+    .map(episode => ({
+      id: `${imdbId || `tvdb${tvdbId}`}:${episode.seasonNumber}:${episode.number}`,
+      title: episode.name || `Episode ${episode.number}`,
+      season: episode.seasonNumber,
+      episode: episode.number,
+      thumbnail: episode.image ? `${TVDB_IMAGE_BASE}${episode.image}` : null,
+      overview: episode.overview,
+      released: episode.aired ? new Date(episode.aired) : null,
+      available: episode.aired ? new Date(episode.aired) < new Date() : false,
+  })); 
 
   const meta = {
-    id: tmdbId ? `tmdb:${tmdbId}` : (tvdbId ? `tvdb:${tvdbId}` : imdbId),
-    type: 'series', name, imdb_id: imdbId,
-    slug: Utils.parseSlug('series', name, imdbId),
-    genres: tvmazeShow.genres || [],
-    description: summary ? summary.replace(/<[^>]*>?/gm, '') : '',
-    writer: Utils.parseWriter(tmdbLikeCredits).join(', '),
-    year: Utils.parseYear(tvmazeShow.status, premiered, tvmazeShow.ended),
-    released: new Date(premiered),
-    runtime: Utils.parseRunTime(tvmazeShow.runtime),
-    status: tvmazeShow.status,
-    country: tvmazeShow.network?.country?.name || null,
+    id: tmdbId ? `tmdb:${tmdbId}` : `tvdb:${tvdbId}`,
+    type: 'series',
+    name: translatedName,
+    imdb_id: imdbId,
+    slug: Utils.parseSlug('series', translatedName, imdbId),
+    genres: tvdbShow.genres?.map(g => g.name) || [],
+    description: overview,
+    writer: (tvdbShow.companies?.production || []).map(p => p.name).join(', '),
+    year: year,
+    released: new Date(tvdbShow.firstAired),
+    runtime: Utils.parseRunTime(tvdbShow.averageRuntime),
+    status: tvdbShow.status?.name,
+    country: tvdbShow.originalCountry,
     imdbRating,
-    poster: image?.original, background: image?.original,
-    logo: processLogo(logoUrl), videos,
-    links: Utils.buildLinks(imdbRating, imdbId, name, 'series', tvmazeShow.genres.map(g => ({ name: g })), tmdbLikeCredits, language, castCount),
+    poster: image,
+    background: tvdbShow.artworks?.find(a => a.type === 2)?.image, 
+    logo: processLogo(logoUrl),
+    videos: videos,
+    links: Utils.buildLinks(imdbRating, imdbId, translatedName, 'series', tvdbShow.genres, tmdbLikeCredits, language, castCount),
     behaviorHints: { defaultVideoId: null, hasScheduledVideos: true },
     app_extras: { cast: Utils.parseCast(tmdbLikeCredits, castCount) }
   };
 
-  if (meta.imdb_id && meta.videos && meta.name) {
-    checkSeasonsAndReport(tmdbId, meta.imdb_id, { meta }, meta.name);
-  }
   return meta;
 }
-
 
 module.exports = { getMeta };

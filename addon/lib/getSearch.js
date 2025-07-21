@@ -1,38 +1,39 @@
 require("dotenv").config();
 const { MovieDb } = require("moviedb-promise");
-const { transliterate } = require("transliteration");
 const { getGenreList } = require("./getGenreList");
 const { parseMedia } = require("../utils/parseProps");
-const tvmaze = require("./tvmaze");
-const tvdb =require("./tvdb");
+const tvdb = require("./tvdb");
+const { to3LetterCode } = require("./language-map"); 
 
 const moviedb = new MovieDb(process.env.TMDB_API);
 
-function sanitizeTvmazeQuery(query) {
+function sanitizeQuery(query) {
   if (!query) return '';
-  return query.replace(/[\[\]()]/g, ' ').replace(/[:.-]/g, ' ').trim().replace(/\s\s+/g, ' ');
+  return query.replace(/[\[\]()!?]/g, ' ').replace(/[:.-]/g, ' ').trim().replace(/\s\s+/g, ' ');
 }
 
-function parseTvmazeResult(show) {
-  if (!show || !show.id || !show.name) return null;
-  const id = show.externals?.themoviedb ? `tmdb:${show.externals.themoviedb}`
-           : (show.externals?.tvdb ? `tvdb:${show.externals.tvdb}` : show.externals?.imdb);
 
-  if (!id) return null;
+
+async function parseTvdbSearchResult(extendedRecord, language) {
+  if (!extendedRecord || !extendedRecord.id || !extendedRecord.name) return null;
+
+  const langCode = language.split('-')[0];
+  const langCode3 = await to3LetterCode(langCode);
+  
+  const nameTranslations = extendedRecord.translations?.nameTranslations || [];
+  const translatedName = nameTranslations.find(t => t.language === langCode3)?.name
+                       || nameTranslations.find(t => t.language === 'eng')?.name
+                       || extendedRecord.name;
 
   return {
-    id: id,
+    id: `tvdb:${extendedRecord.id}`,
     type: 'series',
-    name: show.name,
-    poster: show.image ? show.image.medium : null,
-    background: show.image ? show.image.original : null,
-    description: show.summary ? show.summary.replace(/<[^>]*>?/gm, '') : '',
-    genres: show.genres || [],
-    year: show.premiered ? show.premiered.substring(0, 4) : '',
-    imdbRating: show.rating?.average ? show.rating.average.toFixed(1) : 'N/A'
+    name: translatedName, 
+    poster: extendedRecord.image,
+    year: extendedRecord.year,
+    description: extendedRecord.overview,
   };
 }
-
 
 async function performMovieSearch(query, language, config, genreList) {
     const searchResults = new Map();
@@ -52,66 +53,54 @@ async function performMovieSearch(query, language, config, genreList) {
 }
 
 async function performSeriesSearch(query, language) {
-  const sanitizedQuery = sanitizeTvmazeQuery(query);
+  const sanitizedQuery = sanitizeQuery(query);
   if (!sanitizedQuery) return [];
 
   const [titleResults, peopleResults] = await Promise.all([
-    tvmaze.searchShows(sanitizedQuery),
-    tvmaze.searchPeople(sanitizedQuery)
+    tvdb.searchSeries(sanitizedQuery),
+    tvdb.searchPeople(sanitizedQuery)
   ]);
+
+  const seriesIdMap = new Map();
+
   
-  const searchResults = new Map();
-  const addResult = (show) => {
-    const parsed = parseTvmazeResult(show);
-    if (parsed && show?.id && !searchResults.has(show.id)) {
-      searchResults.set(show.id, parsed);
-    }
-  };
+  titleResults.forEach(result => {
+    if (result.tvdb_id) seriesIdMap.set(result.tvdb_id, true);
+  });
 
-  titleResults.forEach(result => addResult(result.show));
-
+  
   if (peopleResults.length > 0) {
-    const personId = peopleResults[0].person.id;
-    const castCredits = await tvmaze.getPersonCastCredits(personId);
-    castCredits.forEach(credit => addResult(credit._embedded.show));
-  }
-  
-  if (searchResults.size > 0) {
-    return Array.from(searchResults.values());
-  }
-  
-  // --- TIER 2 & 3 FALLBACKS ---
-  console.log(`Initial searches failed for "${query}". Trying fallback tiers...`);
-  /*const tvdbResults = await tvdb.search(query);
-  if (tvdbResults.length > 0) {
-    const topTvdbResult = tvdbResults[0];
-    const tvdbId = topTvdbResult.tvdb_id;
-    if (tvdbId) {
-      const finalShow = await tvmaze.getShowByTvdbId(tvdbId);
-      if (finalShow) return [parseTvmazeResult(finalShow)].filter(Boolean);
-    }
-  }*/
-  
-  const tmdbResults = await moviedb.searchTv({ query: query, language });
-  if (tmdbResults.results.length > 0) {
-    const topTmdbResult = tmdbResults.results[0];
-    const tmdbInfo = await moviedb.tvInfo({ id: topTmdbResult.id, append_to_response: 'external_ids' });
-    const imdbId = tmdbInfo.external_ids?.imdb_id;
-    if (imdbId) {
-      const finalShow = await tvmaze.getShowByImdbId(imdbId);
-      if (finalShow) return [parseTvmazeResult(finalShow)].filter(Boolean);
+    const topPerson = peopleResults[0];
+    const personDetails = await tvdb.getPersonExtended(topPerson.tvdb_id);
+    if (personDetails && personDetails.characters) {
+      personDetails.characters.forEach(credit => {
+        if (credit.seriesId) seriesIdMap.set(String(credit.seriesId), true);
+      });
     }
   }
 
-  return [];
+  const uniqueIds = Array.from(seriesIdMap.keys());
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  const detailPromises = uniqueIds.map(id => tvdb.getSeriesExtended(id));
+  const detailedResults = await Promise.all(detailPromises);
+  
+  const parsePromises = detailedResults.map(record => parseTvdbSearchResult(record, language));
+  return (await Promise.all(parsePromises)).filter(Boolean);
 }
+
+
 
 async function getSearch(id, type, language, query, config) {
   try {
     let metas = [];
     if (type === 'movie') {
       const genreList = await getGenreList(language, type);
-      metas = await performMovieSearch(query, language, config, genreList);
+      // sanitize movie search query as well for consistency
+      const sanitizedQuery = sanitizeQuery(query);
+      metas = await performMovieSearch(sanitizedQuery, language, config, genreList);
     } else {
       metas = await performSeriesSearch(query, language);
     }

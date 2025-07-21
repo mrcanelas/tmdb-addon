@@ -179,7 +179,7 @@ async function getManifest(config) {
     const searchCatalogSeries = {
       id: "tmdb.search",
       type: "series",
-      name: `${tmdbPrefix ? "TMDB - " : ""}${translatedCatalogs.search}`,
+      name: `${tmdbPrefix ? "TVDB - " : ""}${translatedCatalogs.search}`,
       extra: [{ name: "search", isRequired: true, options: [] }]
     };
 
@@ -227,7 +227,7 @@ async function getManifest(config) {
     logo: `${process.env.HOST_NAME}/logo.png`,
     background: `${process.env.HOST_NAME}/background.png`,
     name: "The Movie Database Addon",
-    description: "A powerful hybrid metadata addon for Stremio. It uses TMDB for movies and discovery, and TVmaze for superior TV show metadata, ensuring the most accurate and up-to-date information.",
+    description: "A powerful hybrid metadata addon for Stremio. It uses TMDB for movies and discovery, and TVDB for superior TV show metadata, ensuring the most accurate and up-to-date information.",
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
     idPrefixes: idPrefixes, 
