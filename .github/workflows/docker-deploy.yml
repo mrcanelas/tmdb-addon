@@ -3,7 +3,7 @@ name: Deploy Docker image to GitHub Container Registry
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   docker:
