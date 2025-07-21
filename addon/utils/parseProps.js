@@ -75,7 +75,7 @@ function parseTrailerStream(videos) {
 
 function parseImdbLink(vote_average, imdb_id) {
   return {
-    name: `IMDb: ${vote_average}`,
+    name: vote_average,
     category: "imdb",
     url: `https://imdb.com/title/${imdb_id}`,
   };
@@ -162,22 +162,36 @@ function parseConfig(catalogChoices) {
   }
 }
 
-function getRpdbPoster(type, id, language, rpdbkey) {
+function getRpdbPoster(type, ids, language, rpdbkey) {
     const lang = language.split("-")[0];
-    return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true&lang=${lang}`;
+    const { tmdbId, tvdbId } = ids;
+    if (type === 'movie' && tmdbId) {
+        return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/movie-${tmdbId}.jpg?fallback=true&lang=${lang}`;
+    }
+    if (type === 'series' && tvdbId) {
+        return `https://api.ratingposterdb.com/${rpdbkey}/tvdb/poster-default/series-${tvdbId}.jpg?fallback=true&lang=${lang}`;
+    }
+    if (type === 'series' && tmdbId) {
+        return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/series-${tmdbId}.jpg?fallback=true&lang=${lang}`;
+    }
+    return null; 
 }
 
 async function checkIfExists(url) {
   try { await axios.head(url); return true; } catch (error) { return false; }
 }
 
-async function parsePoster(type, id, poster_path, language, rpdbkey) {
-  const tmdbImage = `https://image.tmdb.org/t/p/w500${poster_path}`;
+async function parsePoster(type, ids, fallbackPosterPath, language, rpdbkey) {
+  const { tmdbId, tvdbId } = ids;
+  const fallbackImage = `https://image.tmdb.org/t/p/w500${fallbackPosterPath}`;
+
   if (rpdbkey) {
-    const rpdbImage = getRpdbPoster(type, id, language, rpdbkey);
-    return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
+    const rpdbImage = getRpdbPoster(type, { tmdbId, tvdbId }, language, rpdbkey);
+    if (rpdbImage && await checkIfExists(rpdbImage)) {
+      return rpdbImage;
+    }
   }
-  return tmdbImage;
+  return fallbackImage;
 }
 
 module.exports = {

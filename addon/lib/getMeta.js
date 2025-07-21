@@ -55,6 +55,7 @@ async function getSeriesMeta(stremioId, language, config) {
     if (!tmdbIdToFind) throw new Error(`Could not resolve ${stremioId} to a TMDB ID.`);
     
     const tmdbInfo = await moviedb.tvInfo({ id: tmdbIdToFind, append_to_response: 'external_ids' });
+    console.log(tmdbInfo);
     tvdbId = tmdbInfo.external_ids?.tvdb_id;
   }
 
@@ -102,7 +103,7 @@ async function buildMovieResponse(movieData, language, config) {
     runtime: Utils.parseRunTime(movieData.runtime),
     country: Utils.parseCoutry(movieData.production_countries),
     imdbRating,
-    poster: await Utils.parsePoster('movie', tmdbId, poster_path, language, config.rpdbkey),
+    poster: await Utils.parsePoster('movie', { tmdbId }, poster_path, language, config.rpdbkey),
     background: `https://image.tmdb.org/t/p/original${movieData.backdrop_path}`,
     logo: processLogo(logoUrl),
     trailers: Utils.parseTrailers(movieData.videos),
@@ -114,7 +115,7 @@ async function buildMovieResponse(movieData, language, config) {
 }
 
 async function buildSeriesResponseFromTvdb(tvdbShow, tvdbEpisodes, language, config) {
-  const { year, image, remoteIds, characters, episodes } = tvdbShow;
+  const { year, image: tvdbPosterPath, remoteIds, characters, episodes } = tvdbShow;
   const langCode = language.split('-')[0];
   const langCode3 = await to3LetterCode(langCode);
   const nameTranslations = tvdbShow.translations?.nameTranslations || [];
@@ -173,7 +174,7 @@ async function buildSeriesResponseFromTvdb(tvdbShow, tvdbEpisodes, language, con
     status: tvdbShow.status?.name,
     country: tvdbShow.originalCountry,
     imdbRating,
-    poster: image,
+    poster: await Utils.parsePoster('series', { tmdbId, tvdbId }, tvdbPosterPath, language, config.rpdbkey),
     background: tvdbShow.artworks?.find(a => a.type === 2)?.image, 
     logo: processLogo(logoUrl),
     videos: videos,

@@ -4,18 +4,17 @@ const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { fetchMDBListItems, parseMDBListItems } = require("../utils/mdbList");
 const CATALOG_TYPES = require("../static/catalog-types.json");
+const { getMeta } = require("./getMeta");
 
 const moviedb = new MovieDb(process.env.TMDB_API);
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
 async function getCatalog(type, language, page, id, genre, config) {
   try {
-    const mdblistKey = config.mdblistkey;
-
     if (id.startsWith("mdblist.")) {
       const listId = id.split(".")[1];
-      const results = await fetchMDBListItems(listId, mdblistKey, language, page);
-      return await parseMDBListItems(results, type, genre, language, config.rpdbkey);
+      const results = await fetchMDBListItems(listId, config.mdblistkey, language, page);
+      return await parseMDBListItems(results, type, genre, language, config);
     }
 
     const genreList = await getGenreList(language, type);
@@ -27,18 +26,16 @@ async function getCatalog(type, language, page, id, genre, config) {
 
     const res = await fetchFunction(parameters);
 
-    const metas = res.results.map(item => {
-      if (!item.id || !item.poster_path || !(item.title || item.name)) {
-        return null;
-      }
-      
-      return {
-        id: `tmdb:${item.id}`, 
-        type: type,
-        name: item.title || item.name,
-        poster: `${TMDB_IMAGE_BASE}${item.poster_path}`,
-      };
-    }).filter(Boolean); 
+    const metaPromises = res.results.map(item => 
+      getMeta(type, language, `tmdb:${item.id}`, config)
+        .then(result => result.meta)
+        .catch(err => {
+          console.error(`Error fetching metadata for tmdb:${item.id}:`, err.message);
+          return null;
+        })
+    );
+
+    const metas = (await Promise.all(metaPromises)).filter(Boolean);
 
     return { metas };
 
@@ -47,7 +44,6 @@ async function getCatalog(type, language, page, id, genre, config) {
     return { metas: [] };
   }
 }
-
 
 async function buildParameters(type, language, page, id, genre, genreList, config) {
   const languages = await getLanguages();
