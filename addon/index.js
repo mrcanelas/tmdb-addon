@@ -8,7 +8,6 @@ const { getSearch } = require("./lib/getSearch");
 const { getManifest, DEFAULT_LANGUAGE } = require("./lib/getManifest");
 const { getMeta } = require("./lib/getMeta");
 const { cacheWrapMeta } = require("./lib/getCache");
-const { getImdbIdFromTmdb, getImdbIdFromTvdb } = require("./lib/get-imdb-id");
 const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
@@ -112,7 +111,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const config = parseConfig(catalogChoices) || {};
   const language = config.language || DEFAULT_LANGUAGE;
   const fullConfig = { ...config, rpdbkey: config.rpdbkey, hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true" };
-
+  console.log(stremioId);
   try {
     const result = await getMeta(type, language, stremioId, fullConfig);
 

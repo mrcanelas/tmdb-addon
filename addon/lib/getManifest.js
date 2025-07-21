@@ -214,11 +214,6 @@ async function getManifest(config) {
     `Active Catalogs: ${catalogs.length}`
   ].join(' | ');
   
-  const idPrefixes = ["tmdb:"];
-  if (provideImdbId) {
-    idPrefixes.push("tt");
-    idPrefixes.push("tvdb:"); 
-  }
 
   return {
     id: packageJson.name,
@@ -230,7 +225,7 @@ async function getManifest(config) {
     description: "A powerful hybrid metadata addon for Stremio. It uses TMDB for movies and discovery, and TVDB for superior TV show metadata, ensuring the most accurate and up-to-date information.",
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
-    idPrefixes: idPrefixes, 
+    idPrefixes: ["tmdb:", "tt", "tvdb:"],
     stremioAddonsConfig,
     behaviorHints: {
       configurable: true,

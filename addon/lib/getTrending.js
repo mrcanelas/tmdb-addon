@@ -1,33 +1,41 @@
 require("dotenv").config();
 const { MovieDb } = require("moviedb-promise");
+
 const moviedb = new MovieDb(process.env.TMDB_API);
-const { getMeta } = require("./getMeta");
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
 async function getTrending(type, language, page, genre, config) {
-  const media_type = type === "series" ? "tv" : type;
-  const parameters = {
-    media_type,
-    time_window: genre ? genre.toLowerCase() : "day",
-    language,
-    page,
-  };
+  try {
+    const media_type = type === "series" ? "tv" : type;
+    const time_window = genre && ['day', 'week'].includes(genre.toLowerCase()) ? genre.toLowerCase() : "day";
+    
+    const parameters = {
+      media_type,
+      time_window,
+      language,
+      page,
+    };
 
-  return await moviedb
-    .trending(parameters)
-    .then(async (res) => {
-      const metaPromises = res.results.map(item => 
-        getMeta(type, language, item.id, config.rpdbkey)
-          .then(result => result.meta)
-          .catch(err => {
-            console.error(`Erro ao buscar metadados para ${item.id}:`, err.message);
-            return null;
-          })
-      );
+    const res = await moviedb.trending(parameters);
 
-      const metas = (await Promise.all(metaPromises)).filter(Boolean);
-      return { metas };
-    })
-    .catch(console.error);
+    const metas = res.results.map(item => {
+      if (!item.id || !item.poster_path || !(item.title || item.name)) {
+        return null;
+      }
+      return {
+        id: `tmdb:${item.id}`,
+        type: type,
+        name: item.title || item.name,
+        poster: `${TMDB_IMAGE_BASE}${item.poster_path}`,
+      };
+    }).filter(Boolean);
+
+    return { metas };
+
+  } catch (error) {
+    console.error(`Error fetching trending for type=${type}:`, error.message);
+    return { metas: [] };
+  }
 }
 
 module.exports = { getTrending };

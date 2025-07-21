@@ -46,7 +46,7 @@ async function getMovieMeta(stremioId, language, config) {
 // --- Series Worker (TVDB Version) ---
 async function getSeriesMeta(stremioId, language, config) {
   let tvdbId;
-
+  console.log(stremioId);
   if (stremioId.startsWith('tvdb:')) {
     tvdbId = stremioId.split(':')[1];
   } else {
