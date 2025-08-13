@@ -13,6 +13,21 @@
 - **Integrations**: Watchlist Sync, Rating Support, Custom Lists
 - **Modern UI**: Beautiful and intuitive configuration interface
 - **IMDb Support**: Full compatibility with IMDb-based addons
+- **Proxy Support**: Optional proxy configuration to bypass regional blocks (e.g., India)
+
+## 🌐 Proxy Support
+
+This addon now supports optional proxy configuration to bypass regional blocks where TMDB is blocked (such as in India). The proxy is only used for TMDB API calls, keeping all other requests direct.
+
+### Quick Proxy Setup
+
+```bash
+# Enable proxy
+TMDB_PROXY_ENABLED=true
+TMDB_PROXY_HOST=127.0.0.1
+TMDB_PROXY_PORT=40000
+TMDB_PROXY_PROTOCOL=socks5
+```
 
 ## 📥 Installation
 
@@ -63,12 +78,28 @@ docker run -d \
   mrcanelas/tmdb-addon:latest
 ```
 
+### Docker with Proxy Support
+```bash
+docker run -d \
+  --name tmdb-addon \
+  -p 1337:1337 \
+  -e TMDB_API=your_tmdb_key \
+  -e TMDB_PROXY_ENABLED=true \
+  -e TMDB_PROXY_HOST=127.0.0.1 \
+  -e TMDB_PROXY_PORT=40000 \
+  -e TMDB_PROXY_PROTOCOL=socks5 \
+  mrcanelas/tmdb-addon:latest
+```
+
+For complete proxy setup with Cloudflare WARP, see [docker-compose.proxy.yml](docker-compose.proxy.yml).
+
 ## 📚 Documentation
 
 - [Self-Hosting Guide](docs/self-hosting.md) - Complete instructions for hosting your own instance
 - [Development Guide](docs/development.md) - Guide for developers and contributors
 - [Contributing Guide](docs/contributing.md) - How to contribute to the project
 - [API Documentation](docs/api.md) - Complete API reference
+- [Proxy Implementation](docs/proxy-implementation.md) - Guide for proxy configuration
 
 ## 🤝 Contributing
 
@@ -105,7 +136,7 @@ The metadata is provided by [TMDB](https://themoviedb.org/) and is subject to ch
 ---
 
 <p align="center">
-Made with ❤️ by the TMDB Addon community
+Made with ❤️ by the Stremio community
 </p>
 
 

@@ -14,6 +14,7 @@ const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProp
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 const { blurImage } = require('./utils/imageProcessor');
+const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
 
 addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
@@ -196,18 +197,39 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   }
 });
 
+addon.get("/api/proxy/status", async function (req, res) {
+  try {
+    const proxyStatus = {
+      enabled: PROXY_CONFIG.enabled,
+      host: PROXY_CONFIG.host,
+      port: PROXY_CONFIG.port,
+      protocol: PROXY_CONFIG.protocol,
+      working: false
+    };
+
+    if (PROXY_CONFIG.enabled) {
+      proxyStatus.working = await testProxy();
+    }
+
+    respond(res, proxyStatus);
+  } catch (error) {
+    console.error('Error checking proxy status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 addon.get("/api/image/blur", async function (req, res) {
   const imageUrl = req.query.url;
   
   if (!imageUrl) {
-    return res.status(400).json({ error: 'URL da imagem não fornecida' });
+    return res.status(400).json({ error: 'Image URL not provided' });
   }
 
   try {
     const blurredImageBuffer = await blurImage(imageUrl);
     
     if (!blurredImageBuffer) {
-      return res.status(500).json({ error: 'Erro ao processar imagem' });
+      return res.status(500).json({ error: 'Error processing image' });
     }
 
     res.setHeader('Content-Type', 'image/jpeg');
@@ -215,8 +237,8 @@ addon.get("/api/image/blur", async function (req, res) {
     
     res.send(blurredImageBuffer);
   } catch (error) {
-    console.error('Erro na rota de blur:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Error in blur route:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

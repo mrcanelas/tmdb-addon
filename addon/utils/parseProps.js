@@ -169,13 +169,13 @@ function parseCreatedBy(created_by) {
 function parseConfig(catalogChoices) {
   let config = {};
   
-  // Se catalogChoices for null, undefined ou vazio, retorna objeto vazio
+  // If catalogChoices is null, undefined or empty, return empty object
   if (!catalogChoices) {
     return config;
   }
   
   try {
-    // Tenta descomprimir com lz-string
+    // Try to decompress with lz-string
     const decoded = decompressFromEncodedURIComponent(catalogChoices);
     config = JSON.parse(decoded);
   } catch (e) {

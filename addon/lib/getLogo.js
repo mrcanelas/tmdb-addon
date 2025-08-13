@@ -4,8 +4,8 @@ const apiKey = process.env.FANART_API;
 const baseUrl = "http://webservice.fanart.tv/v3/";
 const fanart = new FanartTvApi({ apiKey, baseUrl });
 
-const { MovieDb } = require("moviedb-promise");
-const moviedb = new MovieDb(process.env.TMDB_API);
+const { TMDBClient } = require("../utils/tmdbClient");
+const moviedb = new TMDBClient(process.env.TMDB_API);
 
 function pickLogo(logos, language, originalLanguage) {
   const lang = language.split("-")[0];

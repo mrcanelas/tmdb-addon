@@ -10,7 +10,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node addon/server.js"
+    "start": "node addon/server.js",
+    "test:proxy": "node test-proxy.js"
   },
   "repository": {
     "type": "git",

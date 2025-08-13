@@ -78,7 +78,7 @@ async function parseMDBListItems(items, type, genreFilter, language, rpdbkey) {
     getMeta(item.type, language, item.id, rpdbkey)
       .then(result => result.meta)
       .catch(err => {
-        console.error(`Erro ao buscar metadados para ${item.id}:`, err.message);
+        console.error(`Error fetching metadata for ${item.id}:`, err.message);
         return null;
       })
   );

@@ -39,7 +39,7 @@ async function issueExistsOnGithub(title) {
 }
 
 async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
-  // Se não há cache disponível, pula a verificação
+  // If no cache is available, skip the check
   if (!cache) {
     console.log("Cache not available, skipping season check");
     return;
@@ -96,7 +96,7 @@ async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
       `\n` +
       `- [TMDB page](${tmdbLink})\n` +
       `- [Stremio page](${stremioLink})`;
-    // Verifica se já existe issue aberta para esse título
+    // Check if issue already exists for this title
     const exists = await issueExistsOnGithub(issueTitle);
     console.log("Exists:", exists)  
     if (!exists) {

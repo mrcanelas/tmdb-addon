@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Cloudflare WARP como proxy
+  cloudflare-warp:
+    image: cloudflare/cloudflare-warp:latest
+    container_name: cloudflare-warp
+    restart: unless-stopped
+    environment:
+      - WARP_CLIENT_ID=${WARP_CLIENT_ID}
+      - WARP_CLIENT_SECRET=${WARP_CLIENT_SECRET}
+    ports:
+      - "40000:40000"  # Porta do proxy SOCKS5
+    command: warp-svc --address 0.0.0.0:40000
+    networks:
+      - tmdb-network
+
+  # TMDB Addon com proxy configurado
+  tmdb-addon:
+    build: .
+    container_name: tmdb-addon
+    restart: unless-stopped
+    environment:
+      - TMDB_API=${TMDB_API}
+      - TMDB_PROXY_ENABLED=true
+      - TMDB_PROXY_HOST=cloudflare-warp
+      - TMDB_PROXY_PORT=40000
+      - TMDB_PROXY_PROTOCOL=socks5
+      - PORT=1337
+    ports:
+      - "1337:1337"
+    depends_on:
+      - cloudflare-warp
+    networks:
+      - tmdb-network
+
+networks:
+  tmdb-network:
+    driver: bridge 

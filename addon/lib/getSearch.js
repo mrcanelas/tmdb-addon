@@ -1,6 +1,6 @@
 require("dotenv").config();
-const { MovieDb } = require("moviedb-promise");
-const moviedb = new MovieDb(process.env.TMDB_API);
+const { TMDBClient } = require("../utils/tmdbClient");
+const moviedb = new TMDBClient(process.env.TMDB_API);
 const geminiService = require("../utils/gemini-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
@@ -48,7 +48,7 @@ async function getSearch(id, type, language, query, config) {
           }
           return null;
         } catch (error) {
-          console.error(`Erro ao buscar detalhes para título "${title}":`, error);
+          console.error(`Error fetching details for title "${title}":`, error);
           return null;
         }
       });
@@ -57,7 +57,7 @@ async function getSearch(id, type, language, query, config) {
       searchResults = results.filter(result => result !== null);
 
     } catch (error) {
-      console.error('Erro ao processar busca com IA:', error);
+      console.error('Error processing AI search:', error);
     }
   }
 

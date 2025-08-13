@@ -1,6 +1,6 @@
 require('dotenv').config()
-const { MovieDb } = require('moviedb-promise')
-const moviedb = new MovieDb(process.env.TMDB_API)
+const { TMDBClient } = require('../utils/tmdbClient')
+const moviedb = new TMDBClient(process.env.TMDB_API)
 
 async function getGenreList(language, type) {
   if (type === "movie") {

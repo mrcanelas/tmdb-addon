@@ -14,7 +14,7 @@ class GeminiService {
       this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       return true;
     } catch (error) {
-      console.error("Erro ao inicializar Gemini:", error);
+      console.error("Error initializing Gemini:", error);
       return false;
     }
   }
@@ -70,7 +70,7 @@ class GeminiService {
       return titles;
     } catch (error) {
       console.error("Error processing AI search:", error);
-      return []; // Retorna array vazio em caso de erro
+      return []; // Return empty array in case of error
     }
   }
 }

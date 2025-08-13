@@ -1,6 +1,6 @@
 require("dotenv").config();
-const { MovieDb } = require("moviedb-promise");
-const moviedb = new MovieDb(process.env.TMDB_API);
+const { TMDBClient } = require("../utils/tmdbClient");
+const moviedb = new TMDBClient(process.env.TMDB_API);
 const { getGenreList } = require("./getGenreList");
 const { parseMedia } = require("../utils/parseProps");
 const translations = require("../static/translations.json");

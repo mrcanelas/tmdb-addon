@@ -1,6 +1,6 @@
 require("dotenv").config();
-const { MovieDb } = require("moviedb-promise");
-const moviedb = new MovieDb(process.env.TMDB_API);
+const { TMDBClient } = require("../utils/tmdbClient");
+const moviedb = new TMDBClient(process.env.TMDB_API);
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { parseMedia } = require("../utils/parseProps");
@@ -30,7 +30,7 @@ async function getCatalog(type, language, page, id, genre, config) {
         getMeta(type, language, item.id, config.rpdbkey)
           .then(result => result.meta)
           .catch(err => {
-            console.error(`Erro ao buscar metadados para ${item.id}:`, err.message);
+            console.error(`Error fetching metadata for ${item.id}:`, err.message);
             return null;
           })
       );

@@ -1,7 +1,7 @@
 require("dotenv").config();
-const { MovieDb } = require("moviedb-promise");
+const { TMDBClient } = require("../utils/tmdbClient");
 const Utils = require("../utils/parseProps");
-const moviedb = new MovieDb(process.env.TMDB_API);
+const moviedb = new TMDBClient(process.env.TMDB_API);
 const { getEpisodes } = require("./getEpisodes");
 const { getLogo, getTvLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
@@ -22,7 +22,7 @@ async function getCachedImdbRating(imdbId, type) {
     imdbCache.set(imdbId, rating);
     return rating;
   } catch (err) {
-    console.error(`Erro ao buscar IMDb rating para ${imdbId}:`, err.message);
+    console.error(`Error fetching IMDb rating for ${imdbId}:`, err.message);
     return null;
   }
 }
@@ -56,7 +56,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
   const [poster, logo, imdbRatingRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getLogo(tmdbId, language, res.original_language).catch(e => {
-      console.warn(`Erro ao buscar logo para filme ${tmdbId}:`, e.message);
+      console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
       return null;
     }),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
@@ -116,14 +116,14 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
   const [poster, logo, imdbRatingRaw, episodes] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
-      console.warn(`Erro ao buscar logo para série ${tmdbId}:`, e.message);
+      console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
       return null;
     }),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
     getEpisodes(language, tmdbId, res.external_ids?.imdb_id, res.seasons, {
       hideEpisodeThumbnails: config.hideEpisodeThumbnails
     }).catch(e => {
-      console.warn(`Erro ao buscar episódios da série ${tmdbId}:`, e.message);
+      console.warn(`Error fetching episodes for series ${tmdbId}:`, e.message);
       return [];
     })
   ]);
@@ -166,9 +166,9 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
   };
   if (hideInCinemaTag) delete response.imdb_id;
 
-  // Checagem de seasons (sem abrir issue)
+  // Season check (without opening issue)
   if (response.imdb_id && response.videos && response.name) {
-    // Chama a checagem, mas comenta a parte do Issue dentro da função
+    // Call the check, but comment out the Issue part inside the function
     checkSeasonsAndReport(
       tmdbId,
       response.imdb_id,

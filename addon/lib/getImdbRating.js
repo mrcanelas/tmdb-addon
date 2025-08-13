@@ -6,8 +6,8 @@ async function getImdbRating(imdbId, type) {
     const data = response.data.meta;
     return data?.imdbRating || undefined
   } catch (error) {
-    console.error('Erro ao obter dados do Cinemeta:', error);
-    throw error;
+    console.error('Error fetching data from Cinemeta:', error);
+    return null;
   }
 }
 

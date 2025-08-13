@@ -13,7 +13,7 @@ async function blurImage(imageUrl) {
 
     return processedImageBuffer;
   } catch (error) {
-    console.error('Erro ao processar imagem:', error);
+    console.error('Error processing image:', error);
     return null;
   }
 }
