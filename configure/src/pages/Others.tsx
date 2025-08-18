@@ -8,6 +8,7 @@ const Others = () => {
   const { hideEpisodeThumbnails, setHideEpisodeThumbnails } = useConfig();
   const { includeAdult, setIncludeAdult } = useConfig();
   const { provideImdbId, setProvideImdbId } = useConfig();
+  const { returnImdbId, setReturnImdbId } = useConfig();
   const { tmdbPrefix, setTmdbPrefix } = useConfig();
   const { hideInCinemaTag, setHideInCinemaTag } = useConfig();
   const { castCount, setCastCount } = useConfig();
@@ -43,14 +44,25 @@ const Others = () => {
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
             <h1 className="text-sm font-semibold mb-1">
-              Provide IMDB metadata
+              Provide IMDb metadata
             </h1>
             <p className="text-gray-500 text-sm">
-              Include IMDB IDs in metadata for better integration with other
+              Include items with IMDb IDs when handling metadata requests for better integration with other
               addons.
             </p>
           </div>
           <Switch checked={provideImdbId} onCheckedChange={() => setProvideImdbId(!provideImdbId)} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1">
+              Return IMDb ID
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Return only items with IMDb IDs in catalogues for better integration with other addons.
+            </p>
+          </div>
+          <Switch checked={returnImdbId} onCheckedChange={() => setReturnImdbId(!returnImdbId)} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
