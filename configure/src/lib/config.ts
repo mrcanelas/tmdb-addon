@@ -21,6 +21,7 @@ interface AddonConfig {
   }>;
   hideInCinemaTag?: boolean;
   castCount?: number;
+  showAgeRatingInGenres?: boolean;
 }
 
 export function generateAddonUrl(config: AddonConfig): string {
@@ -45,6 +46,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     searchEnabled: config.searchEnabled === false ? "false" : undefined,
     hideInCinemaTag: config.hideInCinemaTag === true ? "true" : undefined,
     castCount: typeof config.castCount === "number" ? config.castCount : undefined,
+    showAgeRatingInGenres: config.showAgeRatingInGenres === true ? "true" : undefined,
   };
 
   const cleanConfig = Object.fromEntries(
@@ -52,6 +54,6 @@ export function generateAddonUrl(config: AddonConfig): string {
   );
 
   const compressed = compressToEncodedURIComponent(JSON.stringify(cleanConfig));
-  
+
   return `${window.location.origin}/${compressed}/manifest.json`;
 }
