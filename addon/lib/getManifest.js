@@ -211,7 +211,7 @@ async function getManifest(config) {
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
     `MDBList Integration: ${config.mdblistkey ? 'Connected' : 'Not Connected'}`,
-    `IMDb Integration: ${provideImdbId || returnImdbId ? 'Enabled' : 'Disabled'}`,
+    `IMDb Integration: ${provideImdbId || returnImdbId ? "Enabled" : "Disabled"}`,
     `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,
     `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
     `Active Catalogs: ${catalogs.length}`
