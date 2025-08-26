@@ -239,6 +239,16 @@ async function checkIfExists(rpdbImage) {
   });
 }
 
+function parseCollection(collObj) {
+  return collObj.parts.map((el) => {
+      return {
+        name: el.title, //the link has the name of the entry
+        category: collObj.name, //groups the buttons/links under the collection's name
+        url: `stremio:///detail/${el.media_type}/tmdb:${el.id}` //would open the detail page for the related entry when clicked
+      };
+    });
+}
+
 module.exports = {
   parseCertification,
   parseCast,
@@ -260,5 +270,6 @@ module.exports = {
   parsePoster,
   parseMedia,
   getRpdbPoster,
-  checkIfExists
+  checkIfExists,
+  parseCollection
 };

@@ -36,12 +36,20 @@ const processLogo = (logo) => {
   return logo.replace("http://", "https://");
 };
 
-const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language, castCount) => [
+const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language, castCount, collObj) => [
   Utils.parseImdbLink(imdbRating, imdbId),
   Utils.parseShareLink(title, imdbId, type),
   ...Utils.parseGenreLink(genres, type, language),
-  ...Utils.parseCreditsLink(credits, castCount)
+  ...Utils.parseCreditsLink(credits, castCount),
+  ...Utils.parseCollection(collObj) //empty if no collection
 ];
+
+fetchCollectionData = async (tmdbId, language) => {
+  return await moviedb.collectionInfo({
+    id: tmdbId,
+    language
+  });
+};
 
 // Movie specific functions
 const fetchMovieData = async (tmdbId, language) => {
@@ -53,13 +61,17 @@ const fetchMovieData = async (tmdbId, language) => {
 };
 
 const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
-  const [poster, logo, imdbRatingRaw] = await Promise.all([
+  const [poster, logo, imdbRatingRaw, collectionRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getLogo(tmdbId, language, res.original_language).catch(e => {
       console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
       return null;
     }),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch(e => {
+      console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
+      return [];
+    }) : [] //should be the same as Promise.resolve([])
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
@@ -87,7 +99,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     genres: Utils.parseGenres(res.genres),
     releaseInfo: res.release_date ? res.release_date.substr(0, 4) : "",
     trailerStreams: Utils.parseTrailerStream(res.videos),
-    links: buildLinks(imdbRating, res.imdb_id, res.title, type, res.genres, res.credits, language, castCount),
+    links: buildLinks(imdbRating, res.imdb_id, res.title, type, res.genres, res.credits, language, castCount, collectionRaw),
     behaviorHints: {
       defaultVideoId: res.imdb_id ? res.imdb_id : `tmdb:${res.id}`,
       hasScheduledVideos: false
@@ -113,7 +125,7 @@ const fetchTvData = async (tmdbId, language) => {
 const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
   const runtime = res.episode_run_time?.[0] ?? res.last_episode_to_air?.runtime ?? res.next_episode_to_air?.runtime ?? null;
 
-  const [poster, logo, imdbRatingRaw, episodes] = await Promise.all([
+  const [poster, logo, imdbRatingRaw, episodes, collectionRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
       console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
@@ -125,7 +137,11 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     }).catch(e => {
       console.warn(`Error fetching episodes for series ${tmdbId}:`, e.message);
       return [];
-    })
+    }),
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch(e => {
+      console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
+      return null;
+    }) : null //should be the same as Promise.resolve(null)
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
@@ -152,7 +168,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     genres: Utils.parseGenres(res.genres),
     releaseInfo: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
     videos: episodes || [],
-    links: buildLinks(imdbRating, res.external_ids.imdb_id, res.name, type, res.genres, res.credits, language, castCount),
+    links: buildLinks(imdbRating, res.external_ids.imdb_id, res.name, type, res.genres, res.credits, language, castCount, collectionRaw),
     trailers: Utils.parseTrailers(res.videos),
     trailerStreams: Utils.parseTrailerStream(res.videos),
     behaviorHints: {
