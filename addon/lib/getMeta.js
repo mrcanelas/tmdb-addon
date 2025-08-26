@@ -48,6 +48,10 @@ fetchCollectionData = async (tmdbId, language) => {
   return await moviedb.collectionInfo({
     id: tmdbId,
     language
+  }).then(res => {
+    if (!res.parts) return null;
+    res.parts = res.parts.filter(part => part.id != tmdbId); //remove self from collection
+    return res;
   });
 };
 
@@ -70,8 +74,8 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     getCachedImdbRating(res.external_ids?.imdb_id, type),
     (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch(e => {
       console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
-      return [];
-    }) : [] //should be the same as Promise.resolve([])
+      return null;
+    }) : null //should be the same as Promise.resolve(null)
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
