@@ -44,13 +44,15 @@ const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language, 
   ...Utils.parseCollection(collObj) //empty if no collection
 ];
 
-fetchCollectionData = async (tmdbId, language) => {
+const fetchCollectionData = async (tmdbId, language) => {
   return await moviedb.collectionInfo({
     id: tmdbId,
     language
-  }).then(res => {
-    if (!res.parts) return null;
-    res.parts = res.parts.filter(part => part.id != tmdbId); //remove self from collection
+  }).then((res) => {
+    if (!res.parts) {
+      return null;
+    }
+    res.parts = res.parts.filter((part) => part.id !== tmdbId); //remove self from collection
     return res;
   });
 };
@@ -72,7 +74,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
       return null;
     }),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
-    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch(e => {
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
       console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
       return null;
     }) : null //should be the same as Promise.resolve(null)
@@ -142,7 +144,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
       console.warn(`Error fetching episodes for series ${tmdbId}:`, e.message);
       return [];
     }),
-    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch(e => {
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
       console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
       return null;
     }) : null //should be the same as Promise.resolve(null)

@@ -240,7 +240,9 @@ async function checkIfExists(rpdbImage) {
 }
 
 function parseCollection(collObj) {
-  if (!collObj || !collObj.parts || collObj.parts.length === 0) return [];
+  if (!collObj || !collObj.parts || collObj.parts.length === 0) {
+    return [];
+  }
   return collObj.parts.map((el) => {
     return {
       name: el.title, //the link has the name of the entry
