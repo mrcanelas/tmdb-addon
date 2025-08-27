@@ -19,6 +19,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [mdblistkey, setMdblistkey] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
+  const [returnImdbId, setReturnImdbId] = useState(false);
   const [tmdbPrefix, setTmdbPrefix] = useState(false);
   const [hideEpisodeThumbnails, setHideEpisodeThumbnails] = useState(false);
   const [language, setLanguage] = useState("en-US");
@@ -49,6 +50,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.geminikey) setGeminiKey(config.geminikey);
       if (config.provideImdbId) setProvideImdbId(config.provideImdbId === "true");
+      if (config.returnImdbId) setReturnImdbId(config.returnImdbId === "true");
       if (config.tmdbPrefix) setTmdbPrefix(config.tmdbPrefix === "true");
       if (config.hideEpisodeThumbnails) setHideEpisodeThumbnails(config.hideEpisodeThumbnails === "true");
       if (config.sessionId) setSessionId(config.sessionId);
@@ -106,6 +108,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     mdblistkey,
     includeAdult,
     provideImdbId,
+    returnImdbId,
     tmdbPrefix,
     hideEpisodeThumbnails,
     language,
@@ -121,6 +124,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setMdblistkey,
     setIncludeAdult,
     setProvideImdbId,
+    setReturnImdbId,
     setTmdbPrefix,
     setHideEpisodeThumbnails,
     setLanguage,

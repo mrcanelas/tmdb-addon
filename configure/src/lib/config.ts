@@ -40,6 +40,7 @@ export function generateAddonUrl(config: AddonConfig): string {
       })),
     includeAdult: config.includeAdult === true ? "true" : undefined,
     provideImdbId: config.provideImdbId === true ? "true" : undefined,
+    returnImdbId: config.returnImdbId === true ? "true" : undefined,
     tmdbPrefix: config.tmdbPrefix === true ? "true" : undefined,
     hideEpisodeThumbnails: config.hideEpisodeThumbnails === true ? "true" : undefined,
     searchEnabled: config.searchEnabled === false ? "false" : undefined,

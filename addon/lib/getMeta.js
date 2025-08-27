@@ -64,6 +64,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
   const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const returnImdbId = config.returnImdbId === true || config.returnImdbId === "true";
   const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
   const response = {
@@ -83,7 +84,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     background: `https://image.tmdb.org/t/p/original${res.backdrop_path}`,
     poster,
     runtime: Utils.parseRunTime(res.runtime),
-    id: `tmdb:${tmdbId}`,
+    id: returnImdbId ? res.imdb_id : `tmdb:${tmdbId}`,
     genres: Utils.parseGenres(res.genres),
     releaseInfo: res.release_date ? res.release_date.substr(0, 4) : "",
     trailerStreams: Utils.parseTrailerStream(res.videos),
@@ -130,6 +131,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
   const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
+  const returnImdbId = config.returnImdbId === true || config.returnImdbId === "true";
   const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
   const response = {
@@ -148,7 +150,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     year: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
     background: `https://image.tmdb.org/t/p/original${res.backdrop_path}`,
     slug: Utils.parseSlug(type, res.name, res.external_ids.imdb_id),
-    id: `tmdb:${tmdbId}`,
+    id: returnImdbId ? res.imdb_id : `tmdb:${tmdbId}`,
     genres: Utils.parseGenres(res.genres),
     releaseInfo: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
     videos: episodes || [],
