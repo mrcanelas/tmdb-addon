@@ -22,6 +22,8 @@ interface AddonConfig {
   hideInCinemaTag?: boolean;
   castCount?: number;
   showAgeRatingInGenres?: boolean;
+  enableAgeRating?: boolean;
+  showAgeRatingWithImdbRating?: boolean;
 }
 
 export function generateAddonUrl(config: AddonConfig): string {
@@ -47,7 +49,9 @@ export function generateAddonUrl(config: AddonConfig): string {
     searchEnabled: config.searchEnabled === false ? "false" : undefined,
     hideInCinemaTag: config.hideInCinemaTag === true ? "true" : undefined,
     castCount: typeof config.castCount === "number" ? config.castCount : undefined,
-    showAgeRatingInGenres: config.showAgeRatingInGenres === true ? "true" : undefined,
+    enableAgeRating: typeof config.enableAgeRating === "boolean" ? String(config.enableAgeRating) : undefined,
+    showAgeRatingInGenres: typeof config.showAgeRatingInGenres === "boolean" ? String(config.showAgeRatingInGenres) : undefined,
+    showAgeRatingWithImdbRating: typeof config.showAgeRatingWithImdbRating === "boolean" ? String(config.showAgeRatingWithImdbRating) : undefined,
   };
 
   const cleanConfig = Object.fromEntries(

@@ -107,7 +107,7 @@ const Others = () => {
         <Card className="p-6">
           <AgeRatingSelect />
         </Card>
-        <Card className="flex flex-row items-center justify-between p-6">
+        <Card className="p-6">
           <AgeRatingDisplayToggle />
         </Card>
       </div>
