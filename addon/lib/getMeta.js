@@ -29,20 +29,40 @@ async function getCachedImdbRating(imdbId, type) {
 }
 
 // Helper functions
-const getCacheKey = (type, language, tmdbId, rpdbkey, showAgeRatingInGenres = true) =>
-  `${type}-${language}-${tmdbId}-${rpdbkey}-ageRating:${showAgeRatingInGenres}`;
+const getCacheKey = (
+  type,
+  language,
+  tmdbId,
+  rpdbkey,
+  enableAgeRating = false,
+  showAgeRatingInGenres = true,
+  showAgeRatingWithImdbRating = false
+) =>
+  `${type}-${language}-${tmdbId}-${rpdbkey}-ageRating:${enableAgeRating}-${showAgeRatingInGenres}-${showAgeRatingWithImdbRating}`;
 
 const processLogo = (logo) => {
   if (!logo || blacklistLogoUrls.includes(logo)) return null;
   return logo.replace("http://", "https://");
 };
 
-const buildLinks = (imdbRating, imdbId, title, type, genres, credits, language, castCount, ageRating = null, showAgeRatingInGenres = true) => [
-  Utils.parseImdbLink(imdbRating, imdbId),
-  Utils.parseShareLink(title, imdbId, type),
-  ...Utils.parseGenreLink(genres, type, language, imdbId, ageRating, showAgeRatingInGenres),
-  ...Utils.parseCreditsLink(credits, castCount)
-];
+const buildLinks = (
+  imdbRating,
+  imdbId,
+  title,
+  type,
+  genres,
+  credits,
+  language,
+  castCount,
+  ageRating = null,
+  showAgeRatingInGenres = true,
+  showAgeRatingWithImdbRating = false
+) => [
+    Utils.parseImdbLink(imdbRating, imdbId, ageRating, showAgeRatingWithImdbRating),
+    Utils.parseShareLink(title, imdbId, type),
+    ...Utils.parseGenreLink(genres, type, language, imdbId, ageRating, showAgeRatingInGenres),
+    ...Utils.parseCreditsLink(credits, castCount)
+  ];
 
 // Helper function to add age rating to genres
 const addAgeRatingToGenres = (ageRating, genres, showAgeRatingInGenres = true) => {
@@ -60,6 +80,10 @@ const fetchMovieData = async (tmdbId, language) => {
 };
 
 const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
+  const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
+  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
+  const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
+
   const [poster, logo, imdbRatingRaw, ageRating] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getLogo(tmdbId, language, res.original_language).catch(e => {
@@ -67,10 +91,10 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
       return null;
     }),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
-    getCachedAgeRating(tmdbId, type, language).catch(e => {
+    enableAgeRating ? getCachedAgeRating(tmdbId, type, language).catch(e => {
       console.warn(`Error fetching age rating for movie ${tmdbId}:`, e.message);
       return null;
-    }),
+    }) : Promise.resolve(null),
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
@@ -78,14 +102,14 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
   const hideInCinemaTag = config.hideInCinemaTag === true || config.hideInCinemaTag === "true";
 
   const parsedGenres = Utils.parseGenres(res.genres);
-  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false; // Default to true
+  const resolvedAgeRating = enableAgeRating ? ageRating : null;
 
   const response = {
     imdb_id: res.imdb_id,
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
     director: Utils.parseDirector(res.credits),
-    genre: addAgeRatingToGenres(ageRating, parsedGenres, showAgeRatingInGenres),
+    genre: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
     imdbRating,
     name: res.title,
     released: new Date(res.release_date),
@@ -98,11 +122,23 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     poster,
     runtime: Utils.parseRunTime(res.runtime),
     id: `tmdb:${tmdbId}`,
-    genres: addAgeRatingToGenres(ageRating, parsedGenres, showAgeRatingInGenres),
-    ageRating,
+    genres: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
+    ageRating: resolvedAgeRating,
     releaseInfo: res.release_date ? res.release_date.substr(0, 4) : "",
     trailerStreams: Utils.parseTrailerStream(res.videos),
-    links: buildLinks(imdbRating, res.imdb_id, res.title, type, res.genres, res.credits, language, castCount, ageRating, showAgeRatingInGenres),
+    links: buildLinks(
+      imdbRating,
+      res.imdb_id,
+      res.title,
+      type,
+      res.genres,
+      res.credits,
+      language,
+      castCount,
+      resolvedAgeRating,
+      showAgeRatingInGenres,
+      showAgeRatingWithImdbRating
+    ),
     behaviorHints: {
       defaultVideoId: res.imdb_id ? res.imdb_id : `tmdb:${res.id}`,
       hasScheduledVideos: false
@@ -127,6 +163,9 @@ const fetchTvData = async (tmdbId, language) => {
 
 const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
   const runtime = res.episode_run_time?.[0] ?? res.last_episode_to_air?.runtime ?? res.next_episode_to_air?.runtime ?? null;
+  const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
+  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
+  const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
   const [poster, logo, imdbRatingRaw, episodes, ageRating] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
@@ -141,22 +180,22 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
       console.warn(`Error fetching episodes for series ${tmdbId}:`, e.message);
       return [];
     }),
-    getCachedAgeRating(tmdbId, type, language).catch(e => {
+    enableAgeRating ? getCachedAgeRating(tmdbId, type, language).catch(e => {
       console.warn(`Error fetching age rating for series ${tmdbId}:`, e.message);
       return null;
-    })
+    }) : Promise.resolve(null)
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
   const castCount = config.castCount !== undefined ? Math.max(1, Math.min(5, Number(config.castCount))) : 5;
   const hideInCinemaTag = config.hideInCinemaTag === "true";
   const parsedGenres = Utils.parseGenres(res.genres);
-  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false; // Default to true
+  const resolvedAgeRating = enableAgeRating ? ageRating : null;
 
   const response = {
     country: Utils.parseCoutry(res.production_countries),
     description: res.overview,
-    genre: addAgeRatingToGenres(ageRating, parsedGenres, showAgeRatingInGenres),
+    genre: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
     imdbRating,
     imdb_id: res.external_ids.imdb_id,
     name: res.name,
@@ -170,11 +209,23 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     background: `https://image.tmdb.org/t/p/original${res.backdrop_path}`,
     slug: Utils.parseSlug(type, res.name, res.external_ids.imdb_id),
     id: `tmdb:${tmdbId}`,
-    genres: addAgeRatingToGenres(ageRating, parsedGenres, showAgeRatingInGenres),
-    ageRating,
+    genres: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
+    ageRating: resolvedAgeRating,
     releaseInfo: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
     videos: episodes || [],
-    links: buildLinks(imdbRating, res.external_ids.imdb_id, res.name, type, res.genres, res.credits, language, castCount, ageRating, showAgeRatingInGenres),
+    links: buildLinks(
+      imdbRating,
+      res.external_ids.imdb_id,
+      res.name,
+      type,
+      res.genres,
+      res.credits,
+      language,
+      castCount,
+      resolvedAgeRating,
+      showAgeRatingInGenres,
+      showAgeRatingWithImdbRating
+    ),
     trailers: Utils.parseTrailers(res.videos),
     trailerStreams: Utils.parseTrailerStream(res.videos),
     behaviorHints: {
@@ -204,8 +255,19 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
 
 // Main function
 async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
-  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false; // Default to true
-  const cacheKey = getCacheKey(type, language, tmdbId, rpdbkey, showAgeRatingInGenres);
+  const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
+  const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
+  const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
+
+  const cacheKey = getCacheKey(
+    type,
+    language,
+    tmdbId,
+    rpdbkey,
+    enableAgeRating,
+    showAgeRatingInGenres,
+    showAgeRatingWithImdbRating
+  );
   const cachedData = cache.get(cacheKey);
 
   if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TTL) {
@@ -214,8 +276,18 @@ async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
 
   try {
     const meta = await (type === "movie" ?
-      fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, rpdbkey, config)) :
-      fetchTvData(tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, rpdbkey, config))
+      fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, rpdbkey, {
+        ...config,
+        enableAgeRating,
+        showAgeRatingInGenres,
+        showAgeRatingWithImdbRating
+      })) :
+      fetchTvData(tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, rpdbkey, {
+        ...config,
+        enableAgeRating,
+        showAgeRatingInGenres,
+        showAgeRatingWithImdbRating
+      }))
     );
 
     cache.set(cacheKey, { data: meta, timestamp: Date.now() });

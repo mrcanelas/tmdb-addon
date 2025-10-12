@@ -25,6 +25,8 @@ export type ConfigContextType = {
   hideInCinemaTag: boolean;
   castCount: number | undefined;
   showAgeRatingInGenres: boolean;
+  enableAgeRating: boolean;
+  showAgeRatingWithImdbRating: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
@@ -41,6 +43,8 @@ export type ConfigContextType = {
   setHideInCinemaTag: (hide: boolean) => void;
   setCastCount: (count: number | undefined) => void;
   setShowAgeRatingInGenres: (show: boolean) => void;
+  setEnableAgeRating: (enable: boolean) => void;
+  setShowAgeRatingWithImdbRating: (show: boolean) => void;
   loadConfigFromUrl: () => void;
 };
 

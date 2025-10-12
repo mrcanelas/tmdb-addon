@@ -71,9 +71,9 @@ function parseTrailerStream(videos) {
     });
 }
 
-function parseImdbLink(vote_average, imdb_id) {
+function parseImdbLink(vote_average, imdb_id, ageRating = null, showAgeRatingWithImdbRating = false) {
   return {
-    name: vote_average,
+    name: showAgeRatingWithImdbRating && ageRating ? `${ageRating}\u2003\u2003${vote_average}` : vote_average,
     category: "imdb",
     url: `https://imdb.com/title/${imdb_id}`,
   };

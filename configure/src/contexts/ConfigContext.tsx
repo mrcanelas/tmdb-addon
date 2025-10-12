@@ -30,6 +30,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [hideInCinemaTag, setHideInCinemaTag] = useState(false);
   const [castCount, setCastCount] = useState<number | undefined>(5);
   const [showAgeRatingInGenres, setShowAgeRatingInGenres] = useState(true);
+  const [enableAgeRating, setEnableAgeRating] = useState(false);
+  const [showAgeRatingWithImdbRating, setShowAgeRatingWithImdbRating] = useState(false);
 
   const loadDefaultCatalogs = () => {
     const defaultCatalogs = baseCatalogs.map(catalog => ({
@@ -58,7 +60,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.language) setLanguage(config.language);
       if (config.hideInCinemaTag) setHideInCinemaTag(config.hideInCinemaTag === "true" || config.hideInCinemaTag === true);
       if (config.castCount !== undefined) setCastCount(config.castCount === "Unlimited" ? undefined : Number(config.castCount));
+      if (config.enableAgeRating !== undefined) setEnableAgeRating(config.enableAgeRating === "true" || config.enableAgeRating === true);
       if (config.showAgeRatingInGenres !== undefined) setShowAgeRatingInGenres(config.showAgeRatingInGenres === "true" || config.showAgeRatingInGenres === true);
+      if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
 
       if (config.catalogs) {
         const catalogsWithNames = config.catalogs.map(catalog => {
@@ -119,6 +123,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     hideInCinemaTag,
     castCount,
     showAgeRatingInGenres,
+    enableAgeRating,
+    showAgeRatingWithImdbRating,
     setRpdbkey,
     setGeminiKey,
     setMdblistkey,
@@ -135,6 +141,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setHideInCinemaTag,
     setCastCount,
     setShowAgeRatingInGenres,
+    setEnableAgeRating,
+    setShowAgeRatingWithImdbRating,
     loadConfigFromUrl
   };
 
