@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useConfig } from "@/contexts/ConfigContext";
 import { AgeRatingSelect } from "@/components/AgeRatingSelect";
+import { AgeRatingDisplayToggle } from "@/components/AgeRatingDisplayToggle";
 import { SearchToggle } from "@/components/SearchToggle";
 
 const Others = () => {
@@ -105,6 +106,9 @@ const Others = () => {
         </Card>
         <Card className="p-6">
           <AgeRatingSelect />
+        </Card>
+        <Card className="p-6">
+          <AgeRatingDisplayToggle />
         </Card>
       </div>
     </main>

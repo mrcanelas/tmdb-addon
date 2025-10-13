@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ConfigContext, type ConfigContextType, type CatalogConfig } from "./config";
-import { 
-  baseCatalogs, 
-  authCatalogs, 
-  streamingCatalogs 
+import {
+  baseCatalogs,
+  authCatalogs,
+  streamingCatalogs
 } from "@/data/catalogs";
 import { decompressFromEncodedURIComponent } from 'lz-string';
 
@@ -30,6 +30,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
   const [hideInCinemaTag, setHideInCinemaTag] = useState(false);
   const [castCount, setCastCount] = useState<number | undefined>(5);
+  const [showAgeRatingInGenres, setShowAgeRatingInGenres] = useState(true);
+  const [enableAgeRating, setEnableAgeRating] = useState(false);
+  const [showAgeRatingWithImdbRating, setShowAgeRatingWithImdbRating] = useState(false);
 
   const loadDefaultCatalogs = () => {
     const defaultCatalogs = baseCatalogs.map(catalog => ({
@@ -45,7 +48,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const path = window.location.pathname.split('/')[1];
       const decompressedConfig = decompressFromEncodedURIComponent(path);
       const config = JSON.parse(decompressedConfig);
-      
+
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.geminikey) setGeminiKey(config.geminikey);
@@ -59,7 +62,10 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.language) setLanguage(config.language);
       if (config.hideInCinemaTag) setHideInCinemaTag(config.hideInCinemaTag === "true" || config.hideInCinemaTag === true);
       if (config.castCount !== undefined) setCastCount(config.castCount === "Unlimited" ? undefined : Number(config.castCount));
-      
+      if (config.enableAgeRating !== undefined) setEnableAgeRating(config.enableAgeRating === "true" || config.enableAgeRating === true);
+      if (config.showAgeRatingInGenres !== undefined) setShowAgeRatingInGenres(config.showAgeRatingInGenres === "true" || config.showAgeRatingInGenres === true);
+      if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
+
       if (config.catalogs) {
         const catalogsWithNames = config.catalogs.map(catalog => {
           const existingCatalog = allCatalogs.find(
@@ -68,7 +74,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
           return {
             ...catalog,
             name: existingCatalog?.name || catalog.id,
-            enabled: catalog.enabled !== undefined ? catalog.enabled : true 
+            enabled: catalog.enabled !== undefined ? catalog.enabled : true
           };
         });
         setCatalogs(catalogsWithNames);
@@ -81,15 +87,15 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
         setStreaming(Array.from(selectedStreamingServices) as string[]);
       } else {
-        loadDefaultCatalogs(); 
+        loadDefaultCatalogs();
       }
-      
+
       if (config.searchEnabled) setSearchEnabled(config.searchEnabled === "true");
-      
+
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
       console.error('Error loading config from URL:', error);
-      loadDefaultCatalogs(); 
+      loadDefaultCatalogs();
     }
   };
 
@@ -119,6 +125,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     searchEnabled,
     hideInCinemaTag,
     castCount,
+    showAgeRatingInGenres,
+    enableAgeRating,
+    showAgeRatingWithImdbRating,
     setRpdbkey,
     setGeminiKey,
     setMdblistkey,
@@ -135,6 +144,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setSearchEnabled,
     setHideInCinemaTag,
     setCastCount,
+    setShowAgeRatingInGenres,
+    setEnableAgeRating,
+    setShowAgeRatingWithImdbRating,
     loadConfigFromUrl
   };
 
