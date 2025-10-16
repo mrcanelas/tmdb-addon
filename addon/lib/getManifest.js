@@ -119,6 +119,7 @@ async function getManifest(config) {
   const language = config.language || DEFAULT_LANGUAGE;
   const tmdbPrefix = config.tmdbPrefix === "true";
   const provideImdbId = config.provideImdbId === "true";
+  const returnImdbId = config.returnImdbId === "true";
   const sessionId = config.sessionId;
   const userCatalogs = config.catalogs || getDefaultCatalogs();
   const translatedCatalogs = loadTranslations(language);
@@ -210,7 +211,7 @@ async function getManifest(config) {
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
     `MDBList Integration: ${config.mdblistkey ? 'Connected' : 'Not Connected'}`,
-    `IMDb Integration: ${provideImdbId ? 'Enabled' : 'Disabled'}`,
+    `IMDb Integration: ${provideImdbId || returnImdbId ? "Enabled" : "Disabled"}`,
     `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,
     `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
     `Active Catalogs: ${catalogs.length}`
@@ -226,7 +227,7 @@ async function getManifest(config) {
     description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
-    idPrefixes: provideImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
+    idPrefixes: provideImdbId || returnImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
     stremioAddonsConfig,
     behaviorHints: {
       configurable: true,

@@ -78,16 +78,16 @@ addon.get('/:catalogChoices?/configure', function (req, res) {
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-    const { catalogChoices } = req.params;
-    const config = parseConfig(catalogChoices) || {};
-    const manifest = await getManifest(config);
-    
-    const cacheOpts = {
-        cacheMaxAge: 12 * 60 * 60,
-        staleRevalidate: 14 * 24 * 60 * 60, 
-        staleError: 30 * 24 * 60 * 60, 
-    };
-    respond(res, manifest, cacheOpts);
+  const { catalogChoices } = req.params;
+  const config = parseConfig(catalogChoices) || {};
+  const manifest = await getManifest(config);
+
+  const cacheOpts = {
+    cacheMaxAge: 12 * 60 * 60,
+    staleRevalidate: 14 * 24 * 60 * 60,
+    staleError: 30 * 24 * 60 * 60,
+  };
+  respond(res, manifest, cacheOpts);
 });
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
@@ -129,7 +129,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     return;
   }
   const cacheOpts = {
-    cacheMaxAge: 1 * 24 * 60 * 60, 
+    cacheMaxAge: 1 * 24 * 60 * 60,
     staleRevalidate: 7 * 24 * 60 * 60,
     staleError: 14 * 24 * 60 * 60,
   };
@@ -137,7 +137,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     try {
       metas = JSON.parse(JSON.stringify(metas));
       metas.metas = await Promise.all(metas.metas.map(async (el) => {
-        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey) 
+        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey)
         el.poster = await checkIfExists(rpdbImage) ? rpdbImage : el.poster;
         return el;
       }))
@@ -157,7 +157,11 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   if (req.params.id.includes("tmdb:")) {
     const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
       return await getMeta(type, language, tmdbId, rpdbkey, {
-        hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
+        ...config,
+        hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true",
+        enableAgeRating: config.enableAgeRating === "true",
+        showAgeRatingInGenres: config.showAgeRatingInGenres !== "false",
+        showAgeRatingWithImdbRating: config.showAgeRatingWithImdbRating === "true"
       });
     });
     const cacheOpts = {
@@ -177,7 +181,11 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
         return await getMeta(type, language, tmdbId, rpdbkey, {
-          hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true"
+          ...config,
+          hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true",
+          enableAgeRating: config.enableAgeRating === "true",
+          showAgeRatingInGenres: config.showAgeRatingInGenres !== "false",
+          showAgeRatingWithImdbRating: config.showAgeRatingWithImdbRating === "true"
         });
       });
       const cacheOpts = {
@@ -220,21 +228,21 @@ addon.get("/api/proxy/status", async function (req, res) {
 
 addon.get("/api/image/blur", async function (req, res) {
   const imageUrl = req.query.url;
-  
+
   if (!imageUrl) {
     return res.status(400).json({ error: 'Image URL not provided' });
   }
 
   try {
     const blurredImageBuffer = await blurImage(imageUrl);
-    
+
     if (!blurredImageBuffer) {
       return res.status(500).json({ error: 'Error processing image' });
     }
 
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000');
-    
+
     res.send(blurredImageBuffer);
   } catch (error) {
     console.error('Error in blur route:', error);

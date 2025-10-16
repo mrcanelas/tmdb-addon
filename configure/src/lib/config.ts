@@ -21,6 +21,9 @@ interface AddonConfig {
   }>;
   hideInCinemaTag?: boolean;
   castCount?: number;
+  showAgeRatingInGenres?: boolean;
+  enableAgeRating?: boolean;
+  showAgeRatingWithImdbRating?: boolean;
 }
 
 export function generateAddonUrl(config: AddonConfig): string {
@@ -40,11 +43,15 @@ export function generateAddonUrl(config: AddonConfig): string {
       })),
     includeAdult: config.includeAdult === true ? "true" : undefined,
     provideImdbId: config.provideImdbId === true ? "true" : undefined,
+    returnImdbId: config.returnImdbId === true ? "true" : undefined,
     tmdbPrefix: config.tmdbPrefix === true ? "true" : undefined,
     hideEpisodeThumbnails: config.hideEpisodeThumbnails === true ? "true" : undefined,
     searchEnabled: config.searchEnabled === false ? "false" : undefined,
     hideInCinemaTag: config.hideInCinemaTag === true ? "true" : undefined,
     castCount: typeof config.castCount === "number" ? config.castCount : undefined,
+    enableAgeRating: typeof config.enableAgeRating === "boolean" ? String(config.enableAgeRating) : undefined,
+    showAgeRatingInGenres: typeof config.showAgeRatingInGenres === "boolean" ? String(config.showAgeRatingInGenres) : undefined,
+    showAgeRatingWithImdbRating: typeof config.showAgeRatingWithImdbRating === "boolean" ? String(config.showAgeRatingWithImdbRating) : undefined,
   };
 
   const cleanConfig = Object.fromEntries(
@@ -52,6 +59,6 @@ export function generateAddonUrl(config: AddonConfig): string {
   );
 
   const compressed = compressToEncodedURIComponent(JSON.stringify(cleanConfig));
-  
+
   return `${window.location.origin}/${compressed}/manifest.json`;
 }

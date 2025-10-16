@@ -71,9 +71,9 @@ function parseTrailerStream(videos) {
     });
 }
 
-function parseImdbLink(vote_average, imdb_id) {
+function parseImdbLink(vote_average, imdb_id, ageRating = null, showAgeRatingWithImdbRating = false) {
   return {
-    name: vote_average,
+    name: showAgeRatingWithImdbRating && ageRating ? `${ageRating}\u2003\u2003${vote_average}` : vote_average,
     category: "imdb",
     url: `https://imdb.com/title/${imdb_id}`,
   };
@@ -87,8 +87,18 @@ function parseShareLink(title, imdb_id, type) {
   };
 }
 
-function parseGenreLink(genres, type, language) {
-  return genres.map((genre) => {
+function parseImdbParentalGuideLink(imdbId, ageRating) {
+  if (!imdbId || !ageRating) return null;
+
+  return {
+    name: ageRating,
+    category: "Genres",
+    url: `https://www.imdb.com/title/${imdbId}/parentalguide`
+  };
+}
+
+function parseGenreLink(genres, type, language, imdbId = null, ageRating = null, showAgeRatingInGenres = true) {
+  const genreLinks = genres.map((genre) => {
     return {
       name: genre.name,
       category: "Genres",
@@ -99,6 +109,16 @@ function parseGenreLink(genres, type, language) {
       )}`,
     };
   });
+
+  // Add IMDb parental guide link as first genre if available and enabled
+  if (showAgeRatingInGenres) {
+    const parentalGuideLink = parseImdbParentalGuideLink(imdbId, ageRating);
+    if (parentalGuideLink) {
+      return [parentalGuideLink, ...genreLinks];
+    }
+  }
+
+  return genreLinks;
 }
 
 function parseCreditsLink(credits, castCount) {
@@ -151,7 +171,7 @@ function parseRunTime(runtime) {
   if (runtime === 0 || !runtime) {
     return "";
   }
-  
+
   const hours = Math.floor(runtime / 60);
   const minutes = runtime % 60;
 
@@ -168,12 +188,12 @@ function parseCreatedBy(created_by) {
 
 function parseConfig(catalogChoices) {
   let config = {};
-  
+
   // If catalogChoices is null, undefined or empty, return empty object
   if (!catalogChoices) {
     return config;
   }
-  
+
   try {
     // Try to decompress with lz-string
     const decoded = decompressFromEncodedURIComponent(catalogChoices);
@@ -200,7 +220,7 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
 }
 
 function parseMedia(el, type, genreList = []) {
-  const genres = Array.isArray(el.genre_ids) 
+  const genres = Array.isArray(el.genre_ids)
     ? el.genre_ids.map(genre => genreList.find((x) => x.id === genre)?.name || 'Unknown')
     : [];
 
@@ -262,6 +282,7 @@ module.exports = {
   parseTrailerStream,
   parseImdbLink,
   parseShareLink,
+  parseImdbParentalGuideLink,
   parseGenreLink,
   parseCreditsLink,
   parseCoutry,
