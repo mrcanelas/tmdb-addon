@@ -56,18 +56,33 @@ const buildLinks = (
   castCount,
   ageRating = null,
   showAgeRatingInGenres = true,
-  showAgeRatingWithImdbRating = false
+  showAgeRatingWithImdbRating = false,
+  collObj
 ) => [
     Utils.parseImdbLink(imdbRating, imdbId, ageRating, showAgeRatingWithImdbRating),
     Utils.parseShareLink(title, imdbId, type),
     ...Utils.parseGenreLink(genres, type, language, imdbId, ageRating, showAgeRatingInGenres),
-    ...Utils.parseCreditsLink(credits, castCount)
+    ...Utils.parseCreditsLink(credits, castCount),
+    ...Utils.parseCollection(collObj) //empty if no collection
   ];
 
 // Helper function to add age rating to genres
 const addAgeRatingToGenres = (ageRating, genres, showAgeRatingInGenres = true) => {
   if (!ageRating || !showAgeRatingInGenres) return genres;
   return [ageRating, ...genres];
+};
+
+const fetchCollectionData = async (tmdbId, language) => {
+  return await moviedb.collectionInfo({
+    id: tmdbId,
+    language
+  }).then((res) => {
+    if (!res.parts) {
+      return null;
+    }
+    res.parts = res.parts.filter((part) => part.id !== tmdbId); //remove self from collection
+    return res;
+  });
 };
 
 // Movie specific functions
@@ -84,7 +99,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
   const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
-  const [poster, logo, imdbRatingRaw, ageRating] = await Promise.all([
+  const [poster, logo, imdbRatingRaw, ageRating, collectionRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getLogo(tmdbId, language, res.original_language).catch(e => {
       console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
@@ -95,6 +110,10 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
       console.warn(`Error fetching age rating for movie ${tmdbId}:`, e.message);
       return null;
     }) : Promise.resolve(null),
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
+      console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
+      return null;
+    }) : null //should be the same as Promise.resolve(null)
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
@@ -138,7 +157,8 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
       castCount,
       resolvedAgeRating,
       showAgeRatingInGenres,
-      showAgeRatingWithImdbRating
+      showAgeRatingWithImdbRating,
+      collectionRaw
     ),
     behaviorHints: {
       defaultVideoId: res.imdb_id ? res.imdb_id : `tmdb:${res.id}`,
@@ -168,7 +188,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
   const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
-  const [poster, logo, imdbRatingRaw, episodes, ageRating] = await Promise.all([
+  const [poster, logo, imdbRatingRaw, episodes, ageRating, collectionRaw] = await Promise.all([
     Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
     getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
       console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
@@ -184,7 +204,11 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     enableAgeRating ? getCachedAgeRating(tmdbId, type, language).catch(e => {
       console.warn(`Error fetching age rating for series ${tmdbId}:`, e.message);
       return null;
-    }) : Promise.resolve(null)
+    }) : Promise.resolve(null),
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
+      console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
+      return null;
+    }) : null //should be the same as Promise.resolve(null)
   ]);
 
   const imdbRating = imdbRatingRaw || res.vote_average?.toFixed(1) || "N/A";
@@ -226,7 +250,8 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
       castCount,
       resolvedAgeRating,
       showAgeRatingInGenres,
-      showAgeRatingWithImdbRating
+      showAgeRatingWithImdbRating,
+      collectionRaw
     ),
     trailers: Utils.parseTrailers(res.videos),
     trailerStreams: Utils.parseTrailerStream(res.videos),
