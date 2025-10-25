@@ -72,9 +72,9 @@ const addAgeRatingToGenres = (ageRating, genres, showAgeRatingInGenres = true) =
   return [ageRating, ...genres];
 };
 
-const fetchCollectionData = async (tmdbId, language) => {
+const fetchCollectionData = async (collTMDBId, language, tmdbId) => {
   return await moviedb.collectionInfo({
-    id: tmdbId,
+    id: collTMDBId,
     language
   }).then((res) => {
     if (!res.parts) {
@@ -110,7 +110,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
       console.warn(`Error fetching age rating for movie ${tmdbId}:`, e.message);
       return null;
     }) : Promise.resolve(null),
-    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language, tmdbId).catch((e) => {
       console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
       return null;
     }) : null //should be the same as Promise.resolve(null)
@@ -205,7 +205,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
       console.warn(`Error fetching age rating for series ${tmdbId}:`, e.message);
       return null;
     }) : Promise.resolve(null),
-    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language).catch((e) => {
+    (res.belongs_to_collection && res.belongs_to_collection.id) ? fetchCollectionData(res.belongs_to_collection.id, language, tmdbId).catch((e) => {
       console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
       return null;
     }) : null //should be the same as Promise.resolve(null)
