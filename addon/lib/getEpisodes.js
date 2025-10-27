@@ -1,4 +1,5 @@
 require("dotenv").config();
+const Utils = require("../utils/parseProps");
 const { TMDBClient } = require("../utils/tmdbClient");
 const moviedb = new TMDBClient(process.env.TMDB_API);
 const diferentOrder = require("../static/diferentOrder.json");
@@ -55,6 +56,7 @@ async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
               overview: episode.overview,
               description: episode.overview,
               rating: episode.vote_average,
+              runtime: Utils.parseRunTime(episode.runtime),
               firstAired: difOrder.watchOrderOnly
                 ? new Date(Date.parse(group.episodes[0].air_date) + index)
                 : new Date(Date.parse(episode.air_date) + index),
@@ -89,6 +91,7 @@ async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
                     overview: episode.overview,
                     description: episode.overview,
                     rating: episode.vote_average.toString(),
+                    runtime: Utils.parseRunTime(episode.runtime),
                     firstAired: new Date(
                       Date.parse(episode.air_date) + episode.season_number
                     ),
