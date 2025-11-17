@@ -17,6 +17,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [geminikey, setGeminiKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
+  const [traktAccessToken, setTraktAccessToken] = useState("");
+  const [traktRefreshToken, setTraktRefreshToken] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
   const [returnImdbId, setReturnImdbId] = useState(false);
@@ -52,6 +54,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.geminikey) setGeminiKey(config.geminikey);
+      if (config.traktAccessToken) setTraktAccessToken(config.traktAccessToken);
+      if (config.traktRefreshToken) setTraktRefreshToken(config.traktRefreshToken);
       if (config.provideImdbId) setProvideImdbId(config.provideImdbId === "true");
       if (config.returnImdbId) setReturnImdbId(config.returnImdbId === "true");
       if (config.tmdbPrefix) setTmdbPrefix(config.tmdbPrefix === "true");
@@ -112,6 +116,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     rpdbkey,
     geminikey,
     mdblistkey,
+    traktAccessToken,
+    traktRefreshToken,
     includeAdult,
     provideImdbId,
     returnImdbId,
@@ -131,6 +137,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setRpdbkey,
     setGeminiKey,
     setMdblistkey,
+    setTraktAccessToken,
+    setTraktRefreshToken,
     setIncludeAdult,
     setProvideImdbId,
     setReturnImdbId,

@@ -4,6 +4,8 @@ interface AddonConfig {
   rpdbkey?: string;
   geminikey?: string;
   mdblistkey?: string;
+  traktAccessToken?: string;
+  traktRefreshToken?: string;
   includeAdult?: boolean;
   provideImdbId?: boolean;
   tmdbPrefix?: boolean;
@@ -32,6 +34,8 @@ export function generateAddonUrl(config: AddonConfig): string {
     rpdbkey: config.rpdbkey || undefined,
     geminikey: config.geminikey || undefined,
     mdblistkey: config.mdblistkey || undefined,
+    traktAccessToken: config.traktAccessToken || undefined,
+    traktRefreshToken: config.traktRefreshToken || undefined,
     sessionId: config.sessionId || undefined,
     catalogs: config.catalogs
       ?.filter(catalog => catalog.enabled === false ? false : true)

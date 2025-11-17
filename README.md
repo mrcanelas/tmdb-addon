@@ -57,10 +57,11 @@ Customize which catalogs appear on your Stremio:
   - Trending
 
 ### Integration Features
-- TMDB Account Connection
-- Watchlist Sync
-- Rating Posters Support
-- Custom Lists
+- **TMDB Account Connection**: Sync your TMDB favorites and watchlist
+- **Trakt Integration**: Sync your Trakt watchlist and get personalized recommendations
+- **Watchlist Sync**: Keep your watchlists synchronized across platforms
+- **Rating Posters Support**: Display ratings on posters (RPDB integration)
+- **Custom Lists**: Import custom lists from MDBList
 
 ## 🛠️ Self-Hosting
 
@@ -75,6 +76,8 @@ docker run -d \
   -e FANART_API=your_fanart_key \
   -e TMDB_API=your_tmdb_key \
   -e HOST_NAME=http://your_domain:1337 \
+  -e TRAKT_CLIENT_ID=your_trakt_client_id \
+  -e TRAKT_CLIENT_SECRET=your_trakt_client_secret \
   mrcanelas/tmdb-addon:latest
 ```
 

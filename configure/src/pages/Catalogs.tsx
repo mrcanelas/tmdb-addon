@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
-import { baseCatalogs, authCatalogs, streamingCatalogs } from "@/data/catalogs";
+import { baseCatalogs, authCatalogs, traktCatalogs, streamingCatalogs } from "@/data/catalogs";
 import { 
   DndContext, 
   DragEndEvent, 
@@ -50,7 +50,7 @@ const CatalogColumn = ({
 );
 
 const Catalogs = () => {
-  const { sessionId, mdblistkey, streaming, catalogs, setCatalogs } = useConfig();
+  const { sessionId, mdblistkey, traktAccessToken, streaming, catalogs, setCatalogs } = useConfig();
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -71,6 +71,7 @@ const Catalogs = () => {
     const allCatalogs = [
       ...baseCatalogs,
       ...(sessionId ? authCatalogs : []),
+      ...(traktAccessToken ? traktCatalogs : []),
       ...(streaming?.length
         ? streaming.flatMap((serviceId) => streamingCatalogs[serviceId] || [])
         : []),
@@ -93,7 +94,7 @@ const Catalogs = () => {
         })),
       ];
     });
-  }, [sessionId, mdblistkey, streaming, setCatalogs]);
+  }, [sessionId, mdblistkey, traktAccessToken, streaming, setCatalogs]);
 
   const catalogConfigs = catalogs.reduce((acc, config) => {
     const key = `${config.id}-${config.type}`;

@@ -145,10 +145,15 @@ async function getManifest(config) {
   const isMDBList = (id) => id.startsWith("mdblist.");
   const options = { years, genres_movie, genres_series, filterLanguages };
 
+  const isTraktCatalog = (id) => id.startsWith("trakt.");
+  
   let catalogs = await Promise.all(userCatalogs
     .filter(userCatalog => {
       const catalogDef = getCatalogDefinition(userCatalog.id);
       if (isMDBList(userCatalog.id)) return true;
+      if (isTraktCatalog(userCatalog.id)) {
+        return !!config.traktAccessToken;
+      }
       if (!catalogDef) return false;
       if (catalogDef.requiresAuth && !sessionId) return false;
       return true;
@@ -156,6 +161,19 @@ async function getManifest(config) {
     .map(userCatalog => {
       if (isMDBList(userCatalog.id)) {
         return createMDBListCatalog(userCatalog, config.mdblistkey);
+      }
+      if (isTraktCatalog(userCatalog.id)) {
+        // Catálogos Trakt não precisam de definição especial, apenas retornar o catálogo básico
+        return {
+          id: userCatalog.id,
+          type: userCatalog.type,
+          name: userCatalog.name || (userCatalog.id.includes('watchlist') ? 'Trakt Watchlist' : 'Trakt Recommendations'),
+          pageSize: 20,
+          extra: [
+            { name: "genre", options: [], isRequired: false },
+            { name: "skip" }
+          ]
+        };
       }
       const catalogDef = getCatalogDefinition(userCatalog.id);
       const catalogOptions = getOptionsForCatalog(catalogDef, userCatalog.type, userCatalog.showInHome, options);

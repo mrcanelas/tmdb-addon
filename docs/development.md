@@ -46,6 +46,8 @@ FANART_API=your_fanart_key
 TMDB_API=your_tmdb_key
 HOST_NAME=http://localhost:1337
 PORT=1337
+TRAKT_CLIENT_ID=your_trakt_client_id
+TRAKT_CLIENT_SECRET=your_trakt_client_secret
 ```
 
 4. Start development server:

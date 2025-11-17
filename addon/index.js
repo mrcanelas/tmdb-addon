@@ -13,6 +13,8 @@ const { getTrending } = require("./lib/getTrending");
 const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
+const { getTraktAuthUrl, getTraktAccessToken } = require("./lib/getTraktSession");
+const { getTraktWatchlist, getTraktRecommendations } = require("./lib/getTraktLists");
 const { blurImage } = require('./utils/imageProcessor');
 const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
 
@@ -110,6 +112,79 @@ addon.get("/session_id", async function (req, res) {
   }
 });
 
+addon.get("/trakt_auth_url", async function (req, res) {
+  try {
+    // Detecta o host da requisição atual (suporta proxies reversos)
+    let protocol = req.protocol;
+    if (!protocol || protocol === 'http') {
+      // Verifica headers de proxy reverso
+      const forwardedProto = req.headers['x-forwarded-proto'];
+      if (forwardedProto) {
+        protocol = forwardedProto.split(',')[0].trim();
+      } else if (req.secure || req.headers['x-forwarded-ssl'] === 'on') {
+        protocol = 'https';
+      }
+    }
+    
+    const host = req.get('host') || req.headers.host || req.headers['x-forwarded-host'];
+    const requestHost = `${protocol}://${host}`;
+    
+    const { authUrl, state } = await getTraktAuthUrl(requestHost);
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+    res.json({ authUrl, state });
+  } catch (error) {
+    console.error('Error getting Trakt auth URL:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+addon.get("/trakt_access_token", async function (req, res) {
+  try {
+    const code = req.query.code;
+    
+    if (!code) {
+      res.status(400).json({ error: 'Authorization code is required' });
+      return;
+    }
+    
+    // Detecta o redirect_uri da requisição (o Trakt envia de volta o mesmo que foi usado)
+    // Ou usa o host atual para construir (suporta proxies reversos)
+    let protocol = req.protocol;
+    if (!protocol || protocol === 'http') {
+      // Verifica headers de proxy reverso
+      const forwardedProto = req.headers['x-forwarded-proto'];
+      if (forwardedProto) {
+        protocol = forwardedProto.split(',')[0].trim();
+      } else if (req.secure || req.headers['x-forwarded-ssl'] === 'on') {
+        protocol = 'https';
+      }
+    }
+    
+    const host = req.get('host') || req.headers.host || req.headers['x-forwarded-host'];
+    const requestHost = `${protocol}://${host}`;
+    const redirectUri = `${requestHost}/configure`;
+    
+    const response = await getTraktAccessToken(code, redirectUri);
+    
+    // Verifica se houve erro na requisição
+    if (response?.error || response?.success === false) {
+      res.status(400).json({ error: response.error || response.status_message || 'Failed to get access token' });
+      return;
+    }
+    
+    // Retorna o objeto com access_token, refresh_token, etc.
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+    res.json(response);
+  } catch (error) {
+    console.error('Error getting Trakt access token:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
 
 addon.use('/configure', (req, res, next) => {
@@ -162,6 +237,20 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           break;
         case "tmdb.watchlist":
           metas = await getWatchList(...args, genre, sessionId);
+          break;
+        case "trakt.watchlist":
+          const traktAccessToken = config.traktAccessToken;
+          if (!traktAccessToken) {
+            throw new Error('Trakt access token não fornecido');
+          }
+          metas = await getTraktWatchlist(...args, genre, traktAccessToken);
+          break;
+        case "trakt.recommendations":
+          const traktToken = config.traktAccessToken;
+          if (!traktToken) {
+            throw new Error('Trakt access token não fornecido');
+          }
+          metas = await getTraktRecommendations(...args, genre, traktToken);
           break;
         default:
           metas = await getCatalog(...args, id, genre, config);

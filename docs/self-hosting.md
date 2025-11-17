@@ -29,6 +29,8 @@ docker run -d \
   -e FANART_API=your_fanart_key \
   -e TMDB_API=your_tmdb_key \
   -e HOST_NAME=http://your_domain:1337 \
+  -e TRAKT_CLIENT_ID=your_trakt_client_id \
+  -e TRAKT_CLIENT_SECRET=your_trakt_client_secret \
   mrcanelas/tmdb-addon:latest
 ```
 
@@ -49,6 +51,8 @@ services:
       - FANART_API=your_fanart_key
       - TMDB_API=your_tmdb_key
       - HOST_NAME=http://your_domain:1337
+      - TRAKT_CLIENT_ID=your_trakt_client_id
+      - TRAKT_CLIENT_SECRET=your_trakt_client_secret
     restart: unless-stopped
 ```
 
@@ -71,8 +75,34 @@ npm install
 ```
 
 3. Configure environment variables:
-   - Copy `.env.example` to `.env`
-   - Fill in the required variables in the `.env` file
+   - Create a `.env` file in the root directory
+   - Fill in the required variables (see example below)
+
+Example `.env` file:
+```env
+# MongoDB Configuration
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+
+# TMDB API Configuration
+TMDB_API=your_tmdb_api_key_here
+
+# Fanart.tv API Configuration
+FANART_API=your_fanart_api_key_here
+
+# Server Configuration
+HOST_NAME=http://localhost:1337
+PORT=1337
+
+# Trakt OAuth Configuration (Optional)
+TRAKT_CLIENT_ID=your_trakt_client_id_here
+TRAKT_CLIENT_SECRET=your_trakt_client_secret_here
+
+# Proxy Configuration (Optional)
+TMDB_PROXY_ENABLED=false
+TMDB_PROXY_HOST=127.0.0.1
+TMDB_PROXY_PORT=1080
+TMDB_PROXY_PROTOCOL=http
+```
 
 4. Build the project:
 ```bash
@@ -93,6 +123,13 @@ node addon/server.js
 | `TMDB_API` | TMDB API key | Yes |
 | `HOST_NAME` | Public URL of your addon (e.g., http://your_domain:1337) | Yes |
 | `PORT` | Server port (default: 1337) | No |
+| `TRAKT_CLIENT_ID` | Trakt OAuth Client ID (for Trakt integration) | No |
+| `TRAKT_CLIENT_SECRET` | Trakt OAuth Client Secret (for Trakt integration) | No |
+| `TRAKT_REDIRECT_URI` | Trakt OAuth Redirect URI (auto-detected if not set) | No |
+| `TMDB_PROXY_ENABLED` | Enable proxy for TMDB requests (default: false) | No |
+| `TMDB_PROXY_HOST` | Proxy host (default: 127.0.0.1) | No |
+| `TMDB_PROXY_PORT` | Proxy port (default: 1080) | No |
+| `TMDB_PROXY_PROTOCOL` | Proxy protocol: http, https, or socks5 (default: http) | No |
 
 ## Getting API Keys
 
@@ -112,6 +149,31 @@ node addon/server.js
 2. Set up a free cluster
 3. Get your connection string
 4. Replace `<password>` in the connection string with your database user password
+
+### Trakt OAuth (Optional)
+To enable Trakt integration (watchlist and recommendations sync):
+
+1. Visit [Trakt OAuth Applications](https://trakt.tv/oauth/applications)
+2. Click "New Application"
+3. Fill in the application details:
+   - **Name**: Your application name (e.g., "TMDB Addon")
+   - **Description**: Brief description of your application
+   - **Redirect URI**: Add all your instance URLs, one per line:
+     ```
+     https://your-instance1.com/configure
+     https://your-instance2.com/configure
+     http://localhost:1337/configure
+     ```
+     > **Note**: The redirect URI is automatically detected from the request host. You only need to add all possible URLs where your addon will be hosted.
+4. Click "Save Application"
+5. Copy the **Client ID** and **Client Secret**
+6. Add them to your environment variables:
+   ```env
+   TRAKT_CLIENT_ID=your_client_id
+   TRAKT_CLIENT_SECRET=your_client_secret
+   ```
+
+> **Important**: If you're hosting multiple instances, add all redirect URIs (one per line) in the Trakt OAuth application settings. The code will automatically detect which instance is being used.
 
 ## Verifying Installation
 

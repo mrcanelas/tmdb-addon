@@ -12,6 +12,8 @@ export type ConfigContextType = {
   rpdbkey: string;
   geminikey: string;
   mdblistkey: string;
+  traktAccessToken: string;
+  traktRefreshToken: string;
   includeAdult: boolean;
   provideImdbId: boolean;
   returnImdbId: boolean;
@@ -31,6 +33,8 @@ export type ConfigContextType = {
   setRpdbkey: (rpdbkey: string) => void;
   setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
+  setTraktAccessToken: (traktAccessToken: string) => void;
+  setTraktRefreshToken: (traktRefreshToken: string) => void;
   setIncludeAdult: (includeAdult: boolean) => void;
   setProvideImdbId: (provideImdbId: boolean) => void;
   setReturnImdbId: (returnImdbId: boolean) => void;

@@ -29,6 +29,13 @@ export const authCatalogs: Catalog[] = [
   { id: "tmdb.watchlist", name: "Watchlist", type: "series" },
 ];
 
+export const traktCatalogs: Catalog[] = [
+  { id: "trakt.watchlist", name: "Trakt Watchlist", type: "movie" },
+  { id: "trakt.watchlist", name: "Trakt Watchlist", type: "series" },
+  { id: "trakt.recommendations", name: "Trakt Recommendations", type: "movie" },
+  { id: "trakt.recommendations", name: "Trakt Recommendations", type: "series" },
+];
+
 export const streamingCatalogs: Record<string, Catalog[]> = {
   nfx: [
     { id: "streaming.nfx", name: "Netflix", type: "movie" },
