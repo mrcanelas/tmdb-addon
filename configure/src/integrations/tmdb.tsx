@@ -12,17 +12,49 @@ export default function TMDB() {
 
   const handleRequestToken = useCallback(async (requestToken: string) => {
     setIsLoading(true);
+    setError("");
     try {
-      const response = await fetch(`/session_id?request_token=${requestToken}`);
-      if (!response.ok) throw new Error('Failed to create session');
+      if (!requestToken || requestToken.trim() === '') {
+        throw new Error('Invalid request token');
+      }
+      
+      const response = await fetch(`/session_id?request_token=${encodeURIComponent(requestToken)}`);
+      
+      if (!response.ok) {
+        let errorMessage = 'Failed to create session';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       
       const sessionId = await response.text();
+      
+      // Verifica se a resposta é um JSON com erro
+      if (sessionId.includes('"success":false') || sessionId.includes('status_message')) {
+        try {
+          const errorData = JSON.parse(sessionId);
+          throw new Error(errorData.status_message || errorData.error || 'Failed to create session');
+        } catch {
+          // Se não for JSON válido, continua
+        }
+      }
+      
+      // Valida se o session ID não está vazio
+      if (!sessionId || sessionId.trim() === '') {
+        throw new Error('Empty session ID received');
+      }
+      
       setSessionId(sessionId);
       
       window.history.replaceState({}, '', window.location.pathname);
     } catch (e) {
       console.error(e);
-      setError("Failed to create TMDB session");
+      setError(e instanceof Error ? e.message : "Failed to create TMDB session");
     } finally {
       setIsLoading(false);
     }
@@ -44,14 +76,33 @@ export default function TMDB() {
     try {
       const uuid = crypto.randomUUID();
       const response = await fetch(`/request_token?cache_buster=${uuid}`);
-      if (!response.ok) throw new Error('Failed to get request token');
+      
+      if (!response.ok) {
+        let errorMessage = 'Failed to get request token';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       
       const requestToken = await response.text();
-      const tmdbAuthUrl = `https://www.themoviedb.org/authenticate/${requestToken}?redirect_to=${window.location.href}`;
+      
+      // Valida se o token não está vazio
+      if (!requestToken || requestToken.trim() === '') {
+        throw new Error('Empty request token received');
+      }
+      
+      // Remove query params existentes da URL de redirecionamento para evitar conflitos
+      const redirectUrl = window.location.origin + window.location.pathname;
+      const tmdbAuthUrl = `https://www.themoviedb.org/authenticate/${requestToken}?redirect_to=${encodeURIComponent(redirectUrl)}`;
       window.location.href = tmdbAuthUrl;
     } catch (e) {
       console.error(e);
-      setError("Failed to start TMDB authentication");
+      setError(e instanceof Error ? e.message : "Failed to start TMDB authentication");
       setIsLoading(false);
     }
   };

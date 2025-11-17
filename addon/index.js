@@ -56,14 +56,58 @@ addon.get("/", function (_, res) {
 });
 
 addon.get("/request_token", async function (req, res) {
-  const requestToken = await getRequestToken()
-  respond(res, requestToken);
+  try {
+    const response = await getRequestToken()
+    
+    // Verifica se houve erro na requisição
+    if (response?.success === false) {
+      res.status(400).json({ error: response.status_message || 'Failed to get request token' });
+      return;
+    }
+    
+    // Retorna apenas o request_token string, não o objeto inteiro
+    const requestToken = response?.request_token;
+    if (!requestToken) {
+      res.status(500).json({ error: 'Request token not found in response' });
+      return;
+    }
+    
+    respond(res, requestToken);
+  } catch (error) {
+    console.error('Error getting request token:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
 });
 
 addon.get("/session_id", async function (req, res) {
-  const requestToken = req.query.request_token
-  const sessionId = await getSessionId(requestToken)
-  respond(res, sessionId);
+  try {
+    const requestToken = req.query.request_token;
+    
+    if (!requestToken) {
+      res.status(400).json({ error: 'Request token is required' });
+      return;
+    }
+    
+    const response = await getSessionId(requestToken);
+    
+    // Verifica se houve erro na requisição
+    if (response?.success === false) {
+      res.status(400).json({ error: response.status_message || 'Failed to create session' });
+      return;
+    }
+    
+    // Retorna apenas o session_id string, não o objeto inteiro
+    const sessionId = response?.session_id;
+    if (!sessionId) {
+      res.status(500).json({ error: 'Session ID not found in response' });
+      return;
+    }
+    
+    respond(res, sessionId);
+  } catch (error) {
+    console.error('Error getting session ID:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
 });
 
 addon.use('/configure', express.static(path.join(__dirname, '../dist')));
