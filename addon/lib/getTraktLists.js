@@ -1,10 +1,6 @@
 require('dotenv').config()
 const { get } = require('../utils/httpClient')
-const { parseMedia } = require('../utils/parseProps')
-const { getGenreList } = require('./getGenreList')
-const { TMDBClient } = require('../utils/tmdbClient')
-
-const moviedb = new TMDBClient(process.env.TMDB_API)
+const { getMeta } = require('./getMeta')
 
 async function getTraktWatchlist(type, language, page, genre, accessToken) {
   if (!accessToken) {
@@ -25,9 +21,6 @@ async function getTraktWatchlist(type, language, page, genre, accessToken) {
     })
 
     const items = response.data || []
-    
-    // Converter itens do Trakt para formato TMDB
-    const genreList = await getGenreList(language, type)
     const metas = []
 
     for (const item of items) {
@@ -41,13 +34,8 @@ async function getTraktWatchlist(type, language, page, genre, accessToken) {
         }
 
         if (tmdbId) {
-          const tmdbItem = type === 'movie' 
-            ? await moviedb.movieInfo({ id: tmdbId, language })
-            : await moviedb.tvInfo({ id: tmdbId, language })
-          if (tmdbItem) {
-            const meta = parseMedia(tmdbItem, type, genreList)
-            metas.push(meta)
-          }
+          const meta = await getMeta(type, language, tmdbId)
+          metas.push(meta.meta)
         }
       } catch (err) {
         console.error(`Erro ao processar item do Trakt:`, err)
@@ -80,29 +68,15 @@ async function getTraktRecommendations(type, language, page, genre, accessToken)
     })
 
     const items = response.data || []
-    
-    // Converter itens do Trakt para formato TMDB
-    const genreList = await getGenreList(language, type)
     const metas = []
 
     for (const item of items) {
       try {
-        let tmdbId = null
-
-        if (type === 'movie') {
-          tmdbId = item.movie?.ids?.tmdb
-        } else {
-          tmdbId = item.show?.ids?.tmdb
-        }
+        const tmdbId = item.ids?.tmdb
 
         if (tmdbId) {
-          const tmdbItem = type === 'movie' 
-            ? await moviedb.movieInfo({ id: tmdbId, language })
-            : await moviedb.tvInfo({ id: tmdbId, language })
-          if (tmdbItem) {
-            const meta = parseMedia(tmdbItem, type, genreList)
-            metas.push(meta)
-          }
+          const meta = await getMeta(type, language, tmdbId)
+          metas.push(meta.meta)
         }
       } catch (err) {
         console.error(`Erro ao processar recomendação do Trakt:`, err)
