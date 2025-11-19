@@ -228,6 +228,7 @@ async function getManifest(config) {
   const activeConfigs = [
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
+    `Trakt Integration: ${config.traktAccessToken ? 'Connected' : 'Not Connected'}`,
     `MDBList Integration: ${config.mdblistkey ? 'Connected' : 'Not Connected'}`,
     `IMDb Integration: ${provideImdbId || returnImdbId ? "Enabled" : "Disabled"}`,
     `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,

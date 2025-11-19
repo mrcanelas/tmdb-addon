@@ -71,7 +71,8 @@ const Catalogs = () => {
     const allCatalogs = [
       ...baseCatalogs,
       ...(sessionId ? authCatalogs : []),
-      ...(traktAccessToken ? traktCatalogs : []),
+      // Catálogos Trakt são adicionados pelo componente de integração quando conecta
+      // Não adicionamos aqui para evitar duplicação
       ...(streaming?.length
         ? streaming.flatMap((serviceId) => streamingCatalogs[serviceId] || [])
         : []),
@@ -94,7 +95,7 @@ const Catalogs = () => {
         })),
       ];
     });
-  }, [sessionId, mdblistkey, traktAccessToken, streaming, setCatalogs]);
+  }, [sessionId, mdblistkey, streaming, setCatalogs]);
 
   const catalogConfigs = catalogs.reduce((acc, config) => {
     const key = `${config.id}-${config.type}`;
