@@ -130,7 +130,8 @@ export default function Trakt() {
     setError("");
 
     try {
-      const response = await fetch(`/trakt_auth_url`);
+      const uuid = crypto.randomUUID();
+      const response = await fetch(`/trakt_auth_url?cache_buster=${uuid}`);
       
       if (!response.ok) {
         let errorMessage = 'Falha ao obter URL de autenticação';
