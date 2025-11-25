@@ -101,7 +101,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, config = {}) => {
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
   const rpdbMediaTypes = config.rpdbMediaTypes || null;
-  const logo = rpdbMediaTypes.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getLogo(tmdbId, language, res.original_language).catch(e => {
+  const logo = rpdbMediaTypes?.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getLogo(tmdbId, language, res.original_language).catch(e => {
     console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
     return null;
   });
@@ -192,7 +192,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
   const rpdbMediaTypes = config.rpdbMediaTypes || null;
-  const logo = rpdbMediaTypes.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
+  const logo = rpdbMediaTypes?.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
     console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
     return null;
   });
