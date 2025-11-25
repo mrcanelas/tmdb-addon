@@ -10,7 +10,7 @@ const { getMeta } = require("./lib/getMeta");
 const { getTmdb } = require("./lib/getTmdb");
 const { cacheWrapMeta } = require("./lib/getCache");
 const { getTrending } = require("./lib/getTrending");
-const { parseConfig, getRpdbPoster, checkIfExists } = require("./utils/parseProps");
+const { parseConfig, getRpdbPoster } = require("./utils/parseProps");
 const { getRequestToken, getSessionId } = require("./lib/getSession");
 const { getFavorites, getWatchList } = require("./lib/getPersonalLists");
 const { getTraktAuthUrl, getTraktAccessToken } = require("./lib/getTraktSession");
@@ -270,8 +270,7 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     try {
       metas = JSON.parse(JSON.stringify(metas));
       metas.metas = await Promise.all(metas.metas.map(async (el) => {
-        const rpdbImage = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey)
-        el.poster = await checkIfExists(rpdbImage) ? rpdbImage : el.poster;
+        el.poster = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey)
         return el;
       }))
     } catch (e) { }

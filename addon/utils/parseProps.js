@@ -214,7 +214,7 @@ async function parsePoster(type, id, poster, language, rpdbkey) {
   const tmdbImage = `https://image.tmdb.org/t/p/w500${poster}`
   if (rpdbkey) {
     const rpdbImage = getRpdbPoster(type, id, language, rpdbkey)
-    return await checkIfExists(rpdbImage) ? rpdbImage : tmdbImage;
+    return rpdbImage;
   }
   return tmdbImage;
 }
@@ -245,18 +245,6 @@ function getRpdbPoster(type, id, language, rpdbkey) {
   } else {
     return `https://api.ratingposterdb.com/${rpdbkey}/tmdb/poster-default/${type}-${id}.jpg?fallback=true&lang=${lang}`
   }
-}
-
-async function checkIfExists(rpdbImage) {
-  return new Promise((resolve) => {
-    urlExists(rpdbImage, (err, exists) => {
-      if (exists) {
-        resolve(true)
-      } else {
-        resolve(false);
-      }
-    })
-  });
 }
 
 function parseCollection(collObj) {
@@ -294,6 +282,5 @@ module.exports = {
   parsePoster,
   parseMedia,
   getRpdbPoster,
-  checkIfExists,
   parseCollection
 };
