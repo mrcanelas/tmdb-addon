@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Cloudflare WARP como proxy
   cloudflare-warp:
