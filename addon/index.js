@@ -127,7 +127,7 @@ addon.get("/trakt_auth_url", async function (req, res) {
     }
     
     const host = req.get('host') || req.headers.host || req.headers['x-forwarded-host'];
-    const requestHost = `${protocol}://${host}`;
+    const requestHost = process.env.HOST_NAME || `${protocol}://${host}`;
     
     const { authUrl, state } = await getTraktAuthUrl(requestHost);
     res.setHeader("Access-Control-Allow-Origin", "*");
