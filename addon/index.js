@@ -163,7 +163,7 @@ addon.get("/trakt_access_token", async function (req, res) {
     }
     
     const host = req.get('host') || req.headers.host || req.headers['x-forwarded-host'];
-    const requestHost = `${protocol}://${host}`;
+    const requestHost = process.env.HOST_NAME || `${protocol}://${host}`;
     const redirectUri = `${requestHost}/configure`;
     
     const response = await getTraktAccessToken(code, redirectUri);
