@@ -41,9 +41,10 @@ const getCacheKey = (
   `${type}-${language}-${tmdbId}-${rpdbkey}-ageRating:${enableAgeRating}-${showAgeRatingInGenres}-${showAgeRatingWithImdbRating}`;
 
 const processLogo = (logo) => {
-  if (!logo || blacklistLogoUrls.includes(logo)) return null;
+  if (!logo || typeof logo !== 'string' || blacklistLogoUrls.includes(logo)) return null;
   return logo.replace("http://", "https://");
 };
+
 
 const buildLinks = (
   imdbRating,
