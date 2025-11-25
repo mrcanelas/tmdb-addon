@@ -19,7 +19,8 @@ export default function Trakt() {
         throw new Error('Código de autorização inválido');
       }
       
-      const response = await fetch(`/trakt_access_token?code=${encodeURIComponent(code)}`);
+      const uuid = crypto.randomUUID();
+      const response = await fetch(`/trakt_access_token?code=${encodeURIComponent(code)}&cache_buster=${uuid}`);
       
       if (!response.ok) {
         let errorMessage = 'Falha ao obter token de acesso';
