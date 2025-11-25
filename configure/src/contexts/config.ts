@@ -8,8 +8,15 @@ export type CatalogConfig = {
   enabled: boolean;
 };
 
+export type RPDBMediaTypes = {
+  poster: boolean;
+  logo: boolean;
+  backdrop: boolean;
+};
+
 export type ConfigContextType = {
   rpdbkey: string;
+  rpdbMediaTypes: RPDBMediaTypes;
   geminikey: string;
   mdblistkey: string;
   traktAccessToken: string;
@@ -31,6 +38,7 @@ export type ConfigContextType = {
   enableAgeRating: boolean;
   showAgeRatingWithImdbRating: boolean;
   setRpdbkey: (rpdbkey: string) => void;
+  setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
   setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
   setTraktAccessToken: (traktAccessToken: string) => void;

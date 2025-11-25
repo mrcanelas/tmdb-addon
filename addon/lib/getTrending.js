@@ -16,7 +16,7 @@ async function getTrending(type, language, page, genre, config) {
     .trending(parameters)
     .then(async (res) => {
       const metaPromises = res.results.map(item => 
-        getMeta(type, language, item.id, config.rpdbkey)
+        getMeta(type, language, item.id, config)
           .then(result => result.meta)
           .catch(err => {
             console.error(`Error fetching metadata for ${item.id}:`, err.message);

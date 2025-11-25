@@ -36,7 +36,7 @@ async function getGenresFromMDBList(listId, apiKey) {
   }
 }
 
-async function parseMDBListItems(items, type, genreFilter, language, rpdbkey) {
+async function parseMDBListItems(items, type, genreFilter, language, config = {}) {
   const availableGenres = [
     ...new Set(
       items.flatMap(item =>
@@ -75,7 +75,7 @@ async function parseMDBListItems(items, type, genreFilter, language, rpdbkey) {
     }));
 
   const metaPromises = filteredItemsByType.map(item => 
-    getMeta(item.type, language, item.id, rpdbkey)
+    getMeta(item.type, language, item.id, config)
       .then(result => result.meta)
       .catch(err => {
         console.error(`Error fetching metadata for ${item.id}:`, err.message);

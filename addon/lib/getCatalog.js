@@ -14,7 +14,7 @@ async function getCatalog(type, language, page, id, genre, config) {
   if (id.startsWith("mdblist.")) {
     const listId = id.split(".")[1];
     const results = await fetchMDBListItems(listId, mdblistKey, language, page);
-    const parseResults = await parseMDBListItems(results, type, genre, language, config.rpdbkey);
+    const parseResults = await parseMDBListItems(results, type, genre, language, config);
 
     return parseResults
   }
@@ -27,7 +27,7 @@ async function getCatalog(type, language, page, id, genre, config) {
   return fetchFunction(parameters)
     .then(async (res) => {
       const metaPromises = res.results.map(item => 
-        getMeta(type, language, item.id, config.rpdbkey)
+        getMeta(type, language, item.id, config)
           .then(result => result.meta)
           .catch(err => {
             console.error(`Error fetching metadata for ${item.id}:`, err.message);

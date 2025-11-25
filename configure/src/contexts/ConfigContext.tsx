@@ -15,6 +15,7 @@ const allCatalogs = [
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
+  const [rpdbMediaTypes, setRpdbMediaTypes] = useState({ poster: true, logo: false, backdrop: false });
   const [geminikey, setGeminiKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
   const [traktAccessToken, setTraktAccessToken] = useState("");
@@ -52,6 +53,13 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const config = JSON.parse(decompressedConfig);
 
       if (config.rpdbkey) setRpdbkey(config.rpdbkey);
+      if (config.rpdbMediaTypes) {
+        setRpdbMediaTypes({
+          poster: config.rpdbMediaTypes.poster !== false,
+          logo: config.rpdbMediaTypes.logo === true,
+          backdrop: config.rpdbMediaTypes.backdrop === true
+        });
+      }
       if (config.mdblistkey) setMdblistkey(config.mdblistkey);
       if (config.geminikey) setGeminiKey(config.geminikey);
       if (config.traktAccessToken) setTraktAccessToken(config.traktAccessToken);
@@ -114,6 +122,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     rpdbkey,
+    rpdbMediaTypes,
     geminikey,
     mdblistkey,
     traktAccessToken,
@@ -135,6 +144,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     enableAgeRating,
     showAgeRatingWithImdbRating,
     setRpdbkey,
+    setRpdbMediaTypes,
     setGeminiKey,
     setMdblistkey,
     setTraktAccessToken,

@@ -94,17 +94,19 @@ const fetchMovieData = async (tmdbId, language) => {
   });
 };
 
-const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
+const buildMovieResponse = async (res, type, language, tmdbId, config = {}) => {
+  const rpdbkey = config.rpdbkey;
   const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
   const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
-  const [poster, logo, imdbRatingRaw, ageRating, collectionRaw] = await Promise.all([
-    Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
-    getLogo(tmdbId, language, res.original_language).catch(e => {
-      console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
-      return null;
-    }),
+  const rpdbMediaTypes = config.rpdbMediaTypes || null;
+  const logo = rpdbMediaTypes.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getLogo(tmdbId, language, res.original_language).catch(e => {
+    console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
+    return null;
+  });
+  const [poster, imdbRatingRaw, ageRating, collectionRaw] = await Promise.all([
+    Utils.parseMediaImage(type, tmdbId, res.poster_path, language, rpdbkey, "poster", rpdbMediaTypes),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
     enableAgeRating ? getCachedAgeRating(tmdbId, type, language).catch(e => {
       console.warn(`Error fetching age rating for movie ${tmdbId}:`, e.message);
@@ -138,7 +140,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, rpdbkey, config =
     writer: Utils.parseWriter(res.credits),
     year: res.release_date ? res.release_date.substr(0, 4) : "",
     trailers: Utils.parseTrailers(res.videos),
-    background: `https://image.tmdb.org/t/p/original${res.backdrop_path}`,
+    background: await Utils.parseMediaImage(type, tmdbId, res.backdrop_path, language, rpdbkey, "backdrop", rpdbMediaTypes),
     poster,
     runtime: Utils.parseRunTime(res.runtime),
     id: returnImdbId ? res.imdb_id : `tmdb:${tmdbId}`,
@@ -182,18 +184,20 @@ const fetchTvData = async (tmdbId, language) => {
   });
 };
 
-const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}) => {
+const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
+  const rpdbkey = config.rpdbkey;
   const runtime = res.episode_run_time?.[0] ?? res.last_episode_to_air?.runtime ?? res.next_episode_to_air?.runtime ?? null;
   const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
   const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
 
-  const [poster, logo, imdbRatingRaw, episodes, ageRating, collectionRaw] = await Promise.all([
-    Utils.parsePoster(type, tmdbId, res.poster_path, language, rpdbkey),
-    getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
-      console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
-      return null;
-    }),
+  const rpdbMediaTypes = config.rpdbMediaTypes || null;
+  const logo = rpdbMediaTypes.logo ? await Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes) : getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language).catch(e => {
+    console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
+    return null;
+  });
+  const [poster, imdbRatingRaw, episodes, ageRating, collectionRaw] = await Promise.all([
+    Utils.parseMediaImage(type, tmdbId, res.poster_path, language, rpdbkey, "poster", rpdbMediaTypes),
     getCachedImdbRating(res.external_ids?.imdb_id, type),
     getEpisodes(language, tmdbId, res.external_ids?.imdb_id, res.seasons, {
       hideEpisodeThumbnails: config.hideEpisodeThumbnails
@@ -232,7 +236,7 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
     type,
     writer: Utils.parseCreatedBy(res.created_by),
     year: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
-    background: `https://image.tmdb.org/t/p/original${res.backdrop_path}`,
+    background: await Utils.parseMediaImage(type, tmdbId, res.backdrop_path, language, rpdbkey, "backdrop", rpdbMediaTypes),
     slug: Utils.parseSlug(type, res.name, res.external_ids.imdb_id),
     id: returnImdbId ? res.imdb_id : `tmdb:${tmdbId}`,
     genres: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
@@ -281,10 +285,11 @@ const buildTvResponse = async (res, type, language, tmdbId, rpdbkey, config = {}
 };
 
 // Main function
-async function getMeta(type, language, tmdbId, rpdbkey, config = {}) {
+async function getMeta(type, language, tmdbId, config = {}) {
   const enableAgeRating = config.enableAgeRating === true || config.enableAgeRating === "true";
   const showAgeRatingInGenres = config.showAgeRatingInGenres !== false && config.showAgeRatingInGenres !== "false";
   const showAgeRatingWithImdbRating = config.showAgeRatingWithImdbRating === true || config.showAgeRatingWithImdbRating === "true";
+  const rpdbkey = config.rpdbkey;
 
   const cacheKey = getCacheKey(
     type,

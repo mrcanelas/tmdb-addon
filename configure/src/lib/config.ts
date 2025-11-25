@@ -1,7 +1,9 @@
 import { compressToEncodedURIComponent } from 'lz-string';
+import type { RPDBMediaTypes } from '@/contexts/config';
 
 interface AddonConfig {
   rpdbkey?: string;
+  rpdbMediaTypes?: RPDBMediaTypes;
   geminikey?: string;
   mdblistkey?: string;
   traktAccessToken?: string;
@@ -32,6 +34,7 @@ export function generateAddonUrl(config: AddonConfig): string {
   const configToEncode = {
     ...config,
     rpdbkey: config.rpdbkey || undefined,
+    rpdbMediaTypes: config.rpdbMediaTypes || undefined,
     geminikey: config.geminikey || undefined,
     mdblistkey: config.mdblistkey || undefined,
     traktAccessToken: config.traktAccessToken || undefined,
