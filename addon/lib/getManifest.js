@@ -130,15 +130,28 @@ async function getManifest(config) {
   }
 
   const years = generateArrayOfYears(20);
-  const genres_movie = await getGenreList(language, "movie").then(genres => {
-    const sortedGenres = genres.map(el => el.name).sort();
-    return sortedGenres;
-  });
-
-  const genres_series = await getGenreList(language, "series").then(genres => {
-    const sortedGenres = genres.map(el => el.name).sort();
-    return sortedGenres;
-  });
+const genres_movie = await getGenreList(language, "movie").then(genres => {
+  if (!Array.isArray(genres)) {
+    console.error("TMDB genres_movie is not an array:", genres);
+    return [];
+  }
+  const sortedGenres = genres.map(el => el.name).sort();
+  return sortedGenres;
+}).catch(err => {
+  console.error("Error fetching movie genres:", err.message);
+  return [];
+});
+const genres_series = await getGenreList(language, "series").then(genres => {
+  if (!Array.isArray(genres)) {
+    console.error("TMDB genres_series is not an array:", genres);
+    return [];
+  }
+  const sortedGenres = genres.map(el => el.name).sort();
+  return sortedGenres;
+}).catch(err => {
+  console.error("Error fetching series genres:", err.message);
+  return [];
+})
 
   const languagesArray = await getLanguages();
   const filterLanguages = setOrderLanguage(language, languagesArray);
