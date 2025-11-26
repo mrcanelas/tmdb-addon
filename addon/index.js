@@ -287,20 +287,13 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   const config = parseConfig(catalogChoices) || {};
   const tmdbId = id.split(":")[1];
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey;
-  const rpdbMediaTypes = config.rpdbMediaTypes || null;
   const imdbId = req.params.id.split(":")[0];
+  delete config.catalogs
+  delete config.streaming
 
   if (req.params.id.includes("tmdb:")) {
     const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId, rpdbkey, {
-        ...config,
-        rpdbMediaTypes: rpdbMediaTypes,
-        hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true",
-        enableAgeRating: config.enableAgeRating === "true",
-        showAgeRatingInGenres: config.showAgeRatingInGenres !== "false",
-        showAgeRatingWithImdbRating: config.showAgeRatingWithImdbRating === "true"
-      });
+      return await getMeta(type, language, tmdbId, config);
     });
     const cacheOpts = {
       staleRevalidate: 20 * 24 * 60 * 60,
@@ -318,13 +311,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     const tmdbId = await getTmdb(type, imdbId);
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId, rpdbkey, {
-          ...config,
-          hideEpisodeThumbnails: config.hideEpisodeThumbnails === "true",
-          enableAgeRating: config.enableAgeRating === "true",
-          showAgeRatingInGenres: config.showAgeRatingInGenres !== "false",
-          showAgeRatingWithImdbRating: config.showAgeRatingWithImdbRating === "true"
-        });
+        return await getMeta(type, language, tmdbId, config);
       });
       const cacheOpts = {
         staleRevalidate: 20 * 24 * 60 * 60,
