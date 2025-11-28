@@ -10,6 +10,7 @@ interface AddonConfig {
   traktRefreshToken?: string;
   includeAdult?: boolean;
   provideImdbId?: boolean;
+  returnImdbId?: boolean;
   tmdbPrefix?: boolean;
   hideEpisodeThumbnails?: boolean;
   language?: string;
