@@ -14,10 +14,17 @@
     }
   ],
   "routes": [
+    { "src": "^/request_token$", "dest": "/addon/server.js" },
+    { "src": "^/session_id$", "dest": "/addon/server.js" },
+    { "src": "^/trakt_auth_url$", "dest": "/addon/server.js" },
+    { "src": "^/trakt_access_token$", "dest": "/addon/server.js" },
+    { "src": "^/api/(.*)", "dest": "/addon/server.js" },
+    { "src": "^(.*)/manifest\\.json$", "dest": "/addon/server.js" },
+    { "src": "^(.*)/catalog/(.*)", "dest": "/addon/server.js" },
+    { "src": "^(.*)/meta/(.*)", "dest": "/addon/server.js" },
+    { "src": "^/configure/oauth-callback", "dest": "/index.html" },
     { "src": "^/configure/(.*)", "dest": "/$1" },
     { "src": "^/configure$", "dest": "/index.html" },
-    { "src": "^(.*)/manifest\\.json$", "dest": "/addon/server.js" },
-    { "src": "^(.*)/request_token$", "dest": "/addon/server.js" },
     { "src": "/(.*)", "dest": "/addon/server.js" }
   ]
 }
