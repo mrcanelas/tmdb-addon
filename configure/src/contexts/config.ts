@@ -60,6 +60,7 @@ export type ConfigContextType = {
   setEnableAgeRating: (enable: boolean) => void;
   setShowAgeRatingWithImdbRating: (show: boolean) => void;
   loadConfigFromUrl: () => void;
+  saveConfigToStorage: () => void;
 };
 
 export const ConfigContext = createContext<ConfigContextType | undefined>(undefined); 

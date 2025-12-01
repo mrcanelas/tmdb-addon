@@ -37,6 +37,104 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [enableAgeRating, setEnableAgeRating] = useState(false);
   const [showAgeRatingWithImdbRating, setShowAgeRatingWithImdbRating] = useState(false);
 
+  const CONFIG_STORAGE_KEY = 'tmdb-addon-config';
+
+  const saveConfigToStorage = () => {
+    try {
+      const config = {
+        rpdbkey,
+        rpdbMediaTypes,
+        geminikey,
+        mdblistkey,
+        traktAccessToken,
+        traktRefreshToken,
+        includeAdult,
+        provideImdbId,
+        returnImdbId,
+        tmdbPrefix,
+        hideEpisodeThumbnails,
+        language,
+        sessionId,
+        streaming,
+        catalogs,
+        ageRating,
+        searchEnabled,
+        hideInCinemaTag,
+        castCount,
+        showAgeRatingInGenres,
+        enableAgeRating,
+        showAgeRatingWithImdbRating,
+      };
+      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+    } catch (error) {
+      console.error('Error saving config to storage:', error);
+    }
+  };
+
+  const loadConfigFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
+      if (!stored) return null;
+      return JSON.parse(stored);
+    } catch (error) {
+      console.error('Error loading config from storage:', error);
+      return null;
+    }
+  };
+
+  const applyConfig = (config: any) => {
+    if (config.rpdbkey !== undefined) setRpdbkey(config.rpdbkey);
+    if (config.rpdbMediaTypes) {
+      setRpdbMediaTypes({
+        poster: config.rpdbMediaTypes.poster !== false,
+        logo: config.rpdbMediaTypes.logo === true,
+        backdrop: config.rpdbMediaTypes.backdrop === true
+      });
+    }
+    if (config.mdblistkey !== undefined) setMdblistkey(config.mdblistkey);
+    if (config.geminikey !== undefined) setGeminiKey(config.geminikey);
+    if (config.traktAccessToken !== undefined) setTraktAccessToken(config.traktAccessToken);
+    if (config.traktRefreshToken !== undefined) setTraktRefreshToken(config.traktRefreshToken);
+    if (config.provideImdbId !== undefined) setProvideImdbId(config.provideImdbId === "true" || config.provideImdbId === true);
+    if (config.returnImdbId !== undefined) setReturnImdbId(config.returnImdbId === "true" || config.returnImdbId === true);
+    if (config.tmdbPrefix !== undefined) setTmdbPrefix(config.tmdbPrefix === "true" || config.tmdbPrefix === true);
+    if (config.hideEpisodeThumbnails !== undefined) setHideEpisodeThumbnails(config.hideEpisodeThumbnails === "true" || config.hideEpisodeThumbnails === true);
+    if (config.sessionId !== undefined) setSessionId(config.sessionId);
+    if (config.ageRating !== undefined) setAgeRating(config.ageRating);
+    if (config.includeAdult !== undefined) setIncludeAdult(config.includeAdult === "true" || config.includeAdult === true);
+    if (config.language !== undefined) setLanguage(config.language);
+    if (config.hideInCinemaTag !== undefined) setHideInCinemaTag(config.hideInCinemaTag === "true" || config.hideInCinemaTag === true);
+    if (config.castCount !== undefined) setCastCount(config.castCount === "Unlimited" ? undefined : Number(config.castCount));
+    if (config.enableAgeRating !== undefined) setEnableAgeRating(config.enableAgeRating === "true" || config.enableAgeRating === true);
+    if (config.showAgeRatingInGenres !== undefined) setShowAgeRatingInGenres(config.showAgeRatingInGenres === "true" || config.showAgeRatingInGenres === true);
+    if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
+    if (config.searchEnabled !== undefined) setSearchEnabled(config.searchEnabled === "true" || config.searchEnabled === true);
+
+    if (config.catalogs) {
+      const catalogsWithNames = config.catalogs.map((catalog: any) => {
+        const existingCatalog = allCatalogs.find(
+          c => c.id === catalog.id && c.type === catalog.type
+        );
+        return {
+          ...catalog,
+          name: existingCatalog?.name || catalog.id,
+          enabled: catalog.enabled !== undefined ? catalog.enabled : true
+        };
+      });
+      setCatalogs(catalogsWithNames);
+
+      const selectedStreamingServices = new Set(
+        catalogsWithNames
+          .filter((catalog: any) => catalog.id.startsWith('streaming.'))
+          .map((catalog: any) => catalog.id.split('.')[1])
+      );
+
+      setStreaming(Array.from(selectedStreamingServices) as string[]);
+    } else if (config.catalogs === undefined) {
+      loadDefaultCatalogs();
+    }
+  };
+
   const loadDefaultCatalogs = () => {
     const defaultCatalogs = baseCatalogs.map(catalog => ({
       ...catalog,
@@ -48,61 +146,26 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const loadConfigFromUrl = () => {
     try {
+      // Verifica se há query params de autenticação (TMDB ou Trakt)
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasAuthParams = urlParams.has('request_token') || urlParams.has('code');
+      
+      // Se há params de autenticação, tenta restaurar do localStorage primeiro
+      if (hasAuthParams) {
+        const storedConfig = loadConfigFromStorage();
+        if (storedConfig) {
+          applyConfig(storedConfig);
+          // Limpa o localStorage após restaurar
+          localStorage.removeItem(CONFIG_STORAGE_KEY);
+          return;
+        }
+      }
+
       const path = window.location.pathname.split('/')[1];
       const decompressedConfig = decompressFromEncodedURIComponent(path);
       const config = JSON.parse(decompressedConfig);
 
-      if (config.rpdbkey) setRpdbkey(config.rpdbkey);
-      if (config.rpdbMediaTypes) {
-        setRpdbMediaTypes({
-          poster: config.rpdbMediaTypes.poster !== false,
-          logo: config.rpdbMediaTypes.logo === true,
-          backdrop: config.rpdbMediaTypes.backdrop === true
-        });
-      }
-      if (config.mdblistkey) setMdblistkey(config.mdblistkey);
-      if (config.geminikey) setGeminiKey(config.geminikey);
-      if (config.traktAccessToken) setTraktAccessToken(config.traktAccessToken);
-      if (config.traktRefreshToken) setTraktRefreshToken(config.traktRefreshToken);
-      if (config.provideImdbId) setProvideImdbId(config.provideImdbId === "true");
-      if (config.returnImdbId) setReturnImdbId(config.returnImdbId === "true");
-      if (config.tmdbPrefix) setTmdbPrefix(config.tmdbPrefix === "true");
-      if (config.hideEpisodeThumbnails) setHideEpisodeThumbnails(config.hideEpisodeThumbnails === "true");
-      if (config.sessionId) setSessionId(config.sessionId);
-      if (config.ageRating) setAgeRating(config.ageRating);
-      if (config.includeAdult) setIncludeAdult(config.includeAdult === "true");
-      if (config.language) setLanguage(config.language);
-      if (config.hideInCinemaTag) setHideInCinemaTag(config.hideInCinemaTag === "true" || config.hideInCinemaTag === true);
-      if (config.castCount !== undefined) setCastCount(config.castCount === "Unlimited" ? undefined : Number(config.castCount));
-      if (config.enableAgeRating !== undefined) setEnableAgeRating(config.enableAgeRating === "true" || config.enableAgeRating === true);
-      if (config.showAgeRatingInGenres !== undefined) setShowAgeRatingInGenres(config.showAgeRatingInGenres === "true" || config.showAgeRatingInGenres === true);
-      if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
-
-      if (config.catalogs) {
-        const catalogsWithNames = config.catalogs.map(catalog => {
-          const existingCatalog = allCatalogs.find(
-            c => c.id === catalog.id && c.type === catalog.type
-          );
-          return {
-            ...catalog,
-            name: existingCatalog?.name || catalog.id,
-            enabled: catalog.enabled !== undefined ? catalog.enabled : true
-          };
-        });
-        setCatalogs(catalogsWithNames);
-
-        const selectedStreamingServices = new Set(
-          catalogsWithNames
-            .filter(catalog => catalog.id.startsWith('streaming.'))
-            .map(catalog => catalog.id.split('.')[1])
-        );
-
-        setStreaming(Array.from(selectedStreamingServices) as string[]);
-      } else {
-        loadDefaultCatalogs();
-      }
-
-      if (config.searchEnabled) setSearchEnabled(config.searchEnabled === "true");
+      applyConfig(config);
 
       window.history.replaceState({}, '', '/configure');
     } catch (error) {
@@ -165,7 +228,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setShowAgeRatingInGenres,
     setEnableAgeRating,
     setShowAgeRatingWithImdbRating,
-    loadConfigFromUrl
+    loadConfigFromUrl,
+    saveConfigToStorage
   };
 
   return (

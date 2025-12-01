@@ -14,11 +14,13 @@ function getRedirectUri(requestHost = null) {
   if (requestHost) {
     // Remove trailing slash se existir
     const baseUrl = requestHost.replace(/\/$/, '')
-    return `${baseUrl}/configure`
+    // Usa o callback OAuth para funcionar com popup
+    return `${baseUrl}/configure/oauth-callback`
   }
   
   // Fallback para variável de ambiente ou padrão
-  return process.env.TRAKT_REDIRECT_URI || `${process.env.HOST_NAME || 'http://localhost:1337'}/configure`
+  const baseUrl = process.env.HOST_NAME || 'http://localhost:3000'
+  return process.env.TRAKT_REDIRECT_URI || `${baseUrl}/configure/oauth-callback`
 }
 
 async function getTraktAuthUrl(requestHost = null) {

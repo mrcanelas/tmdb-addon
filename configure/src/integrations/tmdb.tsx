@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -6,9 +6,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 export default function TMDB() {
-  const { sessionId, setSessionId } = useConfig();
+  const { sessionId, setSessionId, saveConfigToStorage } = useConfig();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const popupCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleRequestToken = useCallback(async (requestToken: string) => {
     setIsLoading(true);
@@ -61,12 +62,44 @@ export default function TMDB() {
   }, [setSessionId]);
 
   useEffect(() => {
+    // Escuta mensagens do popup OAuth
+    const handleMessage = (event: MessageEvent) => {
+      // Verifica a origem da mensagem por segurança
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data.type === 'tmdb_oauth') {
+        // Limpa o intervalo de verificação do popup
+        if (popupCheckIntervalRef.current) {
+          clearInterval(popupCheckIntervalRef.current);
+          popupCheckIntervalRef.current = null;
+        }
+        handleRequestToken(event.data.requestToken);
+      } else if (event.data.type === 'oauth_error') {
+        // Limpa o intervalo de verificação do popup
+        if (popupCheckIntervalRef.current) {
+          clearInterval(popupCheckIntervalRef.current);
+          popupCheckIntervalRef.current = null;
+        }
+        setError(event.data.errorDescription || event.data.error || 'Authentication failed');
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Fallback: ainda verifica URL params caso não seja popup
     const urlParams = new URLSearchParams(window.location.search);
     const requestToken = urlParams.get('request_token');
 
-    if (requestToken) {
+    if (requestToken && !window.opener) {
       handleRequestToken(requestToken);
     }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, [handleRequestToken]);
 
   const handleLogin = async () => {
@@ -96,10 +129,39 @@ export default function TMDB() {
         throw new Error('Empty request token received');
       }
       
-      // Remove query params existentes da URL de redirecionamento para evitar conflitos
-      const redirectUrl = window.location.origin + window.location.pathname;
-      const tmdbAuthUrl = `https://www.themoviedb.org/authenticate/${requestToken}?redirect_to=${encodeURIComponent(redirectUrl)}`;
-      window.location.href = tmdbAuthUrl;
+      // URL de callback para o popup
+      const callbackUrl = `${window.location.origin}/configure/oauth-callback`;
+      const tmdbAuthUrl = `https://www.themoviedb.org/authenticate/${requestToken}?redirect_to=${encodeURIComponent(callbackUrl)}`;
+      
+      // Abre popup para autenticação
+      const width = 600;
+      const height = 700;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+      
+      const popup = window.open(
+        tmdbAuthUrl,
+        'TMDB Authentication',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+      );
+
+      // Verifica se o popup foi bloqueado
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        setIsLoading(false);
+        setError('Popup bloqueado. Por favor, permita popups para este site.');
+        return;
+      }
+
+      // Monitora se o popup foi fechado manualmente
+      popupCheckIntervalRef.current = setInterval(() => {
+        if (popup.closed) {
+          if (popupCheckIntervalRef.current) {
+            clearInterval(popupCheckIntervalRef.current);
+            popupCheckIntervalRef.current = null;
+          }
+          setIsLoading(false);
+        }
+      }, 1000);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to start TMDB authentication");

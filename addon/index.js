@@ -164,7 +164,8 @@ addon.get("/trakt_access_token", async function (req, res) {
     
     const host = req.get('host') || req.headers.host || req.headers['x-forwarded-host'];
     const requestHost = process.env.HOST_NAME || `${protocol}://${host}`;
-    const redirectUri = `${requestHost}/configure`;
+    // Usa o mesmo redirect_uri que foi usado na autenticação (oauth-callback)
+    const redirectUri = `${requestHost}/configure/oauth-callback`;
     
     const response = await getTraktAccessToken(code, redirectUri);
     
@@ -185,11 +186,25 @@ addon.get("/trakt_access_token", async function (req, res) {
   }
 });
 
-addon.use('/configure', express.static(path.join(__dirname, '../dist')));
+// Serve arquivos estáticos do React app
+addon.use('/configure', express.static(path.join(__dirname, '../dist'), {
+  fallthrough: true // Continua para a próxima rota se não encontrar o arquivo
+}));
 
 addon.use('/configure', (req, res, next) => {
   const config = parseConfig(req.params.catalogChoices) || {};
   next();
+});
+
+// Rota para /configure (sem sub-rotas)
+addon.get('/configure', function (req, res) {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Rota catch-all para servir o React app em todas as rotas /configure/*
+// Usa * para capturar qualquer coisa após /configure/
+addon.get(/^\/configure\/.+$/, function (req, res) {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 addon.get('/:catalogChoices?/configure', function (req, res) {

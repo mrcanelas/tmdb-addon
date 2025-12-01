@@ -7,9 +7,10 @@ import Catalogs from "./pages/Catalogs";
 import Integrations from "./pages/Integrations";
 import Others from "./pages/Others";
 import NotFound from "./pages/NotFound";
+import OAuthCallback from "./pages/OAuthCallback";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfigProvider } from "@/contexts/ConfigContext";
 
@@ -62,18 +63,44 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const App = () => (
-  <ConfigProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Layout>
-          <Home />
-        </Layout>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ConfigProvider>
-);
+const App = () => {
+  const [isOAuthCallback, setIsOAuthCallback] = useState(false);
+
+  useEffect(() => {
+    // Verifica se está na página de callback OAuth
+    const path = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasOAuthParams = urlParams.has('request_token') || urlParams.has('code') || urlParams.has('error');
+    
+    // Se está na rota de callback OAuth ou tem params OAuth e está em popup
+    if (path.includes('oauth-callback') || (path.includes('configure') && hasOAuthParams && window.opener)) {
+      setIsOAuthCallback(true);
+    }
+  }, []);
+
+  if (isOAuthCallback) {
+    return (
+      <ConfigProvider>
+        <QueryClientProvider client={queryClient}>
+          <OAuthCallback />
+        </QueryClientProvider>
+      </ConfigProvider>
+    );
+  }
+
+  return (
+    <ConfigProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Layout>
+            <Home />
+          </Layout>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ConfigProvider>
+  );
+};
 
 export default App;

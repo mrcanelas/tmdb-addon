@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -7,9 +7,10 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Trakt() {
-  const { traktAccessToken, traktRefreshToken, setTraktAccessToken, setTraktRefreshToken, catalogs, setCatalogs } = useConfig();
+  const { traktAccessToken, traktRefreshToken, setTraktAccessToken, setTraktRefreshToken, catalogs, setCatalogs, saveConfigToStorage } = useConfig();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const popupCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleAccessToken = useCallback(async (code: string) => {
     setIsLoading(true);
@@ -118,12 +119,44 @@ export default function Trakt() {
   }, [setTraktAccessToken, setTraktRefreshToken, setCatalogs]);
 
   useEffect(() => {
+    // Escuta mensagens do popup OAuth
+    const handleMessage = (event: MessageEvent) => {
+      // Verifica a origem da mensagem por segurança
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data.type === 'trakt_oauth') {
+        // Limpa o intervalo de verificação do popup
+        if (popupCheckIntervalRef.current) {
+          clearInterval(popupCheckIntervalRef.current);
+          popupCheckIntervalRef.current = null;
+        }
+        handleAccessToken(event.data.code);
+      } else if (event.data.type === 'oauth_error') {
+        // Limpa o intervalo de verificação do popup
+        if (popupCheckIntervalRef.current) {
+          clearInterval(popupCheckIntervalRef.current);
+          popupCheckIntervalRef.current = null;
+        }
+        setError(event.data.errorDescription || event.data.error || 'Falha na autenticação');
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Fallback: ainda verifica URL params caso não seja popup
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    if (code) {
+    if (code && !window.opener) {
       handleAccessToken(code);
     }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, [handleAccessToken]);
 
   const handleLogin = async () => {
@@ -153,8 +186,39 @@ export default function Trakt() {
         throw new Error('URL de autenticação vazia recebida');
       }
       
-      // Redireciona para a página de autenticação do Trakt
-      window.location.href = data.authUrl;
+      // O backend já gera a URL de autenticação com o redirect_uri correto (/configure/oauth-callback)
+      // Não precisamos modificar a URL
+      const finalAuthUrl = data.authUrl;
+      
+      // Abre popup para autenticação
+      const width = 600;
+      const height = 700;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+      
+      const popup = window.open(
+        finalAuthUrl,
+        'Trakt Authentication',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+      );
+
+      // Verifica se o popup foi bloqueado
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        setIsLoading(false);
+        setError('Popup bloqueado. Por favor, permita popups para este site.');
+        return;
+      }
+
+      // Monitora se o popup foi fechado manualmente
+      popupCheckIntervalRef.current = setInterval(() => {
+        if (popup.closed) {
+          if (popupCheckIntervalRef.current) {
+            clearInterval(popupCheckIntervalRef.current);
+            popupCheckIntervalRef.current = null;
+          }
+          setIsLoading(false);
+        }
+      }, 1000);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Falha ao iniciar autenticação Trakt");
