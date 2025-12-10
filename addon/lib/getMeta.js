@@ -27,7 +27,7 @@ const extractAgeRating = (res, type, language) => {
             }
             return ratingObj ? ratingObj.certification : null;
         }
-    } else if (type === 'tv' && res.content_ratings && res.content_ratings.results) {
+    } else if (type === 'series' && res.content_ratings && res.content_ratings.results) {
         let ratingObj = res.content_ratings.results.find(r => r.iso_3166_1 === countryCode);
         if (!ratingObj && countryCode !== 'US') {
             ratingObj = res.content_ratings.results.find(r => r.iso_3166_1 === 'US');
