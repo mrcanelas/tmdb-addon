@@ -285,7 +285,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
         year: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
         background: await Utils.parseMediaImage(type, tmdbId, res.backdrop_path, language, rpdbkey, "backdrop", rpdbMediaTypes),
         slug: Utils.parseSlug(type, res.name, res.external_ids.imdb_id),
-        id: returnImdbId ? res.imdb_id : `tmdb:${tmdbId}`,
+        id: returnImdbId ? res.external_ids.imdb_id : `tmdb:${tmdbId}`,
         genres: addAgeRatingToGenres(resolvedAgeRating, parsedGenres, showAgeRatingInGenres),
         ageRating: resolvedAgeRating,
         releaseInfo: Utils.parseYear(res.status, res.first_air_date, res.last_air_date),
