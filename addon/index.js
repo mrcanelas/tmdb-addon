@@ -228,8 +228,6 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
   const { catalogChoices, type, id, extra } = req.params;
   const config = parseConfig(catalogChoices) || {};
   const language = config.language || DEFAULT_LANGUAGE;
-  const rpdbkey = config.rpdbkey;
-  const rpdbMediaTypes = config.rpdbMediaTypes || null;
   const sessionId = config.sessionId;
   const { genre, skip, search } = extra
     ? Object.fromEntries(
@@ -282,18 +280,6 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     staleRevalidate: 7 * 24 * 60 * 60,
     staleError: 14 * 24 * 60 * 60,
   };
-  if (rpdbkey) {
-    try {
-      metas = JSON.parse(JSON.stringify(metas));
-      metas.metas = await Promise.all(metas.metas.map(async (el) => {
-        const posterUrl = getRpdbPoster(type, el.id.replace('tmdb:', ''), language, rpdbkey, rpdbMediaTypes);
-        if (posterUrl) {
-          el.poster = posterUrl;
-        }
-        return el;
-      }))
-    } catch (e) { }
-  }
   respond(res, metas, cacheOpts);
 });
 
