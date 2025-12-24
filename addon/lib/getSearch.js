@@ -22,11 +22,11 @@ async function getSearch(id, type, language, query, config) {
   if (isAISearch && config.geminikey) {
     try {
       await geminiService.initialize(config.geminikey);
-      
+
       const titles = await geminiService.searchWithAI(query, type);
 
       const genreList = await getGenreList(language, type);
-      
+
       const searchPromises = titles.map(async (title) => {
         try {
           const parameters = {
@@ -70,9 +70,13 @@ async function getSearch(id, type, language, query, config) {
       include_adult: config.includeAdult
     };
 
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+      parameters.region = language.split('-')[1];
+    }
+
     if (config.ageRating) {
       parameters.certification_country = "US";
-      switch(config.ageRating) {
+      switch (config.ageRating) {
         case "G":
           parameters.certification = type === "movie" ? "G" : "TV-G";
           break;
@@ -92,7 +96,7 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchMovie(parameters)
         .then((res) => {
-          res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+          res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
         })
         .catch(console.error);
 
@@ -100,7 +104,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchMovie({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
           })
           .catch(console.error);
       }
@@ -129,7 +133,7 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchTv(parameters)
         .then((res) => {
-          res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+          res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
         })
         .catch(console.error);
 
@@ -137,7 +141,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchTv({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
           })
           .catch(console.error);
       }
