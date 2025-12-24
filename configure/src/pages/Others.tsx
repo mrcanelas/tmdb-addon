@@ -13,6 +13,7 @@ const Others = () => {
   const { tmdbPrefix, setTmdbPrefix } = useConfig();
   const { hideInCinemaTag, setHideInCinemaTag } = useConfig();
   const { castCount, setCastCount } = useConfig();
+  const { strictRegionFilter, setStrictRegionFilter } = useConfig();
 
   return (
     <main className="md:p-12 px-2 py-12">
@@ -64,6 +65,18 @@ const Others = () => {
             </p>
           </div>
           <Switch checked={returnImdbId} onCheckedChange={() => setReturnImdbId(!returnImdbId)} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1">
+              Strict Region Filtering
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Restrict results to content available in the selected language region (e.g., Italian to Italy).
+              Includes local releases of international content.
+            </p>
+          </div>
+          <Switch checked={strictRegionFilter} onCheckedChange={setStrictRegionFilter} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
