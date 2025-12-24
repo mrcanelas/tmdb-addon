@@ -96,7 +96,16 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchMovie(parameters)
         .then((res) => {
-          res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
+          let results = res.results;
+          // Filter out unreleased content when strict mode is on
+          if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
+            const today = new Date().toISOString().split('T')[0];
+            results = results.filter(el => {
+              if (!el.release_date) return true; // No date, include it
+              return el.release_date <= today;
+            });
+          }
+          results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
         })
         .catch(console.error);
 
@@ -133,7 +142,16 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchTv(parameters)
         .then((res) => {
-          res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
+          let results = res.results;
+          // Filter out unreleased content when strict mode is on
+          if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
+            const today = new Date().toISOString().split('T')[0];
+            results = results.filter(el => {
+              if (!el.first_air_date) return true; // No date, include it
+              return el.first_air_date <= today;
+            });
+          }
+          results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
         })
         .catch(console.error);
 
