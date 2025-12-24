@@ -189,6 +189,32 @@ async function getSearch(id, type, language, query, config) {
     }
   }
 
+  // Final filter for strict region mode - catches results from all paths
+  // (main search, fallback search, and person credits)
+  if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth() + 1;
+    const todayDay = today.getDate();
+
+    searchResults = searchResults.filter(item => {
+      // If there's no year info, include it
+      if (!item.year) return true;
+
+      const itemYear = parseInt(item.year, 10);
+
+      // If year is clearly in the future, exclude
+      if (itemYear > todayYear) return false;
+
+      // If year is in the past, include
+      if (itemYear < todayYear) return true;
+
+      // If same year, we need more info - but we only have year in parsed data
+      // Be conservative: include items from current year (they might be released)
+      return true;
+    });
+  }
+
   return Promise.resolve({ query, metas: searchResults });
 }
 
