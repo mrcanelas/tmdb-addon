@@ -12,13 +12,21 @@ async function getTrending(type, language, page, genre, config) {
     const region = language.split('-')[1];
     const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
+    const today = new Date().toISOString().split('T')[0];
     const discoverParams = {
       language,
       page,
       region: region,
       sort_by: 'popularity.desc',
-      'vote_count.gte': 10
+      'vote_count.gte': 10,
     };
+
+    if (type === "movie") {
+      discoverParams['release_date.lte'] = today;
+      discoverParams.with_release_type = "3|4";
+    } else {
+      discoverParams['first_air_date.lte'] = today;
+    }
 
     return await fetchFunction(discoverParams)
       .then(async (res) => {

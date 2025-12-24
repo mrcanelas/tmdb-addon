@@ -83,6 +83,13 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
     // ONLY if strict region filtering is enabled
     if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
       parameters.watch_region = language.split('-')[1];
+      const today = new Date().toISOString().split('T')[0];
+      if (type === "movie") {
+        parameters['release_date.lte'] = today;
+        parameters.with_release_type = "3|4";
+      } else {
+        parameters['first_air_date.lte'] = today;
+      }
     } else {
       parameters.watch_region = provider.country;
     }
@@ -94,6 +101,13 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
     // ONLY if strict region filtering is enabled
     if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && (id === "tmdb.top" || id === "tmdb.year") && language && language.split('-')[1]) {
       parameters.region = language.split('-')[1];
+      const today = new Date().toISOString().split('T')[0];
+      if (type === "movie") {
+        parameters['release_date.lte'] = today;
+        parameters.with_release_type = "3|4";
+      } else {
+        parameters['first_air_date.lte'] = today;
+      }
     }
 
     switch (id) {
