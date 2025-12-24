@@ -26,7 +26,7 @@ async function getCatalog(type, language, page, id, genre, config) {
 
   return fetchFunction(parameters)
     .then(async (res) => {
-      const metaPromises = res.results.map(item => 
+      const metaPromises = res.results.map(item =>
         getMeta(type, language, item.id, config)
           .then(result => result.meta)
           .catch(err => {
@@ -69,14 +69,33 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
     }
   }
 
-  if (id.includes("streaming")) {
-    const provider = findProvider(id.split(".")[1]);
+  const providerId = id.split(".")[1];
+  const isStreaming = Object.keys(CATALOG_TYPES.streaming).includes(providerId);
+
+  if (isStreaming) {
+    const provider = findProvider(providerId);
 
     parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
-    parameters.with_watch_providers = provider.watchProviderId
-    parameters.watch_region = provider.country;
+    parameters.with_watch_providers = provider.watchProviderId;
+
+    // Override default country with user region if available (e.g., IT for 'it-IT')
+    // This allows seeing what is on Netflix IT, etc.
+    // ONLY if strict region filtering is enabled
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+      parameters.watch_region = language.split('-')[1];
+    } else {
+      parameters.watch_region = provider.country;
+    }
+
     parameters.with_watch_monetization_types = "flatrate|free|ads";
   } else {
+    // Apply region filtering for "Top" and "Year" catalogs
+    // This prioritizes content released in the selected region (e.g., Italy)
+    // ONLY if strict region filtering is enabled
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && (id === "tmdb.top" || id === "tmdb.year") && language && language.split('-')[1]) {
+      parameters.region = language.split('-')[1];
+    }
+
     switch (id) {
       case "tmdb.top":
         parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
