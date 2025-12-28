@@ -14,10 +14,7 @@ async function isMovieReleasedInRegion(movieId, region) {
     const today = new Date().toISOString().split('T')[0];
     const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
 
-    // No release data available - EXCLUDE (strict mode)
-    if (!releaseDates || !releaseDates.results || releaseDates.results.length === 0) {
-      return false;
-    }
+    if (!releaseDates || !releaseDates.results) return true;
 
     const regionRelease = releaseDates.results.find(r => r.iso_3166_1 === region);
 
@@ -35,8 +32,7 @@ async function isMovieReleasedInRegion(movieId, region) {
     return hasValidRelease;
   } catch (error) {
     console.error(`Error checking release dates for movie ${movieId}:`, error.message);
-    // On error, EXCLUDE to be strict
-    return false;
+    return true;
   }
 }
 
