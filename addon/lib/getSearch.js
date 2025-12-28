@@ -10,6 +10,55 @@ function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
 }
 
+/**
+ * Check if a movie has been released in a specific region
+ * @param {number} movieId - TMDB movie ID
+ * @param {string} region - ISO 3166-1 country code (e.g., 'IT')
+ * @returns {Promise<boolean>} - true if released in region, false otherwise
+ */
+async function isMovieReleasedInRegion(movieId, region) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
+
+    if (!releaseDates || !releaseDates.results) return true; // Can't determine, include it
+
+    // Find releases for the specified region
+    const regionRelease = releaseDates.results.find(r => r.iso_3166_1 === region);
+
+    if (!regionRelease || !regionRelease.release_dates) {
+      // No release in this region - exclude
+      return false;
+    }
+
+    // Check if any release date in this region is <= today
+    // Release types: 1=Premiere, 2=Theatrical (limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
+    const validReleaseTypes = [2, 3, 4, 5, 6]; // Exclude only Premiere
+    const hasValidRelease = regionRelease.release_dates.some(rd => {
+      const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
+      if (!releaseDate) return false;
+      return releaseDate <= today && validReleaseTypes.includes(rd.type);
+    });
+
+    return hasValidRelease;
+  } catch (error) {
+    console.error(`Error checking release dates for movie ${movieId}:`, error.message);
+    return true; // On error, include it
+  }
+}
+
+/**
+ * Check if a TV show has aired in a region (based on first_air_date)
+ * TV shows don't have region-specific release dates in the same way
+ * @param {string} firstAirDate - First air date in YYYY-MM-DD format
+ * @returns {boolean} - true if aired, false otherwise
+ */
+function isTvShowAired(firstAirDate) {
+  if (!firstAirDate) return true;
+  const today = new Date().toISOString().split('T')[0];
+  return firstAirDate <= today;
+}
+
 async function getSearch(id, type, language, query, config) {
   let searchQuery = query;
   if (isNonLatin(searchQuery)) {
@@ -189,30 +238,39 @@ async function getSearch(id, type, language, query, config) {
     }
   }
 
-  // Final filter for strict region mode - catches results from all paths
-  // (main search, fallback search, and person credits)
-  if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
-    const today = new Date();
-    const todayYear = today.getFullYear();
-    const todayMonth = today.getMonth() + 1;
-    const todayDay = today.getDate();
+  // Final filter for strict region mode - checks actual regional release dates
+  // (catches results from all paths: main search, fallback search, and person credits)
+  if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+    const region = language.split('-')[1];
 
-    searchResults = searchResults.filter(item => {
-      // If there's no year info, include it
-      if (!item.year) return true;
+    if (type === "movie") {
+      // For movies, check actual regional release dates
+      const releaseChecks = await Promise.all(
+        searchResults.map(async (item) => {
+          // Extract TMDB ID from item.id (format: "tmdb:123456")
+          const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return { item, released: true };
 
-      const itemYear = parseInt(item.year, 10);
+          const released = await isMovieReleasedInRegion(tmdbId, region);
+          return { item, released };
+        })
+      );
 
-      // If year is clearly in the future, exclude
-      if (itemYear > todayYear) return false;
-
-      // If year is in the past, include
-      if (itemYear < todayYear) return true;
-
-      // If same year, we need more info - but we only have year in parsed data
-      // Be conservative: include items from current year (they might be released)
-      return true;
-    });
+      searchResults = releaseChecks
+        .filter(check => check.released)
+        .map(check => check.item);
+    } else {
+      // For TV shows, use first_air_date (not region-specific but best available)
+      const today = new Date().toISOString().split('T')[0];
+      searchResults = searchResults.filter(item => {
+        if (!item.year) return true;
+        const itemYear = parseInt(item.year, 10);
+        const currentYear = new Date().getFullYear();
+        // Exclude future years
+        if (itemYear > currentYear) return false;
+        return true;
+      });
+    }
   }
 
   return Promise.resolve({ query, metas: searchResults });
