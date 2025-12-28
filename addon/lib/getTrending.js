@@ -37,64 +37,6 @@ async function isMovieReleasedInRegion(movieId, region) {
 }
 
 async function getTrending(type, language, page, genre, config) {
-  // Check if we need to filter by specific region (strict mode)
-  // TMDB Trending API doesn't support 'region', so we fallback to discover
-  // effectively showing "Popular" content in that region as a proxy for "Trending"
-  // ONLY if strict region filtering is enabled
-  if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
-    const region = language.split('-')[1];
-    const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
-
-    const today = new Date().toISOString().split('T')[0];
-    const discoverParams = {
-      language,
-      page,
-      region: region,
-      sort_by: 'popularity.desc',
-      'vote_count.gte': 10,
-    };
-
-    if (type === "movie") {
-      discoverParams['release_date.lte'] = today;
-      discoverParams.with_release_type = "3|4";
-    } else {
-      discoverParams['first_air_date.lte'] = today;
-    }
-
-    return await fetchFunction(discoverParams)
-      .then(async (res) => {
-        const metaPromises = res.results.map(item =>
-          getMeta(type, language, item.id, config)
-            .then(result => result.meta)
-            .catch(err => {
-              console.error(`Error fetching metadata for ${item.id}:`, err.message);
-              return null;
-            })
-        );
-        let metas = (await Promise.all(metaPromises)).filter(Boolean);
-
-        // Apply strict region filtering for movies - check actual regional release dates
-        if (type === "movie") {
-          const releaseChecks = await Promise.all(
-            metas.map(async (meta) => {
-              const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-              if (!tmdbId) return { meta, released: true };
-
-              const released = await isMovieReleasedInRegion(tmdbId, region);
-              return { meta, released };
-            })
-          );
-
-          metas = releaseChecks
-            .filter(check => check.released)
-            .map(check => check.meta);
-        }
-
-        return { metas };
-      })
-      .catch(console.error);
-  }
-
   const media_type = type === "series" ? "tv" : type;
   const parameters = {
     media_type,
@@ -103,6 +45,7 @@ async function getTrending(type, language, page, genre, config) {
     page,
   };
 
+  // Always use the real trending API to get truly trending content
   return await moviedb
     .trending(parameters)
     .then(async (res) => {
@@ -115,7 +58,29 @@ async function getTrending(type, language, page, genre, config) {
           })
       );
 
-      const metas = (await Promise.all(metaPromises)).filter(Boolean);
+      let metas = (await Promise.all(metaPromises)).filter(Boolean);
+
+      // Apply strict region filtering post-fetch if enabled
+      // This filters trending results to only show content released in the user's region
+      const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+      const region = language && language.split('-')[1] ? language.split('-')[1] : null;
+
+      if (isStrictMode && region && type === "movie") {
+        const releaseChecks = await Promise.all(
+          metas.map(async (meta) => {
+            const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+            if (!tmdbId) return { meta, released: true };
+
+            const released = await isMovieReleasedInRegion(tmdbId, region);
+            return { meta, released };
+          })
+        );
+
+        metas = releaseChecks
+          .filter(check => check.released)
+          .map(check => check.meta);
+      }
+
       return { metas };
     })
     .catch(console.error);
