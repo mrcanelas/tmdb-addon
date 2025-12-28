@@ -57,41 +57,67 @@ async function getCatalog(type, language, page, id, genre, config) {
 
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
-  return fetchFunction(parameters)
-    .then(async (res) => {
-      const metaPromises = res.results.map(item =>
-        getMeta(type, language, item.id, config)
-          .then(result => result.meta)
-          .catch(err => {
-            console.error(`Error fetching metadata for ${item.id}:`, err.message);
-            return null;
-          })
+  // Check if this is a streaming catalog
+  const providerId = id.split(".")[1];
+  const isStreaming = Object.keys(CATALOG_TYPES.streaming).includes(providerId);
+  const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+  const userRegion = language && language.split('-')[1] ? language.split('-')[1] : null;
+
+  // Helper function to fetch and filter results
+  async function fetchAndFilter(params, regionForReleaseCheck) {
+    const res = await fetchFunction(params);
+
+    const metaPromises = res.results.map(item =>
+      getMeta(type, language, item.id, config)
+        .then(result => result.meta)
+        .catch(err => {
+          console.error(`Error fetching metadata for ${item.id}:`, err.message);
+          return null;
+        })
+    );
+
+    let metas = (await Promise.all(metaPromises)).filter(Boolean);
+
+    // Apply strict region filtering for movies - check actual regional release dates
+    if (type === "movie" && isStrictMode && regionForReleaseCheck) {
+      const releaseChecks = await Promise.all(
+        metas.map(async (meta) => {
+          const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return { meta, released: true };
+
+          const released = await isMovieReleasedInRegion(tmdbId, regionForReleaseCheck);
+          return { meta, released };
+        })
       );
 
-      let metas = (await Promise.all(metaPromises)).filter(Boolean);
+      metas = releaseChecks
+        .filter(check => check.released)
+        .map(check => check.meta);
+    }
 
-      // Apply strict region filtering for movies - check actual regional release dates
-      if (type === "movie" && (config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
-        const region = language.split('-')[1];
+    return metas;
+  }
 
-        const releaseChecks = await Promise.all(
-          metas.map(async (meta) => {
-            const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-            if (!tmdbId) return { meta, released: true };
+  try {
+    // First attempt with user's region
+    let metas = await fetchAndFilter(parameters, userRegion);
 
-            const released = await isMovieReleasedInRegion(tmdbId, region);
-            return { meta, released };
-          })
-        );
+    // Fallback to US for streaming catalogs if no results and strict mode is on
+    if (metas.length === 0 && isStreaming && isStrictMode && userRegion && userRegion !== 'US') {
+      console.log(`No results for ${id} in ${userRegion}, falling back to US`);
 
-        metas = releaseChecks
-          .filter(check => check.released)
-          .map(check => check.meta);
-      }
+      // Create new parameters with US region
+      const fallbackParams = { ...parameters };
+      fallbackParams.watch_region = 'US';
 
-      return { metas };
-    })
-    .catch(console.error);
+      metas = await fetchAndFilter(fallbackParams, 'US');
+    }
+
+    return { metas };
+  } catch (error) {
+    console.error(error);
+    return { metas: [] };
+  }
 }
 
 async function buildParameters(type, language, page, id, genre, genreList, config) {
