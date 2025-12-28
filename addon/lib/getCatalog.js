@@ -17,29 +17,40 @@ const CATALOG_TYPES = require("../static/catalog-types.json");
 async function isMovieReleasedInRegion(movieId, region) {
   try {
     const today = new Date().toISOString().split('T')[0];
+    console.log(`[REGION FILTER] Checking movie ${movieId} for region ${region}`);
+
     const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
 
     // No release data available - EXCLUDE (strict mode)
     if (!releaseDates || !releaseDates.results || releaseDates.results.length === 0) {
+      console.log(`[REGION FILTER] Movie ${movieId}: NO release data at all -> EXCLUDED`);
       return false;
     }
+
+    console.log(`[REGION FILTER] Movie ${movieId}: Found releases in ${releaseDates.results.map(r => r.iso_3166_1).join(', ')}`);
 
     const regionRelease = releaseDates.results.find(r => r.iso_3166_1 === region);
 
     if (!regionRelease || !regionRelease.release_dates) {
+      console.log(`[REGION FILTER] Movie ${movieId}: NO release in ${region} -> EXCLUDED`);
       return false; // No release in this region
     }
+
+    console.log(`[REGION FILTER] Movie ${movieId}: Found ${regionRelease.release_dates.length} release dates in ${region}`);
 
     const validReleaseTypes = [2, 3, 4, 5, 6]; // Exclude only Premiere
     const hasValidRelease = regionRelease.release_dates.some(rd => {
       const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
       if (!releaseDate) return false;
-      return releaseDate <= today && validReleaseTypes.includes(rd.type);
+      const isValid = releaseDate <= today && validReleaseTypes.includes(rd.type);
+      console.log(`[REGION FILTER] Movie ${movieId}: Date ${releaseDate}, Type ${rd.type}, Valid: ${isValid}`);
+      return isValid;
     });
 
+    console.log(`[REGION FILTER] Movie ${movieId}: Final result -> ${hasValidRelease ? 'INCLUDED' : 'EXCLUDED'}`);
     return hasValidRelease;
   } catch (error) {
-    console.error(`Error checking release dates for movie ${movieId}:`, error.message);
+    console.error(`[REGION FILTER] Movie ${movieId}: ERROR - ${error.message} -> EXCLUDED`);
     // On error, EXCLUDE to be strict (might miss some valid movies but ensures accuracy)
     return false;
   }
@@ -74,9 +85,13 @@ async function getCatalog(type, language, page, id, genre, config) {
 
       let metas = (await Promise.all(metaPromises)).filter(Boolean);
 
+      // Debug: Log config values
+      console.log(`[REGION FILTER DEBUG] type=${type}, strictRegionFilter=${config.strictRegionFilter}, language=${language}`);
+
       // Apply strict region filtering for movies - check actual regional release dates
       if (type === "movie" && (config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
         const region = language.split('-')[1];
+        console.log(`[REGION FILTER] ENABLED - Filtering ${metas.length} movies for region ${region}`);
 
         const releaseChecks = await Promise.all(
           metas.map(async (meta) => {
@@ -88,9 +103,13 @@ async function getCatalog(type, language, page, id, genre, config) {
           })
         );
 
+        const beforeCount = metas.length;
         metas = releaseChecks
           .filter(check => check.released)
           .map(check => check.meta);
+        console.log(`[REGION FILTER] Filtered: ${beforeCount} -> ${metas.length} movies`);
+      } else {
+        console.log(`[REGION FILTER] DISABLED - Not filtering`);
       }
 
       return { metas };
