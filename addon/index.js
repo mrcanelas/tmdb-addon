@@ -293,20 +293,35 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   delete config.streaming
 
   if (req.params.id.includes("tmdb:")) {
-    const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-      return await getMeta(type, language, tmdbId, config);
-    });
-    const cacheOpts = {
-      staleRevalidate: 20 * 24 * 60 * 60,
-      staleError: 30 * 24 * 60 * 60,
-    };
-    if (type == "movie") {
-      cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-    } else if (type == "series") {
-      const hasEnded = !!((resp.releaseInfo || "").length > 5);
-      cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+    // Validate that tmdbId is numeric
+    if (!/^\d+$/.test(tmdbId)) {
+        res.status(404).json({ error: "Invalid TMDB ID" });
+        return;
     }
-    respond(res, resp, cacheOpts);
+
+    try {
+      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
+        return await getMeta(type, language, tmdbId, config);
+      });
+      const cacheOpts = {
+        staleRevalidate: 20 * 24 * 60 * 60,
+        staleError: 30 * 24 * 60 * 60,
+      };
+      if (type == "movie") {
+        cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+      } else if (type == "series") {
+        const hasEnded = !!((resp.releaseInfo || "").length > 5);
+        cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+      }
+      respond(res, resp, cacheOpts);
+    } catch (e) {
+      if (e.message && (e.message.includes("404") || e.message.toLowerCase().includes("not found"))) {
+        res.status(404).json({ error: "Content not found on TMDB" });
+      } else {
+         console.error(`Error in meta route for ${type} ${tmdbId}:`, e);
+         res.status(500).json({ error: "Internal server error" });
+      }
+    }
   }
   if (req.params.id.includes("tt")) {
     const tmdbId = await getTmdb(type, imdbId);
