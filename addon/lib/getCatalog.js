@@ -85,8 +85,33 @@ async function getCatalog(type, language, page, id, genre, config) {
   }
 
   try {
-    // First attempt with user's region
-    let metas = await fetchAndFilter(parameters, userRegion);
+    // Determine if we need to fetch more results due to filtering
+    const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
+    const MIN_RESULTS = 20;
+    const MAX_PAGES = 3;
+
+    let metas = [];
+    let currentPage = parseInt(page) || 1;
+    let pagesChecked = 0;
+
+    // Fetch results, getting more pages if needed when filtering is active
+    while (metas.length < MIN_RESULTS && pagesChecked < MAX_PAGES) {
+      const pageParams = { ...parameters, page: currentPage };
+      const pageMetas = await fetchAndFilter(pageParams, userRegion);
+
+      // Add unique results only
+      for (const meta of pageMetas) {
+        if (!metas.find(m => m.id === meta.id)) {
+          metas.push(meta);
+        }
+      }
+
+      pagesChecked++;
+      currentPage++;
+
+      // If not in filter mode, only fetch one page
+      if (!needsExtraFetch) break;
+    }
 
     // Fallback to US for streaming catalogs if no results and strict mode is on
     if (metas.length === 0 && isStreaming && isStrictMode && userRegion && userRegion !== 'US') {
@@ -99,7 +124,8 @@ async function getCatalog(type, language, page, id, genre, config) {
       metas = await fetchAndFilter(fallbackParams, 'US');
     }
 
-    return { metas };
+    // Limit to 20 results max
+    return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(error);
     return { metas: [] };

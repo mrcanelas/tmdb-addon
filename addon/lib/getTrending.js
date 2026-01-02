@@ -6,70 +6,103 @@ const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./release
 
 async function getTrending(type, language, page, genre, config) {
   const media_type = type === "series" ? "tv" : type;
-  const parameters = {
-    media_type,
-    time_window: genre ? genre.toLowerCase() : "day",
-    language,
-    page,
-  };
 
-  // Always use the real trending API to get truly trending content
-  return await moviedb
-    .trending(parameters)
-    .then(async (res) => {
-      const metaPromises = res.results.map(item =>
-        getMeta(type, language, item.id, config)
-          .then(result => result.meta)
-          .catch(err => {
-            console.error(`Error fetching metadata for ${item.id}:`, err.message);
-            return null;
-          })
+  const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+  const isDigitalFilterMode = (config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
+  const region = language && language.split('-')[1] ? language.split('-')[1] : null;
+  const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
+
+  const MIN_RESULTS = 20;
+  const MAX_PAGES = 3;
+
+  // Helper function to fetch and filter one page
+  async function fetchAndFilterPage(pageNum) {
+    const parameters = {
+      media_type,
+      time_window: genre ? genre.toLowerCase() : "day",
+      language,
+      page: pageNum,
+    };
+
+    const res = await moviedb.trending(parameters);
+
+    const metaPromises = res.results.map(item =>
+      getMeta(type, language, item.id, config)
+        .then(result => result.meta)
+        .catch(err => {
+          console.error(`Error fetching metadata for ${item.id}:`, err.message);
+          return null;
+        })
+    );
+
+    let metas = (await Promise.all(metaPromises)).filter(Boolean);
+
+    // Apply strict region filtering for movies
+    if (isStrictMode && region && type === "movie") {
+      const releaseChecks = await Promise.all(
+        metas.map(async (meta) => {
+          const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return { meta, released: true };
+
+          const released = await isMovieReleasedInRegion(tmdbId, region);
+          return { meta, released };
+        })
       );
 
-      let metas = (await Promise.all(metaPromises)).filter(Boolean);
+      metas = releaseChecks
+        .filter(check => check.released)
+        .map(check => check.meta);
+    }
 
-      // Apply strict region filtering post-fetch if enabled
-      // This filters trending results to only show content released in the user's region
-      const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
-      const isDigitalFilterMode = (config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
-      const region = language && language.split('-')[1] ? language.split('-')[1] : null;
+    // Apply digital release filter for movies (independent from strict mode)
+    if (isDigitalFilterMode && !isStrictMode && type === "movie") {
+      const digitalChecks = await Promise.all(
+        metas.map(async (meta) => {
+          const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return { meta, released: true };
 
-      if (isStrictMode && region && type === "movie") {
-        const releaseChecks = await Promise.all(
-          metas.map(async (meta) => {
-            const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-            if (!tmdbId) return { meta, released: true };
+          const released = await isMovieReleasedDigitally(tmdbId);
+          return { meta, released };
+        })
+      );
 
-            const released = await isMovieReleasedInRegion(tmdbId, region);
-            return { meta, released };
-          })
-        );
+      metas = digitalChecks
+        .filter(check => check.released)
+        .map(check => check.meta);
+    }
 
-        metas = releaseChecks
-          .filter(check => check.released)
-          .map(check => check.meta);
+    return metas;
+  }
+
+  try {
+    let metas = [];
+    let currentPage = parseInt(page) || 1;
+    let pagesChecked = 0;
+
+    // Fetch results, getting more pages if needed when filtering is active
+    while (metas.length < MIN_RESULTS && pagesChecked < MAX_PAGES) {
+      const pageMetas = await fetchAndFilterPage(currentPage);
+
+      // Add unique results only
+      for (const meta of pageMetas) {
+        if (!metas.find(m => m.id === meta.id)) {
+          metas.push(meta);
+        }
       }
 
-      // Apply digital release filter for movies (global, any region) - independent from strict mode
-      if (isDigitalFilterMode && !isStrictMode && type === "movie") {
-        const digitalChecks = await Promise.all(
-          metas.map(async (meta) => {
-            const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-            if (!tmdbId) return { meta, released: true };
+      pagesChecked++;
+      currentPage++;
 
-            const released = await isMovieReleasedDigitally(tmdbId);
-            return { meta, released };
-          })
-        );
+      // If not in filter mode, only fetch one page
+      if (!needsExtraFetch) break;
+    }
 
-        metas = digitalChecks
-          .filter(check => check.released)
-          .map(check => check.meta);
-      }
-
-      return { metas };
-    })
-    .catch(console.error);
+    // Limit to 20 results max
+    return { metas: metas.slice(0, 20) };
+  } catch (error) {
+    console.error(error);
+    return { metas: [] };
+  }
 }
 
 module.exports = { getTrending };
