@@ -13,7 +13,7 @@ async function getTrending(type, language, page, genre, config) {
   const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
 
   const MIN_RESULTS = 20;
-  const MAX_PAGES = 3;
+  const PAGES_TO_FETCH = needsExtraFetch ? 4 : 1;
 
   // Helper function to fetch and filter one page
   async function fetchAndFilterPage(pageNum) {
@@ -75,26 +75,26 @@ async function getTrending(type, language, page, genre, config) {
   }
 
   try {
+    const startPage = parseInt(page) || 1;
+
+    // Fetch all pages in parallel for better performance
+    const pagePromises = [];
+    for (let i = 0; i < PAGES_TO_FETCH; i++) {
+      pagePromises.push(fetchAndFilterPage(startPage + i));
+    }
+
+    const pageResults = await Promise.all(pagePromises);
+
+    // Combine results, removing duplicates
     let metas = [];
-    let currentPage = parseInt(page) || 1;
-    let pagesChecked = 0;
-
-    // Fetch results, getting more pages if needed when filtering is active
-    while (metas.length < MIN_RESULTS && pagesChecked < MAX_PAGES) {
-      const pageMetas = await fetchAndFilterPage(currentPage);
-
-      // Add unique results only
+    for (const pageMetas of pageResults) {
       for (const meta of pageMetas) {
         if (!metas.find(m => m.id === meta.id)) {
           metas.push(meta);
         }
       }
-
-      pagesChecked++;
-      currentPage++;
-
-      // If not in filter mode, only fetch one page
-      if (!needsExtraFetch) break;
+      // Stop early if we have enough results
+      if (metas.length >= MIN_RESULTS) break;
     }
 
     // Limit to 20 results max

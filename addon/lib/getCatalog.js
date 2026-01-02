@@ -88,29 +88,29 @@ async function getCatalog(type, language, page, id, genre, config) {
     // Determine if we need to fetch more results due to filtering
     const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
     const MIN_RESULTS = 20;
-    const MAX_PAGES = 3;
+    const PAGES_TO_FETCH = needsExtraFetch ? 4 : 1;
 
+    const startPage = parseInt(page) || 1;
+
+    // Fetch all pages in parallel for better performance
+    const pagePromises = [];
+    for (let i = 0; i < PAGES_TO_FETCH; i++) {
+      const pageParams = { ...parameters, page: startPage + i };
+      pagePromises.push(fetchAndFilter(pageParams, userRegion));
+    }
+
+    const pageResults = await Promise.all(pagePromises);
+
+    // Combine results, removing duplicates
     let metas = [];
-    let currentPage = parseInt(page) || 1;
-    let pagesChecked = 0;
-
-    // Fetch results, getting more pages if needed when filtering is active
-    while (metas.length < MIN_RESULTS && pagesChecked < MAX_PAGES) {
-      const pageParams = { ...parameters, page: currentPage };
-      const pageMetas = await fetchAndFilter(pageParams, userRegion);
-
-      // Add unique results only
+    for (const pageMetas of pageResults) {
       for (const meta of pageMetas) {
         if (!metas.find(m => m.id === meta.id)) {
           metas.push(meta);
         }
       }
-
-      pagesChecked++;
-      currentPage++;
-
-      // If not in filter mode, only fetch one page
-      if (!needsExtraFetch) break;
+      // Stop early if we have enough results
+      if (metas.length >= MIN_RESULTS) break;
     }
 
     // Fallback to US for streaming catalogs if no results and strict mode is on
