@@ -88,7 +88,7 @@ async function getCatalog(type, language, page, id, genre, config) {
     // Determine if we need to fetch more results due to filtering
     const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
     const MIN_RESULTS = 20;
-    const PAGES_TO_FETCH = needsExtraFetch ? 4 : 1;
+    const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
 
     const startPage = parseInt(page) || 1;
 

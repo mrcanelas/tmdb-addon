@@ -13,7 +13,7 @@ async function getTrending(type, language, page, genre, config) {
   const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
 
   const MIN_RESULTS = 20;
-  const PAGES_TO_FETCH = needsExtraFetch ? 4 : 1;
+  const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
 
   // Helper function to fetch and filter one page
   async function fetchAndFilterPage(pageNum) {
