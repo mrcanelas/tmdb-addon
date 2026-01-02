@@ -5,46 +5,10 @@ const geminiService = require("../utils/gemini-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
 const { getGenreList } = require("./getGenreList");
+const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
 
 function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
-}
-
-/**
- * Check if a movie has been released in a specific region
- * @param {number} movieId - TMDB movie ID
- * @param {string} region - ISO 3166-1 country code (e.g., 'IT')
- * @returns {Promise<boolean>} - true if released in region, false otherwise
- */
-async function isMovieReleasedInRegion(movieId, region) {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
-
-    if (!releaseDates || !releaseDates.results) return true; // Can't determine, include it
-
-    // Find releases for the specified region
-    const regionRelease = releaseDates.results.find(r => r.iso_3166_1 === region);
-
-    if (!regionRelease || !regionRelease.release_dates) {
-      // No release in this region - exclude
-      return false;
-    }
-
-    // Check if any release date in this region is <= today
-    // Release types: 1=Premiere, 2=Theatrical (limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
-    const validReleaseTypes = [4, 5, 6]; // Only Digital, Physical, TV - no Theatrical (3) or Premiere (1)
-    const hasValidRelease = regionRelease.release_dates.some(rd => {
-      const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
-      if (!releaseDate) return false;
-      return releaseDate <= today && validReleaseTypes.includes(rd.type);
-    });
-
-    return hasValidRelease;
-  } catch (error) {
-    console.error(`Error checking release dates for movie ${movieId}:`, error.message);
-    return true; // On error, include it
-  }
 }
 
 /**
@@ -271,6 +235,26 @@ async function getSearch(id, type, language, query, config) {
         return true;
       });
     }
+  }
+
+  // Apply digital release filter for movies (global check) - independent from strict region mode
+  const isDigitalFilterMode = (config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
+  const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+
+  if (isDigitalFilterMode && !isStrictMode && type === "movie") {
+    const digitalChecks = await Promise.all(
+      searchResults.map(async (item) => {
+        const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
+        if (!tmdbId) return { item, released: true };
+
+        const released = await isMovieReleasedDigitally(tmdbId);
+        return { item, released };
+      })
+    );
+
+    searchResults = digitalChecks
+      .filter(check => check.released)
+      .map(check => check.item);
   }
 
   return Promise.resolve({ query, metas: searchResults });
