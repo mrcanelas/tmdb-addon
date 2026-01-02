@@ -65,7 +65,8 @@ async function getCatalog(type, language, page, id, genre, config) {
     }
 
     // Apply digital release filter for movies (global, any region) - independent from strict mode
-    if (type === "movie" && isDigitalFilterMode && !isStrictMode) {
+    // Skip for streaming catalogs since they already show only available content
+    if (type === "movie" && isDigitalFilterMode && !isStrictMode && !isStreaming) {
       const digitalChecks = await Promise.all(
         metas.map(async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
@@ -86,7 +87,8 @@ async function getCatalog(type, language, page, id, genre, config) {
 
   try {
     // Determine if we need to fetch more results due to filtering
-    const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
+    // For streaming catalogs, only apply extra fetch if strictMode is on (digitalFilter doesn't apply to streaming)
+    const needsExtraFetch = type === "movie" && (isStrictMode || (isDigitalFilterMode && !isStreaming));
     const MIN_RESULTS = 20;
     const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
 
