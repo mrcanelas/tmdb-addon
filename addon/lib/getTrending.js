@@ -3,6 +3,7 @@ const { TMDBClient } = require("../utils/tmdbClient");
 const moviedb = new TMDBClient(process.env.TMDB_API);
 const { getMeta } = require("./getMeta");
 const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
+const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 
 async function getTrending(type, language, page, genre, config) {
   const media_type = type === "series" ? "tv" : type;
@@ -13,7 +14,7 @@ async function getTrending(type, language, page, genre, config) {
   const needsExtraFetch = type === "movie" && (isStrictMode || isDigitalFilterMode);
 
   const MIN_RESULTS = 20;
-  const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
+  const PAGES_TO_FETCH = needsExtraFetch ? 3 : 1; // Reduced from 5 to 3 to minimize API calls
 
   // Helper function to fetch and filter one page
   async function fetchAndFilterPage(pageNum) {
@@ -26,49 +27,53 @@ async function getTrending(type, language, page, genre, config) {
 
     const res = await moviedb.trending(parameters);
 
-    const metaPromises = res.results.map(item =>
-      getMeta(type, language, item.id, config)
-        .then(result => result.meta)
-        .catch(err => {
+    // Use rate-limited fetching to prevent 429 errors
+    let metas = await rateLimitedMapFiltered(
+      res.results,
+      async (item) => {
+        try {
+          const result = await getMeta(type, language, item.id, config);
+          return result.meta;
+        } catch (err) {
           console.error(`Error fetching metadata for ${item.id}:`, err.message);
           return null;
-        })
+        }
+      },
+      { batchSize: 5, delayMs: 200 }
     );
-
-    let metas = (await Promise.all(metaPromises)).filter(Boolean);
 
     // Apply strict region filtering for movies
     if (isStrictMode && region && type === "movie") {
-      const releaseChecks = await Promise.all(
-        metas.map(async (meta) => {
+      const releaseChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-          if (!tmdbId) return { meta, released: true };
+          if (!tmdbId) return meta; // Keep if no ID
 
           const released = await isMovieReleasedInRegion(tmdbId, region);
-          return { meta, released };
-        })
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      metas = releaseChecks
-        .filter(check => check.released)
-        .map(check => check.meta);
+      metas = releaseChecks;
     }
 
     // Apply digital release filter for movies (independent from strict mode)
     if (isDigitalFilterMode && !isStrictMode && type === "movie") {
-      const digitalChecks = await Promise.all(
-        metas.map(async (meta) => {
+      const digitalChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-          if (!tmdbId) return { meta, released: true };
+          if (!tmdbId) return meta; // Keep if no ID
 
           const released = await isMovieReleasedDigitally(tmdbId);
-          return { meta, released };
-        })
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      metas = digitalChecks
-        .filter(check => check.released)
-        .map(check => check.meta);
+      metas = digitalChecks;
     }
 
     return metas;

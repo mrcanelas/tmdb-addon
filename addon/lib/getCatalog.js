@@ -7,6 +7,7 @@ const { parseMedia } = require("../utils/parseProps");
 const { fetchMDBListItems, parseMDBListItems } = require("../utils/mdbList");
 const { getMeta } = require("./getMeta");
 const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
+const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
 async function getCatalog(type, language, page, id, genre, config) {
@@ -36,51 +37,55 @@ async function getCatalog(type, language, page, id, genre, config) {
   async function fetchAndFilter(params, regionForReleaseCheck) {
     const res = await fetchFunction(params);
 
-    const metaPromises = res.results.map(item =>
-      getMeta(type, language, item.id, config)
-        .then(result => result.meta)
-        .catch(err => {
+    // Use rate-limited fetching to prevent 429 errors
+    let metas = await rateLimitedMapFiltered(
+      res.results,
+      async (item) => {
+        try {
+          const result = await getMeta(type, language, item.id, config);
+          return result.meta;
+        } catch (err) {
           console.error(`Error fetching metadata for ${item.id}:`, err.message);
           return null;
-        })
+        }
+      },
+      { batchSize: 5, delayMs: 200 }
     );
-
-    let metas = (await Promise.all(metaPromises)).filter(Boolean);
 
     // Apply strict region filtering for movies - check actual regional release dates
     // Skip for streaming catalogs since they already show only regionally available content
     if (type === "movie" && isStrictMode && regionForReleaseCheck && !isStreaming) {
-      const releaseChecks = await Promise.all(
-        metas.map(async (meta) => {
+      const releaseChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-          if (!tmdbId) return { meta, released: true };
+          if (!tmdbId) return meta; // Keep if no ID
 
           const released = await isMovieReleasedInRegion(tmdbId, regionForReleaseCheck);
-          return { meta, released };
-        })
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      metas = releaseChecks
-        .filter(check => check.released)
-        .map(check => check.meta);
+      metas = releaseChecks;
     }
 
     // Apply digital release filter for movies (global, any region) - independent from strict mode
     // Skip for streaming catalogs since they already show only available content
     if (type === "movie" && isDigitalFilterMode && !isStrictMode && !isStreaming) {
-      const digitalChecks = await Promise.all(
-        metas.map(async (meta) => {
+      const digitalChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
-          if (!tmdbId) return { meta, released: true };
+          if (!tmdbId) return meta; // Keep if no ID
 
           const released = await isMovieReleasedDigitally(tmdbId);
-          return { meta, released };
-        })
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      metas = digitalChecks
-        .filter(check => check.released)
-        .map(check => check.meta);
+      metas = digitalChecks;
     }
 
     return metas;
@@ -91,7 +96,7 @@ async function getCatalog(type, language, page, id, genre, config) {
     // Skip extra fetch for streaming catalogs since neither filter applies to them
     const needsExtraFetch = type === "movie" && !isStreaming && (isStrictMode || isDigitalFilterMode);
     const MIN_RESULTS = 20;
-    const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
+    const PAGES_TO_FETCH = needsExtraFetch ? 3 : 1; // Reduced from 5 to 3 to minimize API calls
 
     const startPage = parseInt(page) || 1;
 

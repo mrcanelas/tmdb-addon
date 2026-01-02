@@ -6,6 +6,7 @@ const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
 const { getGenreList } = require("./getGenreList");
 const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
+const { rateLimitedMap, rateLimitedMapFiltered } = require("../utils/rateLimiter");
 
 function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
@@ -40,33 +41,36 @@ async function getSearch(id, type, language, query, config) {
 
       const genreList = await getGenreList(language, type);
 
-      const searchPromises = titles.map(async (title) => {
-        try {
-          const parameters = {
-            query: title,
-            language,
-            include_adult: config.includeAdult
-          };
+      // Use rate-limited fetching for AI search results
+      const results = await rateLimitedMap(
+        titles,
+        async (title) => {
+          try {
+            const parameters = {
+              query: title,
+              language,
+              include_adult: config.includeAdult
+            };
 
-          if (type === "movie") {
-            const res = await moviedb.searchMovie(parameters);
-            if (res.results && res.results.length > 0) {
-              return parseMedia(res.results[0], 'movie', genreList);
+            if (type === "movie") {
+              const res = await moviedb.searchMovie(parameters);
+              if (res.results && res.results.length > 0) {
+                return parseMedia(res.results[0], 'movie', genreList);
+              }
+            } else {
+              const res = await moviedb.searchTv(parameters);
+              if (res.results && res.results.length > 0) {
+                return parseMedia(res.results[0], 'tv', genreList);
+              }
             }
-          } else {
-            const res = await moviedb.searchTv(parameters);
-            if (res.results && res.results.length > 0) {
-              return parseMedia(res.results[0], 'tv', genreList);
-            }
+            return null;
+          } catch (error) {
+            console.error(`Error fetching details for title "${title}":`, error);
+            return null;
           }
-          return null;
-        } catch (error) {
-          console.error(`Error fetching details for title "${title}":`, error);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(searchPromises);
+        },
+        { batchSize: 5, delayMs: 200 }
+      );
       searchResults = results.filter(result => result !== null);
 
     } catch (error) {
@@ -208,21 +212,21 @@ async function getSearch(id, type, language, query, config) {
     const region = language.split('-')[1];
 
     if (type === "movie") {
-      // For movies, check actual regional release dates
-      const releaseChecks = await Promise.all(
-        searchResults.map(async (item) => {
+      // For movies, check actual regional release dates with rate limiting
+      const releaseChecks = await rateLimitedMapFiltered(
+        searchResults,
+        async (item) => {
           // Extract TMDB ID from item.id (format: "tmdb:123456")
           const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
-          if (!tmdbId) return { item, released: true };
+          if (!tmdbId) return item; // Keep if no ID
 
           const released = await isMovieReleasedInRegion(tmdbId, region);
-          return { item, released };
-        })
+          return released ? item : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      searchResults = releaseChecks
-        .filter(check => check.released)
-        .map(check => check.item);
+      searchResults = releaseChecks;
     } else {
       // For TV shows, use first_air_date (not region-specific but best available)
       const today = new Date().toISOString().split('T')[0];
@@ -242,19 +246,19 @@ async function getSearch(id, type, language, query, config) {
   const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
 
   if (isDigitalFilterMode && !isStrictMode && type === "movie") {
-    const digitalChecks = await Promise.all(
-      searchResults.map(async (item) => {
+    const digitalChecks = await rateLimitedMapFiltered(
+      searchResults,
+      async (item) => {
         const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
-        if (!tmdbId) return { item, released: true };
+        if (!tmdbId) return item; // Keep if no ID
 
         const released = await isMovieReleasedDigitally(tmdbId);
-        return { item, released };
-      })
+        return released ? item : null;
+      },
+      { batchSize: 5, delayMs: 200 }
     );
 
-    searchResults = digitalChecks
-      .filter(check => check.released)
-      .map(check => check.item);
+    searchResults = digitalChecks;
   }
 
   return Promise.resolve({ query, metas: searchResults });
