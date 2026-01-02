@@ -27,7 +27,7 @@ async function isMovieReleasedInRegion(movieId, region) {
       return false; // No release in this region
     }
 
-    const validReleaseTypes = [2, 3, 4, 5, 6]; // Exclude only Premiere
+    const validReleaseTypes = [4, 5, 6]; // Only Digital, Physical, TV - no Theatrical (3) or Premiere (1)
     const hasValidRelease = regionRelease.release_dates.some(rd => {
       const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
       if (!releaseDate) return false;
@@ -164,7 +164,7 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
       const today = new Date().toISOString().split('T')[0];
       if (type === "movie") {
         parameters['release_date.lte'] = today;
-        parameters.with_release_type = "3|4";
+        parameters.with_release_type = "4|5|6";
       } else {
         parameters['first_air_date.lte'] = today;
       }
@@ -182,7 +182,7 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
       const today = new Date().toISOString().split('T')[0];
       if (type === "movie") {
         parameters['release_date.lte'] = today;
-        parameters.with_release_type = "3|4";
+        parameters.with_release_type = "4|5|6";
       } else {
         parameters['first_air_date.lte'] = today;
       }

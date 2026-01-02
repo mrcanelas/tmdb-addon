@@ -33,7 +33,7 @@ async function isMovieReleasedInRegion(movieId, region) {
 
     // Check if any release date in this region is <= today
     // Release types: 1=Premiere, 2=Theatrical (limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
-    const validReleaseTypes = [2, 3, 4, 5, 6]; // Exclude only Premiere
+    const validReleaseTypes = [4, 5, 6]; // Only Digital, Physical, TV - no Theatrical (3) or Premiere (1)
     const hasValidRelease = regionRelease.release_dates.some(rd => {
       const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
       if (!releaseDate) return false;
