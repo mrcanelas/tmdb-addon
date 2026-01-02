@@ -38,6 +38,7 @@ export type ConfigContextType = {
   enableAgeRating: boolean;
   showAgeRatingWithImdbRating: boolean;
   strictRegionFilter: boolean;
+  digitalReleaseFilter: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
   setGeminiKey: (geminikey: string) => void;
@@ -61,6 +62,7 @@ export type ConfigContextType = {
   setEnableAgeRating: (enable: boolean) => void;
   setShowAgeRatingWithImdbRating: (show: boolean) => void;
   setStrictRegionFilter: (enable: boolean) => void;
+  setDigitalReleaseFilter: (enable: boolean) => void;
   loadConfigFromUrl: () => void;
   saveConfigToStorage: () => void;
 };

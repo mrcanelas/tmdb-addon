@@ -37,6 +37,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [enableAgeRating, setEnableAgeRating] = useState(false);
   const [showAgeRatingWithImdbRating, setShowAgeRatingWithImdbRating] = useState(false);
   const [strictRegionFilter, setStrictRegionFilter] = useState(false);
+  const [digitalReleaseFilter, setDigitalReleaseFilter] = useState(false);
 
   const CONFIG_STORAGE_KEY = 'tmdb-addon-config';
 
@@ -66,6 +67,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         enableAgeRating,
         showAgeRatingWithImdbRating,
         strictRegionFilter,
+        digitalReleaseFilter,
       };
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
     } catch (error) {
@@ -111,6 +113,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     if (config.showAgeRatingInGenres !== undefined) setShowAgeRatingInGenres(config.showAgeRatingInGenres === "true" || config.showAgeRatingInGenres === true);
     if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
     if (config.strictRegionFilter !== undefined) setStrictRegionFilter(config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+    if (config.digitalReleaseFilter !== undefined) setDigitalReleaseFilter(config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
     if (config.searchEnabled !== undefined) setSearchEnabled(config.searchEnabled === "true" || config.searchEnabled === true);
 
     if (config.catalogs) {
@@ -210,6 +213,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     enableAgeRating,
     showAgeRatingWithImdbRating,
     strictRegionFilter,
+    digitalReleaseFilter,
     setRpdbkey,
     setRpdbMediaTypes,
     setGeminiKey,
@@ -233,6 +237,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setEnableAgeRating,
     setShowAgeRatingWithImdbRating,
     setStrictRegionFilter,
+    setDigitalReleaseFilter,
     loadConfigFromUrl,
     saveConfigToStorage
   };
