@@ -48,7 +48,8 @@ async function getCatalog(type, language, page, id, genre, config) {
     let metas = (await Promise.all(metaPromises)).filter(Boolean);
 
     // Apply strict region filtering for movies - check actual regional release dates
-    if (type === "movie" && isStrictMode && regionForReleaseCheck) {
+    // Skip for streaming catalogs since they already show only regionally available content
+    if (type === "movie" && isStrictMode && regionForReleaseCheck && !isStreaming) {
       const releaseChecks = await Promise.all(
         metas.map(async (meta) => {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
@@ -87,8 +88,8 @@ async function getCatalog(type, language, page, id, genre, config) {
 
   try {
     // Determine if we need to fetch more results due to filtering
-    // For streaming catalogs, only apply extra fetch if strictMode is on (digitalFilter doesn't apply to streaming)
-    const needsExtraFetch = type === "movie" && (isStrictMode || (isDigitalFilterMode && !isStreaming));
+    // Skip extra fetch for streaming catalogs since neither filter applies to them
+    const needsExtraFetch = type === "movie" && !isStreaming && (isStrictMode || isDigitalFilterMode);
     const MIN_RESULTS = 20;
     const PAGES_TO_FETCH = needsExtraFetch ? 5 : 1;
 
