@@ -14,6 +14,7 @@ const Others = () => {
   const { hideInCinemaTag, setHideInCinemaTag } = useConfig();
   const { castCount, setCastCount } = useConfig();
   const { strictRegionFilter, setStrictRegionFilter } = useConfig();
+  const { digitalReleaseFilter, setDigitalReleaseFilter } = useConfig();
 
   return (
     <main className="md:p-12 px-2 py-12">
@@ -77,6 +78,17 @@ const Others = () => {
             </p>
           </div>
           <Switch checked={strictRegionFilter} onCheckedChange={setStrictRegionFilter} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1">
+              Digital Release Filter
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Hide movies that haven't been released digitally yet. This filters out movies that are only in theaters or haven't been released at all. Applies to movie catalogs only.
+            </p>
+          </div>
+          <Switch checked={digitalReleaseFilter} onCheckedChange={setDigitalReleaseFilter} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
