@@ -3,8 +3,7 @@
  * This module caches TMDB release dates API calls to improve performance
  */
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const { cache } = require("./getCache");
 
 const RELEASE_KEY_PREFIX = 'tmdb-addon|release';
@@ -32,6 +31,7 @@ async function getReleaseDates(movieId) {
 
     // Fetch from API
     try {
+        const moviedb = getTmdbClient();
         const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
 
         // Store in cache

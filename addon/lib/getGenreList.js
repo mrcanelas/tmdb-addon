@@ -1,23 +1,23 @@
 require('dotenv').config()
-const { TMDBClient } = require('../utils/tmdbClient')
-const moviedb = new TMDBClient(process.env.TMDB_API)
+const { getTmdbClient } = require('../utils/getTmdbClient')
 
 async function getGenreList(language, type) {
+  const moviedb = getTmdbClient();
   if (type === "movie") {
     const genre = await moviedb
-      .genreMovieList({language})
+      .genreMovieList({ language })
       .then((res) => {
         return res.genres;
       })
       .catch(console.error);
-      return genre
+    return genre
   } else {
     const genre = await moviedb
-    .genreTvList({language})
-    .then((res) => {
-      return res.genres;
-    })
-    .catch(console.error);
+      .genreTvList({ language })
+      .then((res) => {
+        return res.genres;
+      })
+      .catch(console.error);
     return genre
   }
 }

@@ -1,7 +1,6 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const Utils = require("../utils/parseProps");
-const moviedb = new TMDBClient(process.env.TMDB_API);
 
 // Cache for age ratings
 const ageRatingCache = new Map();
@@ -12,6 +11,7 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
  */
 async function getMovieAgeRating(tmdbId, language) {
     try {
+        const moviedb = getTmdbClient();
         const releaseDates = await moviedb.movieReleaseDates({ id: tmdbId });
         const userRegion = language.split("-")[1] || "US";
 
@@ -35,6 +35,7 @@ async function getMovieAgeRating(tmdbId, language) {
  */
 async function getTvAgeRating(tmdbId, language) {
     try {
+        const moviedb = getTmdbClient();
         const contentRatings = await moviedb.tvContentRatings({ id: tmdbId });
         const userRegion = language.split("-")[1] || "US";
 

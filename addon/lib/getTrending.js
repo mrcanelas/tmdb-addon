@@ -1,11 +1,11 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const { getMeta } = require("./getMeta");
 const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
 const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 
 async function getTrending(type, language, page, genre, config) {
+  const moviedb = getTmdbClient(config);
   const media_type = type === "series" ? "tv" : type;
 
   const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);

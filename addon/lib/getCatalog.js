@@ -1,6 +1,5 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { parseMedia } = require("../utils/parseProps");
@@ -11,6 +10,7 @@ const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
 async function getCatalog(type, language, page, id, genre, config) {
+  const moviedb = getTmdbClient(config);
   const mdblistKey = config.mdblistkey
 
   if (id.startsWith("mdblist.")) {

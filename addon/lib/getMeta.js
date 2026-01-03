@@ -1,7 +1,6 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const Utils = require("../utils/parseProps");
-const moviedb = new TMDBClient(process.env.TMDB_API);
 const { getEpisodes } = require("./getEpisodes");
 const { getLogo, getTvLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
@@ -120,7 +119,7 @@ const addAgeRatingToGenres = (ageRating, genres, showAgeRatingInGenres = true) =
     return [ageRating, ...genres];
 };
 
-const fetchCollectionData = async (collTMDBId, language, tmdbId) => {
+const fetchCollectionData = async (moviedb, collTMDBId, language, tmdbId) => {
     return await moviedb.collectionInfo({
         id: collTMDBId,
         language
@@ -134,7 +133,7 @@ const fetchCollectionData = async (collTMDBId, language, tmdbId) => {
 };
 
 // Movie specific functions
-const fetchMovieData = async (tmdbId, language) => {
+const fetchMovieData = async (moviedb, tmdbId, language) => {
     return await moviedb.movieInfo({
         id: tmdbId,
         language,
@@ -163,11 +162,12 @@ const buildMovieResponse = async (res, type, language, tmdbId, config = {}) => {
         return null;
     });
 
+    const moviedb = getTmdbClient(config);
     const [poster, imdbRatingRaw, collectionRaw] = await Promise.all([
         Utils.parseMediaImage(type, tmdbId, res.poster_path, language, rpdbkey, "poster", rpdbMediaTypes),
         getCachedImdbRating(res.external_ids?.imdb_id, type),
         (res.belongs_to_collection && res.belongs_to_collection.id)
-            ? fetchCollectionData(res.belongs_to_collection.id, language, tmdbId).catch((e) => {
+            ? fetchCollectionData(moviedb, res.belongs_to_collection.id, language, tmdbId).catch((e) => {
                 console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
                 return null;
             })
@@ -232,7 +232,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, config = {}) => {
 };
 
 // TV show specific functions
-const fetchTvData = async (tmdbId, language) => {
+const fetchTvData = async (moviedb, tmdbId, language) => {
     return await moviedb.tvInfo({
         id: tmdbId,
         language,
@@ -264,6 +264,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
         return null;
     });
 
+    const moviedb = getTmdbClient(config);
     const [poster, imdbRatingRaw, episodes, collectionRaw] = await Promise.all([
         Utils.parseMediaImage(type, tmdbId, res.poster_path, language, rpdbkey, "poster", rpdbMediaTypes),
         getCachedImdbRating(res.external_ids?.imdb_id, type),
@@ -274,7 +275,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
             return [];
         }),
         (res.belongs_to_collection && res.belongs_to_collection.id)
-            ? fetchCollectionData(res.belongs_to_collection.id, language, tmdbId).catch((e) => {
+            ? fetchCollectionData(moviedb, res.belongs_to_collection.id, language, tmdbId).catch((e) => {
                 console.warn(`Error fetching collection data for movie ${tmdbId} and collection ${res.belongs_to_collection.id}:`, e.message);
                 return null;
             })
@@ -288,7 +289,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
     if (enableAgeRating) {
         resolvedAgeRating = extractAgeRating(res, type, language);
     }
-    
+
     const response = {
         country: Utils.parseCoutry(res.production_countries),
         description: res.overview,
@@ -360,9 +361,10 @@ async function getMeta(type, language, tmdbId, config = {}) {
     }
 
     try {
+        const moviedb = getTmdbClient(config);
         const meta = await (type === "movie" ?
-            fetchMovieData(tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, config)) :
-            fetchTvData(tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, config))
+            fetchMovieData(moviedb, tmdbId, language).then(res => buildMovieResponse(res, type, language, tmdbId, config)) :
+            fetchTvData(moviedb, tmdbId, language).then(res => buildTvResponse(res, type, language, tmdbId, config))
         );
 
         cache.set(cacheKey, { data: meta, timestamp: Date.now() });

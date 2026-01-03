@@ -1,6 +1,5 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const { getGenreList } = require("./getGenreList");
 const { parseMedia } = require("../utils/parseProps");
 const translations = require("../static/translations.json");
@@ -19,14 +18,14 @@ function sortResults(results, genre) {
     if (!genre) return results;
 
     let sortedResults = [...results];
-    
+
     const randomTranslations = getAllTranslations('random');
     if (randomTranslations.includes(genre)) {
         return shuffleArray(sortedResults);
     }
 
     let field, order;
-    
+
     const fields = {
         'added_date': getAllTranslations('added_date'),
         'popularity': getAllTranslations('popularity'),
@@ -55,7 +54,7 @@ function sortResults(results, genre) {
 
     sortedResults.sort((a, b) => {
         let valueA, valueB;
-        
+
         switch (field) {
             case 'release_date':
                 valueA = a.release_date || a.first_air_date;
@@ -90,7 +89,7 @@ function configureSortingParameters(parameters, genre) {
         if (translations.some(t => genre?.includes(t))) {
             const ascTranslations = getAllTranslations('asc');
             const descTranslations = getAllTranslations('desc');
-            
+
             if (ascTranslations.some(t => genre.includes(t))) {
                 parameters.sort_by = `${API_FIELD_MAPPING[fieldName]}.asc`;
             } else if (descTranslations.some(t => genre.includes(t))) {
@@ -103,6 +102,7 @@ function configureSortingParameters(parameters, genre) {
 }
 
 async function getFavorites(type, language, page, genre, sessionId) {
+    const moviedb = getTmdbClient();
     moviedb.sessionId = sessionId;
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);
@@ -118,6 +118,7 @@ async function getFavorites(type, language, page, genre, sessionId) {
 }
 
 async function getWatchList(type, language, page, genre, sessionId) {
+    const moviedb = getTmdbClient();
     moviedb.sessionId = sessionId;
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);

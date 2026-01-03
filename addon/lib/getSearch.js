@@ -1,6 +1,5 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const geminiService = require("../utils/gemini-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
@@ -25,6 +24,7 @@ function isTvShowAired(firstAirDate) {
 }
 
 async function getSearch(id, type, language, query, config) {
+  const moviedb = getTmdbClient(config);
   let searchQuery = query;
   if (isNonLatin(searchQuery)) {
     searchQuery = transliterate(searchQuery);

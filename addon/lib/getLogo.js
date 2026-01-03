@@ -4,68 +4,67 @@ const apiKey = process.env.FANART_API;
 const baseUrl = "http://webservice.fanart.tv/v3/";
 const fanart = new FanartTvApi({ apiKey, baseUrl });
 
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const TARGET_ASPECT_RATIO = 4.0;
 
 function pickLogo(logos, language, originalLanguage) {
-    const fullLang = language;         // Ex: 'pt-BR'
-    const baseLang = language.split("-")[0]; // Ex: 'pt'
+  const fullLang = language;         // Ex: 'pt-BR'
+  const baseLang = language.split("-")[0]; // Ex: 'pt'
 
-    const sortedLogos = logos
-        .map(logo => {
-            let score = 0;
-            const logoLang = logo.lang;          
-            if (logoLang === fullLang) {
-                score = 4;
-            } 
-            else if (logoLang.startsWith(baseLang + '-')) {
-                score = 3;
-            }
-            else if (logoLang === baseLang) {
-                score = 2;
-            }
-            else if (logoLang === 'en') {
-                score = 1;
-            }
-            else if (logoLang === originalLanguage && logoLang !== 'en') {
-                score = 0.5;
-            }
+  const sortedLogos = logos
+    .map(logo => {
+      let score = 0;
+      const logoLang = logo.lang;
+      if (logoLang === fullLang) {
+        score = 4;
+      }
+      else if (logoLang.startsWith(baseLang + '-')) {
+        score = 3;
+      }
+      else if (logoLang === baseLang) {
+        score = 2;
+      }
+      else if (logoLang === 'en') {
+        score = 1;
+      }
+      else if (logoLang === originalLanguage && logoLang !== 'en') {
+        score = 0.5;
+      }
 
-            let aspectRatioDiff = 999; 
-            if (logo.source === 'tmdb' && logo.aspect_ratio) {
-                aspectRatioDiff = Math.abs(logo.aspect_ratio - TARGET_ASPECT_RATIO);
-            }
+      let aspectRatioDiff = 999;
+      if (logo.source === 'tmdb' && logo.aspect_ratio) {
+        aspectRatioDiff = Math.abs(logo.aspect_ratio - TARGET_ASPECT_RATIO);
+      }
 
-            return {
-                ...logo,
-                score,
-                fanartLikes: logo.source === 'fanart' ? (parseInt(logo.likes) || 0) : 0,
-                tmdbVotes: logo.source === 'tmdb' ? (logo.vote_average || 0) : 0,
-                aspectRatioDiff: aspectRatioDiff
-            };
-        })
-        .sort((a, b) => {
-            if (a.score !== b.score) {
-                return b.score - a.score;
-            }  
-            if (a.source === 'tmdb' && b.source === 'tmdb') {
-                if (a.aspectRatioDiff !== b.aspectRatioDiff) {
-                    return a.aspectRatioDiff - b.aspectRatioDiff; 
-                }
-                return b.tmdbVotes - a.tmdbVotes; 
-            }
-            if (a.source === 'fanart' && b.source === 'fanart') {
-                return b.fanartLikes - a.fanartLikes;
-            }      
-            if (a.source === 'fanart' && b.source !== 'fanart') return -1;
-            if (a.source !== 'fanart' && b.source === 'fanart') return 1;
+      return {
+        ...logo,
+        score,
+        fanartLikes: logo.source === 'fanart' ? (parseInt(logo.likes) || 0) : 0,
+        tmdbVotes: logo.source === 'tmdb' ? (logo.vote_average || 0) : 0,
+        aspectRatioDiff: aspectRatioDiff
+      };
+    })
+    .sort((a, b) => {
+      if (a.score !== b.score) {
+        return b.score - a.score;
+      }
+      if (a.source === 'tmdb' && b.source === 'tmdb') {
+        if (a.aspectRatioDiff !== b.aspectRatioDiff) {
+          return a.aspectRatioDiff - b.aspectRatioDiff;
+        }
+        return b.tmdbVotes - a.tmdbVotes;
+      }
+      if (a.source === 'fanart' && b.source === 'fanart') {
+        return b.fanartLikes - a.fanartLikes;
+      }
+      if (a.source === 'fanart' && b.source !== 'fanart') return -1;
+      if (a.source !== 'fanart' && b.source === 'fanart') return 1;
 
-            return 0;
-        });
+      return 0;
+    });
 
-    const picked = sortedLogos[0];
-    return picked;
+  const picked = sortedLogos[0];
+  return picked;
 }
 
 async function getLogo(tmdbId, language, originalLanguage) {
@@ -73,6 +72,7 @@ async function getLogo(tmdbId, language, originalLanguage) {
     throw new Error(`TMDB ID not available for logo: ${tmdbId}`);
   }
 
+  const moviedb = getTmdbClient();
   const [fanartRes, tmdbRes] = await Promise.all([
     fanart
       .getMovieImages(tmdbId)
@@ -112,19 +112,20 @@ async function getTvLogo(tvdb_id, tmdbId, language, originalLanguage) {
     throw new Error(`TVDB ID and TMDB ID not available for logos.`);
   }
 
+  const moviedb = getTmdbClient();
   const [fanartRes, tmdbRes] = await Promise.all([
     tvdb_id
       ? fanart
-          .getShowImages(tvdb_id)
-          .then(res => res.hdtvlogo || [])
-          .catch(() => [])
+        .getShowImages(tvdb_id)
+        .then(res => res.hdtvlogo || [])
+        .catch(() => [])
       : Promise.resolve([]),
 
     tmdbId
       ? moviedb
-          .tvImages({ id: tmdbId })
-          .then(res => res.logos || [])
-          .catch(() => [])
+        .tvImages({ id: tmdbId })
+        .then(res => res.logos || [])
+        .catch(() => [])
       : Promise.resolve([])
   ]);
 
