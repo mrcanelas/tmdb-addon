@@ -318,8 +318,8 @@ export default function Home() {
 
           <div className="w-full max-w-md mx-auto mb-8">
             <div className={`rounded-lg p-4 backdrop-blur-sm border ${tmdbApiKey
-                ? 'bg-green-500/10 border-green-500/30'
-                : 'bg-yellow-500/10 border-yellow-500/30'
+              ? 'bg-green-500/10 border-green-500/30'
+              : 'bg-yellow-500/10 border-yellow-500/30'
               }`}>
               <div className="flex items-center gap-2 mb-2">
                 {tmdbApiKey ? (
@@ -336,7 +336,7 @@ export default function Home() {
                 </label>
                 {tmdbApiKey && (
                   <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full">
-                    Configurata
+                    Configured
                   </span>
                 )}
               </div>
@@ -345,15 +345,15 @@ export default function Home() {
                 type="password"
                 value={tmdbApiKey}
                 onChange={(e) => setTmdbApiKey(e.target.value)}
-                placeholder="Inserisci la tua TMDB API Key"
+                placeholder="Enter your TMDB API Key"
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {!tmdbApiKey ? (
                 <div className="mt-2 text-xs text-yellow-300">
-                  <p className="font-medium">⚠️ Attenzione: API Key richiesta</p>
+                  <p className="font-medium">⚠️ Warning: API Key may be required</p>
                   <p className="text-gray-400 mt-1">
-                    Se il server non ha una chiave predefinita, dovrai inserire la tua TMDB API Key per utilizzare questo addon.
-                    Puoi ottenerne una gratuitamente su{' '}
+                    If the server doesn't have a default key, you'll need to enter your own TMDB API Key to use this addon.
+                    You can get one for free at{' '}
                     <a
                       href="https://www.themoviedb.org/settings/api"
                       target="_blank"
@@ -366,7 +366,7 @@ export default function Home() {
                 </div>
               ) : (
                 <p className="mt-2 text-xs text-green-300">
-                  ✓ La tua API Key verrà utilizzata per questo addon.
+                  ✓ Your API Key will be used for this addon.
                 </p>
               )}
             </div>
