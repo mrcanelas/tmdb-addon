@@ -249,6 +249,40 @@ export default function Home() {
     fetchPopularMovies();
   }, []);
 
+  const [isValidating, setIsValidating] = useState(false);
+  const [isKeyValid, setIsKeyValid] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!tmdbApiKey) {
+      setIsKeyValid(null);
+      setIsValidating(false);
+      return;
+    }
+
+    setIsValidating(true);
+    setIsKeyValid(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/authentication?api_key=${tmdbApiKey}`);
+        setIsKeyValid(res.ok);
+      } catch (error) {
+        setIsKeyValid(false);
+      } finally {
+        setIsValidating(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [tmdbApiKey]);
+
+  const getKeyStatusColor = () => {
+    if (!tmdbApiKey) return 'bg-yellow-500/10 border-yellow-500/30';
+    if (isValidating) return 'bg-blue-500/10 border-blue-500/30';
+    if (isKeyValid) return 'bg-green-500/10 border-green-500/30';
+    return 'bg-red-500/10 border-red-500/30';
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="fixed inset-0 z-0">
@@ -317,37 +351,63 @@ export default function Home() {
           </div>
 
           <div className="w-full max-w-md mx-auto mb-8">
-            <div className={`rounded-lg p-4 backdrop-blur-sm border ${tmdbApiKey
-              ? 'bg-green-500/10 border-green-500/30'
-              : 'bg-yellow-500/10 border-yellow-500/30'
-              }`}>
+            <div className={`rounded-lg p-4 backdrop-blur-sm border transition-colors duration-300 ${getKeyStatusColor()}`}>
               <div className="flex items-center gap-2 mb-2">
-                {tmdbApiKey ? (
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
+                {!tmdbApiKey && (
                   <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 )}
+                {tmdbApiKey && isValidating && (
+                  <svg className="w-5 h-5 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {tmdbApiKey && !isValidating && isKeyValid === true && (
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {tmdbApiKey && !isValidating && isKeyValid === false && (
+                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+
                 <label htmlFor="tmdb-api-key" className="block text-sm font-medium text-gray-200">
                   TMDB API Key
                 </label>
-                {tmdbApiKey && (
+
+                {tmdbApiKey && !isValidating && isKeyValid === true && (
                   <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full">
-                    Configured
+                    Verified
+                  </span>
+                )}
+                {tmdbApiKey && !isValidating && isKeyValid === false && (
+                  <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full">
+                    Invalid
+                  </span>
+                )}
+                {tmdbApiKey && isValidating && (
+                  <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
+                    Checking...
                   </span>
                 )}
               </div>
+
               <input
                 id="tmdb-api-key"
                 type="password"
                 value={tmdbApiKey}
                 onChange={(e) => setTmdbApiKey(e.target.value)}
                 placeholder="Enter your TMDB API Key"
-                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 bg-white/10 border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tmdbApiKey && !isValidating && isKeyValid === false
+                    ? 'border-red-500/50'
+                    : 'border-white/20'
+                  }`}
               />
+
               {!tmdbApiKey ? (
                 <div className="mt-2 text-xs text-yellow-300">
                   <p className="font-medium">⚠️ Warning: API Key may be required</p>
@@ -364,9 +424,17 @@ export default function Home() {
                     </a>
                   </p>
                 </div>
-              ) : (
+              ) : null}
+
+              {tmdbApiKey && !isValidating && isKeyValid === true && (
                 <p className="mt-2 text-xs text-green-300">
-                  ✓ Your API Key will be used for this addon.
+                  ✓ Valid TMDB API Key.
+                </p>
+              )}
+
+              {tmdbApiKey && !isValidating && isKeyValid === false && (
+                <p className="mt-2 text-xs text-red-300">
+                  ✕ Invalid API Key. Please check and try again.
                 </p>
               )}
             </div>
