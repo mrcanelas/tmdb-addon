@@ -17,8 +17,8 @@ function getTmdbClient(config = {}) {
 
     if (!apiKey) {
         const error = new Error("TMDB_API_KEY_MISSING");
-        error.userMessage = "Per utilizzare questo addon è necessaria una TMDB API Key. " +
-            "Inseriscila nella pagina di configurazione dell'addon oppure contatta l'amministratore del server.";
+        error.userMessage = "A TMDB API Key is required to use this addon. " +
+            "Please enter your key in the addon configuration page or contact the server administrator.";
         error.statusCode = 401;
         throw error;
     }
