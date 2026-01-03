@@ -69,7 +69,7 @@ async function isMovieReleasedInRegion(movieId, region) {
             return false; // No release in this region
         }
 
-        const validReleaseTypes = [4, 5, 6]; // Only Digital, Physical, TV - no Theatrical (3) or Premiere (1)
+        const validReleaseTypes = [3, 4, 5, 6]; // Theatrical, Digital, Physical, TV - no Premiere (1)
         const hasValidRelease = regionRelease.release_dates.some(rd => {
             const releaseDate = rd.release_date ? rd.release_date.split('T')[0] : null;
             if (!releaseDate) return false;
