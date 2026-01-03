@@ -39,7 +39,7 @@ async function getSearch(id, type, language, query, config) {
 
       const titles = await geminiService.searchWithAI(query, type);
 
-      const genreList = await getGenreList(language, type);
+      const genreList = await getGenreList(language, type, config);
 
       // Use rate-limited fetching for AI search results
       const results = await rateLimitedMap(
@@ -79,7 +79,7 @@ async function getSearch(id, type, language, query, config) {
   }
 
   if (searchResults.length === 0) {
-    const genreList = await getGenreList(language, type);
+    const genreList = await getGenreList(language, type, config);
 
     const parameters = {
       query: query,

@@ -21,7 +21,7 @@ async function getCatalog(type, language, page, id, genre, config) {
     return parseResults
   }
 
-  const genreList = await getGenreList(language, type);
+  const genreList = await getGenreList(language, type, config);
   const parameters = await buildParameters(type, language, page, id, genre, genreList, config);
 
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
@@ -141,7 +141,7 @@ async function getCatalog(type, language, page, id, genre, config) {
 }
 
 async function buildParameters(type, language, page, id, genre, genreList, config) {
-  const languages = await getLanguages();
+  const languages = await getLanguages(config);
   const parameters = { language, page, 'vote_count.gte': 10 };;
 
   if (config.ageRating) {

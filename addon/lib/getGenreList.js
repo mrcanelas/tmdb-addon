@@ -5,9 +5,9 @@ const { getTmdbClient } = require('../utils/getTmdbClient')
 const FALLBACK_MOVIE_GENRES = require("../static/fallback-genres-movie.json");
 const FALLBACK_TV_GENRES = require("../static/fallback-genres-series.json");
 
-async function getGenreList(language, type) {
+async function getGenreList(language, type, config = {}) {
   try {
-    const moviedb = getTmdbClient();
+    const moviedb = getTmdbClient(config);
     if (type === "movie") {
       const genre = await moviedb
         .genreMovieList({ language })

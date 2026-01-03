@@ -107,7 +107,7 @@ async function getFavorites(type, language, page, genre, config) {
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);
 
-    const genreList = await getGenreList(language, type);
+    const genreList = await getGenreList(language, type, config);
     const fetchFunction = type === "movie" ? moviedb.accountFavoriteMovies.bind(moviedb) : moviedb.accountFavoriteTv.bind(moviedb);
 
     return fetchFunction(parameters)
@@ -123,7 +123,7 @@ async function getWatchList(type, language, page, genre, config) {
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);
 
-    const genreList = await getGenreList(language, type);
+    const genreList = await getGenreList(language, type, config);
     const fetchFunction = type === "movie" ? moviedb.accountMovieWatchlist.bind(moviedb) : moviedb.accountTvWatchlist.bind(moviedb);
 
     return fetchFunction(parameters)

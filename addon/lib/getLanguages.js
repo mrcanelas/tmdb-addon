@@ -4,9 +4,9 @@ const { getTmdbClient } = require("../utils/getTmdbClient");
 // Fallback languages when TMDB API key is not available
 const FALLBACK_LANGUAGES = require("../static/fallback-languages.json");
 
-async function getLanguages() {
+async function getLanguages(config = {}) {
   try {
-    const moviedb = getTmdbClient();
+    const moviedb = getTmdbClient(config);
     const [primaryTranslations, languages] = await Promise.all([
       moviedb.primaryTranslations(),
       moviedb.languages(),
