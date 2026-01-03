@@ -222,7 +222,7 @@ interface Movie {
 }
 
 export default function Home() {
-  const { language, setLanguage } = useConfig();
+  const { language, setLanguage, tmdbApiKey, setTmdbApiKey } = useConfig();
   const [backgroundUrl, setBackgroundUrl] = useState("");
 
   useEffect(() => {
@@ -230,13 +230,13 @@ export default function Home() {
       try {
         const response = await fetch('https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json');
         const data = await response.json();
-        
+
         const moviesWithId = data.metas.filter(movie => movie.imdb_id);
-        
+
         if (moviesWithId.length > 0) {
           const randomIndex = Math.floor(Math.random() * moviesWithId.length);
           const randomMovie = moviesWithId[randomIndex];
-          
+
           const highQualityImageUrl = `https://images.metahub.space/background/medium/${randomMovie.imdb_id}/img`;
           setBackgroundUrl(highQualityImageUrl);
         }
@@ -253,7 +253,7 @@ export default function Home() {
     <div className="relative min-h-screen overflow-hidden">
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80 z-10" />
-        <div 
+        <div
           className="absolute inset-0 blur-sm"
           style={{
             backgroundImage: `url(${backgroundUrl})`,
@@ -315,6 +315,63 @@ export default function Home() {
               className="w-full sm:w-auto"
             />
           </div>
+
+          <div className="w-full max-w-md mx-auto mb-8">
+            <div className={`rounded-lg p-4 backdrop-blur-sm border ${tmdbApiKey
+                ? 'bg-green-500/10 border-green-500/30'
+                : 'bg-yellow-500/10 border-yellow-500/30'
+              }`}>
+              <div className="flex items-center gap-2 mb-2">
+                {tmdbApiKey ? (
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                )}
+                <label htmlFor="tmdb-api-key" className="block text-sm font-medium text-gray-200">
+                  TMDB API Key
+                </label>
+                {tmdbApiKey && (
+                  <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full">
+                    Configurata
+                  </span>
+                )}
+              </div>
+              <input
+                id="tmdb-api-key"
+                type="password"
+                value={tmdbApiKey}
+                onChange={(e) => setTmdbApiKey(e.target.value)}
+                placeholder="Inserisci la tua TMDB API Key"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {!tmdbApiKey ? (
+                <div className="mt-2 text-xs text-yellow-300">
+                  <p className="font-medium">⚠️ Attenzione: API Key richiesta</p>
+                  <p className="text-gray-400 mt-1">
+                    Se il server non ha una chiave predefinita, dovrai inserire la tua TMDB API Key per utilizzare questo addon.
+                    Puoi ottenerne una gratuitamente su{' '}
+                    <a
+                      href="https://www.themoviedb.org/settings/api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline"
+                    >
+                      themoviedb.org
+                    </a>
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-green-300">
+                  ✓ La tua API Key verrà utilizzata per questo addon.
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
             <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-xl font-semibold mb-2">Movies</h3>

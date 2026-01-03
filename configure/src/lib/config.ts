@@ -8,6 +8,7 @@ interface AddonConfig {
   mdblistkey?: string;
   traktAccessToken?: string;
   traktRefreshToken?: string;
+  tmdbApiKey?: string;
   includeAdult?: boolean;
   provideImdbId?: boolean;
   returnImdbId?: boolean;
@@ -41,6 +42,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     mdblistkey: config.mdblistkey || undefined,
     traktAccessToken: config.traktAccessToken || undefined,
     traktRefreshToken: config.traktRefreshToken || undefined,
+    tmdbApiKey: config.tmdbApiKey || undefined,
     sessionId: config.sessionId || undefined,
     catalogs: config.catalogs
       ?.filter(catalog => catalog.enabled === false ? false : true)

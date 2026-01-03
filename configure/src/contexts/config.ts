@@ -21,6 +21,7 @@ export type ConfigContextType = {
   mdblistkey: string;
   traktAccessToken: string;
   traktRefreshToken: string;
+  tmdbApiKey: string;
   includeAdult: boolean;
   provideImdbId: boolean;
   returnImdbId: boolean;
@@ -45,6 +46,7 @@ export type ConfigContextType = {
   setMdblistkey: (mdblistkey: string) => void;
   setTraktAccessToken: (traktAccessToken: string) => void;
   setTraktRefreshToken: (traktRefreshToken: string) => void;
+  setTmdbApiKey: (tmdbApiKey: string) => void;
   setIncludeAdult: (includeAdult: boolean) => void;
   setProvideImdbId: (provideImdbId: boolean) => void;
   setReturnImdbId: (returnImdbId: boolean) => void;

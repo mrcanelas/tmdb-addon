@@ -20,6 +20,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [mdblistkey, setMdblistkey] = useState("");
   const [traktAccessToken, setTraktAccessToken] = useState("");
   const [traktRefreshToken, setTraktRefreshToken] = useState("");
+  const [tmdbApiKey, setTmdbApiKey] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
   const [provideImdbId, setProvideImdbId] = useState(false);
   const [returnImdbId, setReturnImdbId] = useState(false);
@@ -50,6 +51,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         mdblistkey,
         traktAccessToken,
         traktRefreshToken,
+        tmdbApiKey,
         includeAdult,
         provideImdbId,
         returnImdbId,
@@ -99,6 +101,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     if (config.geminikey !== undefined) setGeminiKey(config.geminikey);
     if (config.traktAccessToken !== undefined) setTraktAccessToken(config.traktAccessToken);
     if (config.traktRefreshToken !== undefined) setTraktRefreshToken(config.traktRefreshToken);
+    if (config.tmdbApiKey !== undefined) setTmdbApiKey(config.tmdbApiKey);
     if (config.provideImdbId !== undefined) setProvideImdbId(config.provideImdbId === "true" || config.provideImdbId === true);
     if (config.returnImdbId !== undefined) setReturnImdbId(config.returnImdbId === "true" || config.returnImdbId === true);
     if (config.tmdbPrefix !== undefined) setTmdbPrefix(config.tmdbPrefix === "true" || config.tmdbPrefix === true);
@@ -196,6 +199,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     mdblistkey,
     traktAccessToken,
     traktRefreshToken,
+    tmdbApiKey,
     includeAdult,
     provideImdbId,
     returnImdbId,
@@ -220,6 +224,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setMdblistkey,
     setTraktAccessToken,
     setTraktRefreshToken,
+    setTmdbApiKey,
     setIncludeAdult,
     setProvideImdbId,
     setReturnImdbId,
