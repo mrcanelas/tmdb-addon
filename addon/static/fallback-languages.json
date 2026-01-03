@@ -1,0 +1,574 @@
+[
+  {
+    "iso_639_1": "af-ZA",
+    "name": "Afrikaans"
+  },
+  {
+    "iso_639_1": "ar-AE",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-BH",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-EG",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-IQ",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-JO",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-LY",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-MA",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-QA",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-SA",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-TD",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "ar-YE",
+    "name": "Arabic"
+  },
+  {
+    "iso_639_1": "be-BY",
+    "name": "Belarusian"
+  },
+  {
+    "iso_639_1": "bg-BG",
+    "name": "Bulgarian"
+  },
+  {
+    "iso_639_1": "bn-BD",
+    "name": "Bengali"
+  },
+  {
+    "iso_639_1": "bn-IN",
+    "name": "Bengali"
+  },
+  {
+    "iso_639_1": "br-FR",
+    "name": "Breton"
+  },
+  {
+    "iso_639_1": "ca-AD",
+    "name": "Catalan"
+  },
+  {
+    "iso_639_1": "ca-ES",
+    "name": "Catalan"
+  },
+  {
+    "iso_639_1": "ch-GU",
+    "name": "Chamorro"
+  },
+  {
+    "iso_639_1": "cs-CZ",
+    "name": "Czech"
+  },
+  {
+    "iso_639_1": "cy-GB",
+    "name": "Welsh"
+  },
+  {
+    "iso_639_1": "da-DK",
+    "name": "Danish"
+  },
+  {
+    "iso_639_1": "de-AT",
+    "name": "German"
+  },
+  {
+    "iso_639_1": "de-CH",
+    "name": "German"
+  },
+  {
+    "iso_639_1": "de-DE",
+    "name": "German"
+  },
+  {
+    "iso_639_1": "el-CY",
+    "name": "Greek"
+  },
+  {
+    "iso_639_1": "el-GR",
+    "name": "Greek"
+  },
+  {
+    "iso_639_1": "en-AG",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-AU",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-BB",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-BZ",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-CA",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-CM",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-GB",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-GG",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-GH",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-GI",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-GY",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-IE",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-JM",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-KE",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-LC",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-MW",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-NZ",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-PG",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-TC",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-US",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-ZM",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "en-ZW",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "eo-EO",
+    "name": "Esperanto"
+  },
+  {
+    "iso_639_1": "es-AR",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-CL",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-DO",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-EC",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-ES",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-GQ",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-GT",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-HN",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-MX",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-NI",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-PA",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-PE",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-PY",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-SV",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "es-UY",
+    "name": "Spanish"
+  },
+  {
+    "iso_639_1": "et-EE",
+    "name": "Estonian"
+  },
+  {
+    "iso_639_1": "eu-ES",
+    "name": "Basque"
+  },
+  {
+    "iso_639_1": "fa-IR",
+    "name": "Persian"
+  },
+  {
+    "iso_639_1": "fi-FI",
+    "name": "Finnish"
+  },
+  {
+    "iso_639_1": "fr-BF",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-CA",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-CD",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-CI",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-FR",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-GF",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-GP",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-MC",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-ML",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-MU",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "fr-PF",
+    "name": "French"
+  },
+  {
+    "iso_639_1": "ga-IE",
+    "name": "Irish"
+  },
+  {
+    "iso_639_1": "gd-GB",
+    "name": "Gaelic"
+  },
+  {
+    "iso_639_1": "gl-ES",
+    "name": "Galician"
+  },
+  {
+    "iso_639_1": "he-IL",
+    "name": "Hebrew"
+  },
+  {
+    "iso_639_1": "hi-IN",
+    "name": "Hindi"
+  },
+  {
+    "iso_639_1": "hr-HR",
+    "name": "Croatian"
+  },
+  {
+    "iso_639_1": "hu-HU",
+    "name": "Hungarian"
+  },
+  {
+    "iso_639_1": "id-ID",
+    "name": "Indonesian"
+  },
+  {
+    "iso_639_1": "it-IT",
+    "name": "Italian"
+  },
+  {
+    "iso_639_1": "it-VA",
+    "name": "Italian"
+  },
+  {
+    "iso_639_1": "ja-JP",
+    "name": "Japanese"
+  },
+  {
+    "iso_639_1": "ka-GE",
+    "name": "Georgian"
+  },
+  {
+    "iso_639_1": "kk-KZ",
+    "name": "Kazakh"
+  },
+  {
+    "iso_639_1": "kn-IN",
+    "name": "Kannada"
+  },
+  {
+    "iso_639_1": "ko-KR",
+    "name": "Korean"
+  },
+  {
+    "iso_639_1": "ku-TR",
+    "name": "Kurdish"
+  },
+  {
+    "iso_639_1": "ky-KG",
+    "name": "Kirghiz"
+  },
+  {
+    "iso_639_1": "lt-LT",
+    "name": "Lithuanian"
+  },
+  {
+    "iso_639_1": "lv-LV",
+    "name": "Latvian"
+  },
+  {
+    "iso_639_1": "ml-IN",
+    "name": "Malayalam"
+  },
+  {
+    "iso_639_1": "mr-IN",
+    "name": "Marathi"
+  },
+  {
+    "iso_639_1": "ms-MY",
+    "name": "Malay"
+  },
+  {
+    "iso_639_1": "ms-SG",
+    "name": "Malay"
+  },
+  {
+    "iso_639_1": "nb-NO",
+    "name": "Norwegian Bokmål"
+  },
+  {
+    "iso_639_1": "ne-NP",
+    "name": "Nepali"
+  },
+  {
+    "iso_639_1": "nl-BE",
+    "name": "Dutch"
+  },
+  {
+    "iso_639_1": "nl-NL",
+    "name": "Dutch"
+  },
+  {
+    "iso_639_1": "no-NO",
+    "name": "Norwegian"
+  },
+  {
+    "iso_639_1": "oc-FR",
+    "name": "Occitan"
+  },
+  {
+    "iso_639_1": "pa-IN",
+    "name": "Punjabi"
+  },
+  {
+    "iso_639_1": "pl-PL",
+    "name": "Polish"
+  },
+  {
+    "iso_639_1": "pt-AO",
+    "name": "Portuguese"
+  },
+  {
+    "iso_639_1": "pt-BR",
+    "name": "Portuguese"
+  },
+  {
+    "iso_639_1": "pt-MZ",
+    "name": "Portuguese"
+  },
+  {
+    "iso_639_1": "pt-PT",
+    "name": "Portuguese"
+  },
+  {
+    "iso_639_1": "ro-MD",
+    "name": "Romanian"
+  },
+  {
+    "iso_639_1": "ro-RO",
+    "name": "Romanian"
+  },
+  {
+    "iso_639_1": "ru-RU",
+    "name": "Russian"
+  },
+  {
+    "iso_639_1": "si-LK",
+    "name": "Sinhalese"
+  },
+  {
+    "iso_639_1": "sk-SK",
+    "name": "Slovak"
+  },
+  {
+    "iso_639_1": "sl-SI",
+    "name": "Slovenian"
+  },
+  {
+    "iso_639_1": "so-SO",
+    "name": "Somali"
+  },
+  {
+    "iso_639_1": "sq-AL",
+    "name": "Albanian"
+  },
+  {
+    "iso_639_1": "sq-XK",
+    "name": "Albanian"
+  },
+  {
+    "iso_639_1": "sr-ME",
+    "name": "Serbian"
+  },
+  {
+    "iso_639_1": "sr-RS",
+    "name": "Serbian"
+  },
+  {
+    "iso_639_1": "sv-SE",
+    "name": "Swedish"
+  },
+  {
+    "iso_639_1": "sw-TZ",
+    "name": "Swahili"
+  },
+  {
+    "iso_639_1": "ta-IN",
+    "name": "Tamil"
+  },
+  {
+    "iso_639_1": "te-IN",
+    "name": "Telugu"
+  },
+  {
+    "iso_639_1": "th-TH",
+    "name": "Thai"
+  },
+  {
+    "iso_639_1": "tl-PH",
+    "name": "Tagalog"
+  },
+  {
+    "iso_639_1": "tr-TR",
+    "name": "Turkish"
+  },
+  {
+    "iso_639_1": "uk-UA",
+    "name": "Ukrainian"
+  },
+  {
+    "iso_639_1": "ur-PK",
+    "name": "Urdu"
+  },
+  {
+    "iso_639_1": "uz-UZ",
+    "name": "Uzbek"
+  },
+  {
+    "iso_639_1": "vi-VN",
+    "name": "Vietnamese"
+  },
+  {
+    "iso_639_1": "zh-CN",
+    "name": "Mandarin"
+  },
+  {
+    "iso_639_1": "zh-HK",
+    "name": "Mandarin"
+  },
+  {
+    "iso_639_1": "zh-SG",
+    "name": "Mandarin"
+  },
+  {
+    "iso_639_1": "zh-TW",
+    "name": "Mandarin"
+  },
+  {
+    "iso_639_1": "zu-ZA",
+    "name": "Zulu"
+  }
+]
