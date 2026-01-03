@@ -61,7 +61,7 @@ async function getCatalog(type, language, page, id, genre, config) {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
           if (!tmdbId) return meta; // Keep if no ID
 
-          const released = await isMovieReleasedInRegion(tmdbId, regionForReleaseCheck);
+          const released = await isMovieReleasedInRegion(tmdbId, regionForReleaseCheck, config);
           return released ? meta : null;
         },
         { batchSize: 5, delayMs: 200 }
@@ -79,7 +79,7 @@ async function getCatalog(type, language, page, id, genre, config) {
           const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
           if (!tmdbId) return meta; // Keep if no ID
 
-          const released = await isMovieReleasedDigitally(tmdbId);
+          const released = await isMovieReleasedDigitally(tmdbId, config);
           return released ? meta : null;
         },
         { batchSize: 5, delayMs: 200 }

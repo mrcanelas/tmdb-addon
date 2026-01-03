@@ -155,7 +155,7 @@ const buildMovieResponse = async (res, type, language, tmdbId, config = {}) => {
 
     const logoFetcher = rpdbMediaTypes?.logo
         ? Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes)
-        : getLogo(tmdbId, language, res.original_language);
+        : getLogo(tmdbId, language, res.original_language, config);
 
     const logo = await logoFetcher.catch(e => {
         console.warn(`Error fetching logo for movie ${tmdbId}:`, e.message);
@@ -257,7 +257,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
 
     const logoFetcher = rpdbMediaTypes?.logo
         ? Utils.parseMediaImage(type, tmdbId, null, language, rpdbkey, "logo", rpdbMediaTypes)
-        : getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language);
+        : getTvLogo(res.external_ids?.tvdb_id, res.id, language, res.original_language, config);
 
     const logo = await logoFetcher.catch(e => {
         console.warn(`Error fetching logo for series ${tmdbId}:`, e.message);
@@ -268,9 +268,7 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
     const [poster, imdbRatingRaw, episodes, collectionRaw] = await Promise.all([
         Utils.parseMediaImage(type, tmdbId, res.poster_path, language, rpdbkey, "poster", rpdbMediaTypes),
         getCachedImdbRating(res.external_ids?.imdb_id, type),
-        getEpisodes(language, tmdbId, res.external_ids?.imdb_id, res.seasons, {
-            hideEpisodeThumbnails
-        }).catch(e => {
+        getEpisodes(language, tmdbId, res.external_ids?.imdb_id, res.seasons, config).catch(e => {
             console.warn(`Error fetching episodes for series ${tmdbId}:`, e.message);
             return [];
         }),

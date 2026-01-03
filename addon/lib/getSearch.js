@@ -220,7 +220,7 @@ async function getSearch(id, type, language, query, config) {
           const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
           if (!tmdbId) return item; // Keep if no ID
 
-          const released = await isMovieReleasedInRegion(tmdbId, region);
+          const released = await isMovieReleasedInRegion(tmdbId, region, config);
           return released ? item : null;
         },
         { batchSize: 5, delayMs: 200 }
@@ -252,7 +252,7 @@ async function getSearch(id, type, language, query, config) {
         const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
         if (!tmdbId) return item; // Keep if no ID
 
-        const released = await isMovieReleasedDigitally(tmdbId);
+        const released = await isMovieReleasedDigitally(tmdbId, config);
         return released ? item : null;
       },
       { batchSize: 5, delayMs: 200 }

@@ -12,9 +12,10 @@ const RELEASE_TTL = 6 * 60 * 60; // 6 hours in seconds
 /**
  * Get release dates for a movie (with Redis caching)
  * @param {number} movieId - TMDB movie ID
+ * @param {Object} [config={}] - Addon configuration
  * @returns {Promise<Object|null>} - Release dates data or null
  */
-async function getReleaseDates(movieId) {
+async function getReleaseDates(movieId, config = {}) {
     const cacheKey = `${RELEASE_KEY_PREFIX}:${movieId}`;
 
     // Try to get from cache first
@@ -31,7 +32,7 @@ async function getReleaseDates(movieId) {
 
     // Fetch from API
     try {
-        const moviedb = getTmdbClient();
+        const moviedb = getTmdbClient(config);
         const releaseDates = await moviedb.movieReleaseDates({ id: movieId });
 
         // Store in cache
@@ -54,12 +55,14 @@ async function getReleaseDates(movieId) {
  * Check if a movie has been released in a specific region (Digital/Physical/TV only)
  * @param {number} movieId - TMDB movie ID
  * @param {string} region - ISO 3166-1 country code (e.g., 'IT')
+ * @param {string} region - ISO 3166-1 country code (e.g., 'IT')
+ * @param {Object} [config={}] - Addon configuration
  * @returns {Promise<boolean>} - true if released in region, false otherwise
  */
-async function isMovieReleasedInRegion(movieId, region) {
+async function isMovieReleasedInRegion(movieId, region, config = {}) {
     try {
         const today = new Date().toISOString().split('T')[0];
-        const releaseDates = await getReleaseDates(movieId);
+        const releaseDates = await getReleaseDates(movieId, config);
 
         if (!releaseDates || !releaseDates.results) return true;
 
@@ -86,12 +89,14 @@ async function isMovieReleasedInRegion(movieId, region) {
 /**
  * Check if a movie has been released digitally (globally, any region)
  * @param {number} movieId - TMDB movie ID
+ * @param {number} movieId - TMDB movie ID
+ * @param {Object} [config={}] - Addon configuration
  * @returns {Promise<boolean>} - true if released digitally anywhere, false otherwise
  */
-async function isMovieReleasedDigitally(movieId) {
+async function isMovieReleasedDigitally(movieId, config = {}) {
     try {
         const today = new Date().toISOString().split('T')[0];
-        const releaseDates = await getReleaseDates(movieId);
+        const releaseDates = await getReleaseDates(movieId, config);
 
         if (!releaseDates || !releaseDates.results) return true;
 
