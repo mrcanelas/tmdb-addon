@@ -9,9 +9,9 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 /**
  * Get age rating for a movie from TMDB
  */
-async function getMovieAgeRating(tmdbId, language) {
+async function getMovieAgeRating(tmdbId, language, config = {}) {
     try {
-        const moviedb = getTmdbClient();
+        const moviedb = getTmdbClient(config);
         const releaseDates = await moviedb.movieReleaseDates({ id: tmdbId });
         const userRegion = language.split("-")[1] || "US";
 
@@ -33,9 +33,9 @@ async function getMovieAgeRating(tmdbId, language) {
 /**
  * Get age rating for a TV show from TMDB
  */
-async function getTvAgeRating(tmdbId, language) {
+async function getTvAgeRating(tmdbId, language, config = {}) {
     try {
-        const moviedb = getTmdbClient();
+        const moviedb = getTmdbClient(config);
         const contentRatings = await moviedb.tvContentRatings({ id: tmdbId });
         const userRegion = language.split("-")[1] || "US";
 
@@ -67,7 +67,7 @@ async function getTvAgeRating(tmdbId, language) {
 /**
  * Get cached age rating
  */
-async function getCachedAgeRating(tmdbId, type, language) {
+async function getCachedAgeRating(tmdbId, type, language, config) {
     if (!tmdbId) return null;
 
     const cacheKey = `${type}-${tmdbId}-${language}`;
@@ -79,8 +79,8 @@ async function getCachedAgeRating(tmdbId, type, language) {
 
     try {
         const rating = type === "movie"
-            ? await getMovieAgeRating(tmdbId, language)
-            : await getTvAgeRating(tmdbId, language);
+            ? await getMovieAgeRating(tmdbId, language, config)
+            : await getTvAgeRating(tmdbId, language, config);
 
         ageRatingCache.set(cacheKey, { rating, timestamp: Date.now() });
         return rating;
