@@ -247,10 +247,10 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           metas = await getTrending(...args, genre, config);
           break;
         case "tmdb.favorites":
-          metas = await getFavorites(...args, genre, sessionId);
+          metas = await getFavorites(...args, genre, config);
           break;
         case "tmdb.watchlist":
-          metas = await getWatchList(...args, genre, sessionId);
+          metas = await getWatchList(...args, genre, config);
           break;
         case "trakt.watchlist":
           const traktAccessToken = config.traktAccessToken;
@@ -340,7 +340,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     }
   }
   if (req.params.id.includes("tt")) {
-    const tmdbId = await getTmdb(type, imdbId);
+    const tmdbId = await getTmdb(type, imdbId, config);
     if (tmdbId) {
       const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
         return await getMeta(type, language, tmdbId, config);
