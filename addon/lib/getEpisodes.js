@@ -33,7 +33,7 @@ function getThumbnailUrl(stillPath, hideEpisodeThumbnails) {
 
 async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
   const { hideEpisodeThumbnails = false } = config;
-  const moviedb = getTmdbClient();
+  const moviedb = getTmdbClient(config);
   const seasonString = genSeasonsString(seasons);
   const difOrder = diferentOrder.find((data) => data.tmdbId === tmdbId);
   const difImdbId = diferentImdbId.find((data) => data.tmdbId === tmdbId);

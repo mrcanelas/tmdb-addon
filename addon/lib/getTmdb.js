@@ -1,9 +1,9 @@
 require('dotenv').config()
 const { getTmdbClient } = require('../utils/getTmdbClient')
 
-async function getTmdb(type, imdbId) {
+async function getTmdb(type, imdbId, config = {}) {
   try {
-    const moviedb = getTmdbClient();
+    const moviedb = getTmdbClient(config);
     if (type === "movie") {
       const tmdbId = await moviedb
         .find({ id: imdbId, external_source: 'imdb_id' })

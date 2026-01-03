@@ -101,9 +101,9 @@ function configureSortingParameters(parameters, genre) {
     return parameters;
 }
 
-async function getFavorites(type, language, page, genre, sessionId) {
-    const moviedb = getTmdbClient();
-    moviedb.sessionId = sessionId;
+async function getFavorites(type, language, page, genre, config) {
+    const moviedb = getTmdbClient(config);
+    moviedb.sessionId = config.sessionId;
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);
 
@@ -117,9 +117,9 @@ async function getFavorites(type, language, page, genre, sessionId) {
         .catch(console.error);
 }
 
-async function getWatchList(type, language, page, genre, sessionId) {
-    const moviedb = getTmdbClient();
-    moviedb.sessionId = sessionId;
+async function getWatchList(type, language, page, genre, config) {
+    const moviedb = getTmdbClient(config);
+    moviedb.sessionId = config.sessionId;
     let parameters = { language, page };
     parameters = configureSortingParameters(parameters, genre);
 
