@@ -7,11 +7,35 @@ const catalogsTranslations = require("../static/translations.json");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 const DEFAULT_LANGUAGE = "en-US";
 
-function generateArrayOfYears(maxYears) {
-  const max = new Date().getFullYear();
-  const min = max - maxYears;
+async function generateArrayOfYears(maxYears, config = {}) {
+  const { getTmdbClient } = require('../utils/getTmdbClient');
+
+  const currentYear = new Date().getFullYear();
+  const today = new Date().toISOString().split('T')[0];
+
+  let startYear = currentYear - 1; // Default to previous year
+
+  // Check if current year has any digital releases
+  try {
+    const moviedb = getTmdbClient(config);
+    const result = await moviedb.discoverMovie({
+      primary_release_year: currentYear,
+      'release_date.lte': today,
+      with_release_type: '4|5|6', // Digital, VOD, TV
+      page: 1
+    });
+
+    if (result.total_results > 0) {
+      startYear = currentYear; // Include current year if it has releases
+    }
+  } catch (error) {
+    // If API call fails, default to previous year
+    console.warn('Could not check current year releases, defaulting to previous year');
+  }
+
+  const min = startYear - maxYears;
   const years = [];
-  for (let i = max; i >= min; i--) {
+  for (let i = startYear; i >= min; i--) {
     years.push(i.toString());
   }
   return years;
@@ -129,7 +153,7 @@ async function getManifest(config) {
     signature: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..DTiTHmYyIbuTMPJB35cqsw.S2C6xuCL9OoHJbtX97v-2w3IM4iFqr2Qy4xRRlvyzIY2fZAcwmm6JUMdsc2LSTigIPQeGPomaqX53ECt23cJKuH-IKs4hHLH4sLYRZNL_VC0YefQNrWjMRZ75Yz-bVx3.DJZBtIb1bOCq6Z62AMUGvw"
   }
 
-  const years = generateArrayOfYears(20);
+  const years = await generateArrayOfYears(20, config);
   const genres_movie = await getGenreList(language, "movie", config).then(genres => {
     if (!Array.isArray(genres)) {
       console.error("TMDB genres_movie is not an array:", genres);
