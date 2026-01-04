@@ -36,12 +36,12 @@ export default function RPDB() {
       setError("");
       return false;
     }
-    
+
     setIsChecking(true);
     try {
       const response = await fetch(`https://api.ratingposterdb.com/${key}/isValid`);
       const data = await response.json();
-      
+
       if (!(data || {}).valid) {
         setError("RPDB Key is invalid, please try again");
         setIsValid(false);
@@ -79,6 +79,14 @@ export default function RPDB() {
       ...prev,
       [type]: !prev[type]
     }));
+  };
+
+  const handleRemove = () => {
+    setRpdbkey("");
+    setRpdbMediaTypes({ poster: true, logo: false, backdrop: false });
+    setTempKey("");
+    setTempMediaTypes({ poster: true, logo: false, backdrop: false });
+    setIsValid(false);
   };
 
   return (
@@ -166,33 +174,42 @@ export default function RPDB() {
         )}
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <DialogClose asChild>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-        </DialogClose>
-        {isValid ? (
+      <div className="flex justify-between space-x-2">
+        {rpdbkey && (
           <DialogClose asChild>
-            <Button onClick={handleSave}>
-              Save Changes
+            <Button variant="destructive" onClick={handleRemove}>
+              Remove
             </Button>
           </DialogClose>
-        ) : (
-          <Button 
-            onClick={() => validateRPDBKey(tempKey)}
-            disabled={!tempKey || isChecking}
-          >
-            {isChecking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Checking
-              </>
-            ) : (
-              'Check Key'
-            )}
-          </Button>
         )}
+        <div className="flex space-x-2 justify-end flex-1">
+          <DialogClose asChild>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </DialogClose>
+          {isValid ? (
+            <DialogClose asChild>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </DialogClose>
+          ) : (
+            <Button
+              onClick={() => validateRPDBKey(tempKey)}
+              disabled={!tempKey || isChecking}
+            >
+              {isChecking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking
+                </>
+              ) : (
+                'Check Key'
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

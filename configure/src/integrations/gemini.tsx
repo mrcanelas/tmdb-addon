@@ -30,7 +30,7 @@ export default function Gemini() {
 
     setIsChecking(true);
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${key}`); 
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${key}`);
       const data = await response.json();
 
       if (!(data || {})) {
@@ -61,6 +61,12 @@ export default function Gemini() {
     setTempKey(geminikey);
     setError("");
     setIsValid(!!geminikey);
+  };
+
+  const handleRemove = () => {
+    setGeminiKey("");
+    setTempKey("");
+    setIsValid(false);
   };
 
   return (
@@ -99,33 +105,42 @@ export default function Gemini() {
         )}
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <DialogClose asChild>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-        </DialogClose>
-        {isValid ? (
+      <div className="flex justify-between space-x-2">
+        {geminikey && (
           <DialogClose asChild>
-            <Button onClick={handleSave}>
-              Save Changes
+            <Button variant="destructive" onClick={handleRemove}>
+              Remove
             </Button>
           </DialogClose>
-        ) : (
-          <Button
-            onClick={() => validateGeminiKey(tempKey)}
-            disabled={!tempKey || isChecking}
-          >
-            {isChecking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Checking
-              </>
-            ) : (
-              "Check Key"
-            )}
-          </Button>
         )}
+        <div className="flex space-x-2 justify-end flex-1">
+          <DialogClose asChild>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </DialogClose>
+          {isValid ? (
+            <DialogClose asChild>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </DialogClose>
+          ) : (
+            <Button
+              onClick={() => validateGeminiKey(tempKey)}
+              disabled={!tempKey || isChecking}
+            >
+              {isChecking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking
+                </>
+              ) : (
+                "Check Key"
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

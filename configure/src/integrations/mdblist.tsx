@@ -120,6 +120,13 @@ export default function MDBListIntegration() {
     }
   };
 
+  const handleRemove = () => {
+    setMdblistkey("");
+    setCatalogs((prev) => prev.filter((c) => !c.id.startsWith("mdblist.")));
+    setTempKey("");
+    setIsValid(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
@@ -180,31 +187,40 @@ export default function MDBListIntegration() {
         </div>
       )}
 
-      <div className="flex justify-end space-x-2">
-        <DialogClose asChild>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-        </DialogClose>
-        {isValid ? (
+      <div className="flex justify-between space-x-2">
+        {mdblistkey && (
           <DialogClose asChild>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button variant="destructive" onClick={handleRemove}>
+              Remove
+            </Button>
           </DialogClose>
-        ) : (
-          <Button
-            onClick={() => validateApiKey(tempKey)}
-            disabled={!tempKey || isChecking}
-          >
-            {isChecking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Checking
-              </>
-            ) : (
-              "Check Key"
-            )}
-          </Button>
         )}
+        <div className="flex space-x-2 justify-end flex-1">
+          <DialogClose asChild>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </DialogClose>
+          {isValid ? (
+            <DialogClose asChild>
+              <Button onClick={handleSave}>Save Changes</Button>
+            </DialogClose>
+          ) : (
+            <Button
+              onClick={() => validateApiKey(tempKey)}
+              disabled={!tempKey || isChecking}
+            >
+              {isChecking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking
+                </>
+              ) : (
+                "Check Key"
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
