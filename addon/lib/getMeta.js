@@ -358,12 +358,12 @@ async function getMeta(type, language, tmdbId, config = {}) {
         return Promise.resolve({ meta: cachedData.data });
     }
 
-    if (tmdbId === "0") {
+    if (tmdbId === "no-content" || tmdbId === "0") {
         const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
         const posterUrl = host + "/no-content.png?v=" + Date.now();
         return Promise.resolve({
             meta: {
-                id: "tmdb:0",
+                id: "tmdb:no-content",
                 type: type,
                 name: "No Content Available",
                 poster: posterUrl,

@@ -268,7 +268,7 @@ async function getSearch(id, type, language, query, config) {
     return {
       query,
       metas: [{
-        id: "tmdb:0",
+        id: "tmdb:no-content",
         type: type,
         name: "No Results Found",
         poster: posterUrl,

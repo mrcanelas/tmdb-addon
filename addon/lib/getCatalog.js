@@ -139,7 +139,7 @@ async function getCatalog(type, language, page, id, genre, config) {
       const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
       return {
         metas: [{
-          id: "tmdb:0",
+          id: "tmdb:no-content",
           type: type,
           name: "No Content Available",
           poster: posterUrl,
@@ -158,7 +158,7 @@ async function getCatalog(type, language, page, id, genre, config) {
     const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
     return {
       metas: [{
-        id: "tmdb:0",
+        id: "tmdb:no-content",
         type: type,
         name: "Error Loading Content",
         poster: posterUrl,
