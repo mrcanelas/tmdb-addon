@@ -263,7 +263,8 @@ async function getSearch(id, type, language, query, config) {
 
   // If no results, return a placeholder to prevent iOS from bugging
   if (searchResults.length === 0) {
-    const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=No+Results&font=roboto";
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
     return {
       query,
       metas: [{

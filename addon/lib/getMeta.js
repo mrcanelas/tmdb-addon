@@ -359,7 +359,8 @@ async function getMeta(type, language, tmdbId, config = {}) {
     }
 
     if (tmdbId === "0") {
-        const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=No+Content&font=roboto";
+        const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+        const posterUrl = host + "/no-content.png?v=" + Date.now();
         return Promise.resolve({
             meta: {
                 id: "tmdb:0",

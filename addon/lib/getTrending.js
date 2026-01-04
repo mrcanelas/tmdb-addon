@@ -104,7 +104,8 @@ async function getTrending(type, language, page, genre, config) {
 
     // If no results, return a placeholder to prevent iOS from bugging
     if (metas.length === 0) {
-      const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=No+Content&font=roboto";
+      const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+      const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
       return {
         metas: [{
           id: "tmdb:0",
@@ -122,7 +123,8 @@ async function getTrending(type, language, page, genre, config) {
     return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(error);
-    const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=Error&font=roboto";
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
     return {
       metas: [{
         id: "tmdb:0",

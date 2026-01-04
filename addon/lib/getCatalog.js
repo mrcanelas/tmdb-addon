@@ -134,8 +134,9 @@ async function getCatalog(type, language, page, id, genre, config) {
 
     // If no results, return a placeholder to prevent iOS from bugging
     if (metas.length === 0) {
-      // Use external placeholder service to ensure availability
-      const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=No+Content&font=roboto";
+      // Use local placeholder with cache buster
+      const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+      const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
       return {
         metas: [{
           id: "tmdb:0",
@@ -153,7 +154,8 @@ async function getCatalog(type, language, page, id, genre, config) {
     return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(`[getCatalog] Error:`, error);
-    const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=Error&font=roboto";
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
     return {
       metas: [{
         id: "tmdb:0",
