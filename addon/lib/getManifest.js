@@ -130,36 +130,36 @@ async function getManifest(config) {
   }
 
   const years = generateArrayOfYears(20);
-const genres_movie = await getGenreList(language, "movie").then(genres => {
-  if (!Array.isArray(genres)) {
-    console.error("TMDB genres_movie is not an array:", genres);
+  const genres_movie = await getGenreList(language, "movie", config).then(genres => {
+    if (!Array.isArray(genres)) {
+      console.error("TMDB genres_movie is not an array:", genres);
+      return [];
+    }
+    const sortedGenres = genres.map(el => el.name).sort();
+    return sortedGenres;
+  }).catch(err => {
+    console.error("Error fetching movie genres:", err.message);
     return [];
-  }
-  const sortedGenres = genres.map(el => el.name).sort();
-  return sortedGenres;
-}).catch(err => {
-  console.error("Error fetching movie genres:", err.message);
-  return [];
-});
-const genres_series = await getGenreList(language, "series").then(genres => {
-  if (!Array.isArray(genres)) {
-    console.error("TMDB genres_series is not an array:", genres);
+  });
+  const genres_series = await getGenreList(language, "series", config).then(genres => {
+    if (!Array.isArray(genres)) {
+      console.error("TMDB genres_series is not an array:", genres);
+      return [];
+    }
+    const sortedGenres = genres.map(el => el.name).sort();
+    return sortedGenres;
+  }).catch(err => {
+    console.error("Error fetching series genres:", err.message);
     return [];
-  }
-  const sortedGenres = genres.map(el => el.name).sort();
-  return sortedGenres;
-}).catch(err => {
-  console.error("Error fetching series genres:", err.message);
-  return [];
-})
+  })
 
-  const languagesArray = await getLanguages();
+  const languagesArray = await getLanguages(config);
   const filterLanguages = setOrderLanguage(language, languagesArray);
   const isMDBList = (id) => id.startsWith("mdblist.");
   const options = { years, genres_movie, genres_series, filterLanguages };
 
   const isTraktCatalog = (id) => id.startsWith("trakt.");
-  
+
   let catalogs = await Promise.all(userCatalogs
     .filter(userCatalog => {
       const catalogDef = getCatalogDefinition(userCatalog.id);
