@@ -24,8 +24,6 @@ async function getCatalog(type, language, page, id, genre, config) {
   const genreList = await getGenreList(language, type, config);
   const parameters = await buildParameters(type, language, page, id, genre, genreList, config);
 
-  console.log(`[getCatalog] id=${id}, type=${type}, genre=${genre}, params=`, JSON.stringify(parameters));
-
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
   // Check if this is a streaming catalog
