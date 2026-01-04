@@ -47,4 +47,4 @@ function cacheWrapMeta(id, method) {
   return cacheWrap(`${META_KEY_PREFIX}:${id}`, method, { ttl: META_TTL });
 }
 
-module.exports = { cacheWrapCatalog, cacheWrapMeta, cache };
+module.exports = { cacheWrapCatalog, cacheWrapMeta, cacheWrap, cache };
