@@ -8,14 +8,7 @@ const CATALOG_TYPES = require("../static/catalog-types.json");
 const DEFAULT_LANGUAGE = "en-US";
 
 function generateArrayOfYears(maxYears) {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth(); // 0-11 (0 = January, 6 = July)
-
-  // Include current year only if we're past January (month >= 1 = February)
-  // In January, most movies of current year don't have digital releases yet
-  const max = currentMonth >= 1 ? currentYear : currentYear - 1;
-
+  const max = new Date().getFullYear();
   const min = max - maxYears;
   const years = [];
   for (let i = max; i >= min; i--) {

@@ -24,6 +24,8 @@ async function getCatalog(type, language, page, id, genre, config) {
   const genreList = await getGenreList(language, type, config);
   const parameters = await buildParameters(type, language, page, id, genre, genreList, config);
 
+  console.log(`[getCatalog] id=${id}, type=${type}, genre=${genre}, params=`, JSON.stringify(parameters));
+
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
   // Check if this is a streaming catalog
@@ -132,11 +134,34 @@ async function getCatalog(type, language, page, id, genre, config) {
       metas = await fetchAndFilter(fallbackParams, 'US');
     }
 
+    // If no results, return a placeholder to prevent iOS from bugging
+    if (metas.length === 0) {
+      return {
+        metas: [{
+          id: "tmdb:0",
+          type: type,
+          name: "No Content Available",
+          poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+          description: "No content found for the selected filter. Please try a different option.",
+          genres: ["No Results"]
+        }]
+      };
+    }
+
     // Limit to 20 results max
     return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(error);
-    return { metas: [] };
+    return {
+      metas: [{
+        id: "tmdb:0",
+        type: type,
+        name: "Error Loading Content",
+        poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+        description: "An error occurred while loading content. Please try again.",
+        genres: ["Error"]
+      }]
+    };
   }
 }
 

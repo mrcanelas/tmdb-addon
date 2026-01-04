@@ -261,6 +261,21 @@ async function getSearch(id, type, language, query, config) {
     searchResults = digitalChecks;
   }
 
+  // If no results, return a placeholder to prevent iOS from bugging
+  if (searchResults.length === 0) {
+    return {
+      query,
+      metas: [{
+        id: "tmdb:0",
+        type: type,
+        name: "No Results Found",
+        poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+        description: `No results found for "${query}". Please try a different search term.`,
+        genres: ["No Results"]
+      }]
+    };
+  }
+
   return Promise.resolve({ query, metas: searchResults });
 }
 

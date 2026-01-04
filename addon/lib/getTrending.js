@@ -102,11 +102,34 @@ async function getTrending(type, language, page, genre, config) {
       if (metas.length >= MIN_RESULTS) break;
     }
 
+    // If no results, return a placeholder to prevent iOS from bugging
+    if (metas.length === 0) {
+      return {
+        metas: [{
+          id: "tmdb:0",
+          type: type,
+          name: "No Content Available",
+          poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+          description: "No trending content found. Please try again later.",
+          genres: ["No Results"]
+        }]
+      };
+    }
+
     // Limit to 20 results max
     return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(error);
-    return { metas: [] };
+    return {
+      metas: [{
+        id: "tmdb:0",
+        type: type,
+        name: "Error Loading Content",
+        poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+        description: "An error occurred while loading content. Please try again.",
+        genres: ["Error"]
+      }]
+    };
   }
 }
 
