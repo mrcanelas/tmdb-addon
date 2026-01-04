@@ -358,6 +358,23 @@ async function getMeta(type, language, tmdbId, config = {}) {
         return Promise.resolve({ meta: cachedData.data });
     }
 
+    if (tmdbId === "0") {
+        const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+        const posterUrl = `${host}/no-content.png`;
+        return Promise.resolve({
+            meta: {
+                id: "tmdb:0",
+                type: type,
+                name: "No Content Available",
+                poster: posterUrl,
+                description: "No content found for the selected filter.",
+                genres: ["No Results"],
+                logo: posterUrl,
+                background: posterUrl
+            }
+        });
+    }
+
     try {
         const moviedb = getTmdbClient(config);
         const meta = await (type === "movie" ?
