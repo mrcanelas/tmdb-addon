@@ -10,6 +10,7 @@ const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
 async function getCatalog(type, language, page, id, genre, config) {
+  console.log(`[getCatalog] Request received: id=${id}, type=${type}, genre=${genre}, page=${page}`);
   const moviedb = getTmdbClient(config);
   const mdblistKey = config.mdblistkey
 
@@ -135,22 +136,25 @@ async function getCatalog(type, language, page, id, genre, config) {
     // If no results, return a placeholder to prevent iOS from bugging
     if (metas.length === 0) {
       const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+      const posterUrl = `${host}/no-content.png`;
+      console.log(`[getCatalog] Returning No Content placeholder. Poster URL: ${posterUrl}`);
       return {
         metas: [{
           id: "tmdb:0",
           type: type,
           name: "No Content Available",
-          poster: `${host}/no-content.png`,
+          poster: posterUrl,
           description: "No content found for the selected filter. Please try a different option.",
           genres: ["No Results"]
         }]
       };
     }
 
+    console.log(`[getCatalog] Returning ${metas.length} items.`);
     // Limit to 20 results max
     return { metas: metas.slice(0, 20) };
   } catch (error) {
-    console.error(error);
+    console.error(`[getCatalog] Error:`, error);
     const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
     return {
       metas: [{
