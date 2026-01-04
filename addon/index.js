@@ -26,8 +26,15 @@ addon.use((req, res, next) => {
 
 addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
-addon.use(express.static(path.join(__dirname, '../public')));
-addon.use(express.static(path.join(__dirname, '../dist')));
+const staticOptions = {
+  setHeaders: function (res, path, stat) {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Headers", "*");
+  }
+};
+
+addon.use(express.static(path.join(__dirname, '../public'), staticOptions));
+addon.use(express.static(path.join(__dirname, '../dist'), staticOptions));
 
 const getCacheHeaders = function (opts) {
   opts = opts || {};
