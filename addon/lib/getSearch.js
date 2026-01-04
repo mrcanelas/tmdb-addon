@@ -263,13 +263,14 @@ async function getSearch(id, type, language, query, config) {
 
   // If no results, return a placeholder to prevent iOS from bugging
   if (searchResults.length === 0) {
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
     return {
       query,
       metas: [{
         id: "tmdb:0",
         type: type,
         name: "No Results Found",
-        poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+        poster: `${host}/no-content.png`,
         description: `No results found for "${query}". Please try a different search term.`,
         genres: ["No Results"]
       }]

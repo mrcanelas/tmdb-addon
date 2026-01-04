@@ -134,12 +134,13 @@ async function getCatalog(type, language, page, id, genre, config) {
 
     // If no results, return a placeholder to prevent iOS from bugging
     if (metas.length === 0) {
+      const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
       return {
         metas: [{
           id: "tmdb:0",
           type: type,
           name: "No Content Available",
-          poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+          poster: `${host}/no-content.png`,
           description: "No content found for the selected filter. Please try a different option.",
           genres: ["No Results"]
         }]
@@ -150,12 +151,13 @@ async function getCatalog(type, language, page, id, genre, config) {
     return { metas: metas.slice(0, 20) };
   } catch (error) {
     console.error(error);
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
     return {
       metas: [{
         id: "tmdb:0",
         type: type,
         name: "Error Loading Content",
-        poster: `${process.env.HOST_NAME || ''}/no-content.png`,
+        poster: `${host}/no-content.png`,
         description: "An error occurred while loading content. Please try again.",
         genres: ["Error"]
       }]
