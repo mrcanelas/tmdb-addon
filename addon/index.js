@@ -18,7 +18,11 @@ const { getTraktWatchlist, getTraktRecommendations } = require("./lib/getTraktLi
 const { blurImage } = require('./utils/imageProcessor');
 const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
 
-
+addon.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  next();
+});
 
 addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
