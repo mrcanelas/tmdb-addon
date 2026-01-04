@@ -271,6 +271,7 @@ async function getSearch(id, type, language, query, config) {
         type: type,
         name: "No Results Found",
         poster: posterUrl,
+        background: posterUrl,
         description: `No results found for "${query}". Please try a different search term.`,
         genres: ["No Results"]
       }]

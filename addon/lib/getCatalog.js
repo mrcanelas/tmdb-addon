@@ -142,6 +142,7 @@ async function getCatalog(type, language, page, id, genre, config) {
           type: type,
           name: "No Content Available",
           poster: posterUrl,
+          background: posterUrl,
           description: "No content found for the selected filter. Please try a different option.",
           genres: ["No Results"]
         }]
@@ -159,6 +160,7 @@ async function getCatalog(type, language, page, id, genre, config) {
         type: type,
         name: "Error Loading Content",
         poster: posterUrl,
+        background: posterUrl,
         description: "An error occurred while loading content. Please try again.",
         genres: ["Error"]
       }]

@@ -111,6 +111,7 @@ async function getTrending(type, language, page, genre, config) {
           type: type,
           name: "No Content Available",
           poster: posterUrl,
+          background: posterUrl,
           description: "No trending content found. Please try again later.",
           genres: ["No Results"]
         }]
@@ -128,6 +129,7 @@ async function getTrending(type, language, page, genre, config) {
         type: type,
         name: "Error Loading Content",
         poster: posterUrl,
+        background: posterUrl,
         description: "An error occurred while loading content. Please try again.",
         genres: ["Error"]
       }]
