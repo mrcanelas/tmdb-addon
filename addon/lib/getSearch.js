@@ -263,14 +263,14 @@ async function getSearch(id, type, language, query, config) {
 
   // If no results, return a placeholder to prevent iOS from bugging
   if (searchResults.length === 0) {
-    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = "https://placehold.co/600x900/222222/FFFFFF/png?text=No+Results&font=roboto";
     return {
       query,
       metas: [{
         id: "tmdb:0",
         type: type,
         name: "No Results Found",
-        poster: `${host}/no-content.png`,
+        poster: posterUrl,
         description: `No results found for "${query}". Please try a different search term.`,
         genres: ["No Results"]
       }]
