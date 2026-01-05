@@ -8,6 +8,7 @@ interface AddonConfig {
   mdblistkey?: string;
   traktAccessToken?: string;
   traktRefreshToken?: string;
+  tmdbApiKey?: string;
   includeAdult?: boolean;
   provideImdbId?: boolean;
   returnImdbId?: boolean;
@@ -29,6 +30,7 @@ interface AddonConfig {
   showAgeRatingInGenres?: boolean;
   enableAgeRating?: boolean;
   showAgeRatingWithImdbRating?: boolean;
+  strictRegionFilter?: boolean;
 }
 
 export function generateAddonUrl(config: AddonConfig): string {
@@ -40,6 +42,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     mdblistkey: config.mdblistkey || undefined,
     traktAccessToken: config.traktAccessToken || undefined,
     traktRefreshToken: config.traktRefreshToken || undefined,
+    tmdbApiKey: config.tmdbApiKey || undefined,
     sessionId: config.sessionId || undefined,
     catalogs: config.catalogs
       ?.filter(catalog => catalog.enabled === false ? false : true)
@@ -60,6 +63,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     enableAgeRating: typeof config.enableAgeRating === "boolean" ? String(config.enableAgeRating) : undefined,
     showAgeRatingInGenres: typeof config.showAgeRatingInGenres === "boolean" ? String(config.showAgeRatingInGenres) : undefined,
     showAgeRatingWithImdbRating: typeof config.showAgeRatingWithImdbRating === "boolean" ? String(config.showAgeRatingWithImdbRating) : undefined,
+    strictRegionFilter: typeof config.strictRegionFilter === "boolean" ? String(config.strictRegionFilter) : undefined,
   };
 
   const cleanConfig = Object.fromEntries(

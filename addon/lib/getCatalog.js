@@ -1,14 +1,16 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { parseMedia } = require("../utils/parseProps");
 const { fetchMDBListItems, parseMDBListItems } = require("../utils/mdbList");
 const { getMeta } = require("./getMeta");
+const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
+const { rateLimitedMapFiltered } = require("../utils/rateLimiter");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 
 async function getCatalog(type, language, page, id, genre, config) {
+  const moviedb = getTmdbClient(config);
   const mdblistKey = config.mdblistkey
 
   if (id.startsWith("mdblist.")) {
@@ -19,31 +21,157 @@ async function getCatalog(type, language, page, id, genre, config) {
     return parseResults
   }
 
-  const genreList = await getGenreList(language, type);
+  const genreList = await getGenreList(language, type, config);
   const parameters = await buildParameters(type, language, page, id, genre, genreList, config);
 
   const fetchFunction = type === "movie" ? moviedb.discoverMovie.bind(moviedb) : moviedb.discoverTv.bind(moviedb);
 
-  return fetchFunction(parameters)
-    .then(async (res) => {
-      const metaPromises = res.results.map(item => 
-        getMeta(type, language, item.id, config)
-          .then(result => result.meta)
-          .catch(err => {
-            console.error(`Error fetching metadata for ${item.id}:`, err.message);
-            return null;
-          })
+  // Check if this is a streaming catalog
+  const providerId = id.split(".")[1];
+  const isStreaming = Object.keys(CATALOG_TYPES.streaming).includes(providerId);
+  const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+  const isDigitalFilterMode = (config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
+  const userRegion = language && language.split('-')[1] ? language.split('-')[1] : null;
+
+  // Helper function to fetch and filter results
+  async function fetchAndFilter(params, regionForReleaseCheck) {
+    const res = await fetchFunction(params);
+
+    // Use rate-limited fetching to prevent 429 errors
+    let metas = await rateLimitedMapFiltered(
+      res.results,
+      async (item) => {
+        try {
+          const result = await getMeta(type, language, item.id, config);
+          return result.meta;
+        } catch (err) {
+          console.error(`Error fetching metadata for ${item.id}:`, err.message);
+          return null;
+        }
+      },
+      { batchSize: 5, delayMs: 200 }
+    );
+
+    // Apply strict region filtering for movies - check actual regional release dates
+    // Skip for streaming catalogs since they already show only regionally available content
+    if (type === "movie" && isStrictMode && regionForReleaseCheck && !isStreaming) {
+      const releaseChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
+          const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return meta; // Keep if no ID
+
+          const released = await isMovieReleasedInRegion(tmdbId, regionForReleaseCheck, config);
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
       );
 
-      const metas = (await Promise.all(metaPromises)).filter(Boolean);
+      metas = releaseChecks;
+    }
 
-      return { metas };
-    })
-    .catch(console.error);
+    // Apply digital release filter for movies (global, any region) - independent from strict mode
+    // Skip for streaming catalogs since they already show only available content
+    if (type === "movie" && isDigitalFilterMode && !isStrictMode && !isStreaming) {
+      const digitalChecks = await rateLimitedMapFiltered(
+        metas,
+        async (meta) => {
+          const tmdbId = meta.id ? parseInt(meta.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return meta; // Keep if no ID
+
+          const released = await isMovieReleasedDigitally(tmdbId, config);
+          return released ? meta : null;
+        },
+        { batchSize: 5, delayMs: 200 }
+      );
+
+      metas = digitalChecks;
+    }
+
+    return metas;
+  }
+
+  try {
+    // Determine if we need to fetch more results due to filtering
+    // Skip extra fetch for streaming catalogs since neither filter applies to them
+    const needsExtraFetch = type === "movie" && !isStreaming && (isStrictMode || isDigitalFilterMode);
+    const MIN_RESULTS = 20;
+    const PAGES_TO_FETCH = needsExtraFetch ? 3 : 1; // Reduced from 5 to 3 to minimize API calls
+
+    const startPage = parseInt(page) || 1;
+
+    // Fetch all pages in parallel for better performance
+    const pagePromises = [];
+    for (let i = 0; i < PAGES_TO_FETCH; i++) {
+      const pageParams = { ...parameters, page: startPage + i };
+      pagePromises.push(fetchAndFilter(pageParams, userRegion));
+    }
+
+    const pageResults = await Promise.all(pagePromises);
+
+    // Combine results, removing duplicates
+    let metas = [];
+    for (const pageMetas of pageResults) {
+      for (const meta of pageMetas) {
+        if (!metas.find(m => m.id === meta.id)) {
+          metas.push(meta);
+        }
+      }
+      // Stop early if we have enough results
+      if (metas.length >= MIN_RESULTS) break;
+    }
+
+    // Fallback to US for streaming catalogs if no results and strict mode is on
+    if (metas.length === 0 && isStreaming && isStrictMode && userRegion && userRegion !== 'US') {
+      console.log(`No results for ${id} in ${userRegion}, falling back to US`);
+
+      // Create new parameters with US region
+      const fallbackParams = { ...parameters };
+      fallbackParams.watch_region = 'US';
+
+      metas = await fetchAndFilter(fallbackParams, 'US');
+    }
+
+    // If no results, return a placeholder to prevent iOS from bugging
+    if (metas.length === 0) {
+      // Use local placeholder with cache buster
+      const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+      const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
+      return {
+        metas: [{
+          id: "tmdb:no-content",
+          type: type,
+          name: "No Content Available",
+          poster: posterUrl,
+          background: posterUrl,
+          description: "No content found for the selected filter. Please try a different option.",
+          genres: ["No Results"]
+        }]
+      };
+    }
+
+    // Limit to 20 results max
+    return { metas: metas.slice(0, 20) };
+  } catch (error) {
+    console.error(`[getCatalog] Error:`, error);
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
+    return {
+      metas: [{
+        id: "tmdb:no-content",
+        type: type,
+        name: "Error Loading Content",
+        poster: posterUrl,
+        background: posterUrl,
+        description: "An error occurred while loading content. Please try again.",
+        genres: ["Error"]
+      }]
+    };
+  }
 }
 
 async function buildParameters(type, language, page, id, genre, genreList, config) {
-  const languages = await getLanguages();
+  const languages = await getLanguages(config);
   const parameters = { language, page, 'vote_count.gte': 10 };;
 
   if (config.ageRating) {
@@ -69,14 +197,47 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
     }
   }
 
-  if (id.includes("streaming")) {
-    const provider = findProvider(id.split(".")[1]);
+  const providerId = id.split(".")[1];
+  const isStreaming = Object.keys(CATALOG_TYPES.streaming).includes(providerId);
+
+  if (isStreaming) {
+    const provider = findProvider(providerId);
 
     parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
-    parameters.with_watch_providers = provider.watchProviderId
-    parameters.watch_region = provider.country;
+    parameters.with_watch_providers = provider.watchProviderId;
+
+    // Override default country with user region if available (e.g., IT for 'it-IT')
+    // This allows seeing what is on Netflix IT, etc.
+    // ONLY if strict region filtering is enabled
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+      parameters.watch_region = language.split('-')[1];
+      const today = new Date().toISOString().split('T')[0];
+      if (type === "movie") {
+        parameters['release_date.lte'] = today;
+        parameters.with_release_type = "4|5|6";
+      } else {
+        parameters['first_air_date.lte'] = today;
+      }
+    } else {
+      parameters.watch_region = provider.country;
+    }
+
     parameters.with_watch_monetization_types = "flatrate|free|ads";
   } else {
+    // Apply region filtering for "Top" and "Year" catalogs
+    // This prioritizes content released in the selected region (e.g., Italy)
+    // ONLY if strict region filtering is enabled
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && (id === "tmdb.top" || id === "tmdb.year") && language && language.split('-')[1]) {
+      parameters.region = language.split('-')[1];
+      const today = new Date().toISOString().split('T')[0];
+      if (type === "movie") {
+        parameters['release_date.lte'] = today;
+        parameters.with_release_type = "4|5|6";
+      } else {
+        parameters['first_air_date.lte'] = today;
+      }
+    }
+
     switch (id) {
       case "tmdb.top":
         parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;

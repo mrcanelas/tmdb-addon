@@ -1,16 +1,30 @@
 require("dotenv").config();
-const { TMDBClient } = require("../utils/tmdbClient");
-const moviedb = new TMDBClient(process.env.TMDB_API);
+const { getTmdbClient } = require("../utils/getTmdbClient");
 const geminiService = require("../utils/gemini-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
 const { getGenreList } = require("./getGenreList");
+const { isMovieReleasedInRegion, isMovieReleasedDigitally } = require("./releaseFilter");
+const { rateLimitedMap, rateLimitedMapFiltered } = require("../utils/rateLimiter");
 
 function isNonLatin(text) {
   return /[^\u0000-\u007F]/.test(text);
 }
 
+/**
+ * Check if a TV show has aired in a region (based on first_air_date)
+ * TV shows don't have region-specific release dates in the same way
+ * @param {string} firstAirDate - First air date in YYYY-MM-DD format
+ * @returns {boolean} - true if aired, false otherwise
+ */
+function isTvShowAired(firstAirDate) {
+  if (!firstAirDate) return true;
+  const today = new Date().toISOString().split('T')[0];
+  return firstAirDate <= today;
+}
+
 async function getSearch(id, type, language, query, config) {
+  const moviedb = getTmdbClient(config);
   let searchQuery = query;
   if (isNonLatin(searchQuery)) {
     searchQuery = transliterate(searchQuery);
@@ -22,38 +36,41 @@ async function getSearch(id, type, language, query, config) {
   if (isAISearch && config.geminikey) {
     try {
       await geminiService.initialize(config.geminikey);
-      
+
       const titles = await geminiService.searchWithAI(query, type);
 
-      const genreList = await getGenreList(language, type);
-      
-      const searchPromises = titles.map(async (title) => {
-        try {
-          const parameters = {
-            query: title,
-            language,
-            include_adult: config.includeAdult
-          };
+      const genreList = await getGenreList(language, type, config);
 
-          if (type === "movie") {
-            const res = await moviedb.searchMovie(parameters);
-            if (res.results && res.results.length > 0) {
-              return parseMedia(res.results[0], 'movie', genreList);
+      // Use rate-limited fetching for AI search results
+      const results = await rateLimitedMap(
+        titles,
+        async (title) => {
+          try {
+            const parameters = {
+              query: title,
+              language,
+              include_adult: config.includeAdult
+            };
+
+            if (type === "movie") {
+              const res = await moviedb.searchMovie(parameters);
+              if (res.results && res.results.length > 0) {
+                return parseMedia(res.results[0], 'movie', genreList);
+              }
+            } else {
+              const res = await moviedb.searchTv(parameters);
+              if (res.results && res.results.length > 0) {
+                return parseMedia(res.results[0], 'tv', genreList);
+              }
             }
-          } else {
-            const res = await moviedb.searchTv(parameters);
-            if (res.results && res.results.length > 0) {
-              return parseMedia(res.results[0], 'tv', genreList);
-            }
+            return null;
+          } catch (error) {
+            console.error(`Error fetching details for title "${title}":`, error);
+            return null;
           }
-          return null;
-        } catch (error) {
-          console.error(`Error fetching details for title "${title}":`, error);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(searchPromises);
+        },
+        { batchSize: 5, delayMs: 200 }
+      );
       searchResults = results.filter(result => result !== null);
 
     } catch (error) {
@@ -62,7 +79,7 @@ async function getSearch(id, type, language, query, config) {
   }
 
   if (searchResults.length === 0) {
-    const genreList = await getGenreList(language, type);
+    const genreList = await getGenreList(language, type, config);
 
     const parameters = {
       query: query,
@@ -70,9 +87,13 @@ async function getSearch(id, type, language, query, config) {
       include_adult: config.includeAdult
     };
 
+    if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+      parameters.region = language.split('-')[1];
+    }
+
     if (config.ageRating) {
       parameters.certification_country = "US";
-      switch(config.ageRating) {
+      switch (config.ageRating) {
         case "G":
           parameters.certification = type === "movie" ? "G" : "TV-G";
           break;
@@ -92,7 +113,16 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchMovie(parameters)
         .then((res) => {
-          res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+          let results = res.results;
+          // Filter out unreleased content when strict mode is on
+          if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
+            const today = new Date().toISOString().split('T')[0];
+            results = results.filter(el => {
+              if (!el.release_date) return true; // No date, include it
+              return el.release_date <= today;
+            });
+          }
+          results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
         })
         .catch(console.error);
 
@@ -100,7 +130,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchMovie({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => {searchResults.push(parseMedia(el, 'movie', genreList));});
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
           })
           .catch(console.error);
       }
@@ -129,7 +159,16 @@ async function getSearch(id, type, language, query, config) {
       await moviedb
         .searchTv(parameters)
         .then((res) => {
-          res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+          let results = res.results;
+          // Filter out unreleased content when strict mode is on
+          if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true)) {
+            const today = new Date().toISOString().split('T')[0];
+            results = results.filter(el => {
+              if (!el.first_air_date) return true; // No date, include it
+              return el.first_air_date <= today;
+            });
+          }
+          results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
         })
         .catch(console.error);
 
@@ -137,7 +176,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchTv({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => {searchResults.push(parseMedia(el, 'tv', genreList))});
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
           })
           .catch(console.error);
       }
@@ -165,6 +204,79 @@ async function getSearch(id, type, language, query, config) {
         }
       });
     }
+  }
+
+  // Final filter for strict region mode - checks actual regional release dates
+  // (catches results from all paths: main search, fallback search, and person credits)
+  if ((config.strictRegionFilter === "true" || config.strictRegionFilter === true) && language && language.split('-')[1]) {
+    const region = language.split('-')[1];
+
+    if (type === "movie") {
+      // For movies, check actual regional release dates with rate limiting
+      const releaseChecks = await rateLimitedMapFiltered(
+        searchResults,
+        async (item) => {
+          // Extract TMDB ID from item.id (format: "tmdb:123456")
+          const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
+          if (!tmdbId) return item; // Keep if no ID
+
+          const released = await isMovieReleasedInRegion(tmdbId, region, config);
+          return released ? item : null;
+        },
+        { batchSize: 5, delayMs: 200 }
+      );
+
+      searchResults = releaseChecks;
+    } else {
+      // For TV shows, use first_air_date (not region-specific but best available)
+      const today = new Date().toISOString().split('T')[0];
+      searchResults = searchResults.filter(item => {
+        if (!item.year) return true;
+        const itemYear = parseInt(item.year, 10);
+        const currentYear = new Date().getFullYear();
+        // Exclude future years
+        if (itemYear > currentYear) return false;
+        return true;
+      });
+    }
+  }
+
+  // Apply digital release filter for movies (global check) - independent from strict region mode
+  const isDigitalFilterMode = (config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
+  const isStrictMode = (config.strictRegionFilter === "true" || config.strictRegionFilter === true);
+
+  if (isDigitalFilterMode && !isStrictMode && type === "movie") {
+    const digitalChecks = await rateLimitedMapFiltered(
+      searchResults,
+      async (item) => {
+        const tmdbId = item.id ? parseInt(item.id.replace('tmdb:', ''), 10) : null;
+        if (!tmdbId) return item; // Keep if no ID
+
+        const released = await isMovieReleasedDigitally(tmdbId, config);
+        return released ? item : null;
+      },
+      { batchSize: 5, delayMs: 200 }
+    );
+
+    searchResults = digitalChecks;
+  }
+
+  // If no results, return a placeholder to prevent iOS from bugging
+  if (searchResults.length === 0) {
+    const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
+    const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
+    return {
+      query,
+      metas: [{
+        id: "tmdb:no-content",
+        type: type,
+        name: "No Results Found",
+        poster: posterUrl,
+        background: posterUrl,
+        description: `No results found for "${query}". Please try a different search term.`,
+        genres: ["No Results"]
+      }]
+    };
   }
 
   return Promise.resolve({ query, metas: searchResults });

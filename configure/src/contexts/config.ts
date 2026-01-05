@@ -21,6 +21,7 @@ export type ConfigContextType = {
   mdblistkey: string;
   traktAccessToken: string;
   traktRefreshToken: string;
+  tmdbApiKey: string;
   includeAdult: boolean;
   provideImdbId: boolean;
   returnImdbId: boolean;
@@ -37,12 +38,15 @@ export type ConfigContextType = {
   showAgeRatingInGenres: boolean;
   enableAgeRating: boolean;
   showAgeRatingWithImdbRating: boolean;
+  strictRegionFilter: boolean;
+  digitalReleaseFilter: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
   setGeminiKey: (geminikey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
   setTraktAccessToken: (traktAccessToken: string) => void;
   setTraktRefreshToken: (traktRefreshToken: string) => void;
+  setTmdbApiKey: (tmdbApiKey: string) => void;
   setIncludeAdult: (includeAdult: boolean) => void;
   setProvideImdbId: (provideImdbId: boolean) => void;
   setReturnImdbId: (returnImdbId: boolean) => void;
@@ -59,6 +63,8 @@ export type ConfigContextType = {
   setShowAgeRatingInGenres: (show: boolean) => void;
   setEnableAgeRating: (enable: boolean) => void;
   setShowAgeRatingWithImdbRating: (show: boolean) => void;
+  setStrictRegionFilter: (enable: boolean) => void;
+  setDigitalReleaseFilter: (enable: boolean) => void;
   loadConfigFromUrl: () => void;
   saveConfigToStorage: () => void;
 };
