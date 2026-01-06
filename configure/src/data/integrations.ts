@@ -30,7 +30,7 @@ export const integrations: Integration[] = [
     icon: "https://mdblist.com/static/mdblist.png",
     description: "Integrate your MDBList lists to expand your content library.",
   },
-    {
+  {
     id: "gemini",
     name: "Gemini AI Search",
     icon: "https://www.shutterstock.com/image-vector/simple-ai-search-icon-can-600nw-2483540907.jpg",
@@ -41,5 +41,11 @@ export const integrations: Integration[] = [
     name: "Trakt",
     icon: "https://trakt.tv/assets/logos/logomark.square.gradient-b644b16c38ff775861b4b1f58c1230f6a097a2466ab33ae00445a505c33fcb91.svg",
     description: "Track what you watch and sync your progress with Trakt.tv.",
+  },
+  {
+    id: "groq",
+    name: "Groq AI Search",
+    icon: "https://groq.com/wp-content/uploads/2024/03/icon-only.svg",
+    description: "Ultra-fast AI search using Groq (Llama 3).",
   }
 ]; 
