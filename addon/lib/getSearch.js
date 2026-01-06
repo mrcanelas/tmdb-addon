@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { getTmdbClient } = require("../utils/getTmdbClient");
 const geminiService = require("../utils/gemini-service");
+const groqService = require("../utils/groq-service");
 const { transliterate } = require("transliteration");
 const { parseMedia } = require("../utils/parseProps");
 const { getGenreList } = require("./getGenreList");
@@ -33,48 +34,92 @@ async function getSearch(id, type, language, query, config) {
   const isAISearch = id === "tmdb.aisearch";
   let searchResults = [];
 
-  if (isAISearch && config.geminikey) {
-    try {
-      await geminiService.initialize(config.geminikey);
+  if (isAISearch) {
+    // Prefer Groq if key is available
+    if (config.groqkey) {
+      try {
+        await groqService.initialize(config.groqkey);
+        const titles = await groqService.searchWithAI(query, type);
+        const genreList = await getGenreList(language, type, config);
 
-      const titles = await geminiService.searchWithAI(query, type);
+        const results = await rateLimitedMap(
+          titles,
+          async (title) => {
+            try {
+              const parameters = {
+                query: title,
+                language,
+                include_adult: config.includeAdult
+              };
 
-      const genreList = await getGenreList(language, type, config);
-
-      // Use rate-limited fetching for AI search results
-      const results = await rateLimitedMap(
-        titles,
-        async (title) => {
-          try {
-            const parameters = {
-              query: title,
-              language,
-              include_adult: config.includeAdult
-            };
-
-            if (type === "movie") {
-              const res = await moviedb.searchMovie(parameters);
-              if (res.results && res.results.length > 0) {
-                return parseMedia(res.results[0], 'movie', genreList);
+              if (type === "movie") {
+                const res = await moviedb.searchMovie(parameters);
+                if (res.results && res.results.length > 0) {
+                  return parseMedia(res.results[0], 'movie', genreList);
+                }
+              } else {
+                const res = await moviedb.searchTv(parameters);
+                if (res.results && res.results.length > 0) {
+                  return parseMedia(res.results[0], 'tv', genreList);
+                }
               }
-            } else {
-              const res = await moviedb.searchTv(parameters);
-              if (res.results && res.results.length > 0) {
-                return parseMedia(res.results[0], 'tv', genreList);
-              }
+              return null;
+            } catch (error) {
+              console.error(`Error fetching details for title "${title}":`, error);
+              return null;
             }
-            return null;
-          } catch (error) {
-            console.error(`Error fetching details for title "${title}":`, error);
-            return null;
-          }
-        },
-        { batchSize: 5, delayMs: 200 }
-      );
-      searchResults = results.filter(result => result !== null);
+          },
+          { batchSize: 5, delayMs: 200 }
+        );
+        searchResults = results.filter(result => result !== null);
+      } catch (error) {
+        console.error('Error processing AI search with Groq:', error);
+      }
+    }
+    // Fallback to Gemini if no Groq key but Gemini key exists
+    else if (config.geminikey) {
+      try {
+        await geminiService.initialize(config.geminikey);
 
-    } catch (error) {
-      console.error('Error processing AI search:', error);
+        const titles = await geminiService.searchWithAI(query, type);
+
+        const genreList = await getGenreList(language, type, config);
+
+        // Use rate-limited fetching for AI search results
+        const results = await rateLimitedMap(
+          titles,
+          async (title) => {
+            try {
+              const parameters = {
+                query: title,
+                language,
+                include_adult: config.includeAdult
+              };
+
+              if (type === "movie") {
+                const res = await moviedb.searchMovie(parameters);
+                if (res.results && res.results.length > 0) {
+                  return parseMedia(res.results[0], 'movie', genreList);
+                }
+              } else {
+                const res = await moviedb.searchTv(parameters);
+                if (res.results && res.results.length > 0) {
+                  return parseMedia(res.results[0], 'tv', genreList);
+                }
+              }
+              return null;
+            } catch (error) {
+              console.error(`Error fetching details for title "${title}":`, error);
+              return null;
+            }
+          },
+          { batchSize: 5, delayMs: 200 }
+        );
+        searchResults = results.filter(result => result !== null);
+
+      } catch (error) {
+        console.error('Error processing AI search:', error);
+      }
     }
   }
 
