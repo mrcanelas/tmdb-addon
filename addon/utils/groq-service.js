@@ -60,14 +60,14 @@ class GroqService {
         Type: ${type}
 
         Important instructions:
-        1. Analyze the context and intent (even if not in English)
-        2. Return only the exact titles, separated by commas
-        3. Do not include explanations or additional text
-        4. Prioritize results most relevant to the search intent
-        5. Consider genre, theme, style, and specific elements mentioned
-        6. Maximum 20 titles per search
+        1. Analyze the context, intent, and mood (even if slang, idioms, or not in English).
+        2. If the user asks for a feeling (e.g., "scary", "funny", "sad"), return the best movies for that genre/mood.
+        3. Return ONLY the exact titles, separated by commas.
+        4. Do not include explanations, numbering, or additional text.
+        5. Maximum 20 titles per search.
 
-        Example response: The Matrix, The Matrix Reloaded, The Matrix Revolutions`;
+        Example query: "da cagarsi in mano" -> Return: The Exorcist, Hereditary, The Conjuring, Sinister
+        Example query: "movies like matrix" -> Return: The Matrix, Inception, Dark City, Equilibrium`;
 
             const response = await axios.post(
                 this.baseUrl,
