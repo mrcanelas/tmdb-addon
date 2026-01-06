@@ -35,7 +35,8 @@
     "release_date": "Release Date",
     "random": "Random",
     "desc": "Newest First",
-    "asc": "Oldest First"
+    "asc": "Oldest First",
+    "latest": "Latest Releases"
   },
   "pt-BR": {
     "popular": "Popular",
@@ -49,7 +50,8 @@
     "release_date": "Data de Lançamento",
     "random": "Aleatório",
     "desc": "Descendente",
-    "asc": "Ascendente"
+    "asc": "Ascendente",
+    "latest": "Últimos Lançamentos"
   },
   "es-ES": {
     "popular": "Popular",
@@ -57,7 +59,8 @@
     "language": "Idioma",
     "trending": "Tendencias",
     "favorites": "Favoritos",
-    "watchlist": "Intereses"
+    "watchlist": "Intereses",
+    "latest": "Últimos Lanzamientos"
   },
   "fr-FR": {
     "popular": "Populaire",
@@ -65,7 +68,8 @@
     "language": "Langue",
     "trending": "Tendances",
     "favorites": "Favoris",
-    "watchlist": "Intérêts"
+    "watchlist": "Intérêts",
+    "latest": "Dernières Sorties"
   },
   "de-DE": {
     "popular": "Beliebt",
@@ -73,7 +77,8 @@
     "language": "Sprache",
     "trending": "Im Trend",
     "favorites": "Favoriten",
-    "watchlist": "Interessen"
+    "watchlist": "Interessen",
+    "latest": "Neuerscheinungen"
   },
   "it-IT": {
     "popular": "Popolare",
@@ -81,7 +86,8 @@
     "language": "Lingua",
     "trending": "Di tendenza",
     "favorites": "Preferiti",
-    "watchlist": "Interessi"
+    "watchlist": "Interessi",
+    "latest": "Ultime Uscite"
   },
   "ru-RU": {
     "popular": "Популярное",
