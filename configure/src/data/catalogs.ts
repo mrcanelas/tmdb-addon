@@ -12,14 +12,16 @@ export interface Catalog {
 }
 
 export const baseCatalogs: Catalog[] = [
+  { id: "tmdb.latest", name: "Latest Releases", type: "movie" },
+  { id: "tmdb.latest", name: "Latest Releases", type: "series" },
+  { id: "tmdb.trending", name: "Trending", type: "movie" },
+  { id: "tmdb.trending", name: "Trending", type: "series" },
   { id: "tmdb.top", name: "Popular", type: "movie" },
   { id: "tmdb.top", name: "Popular", type: "series" },
   { id: "tmdb.year", name: "Year", type: "movie" },
   { id: "tmdb.year", name: "Year", type: "series" },
   { id: "tmdb.language", name: "Language", type: "movie" },
   { id: "tmdb.language", name: "Language", type: "series" },
-  { id: "tmdb.trending", name: "Trending", type: "movie" },
-  { id: "tmdb.trending", name: "Trending", type: "series" },
 ];
 
 export const authCatalogs: Catalog[] = [

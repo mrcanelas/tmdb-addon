@@ -17,6 +17,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [rpdbMediaTypes, setRpdbMediaTypes] = useState({ poster: true, logo: false, backdrop: false });
   const [geminikey, setGeminiKey] = useState("");
+  const [groqkey, setGroqKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
   const [traktAccessToken, setTraktAccessToken] = useState("");
   const [traktRefreshToken, setTraktRefreshToken] = useState("");
@@ -48,6 +49,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         rpdbkey,
         rpdbMediaTypes,
         geminikey,
+        groqkey,
         mdblistkey,
         traktAccessToken,
         traktRefreshToken,
@@ -99,6 +101,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     }
     if (config.mdblistkey !== undefined) setMdblistkey(config.mdblistkey);
     if (config.geminikey !== undefined) setGeminiKey(config.geminikey);
+    if (config.groqkey !== undefined) setGroqKey(config.groqkey);
     if (config.traktAccessToken !== undefined) setTraktAccessToken(config.traktAccessToken);
     if (config.traktRefreshToken !== undefined) setTraktRefreshToken(config.traktRefreshToken);
     if (config.tmdbApiKey !== undefined) setTmdbApiKey(config.tmdbApiKey);
@@ -196,6 +199,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     rpdbkey,
     rpdbMediaTypes,
     geminikey,
+    groqkey,
     mdblistkey,
     traktAccessToken,
     traktRefreshToken,
@@ -221,6 +225,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setRpdbkey,
     setRpdbMediaTypes,
     setGeminiKey,
+    setGroqKey,
     setMdblistkey,
     setTraktAccessToken,
     setTraktRefreshToken,

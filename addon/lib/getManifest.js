@@ -220,7 +220,7 @@ async function getManifest(config) {
     catalogs = [...catalogs, searchCatalogMovie, searchCatalogSeries];
   }
 
-  if (config.geminikey) {
+  if (config.geminikey || config.groqkey) {
     const aiSearchCatalogMovie = {
       id: "tmdb.aisearch",
       type: "movie",

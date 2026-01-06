@@ -18,6 +18,7 @@ export type ConfigContextType = {
   rpdbkey: string;
   rpdbMediaTypes: RPDBMediaTypes;
   geminikey: string;
+  groqkey: string;
   mdblistkey: string;
   traktAccessToken: string;
   traktRefreshToken: string;
@@ -43,6 +44,7 @@ export type ConfigContextType = {
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
   setGeminiKey: (geminikey: string) => void;
+  setGroqKey: (groqkey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
   setTraktAccessToken: (traktAccessToken: string) => void;
   setTraktRefreshToken: (traktRefreshToken: string) => void;

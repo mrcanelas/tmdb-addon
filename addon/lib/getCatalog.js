@@ -132,9 +132,14 @@ async function getCatalog(type, language, page, id, genre, config) {
       metas = await fetchAndFilter(fallbackParams, 'US');
     }
 
-    // If no results, return a placeholder to prevent iOS from bugging
+    // If no results
     if (metas.length === 0) {
-      // Use local placeholder with cache buster
+      // If it's not the first page, just return empty to stop pagination (don't show "No Content" card)
+      if (page && parseInt(page) > 1) {
+        return { metas: [] };
+      }
+
+      // Use local placeholder with cache buster for the FIRST page only
       const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
       const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
       return {
@@ -253,6 +258,25 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
       case "tmdb.language":
         const findGenre = genre ? findLanguageCode(genre, languages) : language.split("-")[0];
         parameters.with_original_language = findGenre;
+        break;
+      case "tmdb.latest":
+        parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
+        const date = new Date();
+        const today = date.toISOString().split('T')[0];
+
+        // Go back 1 month
+        date.setMonth(date.getMonth() - 1);
+        const oneMonthAgo = date.toISOString().split('T')[0];
+
+        if (type === "movie") {
+          parameters["primary_release_date.gte"] = oneMonthAgo;
+          parameters["primary_release_date.lte"] = today;
+          parameters["sort_by"] = "primary_release_date.desc";
+        } else {
+          parameters["first_air_date.gte"] = oneMonthAgo;
+          parameters["first_air_date.lte"] = today;
+          parameters["sort_by"] = "first_air_date.desc";
+        }
         break;
       default:
         break;

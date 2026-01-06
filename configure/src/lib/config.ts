@@ -5,6 +5,7 @@ interface AddonConfig {
   rpdbkey?: string;
   rpdbMediaTypes?: RPDBMediaTypes;
   geminikey?: string;
+  groqkey?: string;
   mdblistkey?: string;
   traktAccessToken?: string;
   traktRefreshToken?: string;
@@ -39,6 +40,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     rpdbkey: config.rpdbkey || undefined,
     rpdbMediaTypes: config.rpdbMediaTypes || undefined,
     geminikey: config.geminikey || undefined,
+    groqkey: config.groqkey || undefined,
     mdblistkey: config.mdblistkey || undefined,
     traktAccessToken: config.traktAccessToken || undefined,
     traktRefreshToken: config.traktRefreshToken || undefined,
