@@ -37,15 +37,17 @@ export const integrations: Integration[] = [
     description: "Improve your searches using Google Gemini's artificial intelligence.",
   },
   {
+    id: "groq",
+    name: "Groq AI Search",
+    icon: "https://github.com/groq.png",
+    description: "Ultra-fast AI search using Groq (Llama 3).",
+  },
+  {
     id: "trakt",
     name: "Trakt",
     icon: "https://trakt.tv/assets/logos/logomark.square.gradient-b644b16c38ff775861b4b1f58c1230f6a097a2466ab33ae00445a505c33fcb91.svg",
     description: "Track what you watch and sync your progress with Trakt.tv.",
   },
-  {
-    id: "groq",
-    name: "Groq AI Search",
-    icon: "https://github.com/groq.png",
-    description: "Ultra-fast AI search using Groq (Llama 3).",
-  }
+
+
 ]; 
