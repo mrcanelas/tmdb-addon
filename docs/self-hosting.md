@@ -6,6 +6,7 @@ This guide provides instructions for self-hosting the TMDB Addon for Stremio.
 - [Self-Hosting Guide](#self-hosting-guide)
   - [Table of Contents](#table-of-contents)
   - [Important Note: MongoDB Deprecation](#important-note-mongodb-deprecation)
+  - [Vercel Deployment (Easiest)](#vercel-deployment-easiest)
   - [Docker Installation (Recommended)](#docker-installation-recommended)
     - [Using Docker Compose](#using-docker-compose)
   - [Manual Installation](#manual-installation)
@@ -28,6 +29,124 @@ This guide provides instructions for self-hosting the TMDB Addon for Stremio.
 If you're upgrading from v3.1.5 or earlier, you can safely remove the `MONGODB_URI` environment variable. The addon will work with in-memory caching by default. For production deployments, consider using Redis for better performance and scalability.
 
 For more details, see [issue #1215](https://github.com/mrcanelas/tmdb-addon/issues/1215).
+
+## Vercel Deployment (Easiest)
+
+Vercel is the easiest way to deploy this addon. It provides:
+- **Free hosting** with generous limits
+- **Automatic HTTPS** and CDN
+- **Zero configuration** - the `vercel.json` file is already set up
+- **Automatic deployments** on every push to your repository
+
+### One-Click Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mrcanelas/tmdb-addon&env=TMDB_API&env=FANART_API&env=HOST_NAME)
+
+1. Click the button above to deploy to Vercel
+2. Sign in to Vercel (or create a free account)
+3. Import the repository
+4. Configure environment variables (see below)
+5. Click **Deploy**
+
+### Manual Vercel Setup
+
+If you prefer to set up manually:
+
+1. **Install Vercel CLI**:
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Login to Vercel**:
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy**:
+   ```bash
+   vercel
+   ```
+
+4. **Follow the prompts** and configure your project
+
+### Environment Variables for Vercel
+
+After deploying, configure these environment variables in your Vercel project settings:
+
+#### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `TMDB_API` | TMDB API key | `your_tmdb_api_key` |
+| `FANART_API` | Fanart.tv API key | `your_fanart_api_key` |
+| `HOST_NAME` | Your Vercel deployment URL | `https://your-project.vercel.app` |
+
+> **Note**: `HOST_NAME` will be automatically set by Vercel, but you can override it if needed.
+
+#### Optional Variables
+
+Configure these if you want to use additional features:
+
+- `TRAKT_CLIENT_ID` - For Trakt integration
+- `TRAKT_CLIENT_SECRET` - For Trakt integration
+- `REDIS_URL` - For distributed caching (recommended for production)
+- `GEMINI_API_KEY` - For AI search with Gemini
+- `GROQ_API_KEY` - For AI search with Groq
+- `MDBLIST_API_KEY` - For MDBList integration
+- `RPDB_API_KEY` - For RPDB integration
+- `TMDB_PROXY_ENABLED` - Enable proxy for TMDB requests
+- `TMDB_PROXY_HOST` - Proxy host
+- `TMDB_PROXY_PORT` - Proxy port
+- `TMDB_PROXY_PROTOCOL` - Proxy protocol (http, https, socks5)
+
+### Setting Environment Variables in Vercel
+
+1. Go to your project on [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click on **Settings**
+3. Go to **Environment Variables**
+4. Add each variable with its value
+5. Select the environments (Production, Preview, Development)
+6. Click **Save**
+
+### Vercel Configuration
+
+The project includes a `vercel.json` file that configures:
+- Build settings for the frontend (React/Vite)
+- Serverless functions for the backend (Express)
+- Routing rules for all endpoints
+
+No additional configuration is needed - Vercel will automatically detect and use this file.
+
+### Vercel Limitations
+
+**Free Tier Limits:**
+- 100GB bandwidth per month
+- Serverless function execution time: 10 seconds (Hobby plan)
+- 100 serverless function invocations per day (Hobby plan)
+
+**For Production:**
+- Consider upgrading to Vercel Pro for higher limits
+- Use Redis for caching to reduce API calls
+- Monitor your usage in the Vercel dashboard
+
+### Updating Your Deployment
+
+Vercel automatically deploys on every push to your repository. You can also:
+
+1. **Manual deploy** via Vercel Dashboard
+2. **Redeploy** via CLI:
+   ```bash
+   vercel --prod
+   ```
+
+### Custom Domain
+
+To use a custom domain:
+
+1. Go to your project **Settings** > **Domains**
+2. Add your domain
+3. Follow the DNS configuration instructions
+4. Update `HOST_NAME` environment variable with your custom domain
 
 ## Docker Installation (Recommended)
 

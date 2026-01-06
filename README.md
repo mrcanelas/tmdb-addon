@@ -113,6 +113,32 @@ Customize which catalogs appear on your Stremio:
 
 For detailed instructions on hosting your own instance, check our [Self-Hosting Guide](docs/self-hosting.md).
 
+### Deploy to Vercel (One-Click)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mrcanelas/tmdb-addon&env=TMDB_API&env=FANART_API&env=HOST_NAME)
+
+The easiest way to deploy this addon is using Vercel's one-click deploy. After clicking the button above:
+
+1. **Import the repository** to your Vercel account
+2. **Configure environment variables** (see below)
+3. **Deploy** - Vercel will automatically build and deploy your addon
+
+**Required Environment Variables for Vercel:**
+- `TMDB_API` - Your TMDB API key
+- `FANART_API` - Your Fanart.tv API key
+- `HOST_NAME` - Your Vercel deployment URL (will be set automatically, but you can override it)
+
+**Optional Environment Variables:**
+- `TRAKT_CLIENT_ID` - For Trakt integration
+- `TRAKT_CLIENT_SECRET` - For Trakt integration
+- `REDIS_URL` - For distributed caching (recommended for production)
+- `GEMINI_API_KEY` - For AI search
+- `GROQ_API_KEY` - For AI search
+- `MDBLIST_API_KEY` - For MDBList integration
+- `RPDB_API_KEY` - For RPDB integration
+
+> **Note**: The `vercel.json` file is already configured. Vercel will automatically detect it and use the correct build settings.
+
 ### Quick Start with Docker
 ```bash
 docker run -d \
