@@ -224,6 +224,7 @@ interface Movie {
 export default function Home() {
   const { language, setLanguage, tmdbApiKey, setTmdbApiKey } = useConfig();
   const [backgroundUrl, setBackgroundUrl] = useState("");
+  const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchPopularMovies = async () => {
@@ -247,6 +248,40 @@ export default function Home() {
     };
 
     fetchPopularMovies();
+  }, []);
+
+  useEffect(() => {
+    const trackAndFetchUserCount = async () => {
+      try {
+        // Obtém a URL base da instância atual
+        const baseUrl = window.location.origin;
+        
+        // Rastreia o usuário atual
+        await fetch(`${baseUrl}/api/stats/track-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        // Busca o contador total de usuários
+        const response = await fetch(`${baseUrl}/api/stats/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setUserCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching user count:', error);
+        // Não mostra erro ao usuário, apenas falha silenciosamente
+      }
+    };
+
+    trackAndFetchUserCount();
+    
+    // Atualiza o contador a cada 5 minutos
+    const interval = setInterval(trackAndFetchUserCount, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const [isValidating, setIsValidating] = useState(false);
@@ -314,10 +349,31 @@ export default function Home() {
             The Movie Database Addon
           </h1>
 
-          <p className="text-xl sm:text-2xl text-gray-300 mb-8">
+          <p className="text-xl sm:text-2xl text-gray-300 mb-4">
             Explore a vast catalog of movies and TV shows with metadata provided by TMDB.
             Version {packageJson.version}
           </p>
+          
+          {userCount !== null && (
+            <div className="mb-8 flex items-center justify-center gap-2 text-sm text-gray-400">
+              <svg 
+                className="w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" 
+                />
+              </svg>
+              <span>
+                <strong className="text-white">{userCount.toLocaleString()}</strong> unique users
+              </span>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
             <div className="w-full sm:w-64">

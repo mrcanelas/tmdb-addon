@@ -17,6 +17,7 @@ const { getTraktAuthUrl, getTraktAccessToken } = require("./lib/getTraktSession"
 const { getTraktWatchlist, getTraktRecommendations } = require("./lib/getTraktLists");
 const { blurImage } = require('./utils/imageProcessor');
 const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
+const { trackUser, getUserCount, getAggregatedUserCount, trackExternalUsers } = require('./utils/userCounter');
 
 addon.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -419,5 +420,70 @@ addon.get("/api/image/blur", async function (req, res) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// User counter endpoints
+addon.post("/api/stats/track-user", async function (req, res) {
+  try {
+    await trackUser(req);
+    const count = await getUserCount();
+    
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+    res.json({ success: true, count });
+  } catch (error) {
+    console.error('Error tracking user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+addon.get("/api/stats/users", async function (req, res) {
+  try {
+    const count = await getAggregatedUserCount();
+    
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "public, max-age=300"); // Cache por 5 minutos
+    
+    res.json({ count });
+  } catch (error) {
+    console.error('Error getting user count:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Endpoint para outras instâncias reportarem seus usuários
+addon.post("/api/stats/report-users", async function (req, res) {
+  try {
+    const { count, instanceId } = req.body;
+    
+    if (!count || !instanceId) {
+      return res.status(400).json({ error: 'count and instanceId are required' });
+    }
+    
+    await trackExternalUsers(parseInt(count), instanceId);
+    
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reporting external users:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Middleware para rastrear usuários automaticamente em requisições ao manifest
+addon.use('/manifest.json', async function (req, res, next) {
+  // Rastreia em background sem bloquear a resposta
+  trackUser(req).catch(err => console.error('Background user tracking error:', err));
+  next();
+});
+
+// Inicia o reporte automático para a instância oficial (apenas uma vez quando o servidor inicia)
+const { startAutoReporting } = require('./utils/userCounter');
+// Reporta a cada hora (60 minutos)
+startAutoReporting(60);
 
 module.exports = addon;
