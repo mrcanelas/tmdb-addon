@@ -5,6 +5,7 @@ This guide provides instructions for self-hosting the TMDB Addon for Stremio.
 ## Table of Contents
 - [Self-Hosting Guide](#self-hosting-guide)
   - [Table of Contents](#table-of-contents)
+  - [Important Note: MongoDB Deprecation](#important-note-mongodb-deprecation)
   - [Docker Installation (Recommended)](#docker-installation-recommended)
     - [Using Docker Compose](#using-docker-compose)
   - [Manual Installation](#manual-installation)
@@ -12,10 +13,21 @@ This guide provides instructions for self-hosting the TMDB Addon for Stremio.
   - [Getting API Keys](#getting-api-keys)
     - [TMDB API](#tmdb-api)
     - [Fanart.tv API](#fanarttv-api)
-    - [MongoDB](#mongodb)
+    - [Redis (Optional)](#redis-optional)
   - [Verifying Installation](#verifying-installation)
   - [Troubleshooting](#troubleshooting)
     - [Common Issues](#common-issues)
+
+## Important Note: MongoDB Deprecation
+
+**Starting from version 3.1.6**, MongoDB is no longer required for the addon to function. The caching system has been migrated from MongoDB to a more flexible solution:
+
+- **Default**: In-memory caching (no external dependencies)
+- **Optional**: Redis for distributed caching (recommended for production)
+
+If you're upgrading from v3.1.5 or earlier, you can safely remove the `MONGODB_URI` environment variable. The addon will work with in-memory caching by default. For production deployments, consider using Redis for better performance and scalability.
+
+For more details, see [issue #1215](https://github.com/mrcanelas/tmdb-addon/issues/1215).
 
 ## Docker Installation (Recommended)
 
@@ -25,7 +37,6 @@ The easiest way to run this addon is using Docker. The image is available on Doc
 docker run -d \
   --name tmdb-addon \
   -p 1337:1337 \
-  -e MONGODB_URI=your_mongodb_uri \
   -e FANART_API=your_fanart_key \
   -e TMDB_API=your_tmdb_key \
   -e HOST_NAME=http://your_domain:1337 \
@@ -47,7 +58,6 @@ services:
     ports:
       - "1337:1337"
     environment:
-      - MONGODB_URI=your_mongodb_uri
       - FANART_API=your_fanart_key
       - TMDB_API=your_tmdb_key
       - HOST_NAME=http://your_domain:1337
@@ -80,9 +90,6 @@ npm install
 
 Example `.env` file:
 ```env
-# MongoDB Configuration
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
-
 # TMDB API Configuration
 TMDB_API=your_tmdb_api_key_here
 
@@ -97,11 +104,40 @@ PORT=1337
 TRAKT_CLIENT_ID=your_trakt_client_id_here
 TRAKT_CLIENT_SECRET=your_trakt_client_secret_here
 
+# Redis Cache Configuration (Optional - recommended for production)
+REDIS_URL=redis://localhost:6379
+
+# AI Search Integrations (Optional)
+GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+
+# MDBList Integration (Optional)
+MDBLIST_API_KEY=your_mdblist_api_key_here
+
+# RPDB Integration (Optional)
+RPDB_API_KEY=your_rpdb_api_key_here
+
 # Proxy Configuration (Optional)
 TMDB_PROXY_ENABLED=false
 TMDB_PROXY_HOST=127.0.0.1
 TMDB_PROXY_PORT=1080
 TMDB_PROXY_PROTOCOL=http
+TMDB_PROXY_AUTH=false
+TMDB_PROXY_USERNAME=
+TMDB_PROXY_PASSWORD=
+
+# Cache Configuration (Optional)
+META_TTL=604800  # 7 days in seconds
+CATALOG_TTL=86400  # 1 day in seconds
+NO_CACHE=false
+
+# Analytics (Optional)
+METRICS_USER=admin
+METRICS_PASSWORD=your_password_here
+
+# GitHub Integration (Optional - for season checking)
+GITHUB_TOKEN=your_github_token_here
+GITHUB_REPO=mrcanelas/tmdb-addon
 ```
 
 4. Build the project:
@@ -116,20 +152,66 @@ node addon/server.js
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `MONGODB_URI` | MongoDB connection URI | Yes |
-| `FANART_API` | Fanart.tv API key | Yes |
-| `TMDB_API` | TMDB API key | Yes |
-| `HOST_NAME` | Public URL of your addon (e.g., http://your_domain:1337) | Yes |
-| `PORT` | Server port (default: 1337) | No |
-| `TRAKT_CLIENT_ID` | Trakt OAuth Client ID (for Trakt integration) | No |
-| `TRAKT_CLIENT_SECRET` | Trakt OAuth Client Secret (for Trakt integration) | No |
-| `TRAKT_REDIRECT_URI` | Trakt OAuth Redirect URI (auto-detected if not set) | No |
-| `TMDB_PROXY_ENABLED` | Enable proxy for TMDB requests (default: false) | No |
-| `TMDB_PROXY_HOST` | Proxy host (default: 127.0.0.1) | No |
-| `TMDB_PROXY_PORT` | Proxy port (default: 1080) | No |
-| `TMDB_PROXY_PROTOCOL` | Proxy protocol: http, https, or socks5 (default: http) | No |
+### Required Variables
+
+| Variable | Description |
+|----------|-------------|
+| `TMDB_API` | TMDB API key |
+| `FANART_API` | Fanart.tv API key |
+| `HOST_NAME` | Public URL of your addon (e.g., http://your_domain:1337) |
+
+### Optional Variables - Server
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | 1337 |
+
+### Optional Variables - Integrations
+
+| Variable | Description |
+|----------|-------------|
+| `TRAKT_CLIENT_ID` | Trakt OAuth Client ID (for Trakt integration) |
+| `TRAKT_CLIENT_SECRET` | Trakt OAuth Client Secret (for Trakt integration) |
+| `TRAKT_REDIRECT_URI` | Trakt OAuth Redirect URI (auto-detected if not set) |
+| `GEMINI_API_KEY` | Google Gemini API key (for AI search) |
+| `GROQ_API_KEY` | Groq API key (for AI search) |
+| `MDBLIST_API_KEY` | MDBList API key |
+| `RPDB_API_KEY` | RPDB API key |
+
+### Optional Variables - Cache
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `REDIS_URL` | Redis URL for distributed cache | - |
+| `META_TTL` | Metadata cache TTL in seconds | 604800 (7 days) |
+| `CATALOG_TTL` | Catalog cache TTL in seconds | 86400 (1 day) |
+| `NO_CACHE` | Disable cache completely | false |
+
+**Cache Behavior:**
+- If `REDIS_URL` is not set, the addon uses in-memory caching (default)
+- If `REDIS_URL` is set, the addon uses Redis for distributed caching
+- If `NO_CACHE=true`, caching is completely disabled
+
+### Optional Variables - Proxy
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TMDB_PROXY_ENABLED` | Enable proxy for TMDB requests | false |
+| `TMDB_PROXY_HOST` | Proxy host | 127.0.0.1 |
+| `TMDB_PROXY_PORT` | Proxy port | 1080 |
+| `TMDB_PROXY_PROTOCOL` | Proxy protocol: http, https, or socks5 | http |
+| `TMDB_PROXY_AUTH` | Enable proxy authentication | false |
+| `TMDB_PROXY_USERNAME` | Proxy username | - |
+| `TMDB_PROXY_PASSWORD` | Proxy password | - |
+
+### Optional Variables - Other
+
+| Variable | Description |
+|----------|-------------|
+| `METRICS_USER` | Username for metrics access |
+| `METRICS_PASSWORD` | Password for metrics access |
+| `GITHUB_TOKEN` | GitHub token (for season checking) |
+| `GITHUB_REPO` | GitHub repository (format: owner/repo) |
 
 ## Getting API Keys
 
@@ -144,11 +226,55 @@ node addon/server.js
 2. Register for an account
 3. Request a personal API key
 
-### MongoDB
-1. Create an account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Set up a free cluster
-3. Get your connection string
-4. Replace `<password>` in the connection string with your database user password
+### Redis (Optional)
+For production deployments, Redis is recommended for distributed caching:
+
+1. **Local Redis**: Install Redis locally or use Docker:
+   ```bash
+   docker run -d --name redis -p 6379:6379 redis:alpine
+   ```
+
+2. **Cloud Redis**: Use a managed Redis service:
+   - [Upstash](https://upstash.com/) - Free tier available
+   - [Redis Cloud](https://redis.com/try-free/) - Free tier available
+   - [AWS ElastiCache](https://aws.amazon.com/elasticache/)
+   - [Google Cloud Memorystore](https://cloud.google.com/memorystore)
+
+3. Set the `REDIS_URL` environment variable:
+   ```env
+   REDIS_URL=redis://localhost:6379
+   # or for cloud services:
+   REDIS_URL=rediss://default:password@host:6379
+   ```
+
+### Google Gemini API (Optional)
+To enable AI search using Gemini:
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create an account or sign in
+3. Generate a new API key
+4. Add the key as `GEMINI_API_KEY` in environment variables
+
+### Groq API (Optional)
+To enable AI search using Groq:
+1. Visit [Groq Console](https://console.groq.com/)
+2. Create an account or sign in
+3. Generate a new API key
+4. Add the key as `GROQ_API_KEY` in environment variables
+
+### MDBList API (Optional)
+To enable MDBList integration:
+1. Visit [MDBList](https://mdblist.com/)
+2. Create an account or sign in
+3. Go to Settings > API
+4. Generate a new API key
+5. Add the key as `MDBLIST_API_KEY` in environment variables
+
+### RPDB API (Optional)
+To enable RPDB integration:
+1. Visit [Rating Poster Database](https://ratingposterdb.com/)
+2. Create an account or sign in
+3. Get your API key
+4. Add the key as `RPDB_API_KEY` in environment variables
 
 ### Trakt OAuth (Optional)
 To enable Trakt integration (watchlist and recommendations sync):
@@ -188,19 +314,24 @@ To add the addon to Stremio, use the URL:
 
 ### Common Issues
 
-1. **Cannot connect to MongoDB**
-   - Verify your MongoDB URI is correct
-   - Ensure your IP is whitelisted in MongoDB Atlas
-   - Check if the database user has correct permissions
-
-2. **API Keys not working**
+1. **API Keys not working**
    - Verify the keys are correctly copied
    - Check if the API services are operational
    - Ensure you're using the correct API key type
 
-3. **Addon not accessible**
+2. **Addon not accessible**
    - Verify the port 1337 is open on your firewall
    - Check if the HOST_NAME variable matches your actual domain
    - Ensure your domain/IP is accessible from the internet
 
-For additional help, please open an issue on GitHub.
+3. **Cache not working**
+   - If using Redis, verify the REDIS_URL is correct
+   - Check Redis connection: `redis-cli ping` (should return PONG)
+   - For in-memory cache, no additional setup is needed
+
+4. **Performance issues**
+   - Consider using Redis for distributed caching in production
+   - Adjust cache TTL values (META_TTL, CATALOG_TTL) if needed
+   - Check if NO_CACHE is set to false
+
+For additional help, please open an issue on [GitHub](https://github.com/mrcanelas/tmdb-addon/issues).
