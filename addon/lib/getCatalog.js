@@ -132,9 +132,14 @@ async function getCatalog(type, language, page, id, genre, config) {
       metas = await fetchAndFilter(fallbackParams, 'US');
     }
 
-    // If no results, return a placeholder to prevent iOS from bugging
+    // If no results
     if (metas.length === 0) {
-      // Use local placeholder with cache buster
+      // If it's not the first page, just return empty to stop pagination (don't show "No Content" card)
+      if (page && parseInt(page) > 1) {
+        return { metas: [] };
+      }
+
+      // Use local placeholder with cache buster for the FIRST page only
       const host = process.env.HOST_NAME ? process.env.HOST_NAME.replace(/\/$/, '') : '';
       const posterUrl = `${host}/no-content.png?v=${Date.now()}`;
       return {
