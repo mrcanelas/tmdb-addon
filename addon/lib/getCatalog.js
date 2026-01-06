@@ -255,6 +255,7 @@ async function buildParameters(type, language, page, id, genre, genreList, confi
         parameters.with_original_language = findGenre;
         break;
       case "tmdb.latest":
+        parameters.with_genres = genre ? findGenreId(genre, genreList) : undefined;
         const date = new Date();
         const today = date.toISOString().split('T')[0];
 
