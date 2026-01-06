@@ -45,7 +45,7 @@ export const integrations: Integration[] = [
   {
     id: "groq",
     name: "Groq AI Search",
-    icon: "https://groq.com/wp-content/uploads/2024/03/icon-only.svg",
+    icon: "https://github.com/groq.png",
     description: "Ultra-fast AI search using Groq (Llama 3).",
   }
 ]; 
