@@ -20,6 +20,8 @@ export const baseCatalogs: Catalog[] = [
   { id: "tmdb.language", name: "Language", type: "series" },
   { id: "tmdb.trending", name: "Trending", type: "movie" },
   { id: "tmdb.trending", name: "Trending", type: "series" },
+  { id: "tmdb.latest", name: "Latest Releases", type: "movie" },
+  { id: "tmdb.latest", name: "Latest Releases", type: "series" },
 ];
 
 export const authCatalogs: Catalog[] = [
