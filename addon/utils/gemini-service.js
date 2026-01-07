@@ -1,9 +1,18 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { withRetry } = require("./rateLimiter");
+
+// Modelo padrão - versão mais recente disponível no free tier
+// Limites: 10 RPM, 20 RPD, 250K TPM
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 class GeminiService {
   constructor() {
     this.genAI = null;
     this.model = null;
+    this.modelName = DEFAULT_GEMINI_MODEL;
+    // Throttling para respeitar limites: 10 RPM = mínimo 6 segundos entre requisições
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 6000; // 6 segundos (10 RPM = 1 req a cada 6s)
   }
 
   async initialize(apiKey) {
@@ -11,7 +20,7 @@ class GeminiService {
 
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      this.model = this.genAI.getGenerativeModel({ model: this.modelName });
       return true;
     } catch (error) {
       console.error("Error initializing Gemini:", error);
@@ -19,21 +28,17 @@ class GeminiService {
     }
   }
 
-  async translateToEnglish(query) {
-    if (!this.model) return query;
-
-    try {
-      const prompt = `Translate the following search query to English. Return only the translation, no explanations:
-
-"${query}"`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
-    } catch (error) {
-      console.error("Error translating query:", error);
-      return query;
+  // Throttling para respeitar limites da API (10 RPM)
+  async throttle() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const waitTime = this.minRequestInterval - timeSinceLastRequest;
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
+    
+    this.lastRequestTime = Date.now();
   }
 
   async searchWithAI(query, type) {
@@ -42,15 +47,18 @@ class GeminiService {
     }
 
     try {
-      const englishQuery = await this.translateToEnglish(query);
+      // Aplica throttling antes de fazer a requisição (respeita 10 RPM)
+      await this.throttle();
 
-      const prompt = `You are a movie and TV show expert assistant. Your task is to analyze the user's search query and return the exact titles of the most relevant movies/shows.
+      // Faz tudo em uma única chamada - combina tradução e busca
+      // Isso reduz o uso da API pela metade comparado a fazer 2 chamadas separadas
+      const prompt = `You are a movie and TV show expert assistant. Your task is to analyze the user's search query (which may be in any language) and return the exact titles of the most relevant movies/shows.
 
-        User's search: "${englishQuery}"
+        User's search: "${query}"
         Type: ${type}
 
         Important instructions:
-        1. The search is in English - analyze the context and intent
+        1. The search query may be in any language - translate it to English if needed, then analyze the context and intent
         2. Return only the exact titles, separated by commas
         3. Do not include explanations or additional text
         4. Prioritize results most relevant to the search intent
@@ -59,7 +67,39 @@ class GeminiService {
 
         Example response: The Matrix, The Matrix Reloaded, The Matrix Revolutions`;
 
-      const result = await this.model.generateContent(prompt);
+      const result = await withRetry(
+        async () => {
+          return await this.model.generateContent(prompt);
+        },
+        {
+          maxRetries: 3,
+          baseDelayMs: 1000,
+          shouldRetry: (error) => {
+            // Não retenta erros 400 (bad request)
+            const is400 = error.status === 400 || 
+                        error.error?.code === 400 ||
+                        error.response?.status === 400;
+            if (is400) return false;
+            
+            // Verifica se a quota está completamente esgotada (limit: 0)
+            const errorMessage = error.error?.message || error.message || '';
+            const quotaExhausted = errorMessage.includes('limit: 0');
+            
+            // Se a quota está esgotada e não há delay sugerido, não retenta
+            if (quotaExhausted) {
+              const retryMatch = errorMessage.match(/Please retry in ([\d.]+)s/i);
+              if (!retryMatch) {
+                // Quota esgotada sem delay sugerido = não retentar
+                return false;
+              }
+            }
+            
+            return true; // Retenta outros erros 429
+          },
+          operationName: "Gemini API call (search)"
+        }
+      );
+
       const response = await result.response;
       const titles = response
         .text()
@@ -69,7 +109,12 @@ class GeminiService {
 
       return titles;
     } catch (error) {
-      console.error("Error processing AI search:", error);
+      const errorMessage = error.error?.message || error.message || '';
+      if (errorMessage.includes('limit: 0')) {
+        console.error("Quota do Gemini completamente esgotada. Verifique seu plano no Google AI Studio: https://ai.dev/usage?tab=rate-limit");
+      } else {
+        console.error("Error processing AI search:", error.message || error);
+      }
       return []; // Return empty array in case of error
     }
   }

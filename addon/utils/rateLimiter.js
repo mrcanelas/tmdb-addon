@@ -98,10 +98,17 @@ async function rateLimitedMapFiltered(items, fn, options = {}) {
  * @param {Object} options - Retry options
  * @param {number} [options.maxRetries=3] - Maximum number of retries
  * @param {number} [options.baseDelayMs=1000] - Base delay for exponential backoff
+ * @param {function} [options.shouldRetry] - Function to determine if error should be retried
+ * @param {string} [options.operationName] - Name of operation for logging
  * @returns {Promise<R>} - Result of the function
  */
 async function withRetry(fn, options = {}) {
-    const { maxRetries = 3, baseDelayMs = 1000 } = options;
+    const { 
+        maxRetries = 3, 
+        baseDelayMs = 1000,
+        shouldRetry,
+        operationName
+    } = options;
     
     let lastError;
     
@@ -114,15 +121,64 @@ async function withRetry(fn, options = {}) {
             // Check if this is a rate limit error (429)
             const is429 = error.response?.status === 429 || 
                           error.status === 429 || 
+                          error.error?.code === 429 ||
                           error.message?.includes('429');
             
-            if (is429 && attempt < maxRetries) {
-                // Exponential backoff: 1s, 2s, 4s...
-                const delayMs = baseDelayMs * Math.pow(2, attempt);
-                console.log(`Rate limit hit, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+            // Check if quota is completely exhausted (limit: 0)
+            const errorMessage = error.error?.message || error.message || '';
+            const quotaExhausted = errorMessage.includes('limit: 0') || 
+                                  errorMessage.includes('Quota exceeded');
+            
+            // Extract retry delay from error message (Gemini API format)
+            let suggestedDelayMs = null;
+            const retryMatch = errorMessage.match(/Please retry in ([\d.]+)s/i);
+            if (retryMatch) {
+                suggestedDelayMs = Math.ceil(parseFloat(retryMatch[1]) * 1000);
+            } else {
+                // Try to extract from RetryInfo in error details
+                const retryInfo = error.error?.details?.find?.(
+                    (detail) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo"
+                );
+                if (retryInfo?.retryDelay) {
+                    const match = retryInfo.retryDelay.match(/([\d.]+)s?/);
+                    if (match) {
+                        suggestedDelayMs = Math.ceil(parseFloat(match[1]) * 1000);
+                    }
+                }
+            }
+            
+            // Use custom shouldRetry function if provided
+            const shouldRetryError = shouldRetry 
+                ? shouldRetry(error)
+                : is429;
+            
+            // Don't retry 400 errors (bad request) unless shouldRetry says otherwise
+            const is400 = error.response?.status === 400 || 
+                         error.status === 400 ||
+                         error.error?.code === 400;
+            
+            if (is400 && !shouldRetry) {
+                // Non-retryable error, don't retry
+                throw error;
+            }
+            
+            // Don't retry if quota is completely exhausted (limit: 0)
+            if (quotaExhausted && !suggestedDelayMs) {
+                const opName = operationName ? ` (${operationName})` : '';
+                console.error(`Quota completamente esgotada${opName}. Verifique seu plano no Google AI Studio.`);
+                throw error;
+            }
+            
+            if (shouldRetryError && attempt < maxRetries) {
+                // Use suggested delay from API if available, otherwise use exponential backoff
+                const delayMs = suggestedDelayMs || (baseDelayMs * Math.pow(2, attempt));
+                const delaySeconds = (delayMs / 1000).toFixed(1);
+                const opName = operationName ? ` (${operationName})` : '';
+                const delaySource = suggestedDelayMs ? 'sugerido pela API' : 'backoff exponencial';
+                console.log(`Rate limit atingido${opName}, aguardando ${delaySeconds}s (${delaySource}) antes de tentar novamente... (tentativa ${attempt + 1}/${maxRetries})`);
                 await sleep(delayMs);
-            } else if (!is429) {
-                // Non-rate-limit error, don't retry
+            } else if (!shouldRetryError) {
+                // Non-retryable error, don't retry
                 throw error;
             }
         }
