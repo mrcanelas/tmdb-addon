@@ -1,6 +1,7 @@
 const cacheManager = require('cache-manager');
 const redisStore = require('cache-manager-ioredis');
 const Redis = require('ioredis');
+const { mongoDbStore } = require('@tirke/node-cache-manager-mongodb');
 
 const GLOBAL_KEY_PREFIX = 'tmdb-addon';
 const META_KEY_PREFIX = `${GLOBAL_KEY_PREFIX}|meta`;
@@ -11,6 +12,7 @@ const CATALOG_TTL = process.env.CATALOG_TTL || 1 * 24 * 60 * 60; // 1 day
 
 const NO_CACHE = process.env.NO_CACHE || false;
 const REDIS_URL = process.env.REDIS_URL;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Redis instance global (se disponível)
 let redisInstance = null;
@@ -18,8 +20,8 @@ let redisInstance = null;
 // Cache principal (Redis ou memória) - usado para dados importantes
 const cache = initiateCache();
 
-// Cache em memória dedicado para catalog e meta - sempre em memória para economizar Redis
-const memoryCache = initiateMemoryCache();
+// Cache MongoDB para catalog e meta
+let mongoCache = null;
 
 function initiateCache() {
   if (NO_CACHE) {
@@ -39,15 +41,36 @@ function initiateCache() {
   }
 }
 
-function initiateMemoryCache() {
-  if (NO_CACHE) {
+async function initiateMongoCache() {
+  if (NO_CACHE || !MONGODB_URI) {
     return null;
   }
-  // Sempre usa cache em memória para catalog e meta, independente de Redis estar disponível
-  return cacheManager.caching({
-    store: 'memory',
-    ttl: META_TTL
-  });
+
+  try {
+    mongoCache = await cacheManager.caching(mongoDbStore, {
+      url: MONGODB_URI,
+      ttl: META_TTL
+    });
+    console.log('MongoDB cache conectado com sucesso');
+    return mongoCache;
+  } catch (error) {
+    console.error('Erro ao conectar MongoDB cache:', error);
+    return null;
+  }
+}
+
+// Inicializa MongoDB cache (lazy initialization)
+let mongoInitPromise = null;
+async function ensureMongoCache() {
+  if (mongoCache) {
+    return mongoCache;
+  }
+  
+  if (!mongoInitPromise) {
+    mongoInitPromise = initiateMongoCache();
+  }
+  
+  return mongoInitPromise;
 }
 
 function cacheWrap(key, method, options) {
@@ -57,21 +80,47 @@ function cacheWrap(key, method, options) {
   return cache.wrap(key, method, options);
 }
 
-function cacheWrapMemory(key, method, options) {
-  if (NO_CACHE || !memoryCache) {
+async function cacheWrapMongo(key, method, ttl) {
+  if (NO_CACHE || !MONGODB_URI) {
     return method();
   }
-  return memoryCache.wrap(key, method, options);
+
+  // Garante que MongoDB cache está inicializado
+  const mongo = await ensureMongoCache();
+  
+  if (!mongo) {
+    return method();
+  }
+
+  try {
+    return await mongo.wrap(key, method, { ttl });
+  } catch (error) {
+    console.error(`Erro no cache MongoDB para chave ${key}:`, error);
+    // Em caso de erro, executa o método sem cache
+    return method();
+  }
 }
 
 function cacheWrapCatalog(id, method) {
-  // Usa cache em memória para economizar Redis
-  return cacheWrapMemory(`${CATALOG_KEY_PREFIX}:${id}`, method, { ttl: CATALOG_TTL });
+  // Usa MongoDB para catalog
+  return cacheWrapMongo(`${CATALOG_KEY_PREFIX}:${id}`, method, CATALOG_TTL);
 }
 
 function cacheWrapMeta(id, method) {
-  // Usa cache em memória para economizar Redis
-  return cacheWrapMemory(`${META_KEY_PREFIX}:${id}`, method, { ttl: META_TTL });
+  // Usa MongoDB para meta
+  return cacheWrapMongo(`${META_KEY_PREFIX}:${id}`, method, META_TTL);
 }
 
-module.exports = { cacheWrapCatalog, cacheWrapMeta, cacheWrap, cache, redisInstance };
+// Função para fechar conexões ao encerrar
+async function closeConnections() {
+  if (redisInstance) {
+    await redisInstance.quit();
+  }
+  // O mongoCache gerencia suas próprias conexões através do store
+}
+
+// Fecha conexões ao encerrar o processo
+process.on('SIGINT', closeConnections);
+process.on('SIGTERM', closeConnections);
+
+module.exports = { cacheWrapCatalog, cacheWrapMeta, cacheWrap, cache, redisInstance, mongoCache };
