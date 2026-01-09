@@ -25,6 +25,9 @@ addon.use((req, res, next) => {
   next();
 });
 
+// Parse JSON bodies
+addon.use(express.json());
+
 addon.use(analytics.middleware);
 addon.use(favicon(path.join(__dirname, '../public/favicon.png')));
 const staticOptions = {
@@ -286,11 +289,11 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
       }
     }
   } catch (e) {
-    // Handle missing TMDB API key error
-    if (e.message === "TMDB_API_KEY_MISSING") {
+    // Handle missing or invalid TMDB API key error
+    if (e.message === "TMDB_API_KEY_MISSING" || e.message === "TMDB_API_KEY_INVALID") {
       res.status(e.statusCode || 401).json({
-        error: e.userMessage || "TMDB API Key is required",
-        code: "TMDB_API_KEY_MISSING"
+        error: e.userMessage || "TMDB API Key is required or invalid",
+        code: e.message
       });
       return;
     }
@@ -337,11 +340,11 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
       }
       respond(res, resp, cacheOpts);
     } catch (e) {
-      // Handle missing TMDB API key error
-      if (e.message === "TMDB_API_KEY_MISSING") {
+      // Handle missing or invalid TMDB API key error
+      if (e.message === "TMDB_API_KEY_MISSING" || e.message === "TMDB_API_KEY_INVALID") {
         res.status(e.statusCode || 401).json({
-          error: e.userMessage || "TMDB API Key is required",
-          code: "TMDB_API_KEY_MISSING"
+          error: e.userMessage || "TMDB API Key is required or invalid",
+          code: e.message
         });
         return;
       }
@@ -456,6 +459,11 @@ addon.get("/api/stats/users", async function (req, res) {
 // Endpoint para outras instâncias reportarem seus usuários
 addon.post("/api/stats/report-users", async function (req, res) {
   try {
+    // Verifica se req.body existe e tem os campos necessários
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ error: 'Request body is required' });
+    }
+    
     const { count, instanceId } = req.body;
     
     if (!count || !instanceId) {

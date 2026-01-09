@@ -20,7 +20,7 @@ async function getTmdb(type, imdbId, config = {}) {
       return tmdbId;
     }
   } catch (err) {
-    if (err.message !== "TMDB_API_KEY_MISSING") {
+    if (err.message !== "TMDB_API_KEY_MISSING" && err.message !== "TMDB_API_KEY_INVALID") {
       console.error(`Error in getTmdb conversion for ${imdbId}:`, err.message);
     }
     return null;

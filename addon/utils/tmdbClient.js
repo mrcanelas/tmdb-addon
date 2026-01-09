@@ -24,7 +24,23 @@ class TMDBClient extends MovieDb {
         
         return response.data;
       } catch (error) {
-        console.error(`Error in TMDB request for ${url}:`, error.message);
+        // Trata erros 401 (API key inválida ou expirada)
+        if (error.response && error.response.status === 401) {
+          const errorMessage = error.response.data?.status_message || 'Invalid API key';
+          const apiError = new Error('TMDB_API_KEY_INVALID');
+          apiError.statusCode = 401;
+          apiError.userMessage = `TMDB API Key is invalid or expired: ${errorMessage}`;
+          apiError.originalError = error;
+          console.error(`TMDB API key invalid for ${url}:`, errorMessage);
+          throw apiError;
+        }
+        
+        // Trata outros erros HTTP
+        if (error.response) {
+          console.error(`TMDB API error for ${url}:`, error.response.status, error.response.data?.status_message || error.message);
+        } else {
+          console.error(`Error in TMDB request for ${url}:`, error.message);
+        }
         throw error;
       }
     };

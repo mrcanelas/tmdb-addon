@@ -29,9 +29,9 @@ async function getGenreList(language, type, config = {}) {
         return genre;
       }
     } catch (error) {
-      // If TMDB API key is missing, return fallback genres
-      if (error.message === "TMDB_API_KEY_MISSING") {
-        console.warn(`TMDB API key not available, using fallback ${type} genres`);
+      // If TMDB API key is missing or invalid, return fallback genres
+      if (error.message === "TMDB_API_KEY_MISSING" || error.message === "TMDB_API_KEY_INVALID") {
+        console.warn(`TMDB API key not available or invalid, using fallback ${type} genres`);
         return type === "movie" ? FALLBACK_MOVIE_GENRES : FALLBACK_TV_GENRES;
       }
       console.error(`Error fetching ${type} genres:`, error.message);

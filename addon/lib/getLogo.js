@@ -107,7 +107,7 @@ async function getLogo(tmdbId, language, originalLanguage, config = {}) {
     const picked = pickLogo(combined, language, originalLanguage);
     return picked?.url || '';
   } catch (error) {
-    if (error.message !== "TMDB_API_KEY_MISSING") {
+    if (error.message !== "TMDB_API_KEY_MISSING" && error.message !== "TMDB_API_KEY_INVALID") {
       console.error(`Error fetching logo for movie ${tmdbId}:`, error.message);
     }
     return '';
@@ -158,7 +158,7 @@ async function getTvLogo(tvdb_id, tmdbId, language, originalLanguage, config = {
     const picked = pickLogo(combined, language, originalLanguage);
     return picked?.url || '';
   } catch (error) {
-    if (error.message !== "TMDB_API_KEY_MISSING") {
+    if (error.message !== "TMDB_API_KEY_MISSING" && error.message !== "TMDB_API_KEY_INVALID") {
       console.error(`Error fetching logo for series ${tmdbId}:`, error.message);
     }
     return '';
