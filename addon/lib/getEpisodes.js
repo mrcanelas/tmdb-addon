@@ -19,10 +19,18 @@ function genSeasonsString(seasons) {
   }
 }
 
-function getThumbnailUrl(stillPath, hideEpisodeThumbnails) {
+function getThumbnailUrl(stillPath, hideEpisodeThumbnails, topPostersKey = null, tmdbId = null, season = null, episode = null) {
   if (!stillPath) return null;
 
   const baseImageUrl = `https://image.tmdb.org/t/p/w500${stillPath}`;
+
+  // Use Top Posters for episode thumbnails if configured (Premium feature)
+  if (topPostersKey && tmdbId && season !== null && episode !== null) {
+    const fallbackUrl = hideEpisodeThumbnails
+      ? `${process.env.HOST_NAME}/api/image/blur?url=${encodeURIComponent(baseImageUrl)}`
+      : baseImageUrl;
+    return `https://api.top-streaming.stream/${topPostersKey}/tmdb/thumbnail/series-${tmdbId}/S${season}E${episode}.jpg?fallback_url=${encodeURIComponent(fallbackUrl)}`;
+  }
 
   if (hideEpisodeThumbnails) {
     return `${process.env.HOST_NAME}/api/image/blur?url=${encodeURIComponent(baseImageUrl)}`;
@@ -32,7 +40,7 @@ function getThumbnailUrl(stillPath, hideEpisodeThumbnails) {
 }
 
 async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
-  const { hideEpisodeThumbnails = false } = config;
+  const { hideEpisodeThumbnails = false, topPostersKey = null } = config;
   const moviedb = getTmdbClient(config);
   const seasonString = genSeasonsString(seasons);
   const difOrder = diferentOrder.find((data) => data.tmdbId === tmdbId);
@@ -52,7 +60,7 @@ async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
               name: episode.name,
               season: group.order,
               episode: index + 1,
-              thumbnail: getThumbnailUrl(episode.still_path, hideEpisodeThumbnails),
+              thumbnail: getThumbnailUrl(episode.still_path, hideEpisodeThumbnails, topPostersKey, tmdbId, group.order, index + 1),
               overview: episode.overview,
               description: episode.overview,
               rating: episode.vote_average,
@@ -87,7 +95,7 @@ async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
                     season: episode.season_number,
                     number: index + 1,
                     episode: index + 1,
-                    thumbnail: getThumbnailUrl(episode.still_path, hideEpisodeThumbnails),
+                    thumbnail: getThumbnailUrl(episode.still_path, hideEpisodeThumbnails, topPostersKey, tmdbId, episode.season_number, index + 1),
                     overview: episode.overview,
                     description: episode.overview,
                     rating: episode.vote_average.toString(),
