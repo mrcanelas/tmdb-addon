@@ -4,6 +4,7 @@ import type { RPDBMediaTypes } from '@/contexts/config';
 interface AddonConfig {
   rpdbkey?: string;
   rpdbMediaTypes?: RPDBMediaTypes;
+  topPostersKey?: string;
   geminikey?: string;
   groqkey?: string;
   mdblistkey?: string;
@@ -39,6 +40,7 @@ export function generateAddonUrl(config: AddonConfig): string {
     ...config,
     rpdbkey: config.rpdbkey || undefined,
     rpdbMediaTypes: config.rpdbMediaTypes || undefined,
+    topPostersKey: config.topPostersKey || undefined,
     geminikey: config.geminikey || undefined,
     groqkey: config.groqkey || undefined,
     mdblistkey: config.mdblistkey || undefined,

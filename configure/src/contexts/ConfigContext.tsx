@@ -16,6 +16,7 @@ const allCatalogs = [
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [rpdbMediaTypes, setRpdbMediaTypes] = useState({ poster: true, logo: false, backdrop: false });
+  const [topPostersKey, setTopPostersKey] = useState("");
   const [geminikey, setGeminiKey] = useState("");
   const [groqkey, setGroqKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
@@ -48,6 +49,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const config = {
         rpdbkey,
         rpdbMediaTypes,
+        topPostersKey,
         geminikey,
         groqkey,
         mdblistkey,
@@ -99,6 +101,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         backdrop: config.rpdbMediaTypes.backdrop === true
       });
     }
+    if (config.topPostersKey !== undefined) setTopPostersKey(config.topPostersKey);
     if (config.mdblistkey !== undefined) setMdblistkey(config.mdblistkey);
     if (config.geminikey !== undefined) setGeminiKey(config.geminikey);
     if (config.groqkey !== undefined) setGroqKey(config.groqkey);
@@ -198,6 +201,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const value = {
     rpdbkey,
     rpdbMediaTypes,
+    topPostersKey,
     geminikey,
     groqkey,
     mdblistkey,
@@ -224,6 +228,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     digitalReleaseFilter,
     setRpdbkey,
     setRpdbMediaTypes,
+    setTopPostersKey,
     setGeminiKey,
     setGroqKey,
     setMdblistkey,

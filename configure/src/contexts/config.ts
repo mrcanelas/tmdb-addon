@@ -17,6 +17,7 @@ export type RPDBMediaTypes = {
 export type ConfigContextType = {
   rpdbkey: string;
   rpdbMediaTypes: RPDBMediaTypes;
+  topPostersKey: string;
   geminikey: string;
   groqkey: string;
   mdblistkey: string;
@@ -43,6 +44,7 @@ export type ConfigContextType = {
   digitalReleaseFilter: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
+  setTopPostersKey: (key: string) => void;
   setGeminiKey: (geminikey: string) => void;
   setGroqKey: (groqkey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
