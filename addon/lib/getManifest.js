@@ -120,6 +120,7 @@ async function getManifest(config) {
   const tmdbPrefix = config.tmdbPrefix === "true";
   const provideImdbId = config.provideImdbId === "true";
   const returnImdbId = config.returnImdbId === "true";
+  const replaceCinemeta = config.replaceCinemeta === "true";
   const sessionId = config.sessionId;
   const userCatalogs = config.catalogs || getDefaultCatalogs();
   const translatedCatalogs = loadTranslations(language);
@@ -238,6 +239,28 @@ async function getManifest(config) {
     catalogs = [...catalogs, aiSearchCatalogMovie, aiSearchCatalogSeries];
   }
 
+  // Hidden catalogs for Stremio calendar feature
+  // These receive series IDs from user's library and return metadata with upcoming episodes
+  const calendarVideosCatalog = {
+    id: "calendar-videos",
+    type: "series",
+    name: "Calendar videos",
+    extra: [{ name: "calendarVideosIds", isRequired: true, optionsLimit: 100 }],
+    extraSupported: ["calendarVideosIds"],
+    extraRequired: ["calendarVideosIds"]
+  };
+
+  const lastVideosCatalog = {
+    id: "last-videos",
+    type: "series",
+    name: "Last videos",
+    extra: [{ name: "lastVideosIds", isRequired: true, optionsLimit: 100 }],
+    extraSupported: ["lastVideosIds"],
+    extraRequired: ["lastVideosIds"]
+  };
+
+  catalogs = [...catalogs, calendarVideosCatalog, lastVideosCatalog];
+
   const activeConfigs = [
     `Language: ${language}`,
     `TMDB Account: ${sessionId ? 'Connected' : 'Not Connected'}`,
@@ -250,20 +273,23 @@ async function getManifest(config) {
   ].join(' | ');
 
   return {
-    id: packageJson.name,
+    id: replaceCinemeta ? "com.linvo.cinemeta" : packageJson.name,
     version: packageJson.version,
     favicon: `${process.env.HOST_NAME}/favicon.png`,
     logo: `${process.env.HOST_NAME}/logo.png`,
     background: `${process.env.HOST_NAME}/background.png`,
-    name: "The Movie Database Addon",
-    description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
+    name: replaceCinemeta ? "Cinemeta" : "The Movie Database Addon",
+    description: replaceCinemeta
+      ? "The official addon for movie and series catalogs (TMDB Enhanced with multi-language support). Current settings: " + activeConfigs
+      : "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],
-    idPrefixes: provideImdbId || returnImdbId ? ["tmdb:", "tt"] : ["tmdb:"],
+    idPrefixes: replaceCinemeta ? ["tt"] : (provideImdbId || returnImdbId ? ["tmdb:", "tt"] : ["tmdb:"]),
     stremioAddonsConfig,
     behaviorHints: {
       configurable: true,
       configurationRequired: false,
+      newEpisodeNotifications: true,
     },
     catalogs,
   };

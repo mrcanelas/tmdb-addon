@@ -18,6 +18,7 @@ const { getTraktWatchlist, getTraktRecommendations } = require("./lib/getTraktLi
 const { blurImage } = require('./utils/imageProcessor');
 const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
 const { trackUser, getUserCount, getAggregatedUserCount, trackExternalUsers } = require('./utils/userCounter');
+const { getCalendarMetas } = require('./lib/getCalendar');
 
 addon.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -283,6 +284,17 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           }
           metas = await getTraktRecommendations(...args, genre, traktToken);
           break;
+        case "calendar-videos":
+        case "last-videos":
+          // Parse the extra params for calendar IDs
+          const calendarIds = extra
+            ? Object.fromEntries(
+              new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
+            )
+            : {};
+          const idsString = calendarIds.calendarVideosIds || calendarIds.lastVideosIds || "";
+          metas = await getCalendarMetas(type, language, idsString, config);
+          break;
         default:
           metas = await getCatalog(...args, id, genre, config);
           break;
@@ -305,6 +317,13 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     staleRevalidate: 7 * 24 * 60 * 60,
     staleError: 14 * 24 * 60 * 60,
   };
+
+  // If replacing Cinemeta, we must return "metasDetailed" for calendar catalogs
+  if (config.replaceCinemeta === "true" && (id === "calendar-videos" || id === "last-videos") && metas && metas.metas) {
+    metas.metasDetailed = metas.metas;
+    delete metas.metas; // Enforce strict structure: only return metasDetailed
+  }
+
   respond(res, metas, cacheOpts);
 });
 
@@ -429,7 +448,7 @@ addon.post("/api/stats/track-user", async function (req, res) {
   try {
     await trackUser(req);
     const count = await getUserCount();
-    
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
@@ -443,12 +462,12 @@ addon.post("/api/stats/track-user", async function (req, res) {
 addon.get("/api/stats/users", async function (req, res) {
   try {
     const count = await getAggregatedUserCount();
-    
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
     res.setHeader("Cache-Control", "public, max-age=300"); // Cache por 5 minutos
-    
+
     res.json({ count });
   } catch (error) {
     console.error('Error getting user count:', error);
@@ -463,15 +482,15 @@ addon.post("/api/stats/report-users", async function (req, res) {
     if (!req.body || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Request body is required' });
     }
-    
+
     const { count, instanceId } = req.body;
-    
+
     if (!count || !instanceId) {
       return res.status(400).json({ error: 'count and instanceId are required' });
     }
-    
+
     await trackExternalUsers(parseInt(count), instanceId);
-    
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");

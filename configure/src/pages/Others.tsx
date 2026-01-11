@@ -8,13 +8,12 @@ import { SearchToggle } from "@/components/SearchToggle";
 const Others = () => {
   const { hideEpisodeThumbnails, setHideEpisodeThumbnails } = useConfig();
   const { includeAdult, setIncludeAdult } = useConfig();
-  const { provideImdbId, setProvideImdbId } = useConfig();
-  const { returnImdbId, setReturnImdbId } = useConfig();
   const { tmdbPrefix, setTmdbPrefix } = useConfig();
   const { hideInCinemaTag, setHideInCinemaTag } = useConfig();
   const { castCount, setCastCount } = useConfig();
   const { strictRegionFilter, setStrictRegionFilter } = useConfig();
   const { digitalReleaseFilter, setDigitalReleaseFilter } = useConfig();
+  const { replaceCinemeta, setReplaceCinemeta } = useConfig();
 
   return (
     <main className="md:p-12 px-2 py-12">
@@ -47,29 +46,6 @@ const Others = () => {
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">
             <h1 className="text-sm font-semibold mb-1">
-              Provide IMDb metadata
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Include items with IMDb IDs when handling metadata requests for better integration with other
-              addons.
-            </p>
-          </div>
-          <Switch checked={provideImdbId} onCheckedChange={() => setProvideImdbId(!provideImdbId)} />
-        </Card>
-        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
-          <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold mb-1">
-              Return IMDb ID
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Return only items with IMDb IDs in catalogues for better integration with other addons.
-            </p>
-          </div>
-          <Switch checked={returnImdbId} onCheckedChange={() => setReturnImdbId(!returnImdbId)} />
-        </Card>
-        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
-          <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold mb-1">
               Strict Region Filtering
             </h1>
             <p className="text-gray-500 text-sm">
@@ -89,6 +65,18 @@ const Others = () => {
             </p>
           </div>
           <Switch checked={digitalReleaseFilter} onCheckedChange={setDigitalReleaseFilter} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 border-amber-500/50">
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold mb-1 flex items-center gap-2">
+              🔄 Replace Cinemeta
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Use this addon as a Cinemeta replacement. This enables Stremio calendar support and notifications.
+              <span className="text-amber-500 block mt-1">⚠️ Enabling this will replace the official Cinemeta addon.</span>
+            </p>
+          </div>
+          <Switch checked={replaceCinemeta} onCheckedChange={setReplaceCinemeta} />
         </Card>
         <Card className="flex flex-row items-center justify-between p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer">
           <div className="space-y-0.5">

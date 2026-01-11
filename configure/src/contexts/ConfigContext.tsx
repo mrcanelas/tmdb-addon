@@ -24,8 +24,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [traktRefreshToken, setTraktRefreshToken] = useState("");
   const [tmdbApiKey, setTmdbApiKey] = useState("");
   const [includeAdult, setIncludeAdult] = useState(false);
-  const [provideImdbId, setProvideImdbId] = useState(false);
-  const [returnImdbId, setReturnImdbId] = useState(false);
+  const [provideImdbId, setProvideImdbId] = useState(true);
+  const [returnImdbId, setReturnImdbId] = useState(true);
   const [tmdbPrefix, setTmdbPrefix] = useState(false);
   const [hideEpisodeThumbnails, setHideEpisodeThumbnails] = useState(false);
   const [language, setLanguage] = useState("en-US");
@@ -41,6 +41,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [showAgeRatingWithImdbRating, setShowAgeRatingWithImdbRating] = useState(false);
   const [strictRegionFilter, setStrictRegionFilter] = useState(false);
   const [digitalReleaseFilter, setDigitalReleaseFilter] = useState(false);
+  const [replaceCinemeta, setReplaceCinemeta] = useState(false);
 
   const CONFIG_STORAGE_KEY = 'tmdb-addon-config';
 
@@ -74,6 +75,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         showAgeRatingWithImdbRating,
         strictRegionFilter,
         digitalReleaseFilter,
+        replaceCinemeta,
       };
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
     } catch (error) {
@@ -123,6 +125,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     if (config.showAgeRatingWithImdbRating !== undefined) setShowAgeRatingWithImdbRating(config.showAgeRatingWithImdbRating === "true" || config.showAgeRatingWithImdbRating === true);
     if (config.strictRegionFilter !== undefined) setStrictRegionFilter(config.strictRegionFilter === "true" || config.strictRegionFilter === true);
     if (config.digitalReleaseFilter !== undefined) setDigitalReleaseFilter(config.digitalReleaseFilter === "true" || config.digitalReleaseFilter === true);
+    if (config.replaceCinemeta !== undefined) setReplaceCinemeta(config.replaceCinemeta === "true" || config.replaceCinemeta === true);
     if (config.searchEnabled !== undefined) setSearchEnabled(config.searchEnabled === "true" || config.searchEnabled === true);
 
     if (config.catalogs) {
@@ -226,6 +229,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     showAgeRatingWithImdbRating,
     strictRegionFilter,
     digitalReleaseFilter,
+    replaceCinemeta,
     setRpdbkey,
     setRpdbMediaTypes,
     setTopPostersKey,
@@ -253,6 +257,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setShowAgeRatingWithImdbRating,
     setStrictRegionFilter,
     setDigitalReleaseFilter,
+    setReplaceCinemeta,
     loadConfigFromUrl,
     saveConfigToStorage
   };
