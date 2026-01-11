@@ -33,7 +33,6 @@ interface AddonConfig {
   enableAgeRating?: boolean;
   showAgeRatingWithImdbRating?: boolean;
   strictRegionFilter?: boolean;
-  replaceCinemeta?: boolean;
 }
 
 export function generateAddonUrl(config: AddonConfig): string {
@@ -69,7 +68,6 @@ export function generateAddonUrl(config: AddonConfig): string {
     showAgeRatingInGenres: typeof config.showAgeRatingInGenres === "boolean" ? String(config.showAgeRatingInGenres) : undefined,
     showAgeRatingWithImdbRating: typeof config.showAgeRatingWithImdbRating === "boolean" ? String(config.showAgeRatingWithImdbRating) : undefined,
     strictRegionFilter: typeof config.strictRegionFilter === "boolean" ? String(config.strictRegionFilter) : undefined,
-    replaceCinemeta: typeof config.replaceCinemeta === "boolean" ? String(config.replaceCinemeta) : undefined,
   };
 
   const cleanConfig = Object.fromEntries(

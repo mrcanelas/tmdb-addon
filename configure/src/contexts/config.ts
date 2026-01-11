@@ -42,7 +42,6 @@ export type ConfigContextType = {
   showAgeRatingWithImdbRating: boolean;
   strictRegionFilter: boolean;
   digitalReleaseFilter: boolean;
-  replaceCinemeta: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
   setTopPostersKey: (key: string) => void;
@@ -70,7 +69,6 @@ export type ConfigContextType = {
   setShowAgeRatingWithImdbRating: (show: boolean) => void;
   setStrictRegionFilter: (enable: boolean) => void;
   setDigitalReleaseFilter: (enable: boolean) => void;
-  setReplaceCinemeta: (enable: boolean) => void;
   loadConfigFromUrl: () => void;
   saveConfigToStorage: () => void;
 };

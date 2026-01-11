@@ -18,7 +18,6 @@ const { getTraktWatchlist, getTraktRecommendations } = require("./lib/getTraktLi
 const { blurImage } = require('./utils/imageProcessor');
 const { testProxy, PROXY_CONFIG } = require('./utils/httpClient');
 const { trackUser, getUserCount, getAggregatedUserCount, trackExternalUsers } = require('./utils/userCounter');
-const { getCalendarMetas } = require('./lib/getCalendar');
 
 addon.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -284,17 +283,6 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
           }
           metas = await getTraktRecommendations(...args, genre, traktToken);
           break;
-        case "calendar-videos":
-        case "last-videos":
-          // Parse the extra params for calendar IDs
-          const calendarIds = extra
-            ? Object.fromEntries(
-              new URLSearchParams(req.url.split("/").pop().split("?")[0].slice(0, -5)).entries()
-            )
-            : {};
-          const idsString = calendarIds.calendarVideosIds || calendarIds.lastVideosIds || "";
-          metas = await getCalendarMetas(type, language, idsString, config);
-          break;
         default:
           metas = await getCatalog(...args, id, genre, config);
           break;
@@ -317,13 +305,6 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
     staleRevalidate: 7 * 24 * 60 * 60,
     staleError: 14 * 24 * 60 * 60,
   };
-
-  // If replacing Cinemeta, we must return "metasDetailed" for calendar catalogs
-  if (config.replaceCinemeta === "true" && (id === "calendar-videos" || id === "last-videos") && metas && metas.metas) {
-    metas.metasDetailed = metas.metas;
-    delete metas.metas; // Enforce strict structure: only return metasDetailed
-  }
-
   respond(res, metas, cacheOpts);
 });
 
