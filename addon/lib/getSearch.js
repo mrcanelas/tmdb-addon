@@ -55,12 +55,12 @@ async function getSearch(id, type, language, query, config) {
               if (type === "movie") {
                 const res = await moviedb.searchMovie(parameters);
                 if (res.results && res.results.length > 0) {
-                  return parseMedia(res.results[0], 'movie', genreList);
+                  return parseMedia(res.results[0], 'movie', genreList, config);
                 }
               } else {
                 const res = await moviedb.searchTv(parameters);
                 if (res.results && res.results.length > 0) {
-                  return parseMedia(res.results[0], 'tv', genreList);
+                  return parseMedia(res.results[0], 'tv', genreList, config);
                 }
               }
               return null;
@@ -99,12 +99,12 @@ async function getSearch(id, type, language, query, config) {
               if (type === "movie") {
                 const res = await moviedb.searchMovie(parameters);
                 if (res.results && res.results.length > 0) {
-                  return parseMedia(res.results[0], 'movie', genreList);
+                  return parseMedia(res.results[0], 'movie', genreList, config);
                 }
               } else {
                 const res = await moviedb.searchTv(parameters);
                 if (res.results && res.results.length > 0) {
-                  return parseMedia(res.results[0], 'tv', genreList);
+                  return parseMedia(res.results[0], 'tv', genreList, config);
                 }
               }
               return null;
@@ -167,7 +167,7 @@ async function getSearch(id, type, language, query, config) {
               return el.release_date <= today;
             });
           }
-          results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
+          results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList, config)); });
         })
         .catch(console.error);
 
@@ -175,7 +175,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchMovie({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList)); });
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'movie', genreList, config)); });
           })
           .catch(console.error);
       }
@@ -187,13 +187,13 @@ async function getSearch(id, type, language, query, config) {
             .then((credits) => {
               credits.cast.map((el) => {
                 if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
-                  searchResults.push(parseMedia(el, 'movie', genreList));
+                  searchResults.push(parseMedia(el, 'movie', genreList, config));
                 }
               });
               credits.crew.map((el) => {
                 if (el.job === "Director" || el.job === "Writer") {
                   if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
-                    searchResults.push(parseMedia(el, 'movie', genreList));
+                    searchResults.push(parseMedia(el, 'movie', genreList, config));
                   }
                 }
               });
@@ -213,7 +213,7 @@ async function getSearch(id, type, language, query, config) {
               return el.first_air_date <= today;
             });
           }
-          results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
+          results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList, config)) });
         })
         .catch(console.error);
 
@@ -221,7 +221,7 @@ async function getSearch(id, type, language, query, config) {
         await moviedb
           .searchTv({ query: searchQuery, language, include_adult: config.includeAdult })
           .then((res) => {
-            res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList)) });
+            res.results.map((el) => { searchResults.push(parseMedia(el, 'tv', genreList, config)) });
           })
           .catch(console.error);
       }
@@ -234,14 +234,14 @@ async function getSearch(id, type, language, query, config) {
               credits.cast.map((el) => {
                 if (el.episode_count >= 5) {
                   if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
-                    searchResults.push(parseMedia(el, 'tv', genreList));
+                    searchResults.push(parseMedia(el, 'tv', genreList, config));
                   }
                 }
               });
               credits.crew.map((el) => {
                 if (el.job === "Director" || el.job === "Writer") {
                   if (!searchResults.find((meta) => meta.id === `tmdb:${el.id}`)) {
-                    searchResults.push(parseMedia(el, 'tv', genreList));
+                    searchResults.push(parseMedia(el, 'tv', genreList, config));
                   }
                 }
               });

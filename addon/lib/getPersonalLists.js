@@ -112,7 +112,7 @@ async function getFavorites(type, language, page, genre, config) {
 
     return fetchFunction(parameters)
         .then((res) => ({
-            metas: sortResults(res.results, genre).map(el => parseMedia(el, type, genreList))
+            metas: sortResults(res.results, genre).map(el => parseMedia(el, type, genreList, config))
         }))
         .catch(console.error);
 }
@@ -128,7 +128,7 @@ async function getWatchList(type, language, page, genre, config) {
 
     return fetchFunction(parameters)
         .then((res) => ({
-            metas: sortResults(res.results, genre).map(el => parseMedia(el, type, genreList))
+            metas: sortResults(res.results, genre).map(el => parseMedia(el, type, genreList, config))
         }))
         .catch(console.error);
 }

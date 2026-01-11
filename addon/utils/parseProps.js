@@ -254,17 +254,41 @@ function getRpdbPoster(type, id, language, rpdbkey, rpdbMediaTypes = null) {
   return getRpdbMedia(type, id, language, rpdbkey, "poster");
 }
 
-function parseMedia(el, type, genreList = []) {
+function parseMedia(el, type, genreList = [], config = {}) {
   const genres = Array.isArray(el.genre_ids)
     ? el.genre_ids.map(genre => genreList.find((x) => x.id === genre)?.name || 'Unknown')
     : [];
+
+  const { topPostersKey, rpdbkey, rpdbMediaTypes, language = 'en-US' } = config;
+  const tmdbType = type === 'movie' ? 'movie' : 'series';
+  
+  // Generate poster URL
+  let posterUrl = `https://image.tmdb.org/t/p/w500${el.poster_path}`;
+  let backgroundUrl = `https://image.tmdb.org/t/p/original${el.backdrop_path}`;
+  
+  // Use Top Posters if available (priority)
+  if (topPostersKey && el.id) {
+    posterUrl = getTopPosterMedia(tmdbType, el.id, language, topPostersKey, 'poster');
+    if (el.backdrop_path) {
+      backgroundUrl = getTopPosterMedia(tmdbType, el.id, language, topPostersKey, 'backdrop');
+    }
+  }
+  // Fall back to RPDB if available
+  else if (rpdbkey && el.id) {
+    if (!rpdbMediaTypes || rpdbMediaTypes.poster !== false) {
+      posterUrl = getRpdbMedia(tmdbType, el.id, language, rpdbkey, 'poster');
+    }
+    if (rpdbMediaTypes?.backdrop && el.backdrop_path) {
+      backgroundUrl = getRpdbMedia(tmdbType, el.id, language, rpdbkey, 'backdrop');
+    }
+  }
 
   return {
     id: `tmdb:${el.id}`,
     name: type === 'movie' ? el.title : el.name,
     genre: genres,
-    poster: `https://image.tmdb.org/t/p/w500${el.poster_path}`,
-    background: `https://image.tmdb.org/t/p/original${el.backdrop_path}`,
+    poster: posterUrl,
+    background: backgroundUrl,
     posterShape: "regular",
     imdbRating: el.vote_average ? el.vote_average.toFixed(1) : 'N/A',
     year: type === 'movie' ? (el.release_date ? el.release_date.substr(0, 4) : "") : (el.first_air_date ? el.first_air_date.substr(0, 4) : ""),
