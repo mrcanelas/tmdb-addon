@@ -217,8 +217,9 @@ async function parseMediaImage(type, id, imagePath, language, rpdbkey, mediaType
   const tmdbImage = `https://image.tmdb.org/t/p/${tmdbSize}${imagePath}`;
 
   // Verifica se o Top Posters está habilitado (prioridade sobre RPDB)
-  if (topPostersKey && (mediaType === "poster" || mediaType === "backdrop")) {
-    return getTopPosterMedia(type, id, language, topPostersKey, mediaType);
+  // Top Posters não tem backdrops
+  if (topPostersKey && mediaType === "poster") {
+    return getTopPosterMedia(type, id, language, topPostersKey, mediaType, imagePath);
   }
 
   // Verifica se o RPDB está habilitado e se o tipo de mídia específico está habilitado
@@ -261,17 +262,15 @@ function parseMedia(el, type, genreList = [], config = {}) {
 
   const { topPostersKey, rpdbkey, rpdbMediaTypes, language = 'en-US' } = config;
   const tmdbType = type === 'movie' ? 'movie' : 'series';
-  
+
   // Generate poster URL
   let posterUrl = `https://image.tmdb.org/t/p/w500${el.poster_path}`;
   let backgroundUrl = `https://image.tmdb.org/t/p/original${el.backdrop_path}`;
-  
+
   // Use Top Posters if available (priority)
+  // Top Posters não tem backdrops
   if (topPostersKey && el.id) {
-    posterUrl = getTopPosterMedia(tmdbType, el.id, language, topPostersKey, 'poster');
-    if (el.backdrop_path) {
-      backgroundUrl = getTopPosterMedia(tmdbType, el.id, language, topPostersKey, 'backdrop');
-    }
+    posterUrl = getTopPosterMedia(tmdbType, el.id, language, topPostersKey, 'poster', el.poster_path);
   }
   // Fall back to RPDB if available
   else if (rpdbkey && el.id) {
@@ -312,12 +311,12 @@ function getRpdbMedia(type, id, language, rpdbkey, mediaType) {
 }
 
 // Função para obter poster do Top Posters
-function getTopPosterMedia(type, id, language, topPostersKey, mediaType) {
+function getTopPosterMedia(type, id, language, topPostersKey, mediaType, imagePath) {
   const mediaId = type === 'movie' ? `movie-${id}` : `series-${id}`;
   const posterType = mediaType === 'backdrop' ? 'backdrop-default' : 'poster-default';
   const fullLanguageCodes = ['pt-PT', 'pt-BR', 'es-ES', 'es-MX', 'zh-CN', 'zh-HK', 'zh-SG', 'zh-TW', 'it-IT', 'de-DE', 'fr-FR'];
   const lang = fullLanguageCodes.includes(language) ? language : language.split("-")[0];
-  const tmdbImage = `https://image.tmdb.org/t/p/${mediaType === 'backdrop' ? 'original' : 'w500'}`;
+  const tmdbImage = `https://image.tmdb.org/t/p/${mediaType === 'backdrop' ? 'original' : 'w500'}${imagePath || ''}`;
 
   // Add fallback_url to redirect to TMDB image if Top Posters fails
   return `https://api.top-streaming.stream/${topPostersKey}/tmdb/${posterType}/${mediaId}.jpg?lang=${lang}&fallback_url=${encodeURIComponent(tmdbImage)}`;
@@ -325,7 +324,7 @@ function getTopPosterMedia(type, id, language, topPostersKey, mediaType) {
 
 // Função para obter poster do Top Posters (usado em index.js)
 function getTopPosterPoster(type, id, language, topPostersKey) {
-  return getTopPosterMedia(type, id, language, topPostersKey, "poster");
+  return getTopPosterMedia(type, id, language, topPostersKey, "poster", null);
 }
 
 function parseCollection(collObj) {
