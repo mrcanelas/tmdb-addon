@@ -214,7 +214,7 @@ function parseConfig(catalogChoices) {
 async function parseMediaImage(type, id, imagePath, language, rpdbkey, mediaType = "poster", rpdbMediaTypes = null, topPostersKey = null) {
   // Determina o tamanho da imagem do TMDB baseado no tipo de mídia
   const tmdbSize = mediaType === "backdrop" || mediaType === "logo" ? "original" : "w500";
-  const tmdbImage = `https://image.tmdb.org/t/p/${tmdbSize}${imagePath}`;
+  const tmdbImage = imagePath ? `https://image.tmdb.org/t/p/${tmdbSize}${imagePath}` : null;
 
   // Verifica se o Top Posters está habilitado (prioridade sobre RPDB)
   // Top Posters não tem backdrops
@@ -264,8 +264,8 @@ function parseMedia(el, type, genreList = [], config = {}) {
   const tmdbType = type === 'movie' ? 'movie' : 'series';
 
   // Generate poster URL
-  let posterUrl = `https://image.tmdb.org/t/p/w500${el.poster_path}`;
-  let backgroundUrl = `https://image.tmdb.org/t/p/original${el.backdrop_path}`;
+  let posterUrl = el.poster_path ? `https://image.tmdb.org/t/p/w500${el.poster_path}` : null;
+  let backgroundUrl = el.backdrop_path ? `https://image.tmdb.org/t/p/original${el.backdrop_path}` : null;
 
   // Use Top Posters if available (priority)
   // Top Posters não tem backdrops
