@@ -25,24 +25,77 @@ async function openGithubIssue(title, body, labels = []) {
   );
 }
 
-async function issueExistsOnGithub(title) {
+async function issueExistsOnGithub(title, tmdbId) {
   if (!GITHUB_TOKEN || !GITHUB_REPO) return false;
-  const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?labels=season-mismatch&per_page=100`;
+  
   try {
-    const resp = await axios.get(url, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` }
+    let page = 1;
+    let allIssues = [];
+    let hasMore = true;
+    const maxPages = 50; // Limite de segurança para evitar loops infinitos
+    
+    // Buscar todas as issues (abertas e fechadas) usando paginação
+    while (hasMore && page <= maxPages) {
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?labels=season-mismatch&state=all&per_page=100&page=${page}`;
+      const resp = await axios.get(url, {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
+      });
+      
+      if (resp.data.length === 0) {
+        hasMore = false;
+      } else {
+        allIssues = allIssues.concat(resp.data);
+        // Se retornou menos de 100, é a última página
+        if (resp.data.length < 100) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+    }
+    
+    console.log(`Checked ${allIssues.length} existing issues for duplicates`);
+    
+    // Verificar se já existe issue com o mesmo título
+    const titleExists = allIssues.some(issue => issue.title === title);
+    if (titleExists) {
+      console.log(`Found duplicate issue by title: "${title}"`);
+      return true;
+    }
+    
+    // Verificar se já existe issue com o mesmo tmdbId no corpo
+    const tmdbIdStr = String(tmdbId);
+    const tmdbIdPattern = new RegExp(`\\*\\*TMDB ID:\\*\\*\\s*${tmdbIdStr}\\b`);
+    const tmdbIdExists = allIssues.some(issue => {
+      if (issue.body) {
+        return tmdbIdPattern.test(issue.body);
+      }
+      return false;
     });
-    return resp.data.some(issue => issue.title === title);
+    
+    if (tmdbIdExists) {
+      console.log(`Found duplicate issue by TMDB ID: ${tmdbIdStr}`);
+      return true;
+    }
+    
+    return false;
   } catch (e) {
-    console.error('Error checking existing issues:', e.message);
+    // Se houver erro (ex: rate limit), assumir que a issue pode existir para evitar duplicatas
+    console.error(`Error checking existing issues for TMDB ID ${tmdbId}:`, e.message);
+    if (e.response && e.response.status === 403) {
+      console.error('GitHub API rate limit exceeded. Assuming issue exists to prevent duplicates.');
+      return true; // Retorna true para evitar criar duplicatas quando há rate limit
+    }
     return false;
   }
 }
 
 function existsInDiferentOrder(tmdbId) {
   try {
+    // Converter tmdbId para string para comparação consistente
+    const tmdbIdStr = String(tmdbId);
     return diferentOrder.some(item => 
-      item.tmdbId === tmdbId
+      String(item.tmdbId) === tmdbIdStr
     );
   } catch (e) {
     console.error('Error reading diferentOrder.json:', e.message);
@@ -160,11 +213,13 @@ async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
 
   // 3. Compare and open issue if necessary
   if (tmdbSeasons !== stremioSeasons) {
-    console.log("Mismatch found")
+    console.log(`Mismatch found for TMDB ID ${tmdbId}: TMDB=${tmdbSeasons}, Stremio=${stremioSeasons}`);
     
-    // Check if title already exists in diferentOrder.json
+    // PRIMEIRA VERIFICAÇÃO: Check if title already exists in diferentOrder.json
     if (existsInDiferentOrder(tmdbId)) {
-      console.log("Title already exists in diferentOrder.json, skipping issue creation");
+      console.log(`TMDB ID ${tmdbId} already exists in diferentOrder.json, skipping issue creation`);
+      // Ainda atualiza o lastChecked mesmo que não crie issue
+      await setLastChecked(tmdbId, { lastChecked: now.toISOString() });
       return;
     }
     
@@ -180,16 +235,23 @@ async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
       `\n` +
       `- [TMDB page](${tmdbLink})\n` +
       `- [Stremio page](${stremioLink})`;
-    // Check if issue already exists for this title
-    const exists = await issueExistsOnGithub(issueTitle);
-    console.log("Exists:", exists)  
-    if (!exists) {
-      console.log("Creating issue:", issueTitle)
-      await openGithubIssue(
-        issueTitle,
-        body,
-        ['season-mismatch']
-      );
+    
+    // SEGUNDA VERIFICAÇÃO: Check if issue already exists on GitHub (por título e por tmdbId)
+    const exists = await issueExistsOnGithub(issueTitle, tmdbId);
+    if (exists) {
+      console.log(`Issue already exists for TMDB ID ${tmdbId} or title "${issueTitle}", skipping creation`);
+    } else {
+      console.log(`Creating issue for TMDB ID ${tmdbId}: "${issueTitle}"`);
+      try {
+        await openGithubIssue(
+          issueTitle,
+          body,
+          ['season-mismatch']
+        );
+        console.log(`Issue created successfully for TMDB ID ${tmdbId}`);
+      } catch (error) {
+        console.error(`Error creating issue for TMDB ID ${tmdbId}:`, error.message);
+      }
     }
   }
 
