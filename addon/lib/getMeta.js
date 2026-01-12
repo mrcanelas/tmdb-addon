@@ -347,15 +347,15 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
     };
     if (hideInCinemaTag) delete response.imdb_id;
 
-    // Season check (without opening issue)
-    if (response.imdb_id && response.videos && response.name) {
-        checkSeasonsAndReport(
-            tmdbId,
-            response.imdb_id,
-            { meta: response },
-            response.name
-        );
-    }
+    // // Season check (without opening issue)
+    // if (response.imdb_id && response.videos && response.name) {
+    //     checkSeasonsAndReport(
+    //         tmdbId,
+    //         response.imdb_id,
+    //         { meta: response },
+    //         response.name
+    //     );
+    // }
 
     return response;
 };
