@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ConfigContext, type ConfigContextType, type CatalogConfig } from "./config";
+import { ConfigContext, type ConfigContextType, type CatalogConfig, type TopPostersConfig } from "./config";
 import {
   baseCatalogs,
   authCatalogs,
@@ -16,6 +16,14 @@ const allCatalogs = [
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [rpdbMediaTypes, setRpdbMediaTypes] = useState({ poster: true, logo: false, backdrop: false });
+  const [topposterskey, setTopposterskey] = useState("");
+  const [toppostersConfig, setToppostersConfig] = useState<TopPostersConfig>({
+    posterType: 'poster-default',
+    style: 'modern',
+    thumbnailBadgePosition: 'top-right',
+    thumbnailBadgeSize: 'small',
+    thumbnailBlur: false
+  });
   const [geminikey, setGeminiKey] = useState("");
   const [groqkey, setGroqKey] = useState("");
   const [mdblistkey, setMdblistkey] = useState("");
@@ -48,6 +56,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       const config = {
         rpdbkey,
         rpdbMediaTypes,
+        topposterskey,
+        toppostersConfig,
         geminikey,
         groqkey,
         mdblistkey,
@@ -97,6 +107,16 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         poster: config.rpdbMediaTypes.poster !== false,
         logo: config.rpdbMediaTypes.logo === true,
         backdrop: config.rpdbMediaTypes.backdrop === true
+      });
+    }
+    if (config.topposterskey !== undefined) setTopposterskey(config.topposterskey);
+    if (config.toppostersConfig) {
+      setToppostersConfig({
+        posterType: config.toppostersConfig.posterType || 'poster-default',
+        style: config.toppostersConfig.style || 'modern',
+        thumbnailBadgePosition: config.toppostersConfig.thumbnailBadgePosition || 'top-right',
+        thumbnailBadgeSize: config.toppostersConfig.thumbnailBadgeSize || 'small',
+        thumbnailBlur: config.toppostersConfig.thumbnailBlur === true
       });
     }
     if (config.mdblistkey !== undefined) setMdblistkey(config.mdblistkey);
@@ -198,6 +218,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const value = {
     rpdbkey,
     rpdbMediaTypes,
+    topposterskey,
+    toppostersConfig,
     geminikey,
     groqkey,
     mdblistkey,
@@ -224,6 +246,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     digitalReleaseFilter,
     setRpdbkey,
     setRpdbMediaTypes,
+    setTopposterskey,
+    setToppostersConfig,
     setGeminiKey,
     setGroqKey,
     setMdblistkey,
