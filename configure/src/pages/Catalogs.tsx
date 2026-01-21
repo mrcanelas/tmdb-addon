@@ -91,7 +91,7 @@ const Catalogs = () => {
           type: c.type,
           name: c.name,
           enabled: c.id.startsWith("streaming."),
-          showInHome: false
+          showInHome: c.id.startsWith("streaming.")
         })),
       ];
     });
