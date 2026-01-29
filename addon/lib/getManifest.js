@@ -245,6 +245,7 @@ async function getManifest(config) {
     `MDBList Integration: ${config.mdblistkey ? 'Connected' : 'Not Connected'}`,
     `IMDb Integration: ${provideImdbId || returnImdbId ? "Enabled" : "Disabled"}`,
     `RPDB Integration: ${config.rpdbkey ? 'Enabled' : 'Disabled'}`,
+    `Top Posters Integration: ${config.topposterskey ? 'Enabled' : 'Disabled'}`,
     `Search: ${config.searchEnabled !== "false" ? 'Enabled' : 'Disabled'}`,
     `Active Catalogs: ${catalogs.length}`
   ].join(' | ');
