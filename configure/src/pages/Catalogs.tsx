@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useConfig } from "@/contexts/ConfigContext";
 import { baseCatalogs, authCatalogs, traktCatalogs, streamingCatalogs } from "@/data/catalogs";
-import { 
-  DndContext, 
-  DragEndEvent, 
+import {
+  DndContext,
+  DragEndEvent,
   closestCenter,
   TouchSensor,
   MouseSensor,
   useSensor,
-  useSensors 
+  useSensors
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { SortableCatalogCard } from "@/components/SortableCatalogCard";
@@ -23,9 +23,9 @@ const CatalogColumn = ({
 }) => (
   <div className="flex flex-col gap-6">
     <h2 className="text-lg font-semibold">{title}</h2>
-    <DndContext 
+    <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter} 
+      collisionDetection={closestCenter}
       onDragEnd={onDragEnd}
     >
       <SortableContext
@@ -37,9 +37,9 @@ const CatalogColumn = ({
             key={`${catalog.id}-${catalog.type}`}
             id={`${catalog.id}-${catalog.type}`}
             catalog={catalog}
-            name={catalog.name} 
+            name={catalog.name}
             config={catalogConfigs[`${catalog.id}-${catalog.type}`]}
-            onChange={(enabled, showInHome) => 
+            onChange={(enabled, showInHome) =>
               onCatalogChange(catalog.id, catalog.type, enabled, showInHome)
             }
           />
@@ -57,7 +57,7 @@ const Catalogs = () => {
       distance: 10,
     },
   });
-  
+
   const touchSensor = useSensor(TouchSensor, {
     activationConstraint: {
       delay: 250,
@@ -86,12 +86,12 @@ const Catalogs = () => {
 
       return [
         ...prev,
-        ...newCatalogs.map((c) => ({ 
-          id: c.id, 
-          type: c.type, 
-          name: c.name, 
-          enabled: false,
-          showInHome: false 
+        ...newCatalogs.map((c) => ({
+          id: c.id,
+          type: c.type,
+          name: c.name,
+          enabled: c.id.startsWith("streaming."),
+          showInHome: c.id.startsWith("streaming.")
         })),
       ];
     });

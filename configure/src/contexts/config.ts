@@ -14,9 +14,20 @@ export type RPDBMediaTypes = {
   backdrop: boolean;
 };
 
+export type TopPostersConfig = {
+  posterType: 'poster-default' | 'poster-textless';
+  style: 'modern' | 'rpdb';
+  // Thumbnail options (Premium only)
+  thumbnailBadgePosition: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center';
+  thumbnailBadgeSize: 'small' | 'medium' | 'large';
+  thumbnailBlur: boolean;
+};
+
 export type ConfigContextType = {
   rpdbkey: string;
   rpdbMediaTypes: RPDBMediaTypes;
+  topposterskey: string;
+  toppostersConfig: TopPostersConfig;
   geminikey: string;
   groqkey: string;
   mdblistkey: string;
@@ -43,6 +54,8 @@ export type ConfigContextType = {
   digitalReleaseFilter: boolean;
   setRpdbkey: (rpdbkey: string) => void;
   setRpdbMediaTypes: (types: RPDBMediaTypes) => void;
+  setTopposterskey: (key: string) => void;
+  setToppostersConfig: (config: TopPostersConfig) => void;
   setGeminiKey: (geminikey: string) => void;
   setGroqKey: (groqkey: string) => void;
   setMdblistkey: (mdblistkey: string) => void;
