@@ -19,6 +19,12 @@ export const integrations: Integration[] = [
     description: "Add ratings and scores to your movies and TV shows posters.",
   },
   {
+    id: "topposters",
+    name: "Top Posters",
+    icon: "https://api.top-streaming.stream/favicon.ico",
+    description: "High-quality posters with rating and trend badges. Takes priority over RPDB for posters.",
+  },
+  {
     id: "streaming",
     name: "Streaming Catalogs",
     icon: "https://www.svgrepo.com/show/303341/netflix-1-logo.svg",
