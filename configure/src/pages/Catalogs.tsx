@@ -97,6 +97,39 @@ const Catalogs = () => {
     });
   }, [sessionId, mdblistkey, streaming, setCatalogs]);
 
+  // Recover MDBlist catalog names when they're missing (e.g. after restore from URL)
+  useEffect(() => {
+    const mdblistCatalogs = catalogs.filter(
+      (c) =>
+        c.id.startsWith("mdblist.") &&
+        (c.name === c.id || !c.name || /^mdblist\.\d+\.(movie|series)$/.test(c.name || ""))
+    );
+    if (mdblistCatalogs.length === 0 || !mdblistkey) return;
+
+    let cancelled = false;
+    fetch(`https://api.mdblist.com/lists/user?apikey=${mdblistkey}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((lists) => {
+        if (cancelled || !Array.isArray(lists)) return;
+        const idToName = new Map(
+          lists.map((list) => [
+            `mdblist.${list.id}.${list.mediatype === "movie" ? "movie" : "series"}`,
+            list.name
+          ])
+        );
+        const needsUpdate = mdblistCatalogs.some((c) => idToName.has(c.id));
+        if (!needsUpdate) return;
+        setCatalogs((prev) =>
+          prev.map((c) =>
+            idToName.has(c.id) ? { ...c, name: idToName.get(c.id)! } : c
+          )
+        );
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [catalogs, mdblistkey, setCatalogs]);
+
   const catalogConfigs = catalogs.reduce((acc, config) => {
     const key = `${config.id}-${config.type}`;
     acc[key] = {

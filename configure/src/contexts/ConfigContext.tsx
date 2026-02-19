@@ -6,6 +6,7 @@ import {
   streamingCatalogs
 } from "@/data/catalogs";
 import { decompressFromEncodedURIComponent } from 'lz-string';
+import { importConfigFromHash } from '@/lib/config';
 
 const allCatalogs = [
   ...baseCatalogs,
@@ -100,6 +101,13 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const restoreConfigFromHash = (hash: string): boolean => {
+    const config = importConfigFromHash(hash);
+    if (!config) return false;
+    applyConfig(config);
+    return true;
+  };
+
   const applyConfig = (config: any) => {
     if (config.rpdbkey !== undefined) setRpdbkey(config.rpdbkey);
     if (config.rpdbMediaTypes) {
@@ -149,7 +157,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
         );
         return {
           ...catalog,
-          name: existingCatalog?.name || catalog.id,
+          name: catalog.name || existingCatalog?.name || catalog.id,
           enabled: catalog.enabled !== undefined ? catalog.enabled : true
         };
       });
@@ -273,7 +281,8 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setStrictRegionFilter,
     setDigitalReleaseFilter,
     loadConfigFromUrl,
-    saveConfigToStorage
+    saveConfigToStorage,
+    restoreConfigFromHash
   };
 
   return (
