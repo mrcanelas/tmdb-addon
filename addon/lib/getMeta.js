@@ -73,9 +73,19 @@ const getCacheKey = (
     tmdbId,
     config
 ) => {
-    const { enableAgeRating, showAgeRatingInGenres, showAgeRatingWithImdbRating, rpdbkey, topposterskey, toppostersConfig } = normalizeConfig(config);
+    const {
+        enableAgeRating,
+        showAgeRatingInGenres,
+        showAgeRatingWithImdbRating,
+        rpdbkey,
+        topposterskey,
+        toppostersConfig,
+        returnImdbId,
+    } = normalizeConfig(config);
     const tpConfigStr = toppostersConfig ? JSON.stringify(toppostersConfig) : '';
-    return `${type}-${language}-${tmdbId}-${rpdbkey}-${topposterskey}-${tpConfigStr}-ageRating:${enableAgeRating}-${showAgeRatingInGenres}-${showAgeRatingWithImdbRating}`;
+    return `${type}-${language}-${tmdbId}-${rpdbkey}-${topposterskey}-${tpConfigStr}` +
+        `-ageRating:${enableAgeRating}-${showAgeRatingInGenres}-${showAgeRatingWithImdbRating}` +
+        `-returnImdbId:${returnImdbId}`;
 }
 
 async function getCachedImdbRating(imdbId, type) {
