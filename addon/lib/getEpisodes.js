@@ -57,8 +57,9 @@ async function getEpisodes(language, tmdbId, imdb_id, seasons, config = {}) {
   const { hideEpisodeThumbnails = false, topposterskey = null, toppostersConfig = null } = config;
   const moviedb = getTmdbClient(config);
   const seasonString = genSeasonsString(seasons);
-  const difOrder = diferentOrder.find((data) => data.tmdbId === tmdbId);
-  const difImdbId = diferentImdbId.find((data) => data.tmdbId === tmdbId);
+  const tmdbIdStr = String(tmdbId);
+  const difOrder = diferentOrder.find((data) => String(data.tmdbId) === tmdbIdStr);
+  const difImdbId = diferentImdbId.find((data) => String(data.tmdbId) === tmdbIdStr);
   imdb_id = !difImdbId ? imdb_id : difImdbId.imdbId;
 
   if (difOrder != undefined) {
