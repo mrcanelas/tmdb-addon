@@ -322,7 +322,7 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
   delete config.catalogs
   delete config.streaming
 
-  if (req.params.id.includes("tmdb:")) {
+  if (id.includes("tmdb:")) {
     // Validate that tmdbId is numeric
     if (!/^\d+$/.test(tmdbId)) {
       res.status(404).json({ error: "Invalid TMDB ID" });
@@ -360,8 +360,8 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
         res.status(500).json({ error: "Internal server error" });
       }
     }
-  }
-  if (req.params.id.includes("tt")) {
+    return;
+  } else if (id.includes("tt")) {
     try {
       const tmdbId = await getTmdb(type, imdbId, config);
       if (tmdbId) {
@@ -398,7 +398,11 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
         res.status(500).json({ error: "Internal server error" });
       }
     }
+    return;
   }
+
+  res.status(400).json({ error: "Invalid ID format. Expected tmdb:<id> or tt<id>" });
+  return;
 });
 
 addon.get("/api/proxy/status", async function (req, res) {
