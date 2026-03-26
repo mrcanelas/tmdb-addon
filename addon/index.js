@@ -229,16 +229,21 @@ addon.get('/:catalogChoices?/configure', function (req, res) {
 });
 
 addon.get("/:catalogChoices?/manifest.json", async function (req, res) {
-  const { catalogChoices } = req.params;
-  const config = parseConfig(catalogChoices) || {};
-  const manifest = await getManifest(config);
+  try {
+    const { catalogChoices } = req.params;
+    const config = parseConfig(catalogChoices) || {};
+    const manifest = await getManifest(config);
 
-  const cacheOpts = {
-    cacheMaxAge: 12 * 60 * 60,
-    staleRevalidate: 14 * 24 * 60 * 60,
-    staleError: 30 * 24 * 60 * 60,
-  };
-  respond(res, manifest, cacheOpts);
+    const cacheOpts = {
+      cacheMaxAge: 12 * 60 * 60,
+      staleRevalidate: 14 * 24 * 60 * 60,
+      staleError: 30 * 24 * 60 * 60,
+    };
+    respond(res, manifest, cacheOpts);
+  } catch (error) {
+    console.error('Error generating manifest:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
 });
 
 addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (req, res) {
@@ -357,24 +362,41 @@ addon.get("/:catalogChoices?/meta/:type/:id.json", async function (req, res) {
     }
   }
   if (req.params.id.includes("tt")) {
-    const tmdbId = await getTmdb(type, imdbId, config);
-    if (tmdbId) {
-      const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
-        return await getMeta(type, language, tmdbId, config);
-      });
-      const cacheOpts = {
-        staleRevalidate: 20 * 24 * 60 * 60,
-        staleError: 30 * 24 * 60 * 60,
-      };
-      if (type == "movie") {
-        cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
-      } else if (type == "series") {
-        const hasEnded = !!((resp.releaseInfo || "").length > 5);
-        cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+    try {
+      const tmdbId = await getTmdb(type, imdbId, config);
+      if (tmdbId) {
+        const resp = await cacheWrapMeta(`${language}:${type}:${tmdbId}`, async () => {
+          return await getMeta(type, language, tmdbId, config);
+        });
+        const cacheOpts = {
+          staleRevalidate: 20 * 24 * 60 * 60,
+          staleError: 30 * 24 * 60 * 60,
+        };
+        if (type == "movie") {
+          cacheOpts.cacheMaxAge = 14 * 24 * 60 * 60;
+        } else if (type == "series") {
+          const hasEnded = !!((resp.releaseInfo || "").length > 5);
+          cacheOpts.cacheMaxAge = (hasEnded ? 14 : 1) * 24 * 60 * 60;
+        }
+        respond(res, resp, cacheOpts);
+      } else {
+        respond(res, { meta: {} });
       }
-      respond(res, resp, cacheOpts);
-    } else {
-      respond(res, { meta: {} });
+    } catch (e) {
+      // Handle missing or invalid TMDB API key error
+      if (e.message === "TMDB_API_KEY_MISSING" || e.message === "TMDB_API_KEY_INVALID") {
+        res.status(e.statusCode || 401).json({
+          error: e.userMessage || "TMDB API Key is required or invalid",
+          code: e.message
+        });
+        return;
+      }
+      if (e.message && (e.message.includes("404") || e.message.toLowerCase().includes("not found"))) {
+        res.status(404).json({ error: "Content not found on TMDB" });
+      } else {
+        console.error(`Error in meta route for ${type} ${id}:`, e);
+        res.status(500).json({ error: "Internal server error" });
+      }
     }
   }
 });
