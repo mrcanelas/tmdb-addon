@@ -35,6 +35,9 @@ COPY --from=builder /app/dist ./dist
 # Copia a pasta public com as imagens
 COPY --from=builder /app/public ./public
 
+# Copia o arquivo de ambiente para o runtime (usado por dotenv)
+COPY --from=builder /app/.env ./.env
+
 # Exposição da porta
 EXPOSE 1337
 
