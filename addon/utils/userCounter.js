@@ -1,11 +1,7 @@
-const { cache, redisInstance } = require('../lib/getCache');
+const { cache, redisInstance, ramUserCounterCache } = require('../lib/getCache');
 const crypto = require('crypto');
 const https = require('https');
 const http = require('http');
-
-// Cache em memória como fallback se Redis não estiver disponível
-const memoryCache = new Map();
-const MEMORY_TTL = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
 
 // Chave base para armazenamento
 const USER_COUNT_KEY = 'tmdb-addon:unique-users';
@@ -90,12 +86,12 @@ async function trackUser(req) {
       }
     } else {
       // Fallback para cache em memória local
-      const existing = memoryCache.get(key);
+      const existing = ramUserCounterCache ? await ramUserCounterCache.get(key) : null;
       
       if (!existing) {
-        memoryCache.set(key, Date.now());
-        // Limpa entradas antigas periodicamente
-        setTimeout(() => memoryCache.delete(key), MEMORY_TTL);
+        if (ramUserCounterCache) {
+          await ramUserCounterCache.set(key, '1', { ttl: 24 * 60 * 60 }); // 24 horas
+        }
         await incrementUserCount();
         return true;
       }
@@ -117,8 +113,11 @@ async function incrementUserCount() {
       const newCount = parseInt(current) + 1;
       await cache.set(USER_COUNT_KEY, String(newCount), { ttl: 365 * 24 * 60 * 60 }); // 1 ano
     } else {
-      const current = memoryCache.get(USER_COUNT_KEY) || 0;
-      memoryCache.set(USER_COUNT_KEY, current + 1);
+      const currentRaw = ramUserCounterCache ? await ramUserCounterCache.get(USER_COUNT_KEY) : '0';
+      const current = parseInt(currentRaw || '0', 10) || 0;
+      if (ramUserCounterCache) {
+        await ramUserCounterCache.set(USER_COUNT_KEY, String(current + 1), { ttl: 365 * 24 * 60 * 60 }); // 1 ano
+      }
     }
   } catch (error) {
     console.error('Error incrementing user count:', error);
@@ -134,7 +133,8 @@ async function getUserCount() {
       const count = await cache.get(USER_COUNT_KEY);
       return parseInt(count || '0');
     } else {
-      return memoryCache.get(USER_COUNT_KEY) || 0;
+      const count = ramUserCounterCache ? await ramUserCounterCache.get(USER_COUNT_KEY) : '0';
+      return parseInt(count || '0', 10) || 0;
     }
   } catch (error) {
     console.error('Error getting user count:', error);
@@ -174,14 +174,18 @@ async function trackExternalUsers(count, instanceId) {
         // Se não conseguir usar SET, continua sem erro
       }
     } else {
-      memoryCache.set(dailyKey, count);
-      memoryCache.set(instanceCountKey, count);
-      
-      // Para cache em memória, mantém uma lista simples
-      if (!memoryCache.has(activeInstancesKey)) {
-        memoryCache.set(activeInstancesKey, new Set());
+      if (ramUserCounterCache) {
+        await ramUserCounterCache.set(dailyKey, String(count), { ttl: 7 * 24 * 60 * 60 }); // 7 dias
+        await ramUserCounterCache.set(instanceCountKey, String(count), { ttl: 2 * 24 * 60 * 60 }); // 2 dias
+
+        // Para cache em memória, mantém lista de instâncias ativas
+        const activeInstances = await ramUserCounterCache.get(activeInstancesKey);
+        const instanceList = Array.isArray(activeInstances) ? activeInstances : [];
+        if (!instanceList.includes(instanceId)) {
+          instanceList.push(instanceId);
+        }
+        await ramUserCounterCache.set(activeInstancesKey, instanceList, { ttl: 2 * 24 * 60 * 60 }); // 2 dias
       }
-      memoryCache.get(activeInstancesKey).add(instanceId);
     }
   } catch (error) {
     console.error('Error tracking external users:', error);
@@ -225,13 +229,13 @@ async function getAggregatedUserCount() {
         } else {
           // Cache em memória local
           const activeInstancesKey = `${USER_COUNT_KEY}:active-instances`;
-          const instanceSet = memoryCache.get(activeInstancesKey);
+          const instanceList = ramUserCounterCache ? await ramUserCounterCache.get(activeInstancesKey) : null;
           
-          if (instanceSet && instanceSet instanceof Set) {
-            for (const instanceId of instanceSet) {
+          if (Array.isArray(instanceList)) {
+            for (const instanceId of instanceList) {
               try {
                 const instanceCountKey = `${USER_COUNT_KEY}:external-count:${instanceId}`;
-                const count = memoryCache.get(instanceCountKey);
+                const count = ramUserCounterCache ? await ramUserCounterCache.get(instanceCountKey) : null;
                 if (count) {
                   aggregatedCount += parseInt(count || '0');
                 }
@@ -265,7 +269,9 @@ async function resetUserCount() {
     if (cache) {
       await cache.del(USER_COUNT_KEY);
     } else {
-      memoryCache.delete(USER_COUNT_KEY);
+      if (ramUserCounterCache) {
+        await ramUserCounterCache.del(USER_COUNT_KEY);
+      }
     }
   } catch (error) {
     console.error('Error resetting user count:', error);

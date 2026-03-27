@@ -1,10 +1,7 @@
 require("dotenv").config();
 const { getTmdbClient } = require("../utils/getTmdbClient");
 const Utils = require("../utils/parseProps");
-
-// Cache for age ratings
-const ageRatingCache = new Map();
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const { ramAgeRatingCache } = require("./getCache");
 
 /**
  * Get age rating for a movie from TMDB
@@ -71,10 +68,11 @@ async function getCachedAgeRating(tmdbId, type, language, config) {
     if (!tmdbId) return null;
 
     const cacheKey = `${type}-${tmdbId}-${language}`;
-    const cached = ageRatingCache.get(cacheKey);
-
-    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-        return cached.rating;
+    if (ramAgeRatingCache) {
+        const cached = await ramAgeRatingCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
     }
 
     try {
@@ -82,7 +80,9 @@ async function getCachedAgeRating(tmdbId, type, language, config) {
             ? await getMovieAgeRating(tmdbId, language, config)
             : await getTvAgeRating(tmdbId, language, config);
 
-        ageRatingCache.set(cacheKey, { rating, timestamp: Date.now() });
+        if (ramAgeRatingCache) {
+            await ramAgeRatingCache.set(cacheKey, rating);
+        }
         return rating;
     } catch (err) {
         console.error(`Error fetching age rating for ${type} ${tmdbId}:`, err.message);

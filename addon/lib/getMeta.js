@@ -6,11 +6,9 @@ const { getLogo, getTvLogo } = require("./getLogo");
 const { getImdbRating } = require("./getImdbRating");
 const { getCachedAgeRating } = require("./getAgeRating");
 const { checkSeasonsAndReport } = require("../utils/checkSeasons");
+const { ramMetaCache, ramImdbCache } = require("./getCache");
 
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 const blacklistLogoUrls = ["https://assets.fanart.tv/fanart/tv/0/hdtvlogo/-60a02798b7eea.png"];
-const cache = new Map();
-const imdbCache = new Map();
 
 const extractAgeRating = (res, type, language) => {
     const countryCode = language.split('-')[1]?.toUpperCase();
@@ -90,10 +88,15 @@ const getCacheKey = (
 
 async function getCachedImdbRating(imdbId, type) {
     if (!imdbId) return null;
-    if (imdbCache.has(imdbId)) return imdbCache.get(imdbId);
+    if (ramImdbCache) {
+        const cached = await ramImdbCache.get(imdbId);
+        if (cached) return cached;
+    }
     try {
         const rating = await getImdbRating(imdbId, type);
-        imdbCache.set(imdbId, rating);
+        if (ramImdbCache) {
+            await ramImdbCache.set(imdbId, rating);
+        }
         return rating;
     } catch (err) {
         console.error(`Error fetching IMDb rating for ${imdbId}:`, err.message);
@@ -382,10 +385,11 @@ const buildTvResponse = async (res, type, language, tmdbId, config = {}) => {
 // Main function
 async function getMeta(type, language, tmdbId, config = {}) {
     const cacheKey = getCacheKey(type, language, tmdbId, config);
-    const cachedData = cache.get(cacheKey);
-
-    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TTL) {
-        return Promise.resolve({ meta: cachedData.data });
+    if (ramMetaCache) {
+        const cachedData = await ramMetaCache.get(cacheKey);
+        if (cachedData) {
+            return Promise.resolve({ meta: cachedData });
+        }
     }
 
     if (tmdbId === "no-content" || tmdbId === "0") {
@@ -424,7 +428,9 @@ async function getMeta(type, language, tmdbId, config = {}) {
             : await buildTvResponse(tmdbRes, type, language, tmdbId, config);
 
         // Cache and return
-        cache.set(cacheKey, { data: meta, timestamp: Date.now() });
+        if (ramMetaCache) {
+            await ramMetaCache.set(cacheKey, meta);
+        }
         return { meta };
     } catch (error) {
         // Log and return empty meta instead of throwing to avoid crashing the process
