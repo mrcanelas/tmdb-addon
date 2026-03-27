@@ -4,7 +4,8 @@ const axios = require('axios');
 async function blurImage(imageUrl) {
   try {
     const response = await axios.get(imageUrl, {
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
+      timeout: 10000
     });
 
     const processedImageBuffer = await sharp(response.data)

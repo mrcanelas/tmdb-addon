@@ -6,7 +6,7 @@ async function fetchMDBListItems(listId, apiKey, language, page) {
   const offset = (page * 20) - 20;
   try {
     const url = `https://api.mdblist.com/lists/${listId}/items?language=${language}&limit=20&offset=${offset}&apikey=${apiKey}&append_to_response=genre,poster`;
-    const response = await axios.get(url);
+    const response = await axios.get(url, { timeout: 10000 });
     return [
       ...(response.data.movies || []),
       ...(response.data.shows || [])

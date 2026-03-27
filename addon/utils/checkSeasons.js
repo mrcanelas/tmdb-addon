@@ -6,6 +6,8 @@ const CHECK_INTERVAL_DAYS = 7; // You can adjust as needed
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = process.env.GITHUB_REPO; // Ex: 'mrcanelas/tmdb-addon'
 
+const client = axios.create({ timeout: 10000 });
+
 async function getLastChecked(tmdbId) {
   if (!cache) return null;
   return await cache.get(`lastChecked:${tmdbId}`);
@@ -18,7 +20,7 @@ async function setLastChecked(tmdbId, data) {
 
 async function openGithubIssue(title, body, labels = []) {
   if (!GITHUB_TOKEN || !GITHUB_REPO) return;
-  await axios.post(
+  await client.post(
     `https://api.github.com/repos/${GITHUB_REPO}/issues`,
     { title, body, labels },
     { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
@@ -37,7 +39,7 @@ async function issueExistsOnGithub(title, tmdbId) {
     // Buscar todas as issues (abertas e fechadas) usando paginação
     while (hasMore && page <= maxPages) {
       const url = `https://api.github.com/repos/${GITHUB_REPO}/issues?labels=season-mismatch&state=all&per_page=100&page=${page}`;
-      const resp = await axios.get(url, {
+      const resp = await client.get(url, {
         headers: { Authorization: `token ${GITHUB_TOKEN}` }
       });
       
@@ -191,7 +193,7 @@ async function checkSeasonsAndReport(tmdbId, imdbId, resp, name) {
   let stremioSeasons = 0;
   let stremioName = name;
   try {
-    const stremioResp = await axios.get(stremioUrl);
+    const stremioResp = await client.get(stremioUrl);
     const stremioVideos = stremioResp.data.meta.videos || [];
     // Count seasons that have at least one released episode
     const releasedSeasons = new Set(stremioVideos
