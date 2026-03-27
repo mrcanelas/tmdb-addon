@@ -144,7 +144,11 @@ function cacheWrapMeta(id, method) {
 // Função para fechar conexões ao encerrar
 async function closeConnections() {
   if (redisInstance) {
-    await redisInstance.quit();
+    try {
+      await redisInstance.quit();
+    } catch (error) {
+      console.error('Error closing Redis connection:', error);
+    }
   }
   // O mongoCache gerencia suas próprias conexões através do store
 }
