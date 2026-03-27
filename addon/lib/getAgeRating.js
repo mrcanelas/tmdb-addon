@@ -70,7 +70,7 @@ async function getCachedAgeRating(tmdbId, type, language, config) {
     const cacheKey = `${type}-${tmdbId}-${language}`;
     if (ramAgeRatingCache) {
         const cached = await ramAgeRatingCache.get(cacheKey);
-        if (cached !== undefined) {
+        if (cached) {
             return cached;
         }
     }

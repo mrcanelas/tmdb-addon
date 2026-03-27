@@ -90,7 +90,7 @@ async function getCachedImdbRating(imdbId, type) {
     if (!imdbId) return null;
     if (ramImdbCache) {
         const cached = await ramImdbCache.get(imdbId);
-        if (cached !== undefined) return cached;
+        if (cached) return cached;
     }
     try {
         const rating = await getImdbRating(imdbId, type);
@@ -387,7 +387,7 @@ async function getMeta(type, language, tmdbId, config = {}) {
     const cacheKey = getCacheKey(type, language, tmdbId, config);
     if (ramMetaCache) {
         const cachedData = await ramMetaCache.get(cacheKey);
-        if (cachedData !== undefined) {
+        if (cachedData) {
             return Promise.resolve({ meta: cachedData });
         }
     }
