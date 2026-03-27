@@ -14,6 +14,44 @@ const allCatalogs = [
   ...Object.values(streamingCatalogs).flat()
 ];
 
+type ImportedCatalog = {
+  id: string;
+  type: string;
+  name?: string;
+  enabled?: boolean;
+  showInHome?: boolean;
+};
+
+type ImportedConfig = {
+  rpdbkey?: string;
+  rpdbMediaTypes?: { poster?: boolean; logo?: boolean; backdrop?: boolean };
+  topposterskey?: string;
+  toppostersConfig?: Partial<TopPostersConfig>;
+  mdblistkey?: string;
+  geminikey?: string;
+  groqkey?: string;
+  traktAccessToken?: string;
+  traktRefreshToken?: string;
+  tmdbApiKey?: string;
+  provideImdbId?: boolean | string;
+  returnImdbId?: boolean | string;
+  tmdbPrefix?: boolean | string;
+  hideEpisodeThumbnails?: boolean | string;
+  sessionId?: string;
+  ageRating?: string;
+  includeAdult?: boolean | string;
+  language?: string;
+  hideInCinemaTag?: boolean | string;
+  castCount?: number | string;
+  enableAgeRating?: boolean | string;
+  showAgeRatingInGenres?: boolean | string;
+  showAgeRatingWithImdbRating?: boolean | string;
+  strictRegionFilter?: boolean | string;
+  digitalReleaseFilter?: boolean | string;
+  searchEnabled?: boolean | string;
+  catalogs?: ImportedCatalog[];
+};
+
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [rpdbkey, setRpdbkey] = useState("");
   const [rpdbMediaTypes, setRpdbMediaTypes] = useState({ poster: true, logo: false, backdrop: false });
@@ -108,7 +146,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const applyConfig = (config: any) => {
+  const applyConfig = (config: ImportedConfig) => {
     if (config.rpdbkey !== undefined) setRpdbkey(config.rpdbkey);
     if (config.rpdbMediaTypes) {
       setRpdbMediaTypes({
@@ -151,22 +189,23 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     if (config.searchEnabled !== undefined) setSearchEnabled(config.searchEnabled === "true" || config.searchEnabled === true);
 
     if (config.catalogs) {
-      const catalogsWithNames = config.catalogs.map((catalog: any) => {
+      const catalogsWithNames = config.catalogs.map((catalog: ImportedCatalog) => {
         const existingCatalog = allCatalogs.find(
           c => c.id === catalog.id && c.type === catalog.type
         );
         return {
           ...catalog,
           name: catalog.name || existingCatalog?.name || catalog.id,
-          enabled: catalog.enabled !== undefined ? catalog.enabled : true
+          enabled: catalog.enabled !== undefined ? catalog.enabled : true,
+          showInHome: catalog.showInHome !== undefined ? catalog.showInHome : true
         };
       });
       setCatalogs(catalogsWithNames);
 
       const selectedStreamingServices = new Set(
         catalogsWithNames
-          .filter((catalog: any) => catalog.id.startsWith('streaming.'))
-          .map((catalog: any) => catalog.id.split('.')[1])
+          .filter((catalog: ImportedCatalog) => catalog.id.startsWith('streaming.'))
+          .map((catalog: ImportedCatalog) => catalog.id.split('.')[1])
       );
 
       setStreaming(Array.from(selectedStreamingServices) as string[]);

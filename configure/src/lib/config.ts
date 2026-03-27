@@ -1,4 +1,4 @@
-import { compressToEncodedURIComponent } from 'lz-string';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import type { RPDBMediaTypes } from '@/contexts/config';
 
 interface AddonConfig {
@@ -75,4 +75,15 @@ export function generateAddonUrl(config: AddonConfig): string {
   const compressed = compressToEncodedURIComponent(JSON.stringify(cleanConfig));
 
   return `${window.location.origin}/${compressed}/manifest.json`;
+}
+
+export function importConfigFromHash(hash: string): AddonConfig | null {
+  try {
+    const decompressedConfig = decompressFromEncodedURIComponent(hash);
+    if (!decompressedConfig) return null;
+
+    return JSON.parse(decompressedConfig) as AddonConfig;
+  } catch {
+    return null;
+  }
 }
