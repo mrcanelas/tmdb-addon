@@ -15,5 +15,5 @@ process.on('uncaughtException', (error) => {
 
 addon.listen(PORT, function () {
   console.log(`Addon active on port ${PORT}.`);
-  console.log(`http://127.0.0.1:${PORT}/`);
+  console.log(`http://localhost:${PORT}/`);
 });

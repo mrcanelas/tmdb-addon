@@ -19,7 +19,7 @@ function getRedirectUri(requestHost = null) {
   }
   
   // Fallback para variável de ambiente ou padrão
-  const baseUrl = process.env.HOST_NAME || 'http://localhost:3000'
+  const baseUrl = process.env.HOST_NAME || 'http://localhost:1337'
   return process.env.TRAKT_REDIRECT_URI || `${baseUrl}/configure/oauth-callback`
 }
 
@@ -93,4 +93,3 @@ async function refreshTraktAccessToken(refreshToken, redirectUri = null) {
 }
 
 module.exports = { getTraktAuthUrl, getTraktAccessToken, refreshTraktAccessToken }
-
