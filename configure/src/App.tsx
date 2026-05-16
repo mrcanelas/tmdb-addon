@@ -16,14 +16,34 @@ import { ConfigProvider } from "@/contexts/ConfigContext";
 
 const queryClient = new QueryClient();
 
-type Page = "home" | "catalogs" | "integrations" | "others";
+const pages = ["home", "catalogs", "integrations", "others"] as const;
+type Page = (typeof pages)[number];
+
+const getPageFromHash = (): Page => {
+  const page = window.location.hash.replace("#", "");
+  return pages.includes(page as Page) ? (page as Page) : "home";
+};
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState<Page>("home");
+  const [currentPage, setCurrentPage] = useState<Page>(getPageFromHash);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => setCurrentPage(getPageFromHash());
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  const handlePageChange = (page: Page) => {
+    if (page === currentPage) return;
+
+    setCurrentPage(page);
+    window.location.hash = page === "home" ? "" : page;
   };
 
   const renderPage = () => {
@@ -49,7 +69,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         isOpen={isOpen} 
         setIsOpen={setIsOpen} 
         currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={handlePageChange}
       />
       <div className="flex-1 flex flex-col md:pl-64 h-screen">
         {(!isHome || window.innerWidth < 768) && (
