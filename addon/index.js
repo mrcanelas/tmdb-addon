@@ -277,14 +277,14 @@ addon.get("/:catalogChoices?/catalog/:type/:id/:extra?.json", async function (re
         case "trakt.watchlist":
           const traktAccessToken = config.traktAccessToken;
           if (!traktAccessToken) {
-            throw new Error('Trakt access token não fornecido');
+            throw new Error('Trakt access token was not provided');
           }
           metas = await getTraktWatchlist(...args, genre, traktAccessToken);
           break;
         case "trakt.recommendations":
           const traktToken = config.traktAccessToken;
           if (!traktToken) {
-            throw new Error('Trakt access token não fornecido');
+            throw new Error('Trakt access token was not provided');
           }
           metas = await getTraktRecommendations(...args, genre, traktToken);
           break;

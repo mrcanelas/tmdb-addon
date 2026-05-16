@@ -4,7 +4,7 @@ const { getMeta } = require('./getMeta')
 
 async function getTraktWatchlist(type, language, page, genre, accessToken) {
   if (!accessToken) {
-    throw new Error('Access token do Trakt não fornecido')
+    throw new Error('Trakt access token was not provided')
   }
 
   try {
@@ -51,7 +51,7 @@ async function getTraktWatchlist(type, language, page, genre, accessToken) {
 
 async function getTraktRecommendations(type, language, page, genre, accessToken) {
   if (!accessToken) {
-    throw new Error('Access token do Trakt não fornecido')
+    throw new Error('Trakt access token was not provided')
   }
 
   try {
