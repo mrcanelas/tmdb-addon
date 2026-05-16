@@ -45,7 +45,7 @@ const OAuthCallback = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="text-center">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
-        <p className="text-lg text-gray-600">Processando autenticação...</p>
+        <p className="text-lg text-gray-600">Processing authentication...</p>
       </div>
     </div>
   );

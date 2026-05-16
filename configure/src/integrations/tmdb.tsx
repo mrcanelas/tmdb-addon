@@ -148,7 +148,7 @@ export default function TMDB() {
       // Verifica se o popup foi bloqueado
       if (!popup || popup.closed || typeof popup.closed === 'undefined') {
         setIsLoading(false);
-        setError('Popup bloqueado. Por favor, permita popups para este site.');
+        setError('Popup blocked. Please allow popups for this site.');
         return;
       }
 

@@ -17,14 +17,14 @@ export default function Trakt() {
     setError("");
     try {
       if (!code || code.trim() === '') {
-        throw new Error('Código de autorização inválido');
+        throw new Error('Invalid authorization code');
       }
       
       const uuid = crypto.randomUUID();
       const response = await fetch(`/trakt_access_token?code=${encodeURIComponent(code)}&cache_buster=${uuid}`);
       
       if (!response.ok) {
-        let errorMessage = 'Falha ao obter token de acesso';
+        let errorMessage = 'Failed to get access token';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -39,12 +39,12 @@ export default function Trakt() {
       
       // Verifica se a resposta é um JSON com erro
       if (tokenData.error || tokenData.success === false) {
-        throw new Error(tokenData.error || tokenData.status_message || 'Falha ao obter token de acesso');
+        throw new Error(tokenData.error || tokenData.status_message || 'Failed to get access token');
       }
       
       // Valida se o access token não está vazio
       if (!tokenData.access_token || tokenData.access_token.trim() === '') {
-        throw new Error('Token de acesso vazio recebido');
+        throw new Error('Empty access token received');
       }
       
       setTraktAccessToken(tokenData.access_token);
@@ -105,14 +105,14 @@ export default function Trakt() {
       });
 
       toast({
-        title: "Conta Trakt conectada",
-        description: "Sua watchlist e recomendações foram sincronizadas.",
+        title: "Trakt account connected",
+        description: "Your watchlist and recommendations have been synced.",
       });
       
       window.history.replaceState({}, '', window.location.pathname);
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : "Falha ao conectar conta Trakt");
+      setError(e instanceof Error ? e.message : "Failed to connect Trakt account");
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +139,7 @@ export default function Trakt() {
           clearInterval(popupCheckIntervalRef.current);
           popupCheckIntervalRef.current = null;
         }
-        setError(event.data.errorDescription || event.data.error || 'Falha na autenticação');
+        setError(event.data.errorDescription || event.data.error || 'Authentication failed');
         setIsLoading(false);
       }
     };
@@ -168,7 +168,7 @@ export default function Trakt() {
       const response = await fetch(`/trakt_auth_url?cache_buster=${uuid}`);
       
       if (!response.ok) {
-        let errorMessage = 'Falha ao obter URL de autenticação';
+        let errorMessage = 'Failed to get authentication URL';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -183,7 +183,7 @@ export default function Trakt() {
       
       // Valida se a URL não está vazia
       if (!data.authUrl || data.authUrl.trim() === '') {
-        throw new Error('URL de autenticação vazia recebida');
+        throw new Error('Empty authentication URL received');
       }
       
       // O backend já gera a URL de autenticação com o redirect_uri correto (/configure/oauth-callback)
@@ -205,7 +205,7 @@ export default function Trakt() {
       // Verifica se o popup foi bloqueado
       if (!popup || popup.closed || typeof popup.closed === 'undefined') {
         setIsLoading(false);
-        setError('Popup bloqueado. Por favor, permita popups para este site.');
+        setError('Popup blocked. Please allow popups for this site.');
         return;
       }
 
@@ -221,7 +221,7 @@ export default function Trakt() {
       }, 1000);
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : "Falha ao iniciar autenticação Trakt");
+      setError(e instanceof Error ? e.message : "Failed to start Trakt authentication");
       setIsLoading(false);
     }
   };
@@ -234,8 +234,8 @@ export default function Trakt() {
     setCatalogs((prev) => prev.filter((c) => !c.id.startsWith("trakt.")));
 
     toast({
-      title: "Conta Trakt desconectada",
-      description: "Sua conta Trakt foi desconectada com sucesso.",
+      title: "Trakt account disconnected",
+      description: "Your Trakt account has been disconnected successfully.",
     });
   };
 
@@ -253,12 +253,12 @@ export default function Trakt() {
           <div className="flex flex-col items-center space-y-4">
             <Alert>
               <AlertDescription>
-                Você está conectado ao Trakt
+                You are connected to Trakt
               </AlertDescription>
             </Alert>
             <DialogClose asChild>
               <Button variant="destructive" onClick={handleLogout}>
-                Desconectar
+                Disconnect
               </Button>
             </DialogClose>
           </div>
@@ -271,10 +271,10 @@ export default function Trakt() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Conectando ao Trakt...
+                Connecting to Trakt...
               </>
             ) : (
-              'Conectar com Trakt'
+              'Connect with Trakt'
             )}
           </Button>
         )}
