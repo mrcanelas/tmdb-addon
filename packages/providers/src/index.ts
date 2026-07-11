@@ -46,3 +46,10 @@ export {
   languageOnlyLocaleAdapter,
   unsupportedLocaleAdapter,
 } from './locale/adapters.js';
+
+export { TmdbProviderAdapter } from './tmdb/adapter.js';
+export type {
+  TmdbAdapterOptions,
+  TmdbFetch,
+  TmdbMovieSummary,
+} from './tmdb/adapter.js';
