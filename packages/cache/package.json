@@ -1,0 +1,19 @@
+{
+  "name": "@metalayer/cache",
+  "version": "1.0.0-alpha.1",
+  "description": "Locale-sensitive in-process cache for MetaLayer provider and resolved responses",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "vitest run --config ../../vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@metalayer/providers": "*"
+  }
+}
