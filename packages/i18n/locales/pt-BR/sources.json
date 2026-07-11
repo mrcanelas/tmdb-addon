@@ -22,5 +22,14 @@
   "sources.capability.oauth": "OAuth",
   "sources.capability.tracking": "Tracking",
   "sources.capability.search": "Busca",
-  "sources.unavailableHint": "Os adapters ainda não estão ligados. As credenciais irão para o Secret Vault quando os fluxos de conexão existirem."
+  "sources.unavailableHint": "O teste usa os diagnostics da API MetaLayer. Os fluxos de conexão que gravam credenciais no Secret Vault vêm a seguir.",
+  "sources.loadError": "Não foi possível alcançar a API MetaLayer. Exibindo o registry local de capabilities.",
+  "sources.adapter.available": "Adapter pronto",
+  "sources.adapter.unavailable": "Adapter indisponível",
+  "sources.test.apiKeyLabel": "Chave de API para teste",
+  "sources.test.apiKeyPlaceholder": "Usada só nesta requisição — não é salva",
+  "sources.test.running": "Testando…",
+  "sources.test.success": "Provedor respondeu com sucesso ({state}).",
+  "sources.test.failure": "Falha no teste do provedor ({code}).",
+  "sources.test.offline": "API inacessível. Inicie a API MetaLayer para testes ao vivo."
 }

@@ -22,5 +22,14 @@
   "sources.capability.oauth": "ØÅûthØÅ",
   "sources.capability.tracking": "TråçkîñgTrå",
   "sources.capability.search": "SéårçhSé",
-  "sources.unavailableHint": "Prøvîdér ådåptérs åré ñøt wîréd yét. Çrédéñtîåls wîll møvé tø thé Séçrét Våûlt whéñ çøññéçtîøñ fløws låñd.Prøvîdér ådåptérs åré ñøt wîréd "
+  "sources.unavailableHint": "Tést ûsés thé MétåLåyér ÅPÎ dîågñøstîçs. Çøññéçtîøñ fløws thåt støré çrédéñtîåls îñ thé Séçrét Våûlt åré ñéxt.Tést ûsés thé MétåLåyér ÅPÎ dîågñ",
+  "sources.loadError": "Çøûld ñøt réåçh thé MétåLåyér ÅPÎ. Shøwîñg thé løçål çåpåbîlîty régîstry îñstéåd.Çøûld ñøt réåçh thé MétåL",
+  "sources.adapter.available": "Ådåptér réådyÅdåp",
+  "sources.adapter.unavailable": "Ådåptér ñøt réådyÅdåpté",
+  "sources.test.apiKeyLabel": "ÅPÎ kéy før téstÅPÎ k",
+  "sources.test.apiKeyPlaceholder": "Ûséd øñly før thîs réqûést — ñøt såvédÛséd øñly fø",
+  "sources.test.running": "Téstîñg…Tés",
+  "sources.test.success": "Prøvîdér réspøñdéd sûççéssfûlly ({ståté}).Prøvîdér résp",
+  "sources.test.failure": "Prøvîdér tést fåîléd ({çødé}).Prøvîdér ",
+  "sources.test.offline": "ÅPÎ ûñréåçhåblé. Stårt thé MétåLåyér ÅPÎ tø rûñ lîvé tésts.ÅPÎ ûñréåçhåblé. S"
 }
