@@ -19,7 +19,8 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 | `packages/config` | Versioned MetaLayer config schema, legacy config parsing, Stremio response contracts. |
 | `packages/i18n` | Locale registry, negotiation, message catalogs, pseudo-locales. |
 | `packages/api-errors` | Stable management API error codes. |
-| `packages/providers` | Provider capability declarations/registry (adapters later). |
+| `packages/security` | Secret Vault crypto + edit-credential hashing (ADR 0005). |
+| `packages/persistence` | SQLite configuration + vault storage for Lite. |
 | `packages/database` | Future schema/migrations (scaffold only). |
 | `packages/types` / `packages/utils` | Reserved shared packages — avoid catch-all growth. |
 

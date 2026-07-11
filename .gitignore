@@ -72,6 +72,13 @@ typings/
 .env
 .env.test
 
+# MetaLayer Lite local database
+data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
