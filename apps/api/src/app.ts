@@ -7,6 +7,7 @@ import {
   SqliteConfigurationStore,
   type ConfigurationStore,
 } from '@metalayer/persistence';
+import type { TmdbFetch } from '@metalayer/providers';
 import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { apiV1Routes } from './routes/api-v1.js';
@@ -17,6 +18,15 @@ export interface BuildAppOptions {
   store?: ConfigurationStore;
   encryptionKey?: string;
   sqlitePath?: string;
+  /** Injectable HTTP for provider adapters (tests / offline). */
+  providerFetch?: TmdbFetch;
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    configStore: ConfigurationStore;
+    providerFetch?: TmdbFetch;
+  }
 }
 
 function resolveStore(options: BuildAppOptions): ConfigurationStore {
@@ -57,6 +67,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   const store = resolveStore(options);
   app.decorate('configStore', store);
+  app.decorate('providerFetch', options.providerFetch);
 
   app.addHook('onClose', async () => {
     store.close();

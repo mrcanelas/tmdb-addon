@@ -28,6 +28,9 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/api/v1/configurations/:configId/revisions/:revisionId` | Read a revision snapshot |
 | POST | `/api/v1/configurations/:configId/revisions/:revisionId/restore` | Restore a revision |
 | GET | `/api/v1/configurations/:configId/export` | Safe export (no secret plaintext) |
+| GET | `/api/v1/sources` | List provider capability registry |
+| GET | `/api/v1/sources/:providerId` | Provider details + locale example |
+| POST | `/api/v1/sources/:providerId/test` | Ping provider (apiKey, env, or vault) |
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
 
 Secrets are stored encrypted (AES-256-GCM) and returned only as states (`connected`).
