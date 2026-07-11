@@ -35,3 +35,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build MetaLayer configure
+        run: npm run build:configure
