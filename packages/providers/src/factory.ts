@@ -1,0 +1,45 @@
+import type { ProviderAdapter, ProviderHttpPolicy } from './core/runtime.js';
+import type { TmdbFetch } from './tmdb/adapter.js';
+import { TmdbProviderAdapter } from './tmdb/adapter.js';
+import { FanartArtworkAdapter, RpdbArtworkAdapter } from './artwork/stubs.js';
+import { ImdbRatingsStubAdapter } from './ratings/stubs.js';
+import { getProvider } from './registry.js';
+
+export interface CreateProviderAdapterOptions {
+  apiKey?: string;
+  fetchImpl?: TmdbFetch;
+  policy?: Partial<ProviderHttpPolicy>;
+}
+
+/**
+ * Builds a concrete adapter for a registered provider id.
+ * Returns null when the id is unknown or has no adapter yet (coming_soon).
+ */
+export function createProviderAdapter(
+  providerId: string,
+  options: CreateProviderAdapterOptions = {},
+): ProviderAdapter | null {
+  const definition = getProvider(providerId);
+  if (!definition) return null;
+
+  switch (providerId) {
+    case 'tmdb':
+      return new TmdbProviderAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
+    case 'fanart':
+      return new FanartArtworkAdapter(options.policy);
+    case 'rpdb':
+      return new RpdbArtworkAdapter(options.policy);
+    case 'imdb':
+      return new ImdbRatingsStubAdapter(options.policy);
+    default:
+      return null;
+  }
+}
+
+export function listAdapterProviderIds(): string[] {
+  return ['tmdb', 'fanart', 'rpdb', 'imdb'];
+}

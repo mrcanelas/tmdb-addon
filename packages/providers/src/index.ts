@@ -56,3 +56,9 @@ export type {
 
 export { FanartArtworkAdapter, RpdbArtworkAdapter } from './artwork/stubs.js';
 export { ImdbRatingsStubAdapter } from './ratings/stubs.js';
+
+export {
+  createProviderAdapter,
+  listAdapterProviderIds,
+} from './factory.js';
+export type { CreateProviderAdapterOptions } from './factory.js';
