@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import {
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
@@ -25,9 +25,64 @@ type ImportLegacyBody = {
   name?: string;
   editCredential?: string;
   legacy?: unknown;
-  /** When true, only return the import report — do not persist. */
   dryRun?: boolean;
 };
+
+type UpdateBody = {
+  config?: unknown;
+  name?: string;
+  note?: string;
+  secrets?: Record<string, string>;
+};
+
+function readEditCredential(request: FastifyRequest): string | undefined {
+  const header = request.headers['x-metalayer-edit-credential'];
+  return Array.isArray(header) ? header[0] : header;
+}
+
+async function requireEditAccess(
+  app: { configStore: ConfigurationStore },
+  request: FastifyRequest,
+  reply: FastifyReply,
+  configId: string,
+): Promise<boolean> {
+  const credential = readEditCredential(request);
+  if (!credential) {
+    await reply.status(401).send(
+      createApiError({
+        code: 'EDIT_CREDENTIAL_INVALID',
+        message: 'Missing X-MetaLayer-Edit-Credential header',
+        correlationId: request.correlationId,
+      }),
+    );
+    return false;
+  }
+
+  if (!app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = app.configStore.getPublic(configId);
+    if (!exists) {
+      await reply.status(404).send(
+        createApiError({
+          code: 'CONFIGURATION_NOT_FOUND',
+          message: `Configuration ${configId} was not found`,
+          correlationId: request.correlationId,
+          params: { configId },
+        }),
+      );
+      return false;
+    }
+    await reply.status(401).send(
+      createApiError({
+        code: 'EDIT_CREDENTIAL_INVALID',
+        message: 'Edit credential is invalid',
+        correlationId: request.correlationId,
+      }),
+    );
+    return false;
+  }
+
+  return true;
+}
 
 export const configurationsRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Body: CreateBody }>('/configurations', async (request, reply) => {
@@ -144,47 +199,139 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
     });
   });
 
+  app.put<{ Params: { configId: string }; Body: UpdateBody }>(
+    '/configurations/:configId',
+    async (request, reply) => {
+      const { configId } = request.params;
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
+
+      const body = request.body ?? {};
+      let config;
+      try {
+        config = body.config
+          ? parseMetaLayerConfig(body.config)
+          : app.configStore.getPublic(configId)!.config;
+        if (body.name) {
+          config = { ...config, name: body.name };
+        }
+      } catch {
+        return reply.status(400).send(
+          createApiError({
+            code: 'CONFIGURATION_INVALID',
+            message: 'Configuration payload failed schema validation',
+            correlationId: request.correlationId,
+          }),
+        );
+      }
+
+      const updated = app.configStore.update(configId, {
+        config,
+        note: body.note,
+        secrets: body.secrets,
+      });
+
+      return {
+        ...updated,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId',
     async (request, reply) => {
-      const editCredential = request.headers['x-metalayer-edit-credential'];
-      const credential = Array.isArray(editCredential) ? editCredential[0] : editCredential;
-
-      if (!credential) {
-        return reply.status(401).send(
-          createApiError({
-            code: 'EDIT_CREDENTIAL_INVALID',
-            message: 'Missing X-MetaLayer-Edit-Credential header',
-            correlationId: request.correlationId,
-          }),
-        );
-      }
-
       const { configId } = request.params;
-      if (!app.configStore.verifyEditAccess(configId, credential)) {
-        const exists = app.configStore.getPublic(configId);
-        if (!exists) {
-          return reply.status(404).send(
-            createApiError({
-              code: 'CONFIGURATION_NOT_FOUND',
-              message: `Configuration ${configId} was not found`,
-              correlationId: request.correlationId,
-              params: { configId },
-            }),
-          );
-        }
-        return reply.status(401).send(
-          createApiError({
-            code: 'EDIT_CREDENTIAL_INVALID',
-            message: 'Edit credential is invalid',
-            correlationId: request.correlationId,
-          }),
-        );
-      }
-
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
       const view = app.configStore.getPublic(configId)!;
       return {
         ...view,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.get<{ Params: { configId: string } }>(
+    '/configurations/:configId/revisions',
+    async (request, reply) => {
+      const { configId } = request.params;
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
+      return {
+        configId,
+        revisions: app.configStore.listRevisions(configId),
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.get<{ Params: { configId: string; revisionId: string } }>(
+    '/configurations/:configId/revisions/:revisionId',
+    async (request, reply) => {
+      const { configId, revisionId } = request.params;
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
+      const revision = app.configStore.getRevision(configId, revisionId);
+      if (!revision) {
+        return reply.status(404).send(
+          createApiError({
+            code: 'CONFIGURATION_NOT_FOUND',
+            message: `Revision ${revisionId} was not found`,
+            correlationId: request.correlationId,
+            params: { configId, revisionId },
+          }),
+        );
+      }
+      return {
+        configId,
+        revision,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.post<{ Params: { configId: string; revisionId: string }; Body: { note?: string } }>(
+    '/configurations/:configId/revisions/:revisionId/restore',
+    async (request, reply) => {
+      const { configId, revisionId } = request.params;
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
+      const restored = app.configStore.restoreRevision(
+        configId,
+        revisionId,
+        request.body?.note,
+      );
+      if (!restored) {
+        return reply.status(404).send(
+          createApiError({
+            code: 'CONFIGURATION_NOT_FOUND',
+            message: `Revision ${revisionId} was not found`,
+            correlationId: request.correlationId,
+            params: { configId, revisionId },
+          }),
+        );
+      }
+      return {
+        ...restored,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.get<{ Params: { configId: string } }>(
+    '/configurations/:configId/export',
+    async (request, reply) => {
+      const { configId } = request.params;
+      if (!(await requireEditAccess(app, request, reply, configId))) return;
+      const exported = app.configStore.exportSafe(configId);
+      if (!exported) {
+        return reply.status(404).send(
+          createApiError({
+            code: 'CONFIGURATION_NOT_FOUND',
+            message: `Configuration ${configId} was not found`,
+            correlationId: request.correlationId,
+            params: { configId },
+          }),
+        );
+      }
+      return {
+        ...exported,
         correlationId: request.correlationId,
       };
     },

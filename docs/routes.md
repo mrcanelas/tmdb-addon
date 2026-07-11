@@ -29,14 +29,28 @@ Base URL example: `http://localhost:1337`
 
 Documented in `docs/api.md`, including TMDB session helpers and Trakt OAuth callbacks.
 
-## Planned MetaLayer routes (not implemented yet)
+## Native MetaLayer routes (Phase B — partial)
+
+Implemented by `apps/api` (port `1338` by default):
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/c/:configId/manifest.json` | Native manifest (no secrets in URL) |
+| POST | `/api/v1/configurations` | Create persistent configuration |
+| POST | `/api/v1/configurations/import-legacy` | Import TMDB Addon config (`dryRun` supported) |
+| GET | `/api/v1/configurations/:configId` | Read config (edit credential header) |
+| PUT | `/api/v1/configurations/:configId` | Update config (creates revision) |
+| GET | `/api/v1/configurations/:configId/revisions` | List revisions |
+| GET | `/api/v1/configurations/:configId/revisions/:revisionId` | Read revision snapshot |
+| POST | `/api/v1/configurations/:configId/revisions/:revisionId/restore` | Restore revision |
+| GET | `/api/v1/configurations/:configId/export` | Safe export (secret states only) |
+
+Still planned:
 
 ```text
-/c/:configId/manifest.json
 /c/:configId/catalog/:type/:id/:extra?.json
 /c/:configId/meta/:type/:id.json
 /c/:configId/p/:profileId/manifest.json
-/api/v1/configurations
 ```
 
 ## Compatibility rules
