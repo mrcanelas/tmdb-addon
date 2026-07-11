@@ -17,3 +17,10 @@ export {
   LEGACY_SECRET_KEYS,
   type LegacyAddonConfig,
 } from './legacy.js';
+
+export {
+  LegacyManifestSchema,
+  EmptyCatalogResponseSchema,
+  assertEmptyCatalogResponse,
+  type LegacyManifest,
+} from './stremio-contracts.js';

@@ -1,0 +1,12 @@
+{
+  "language": "en-US",
+  "mdblistkey": "REDACTED_MDBLIST_KEY",
+  "catalogs": [
+    {
+      "id": "mdblist.12345",
+      "type": "movie",
+      "name": "Custom List",
+      "showInHome": true
+    }
+  ]
+}
