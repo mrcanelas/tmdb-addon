@@ -53,3 +53,6 @@ export type {
   TmdbFetch,
   TmdbMovieSummary,
 } from './tmdb/adapter.js';
+
+export { FanartArtworkAdapter, RpdbArtworkAdapter } from './artwork/stubs.js';
+export { ImdbRatingsStubAdapter } from './ratings/stubs.js';
