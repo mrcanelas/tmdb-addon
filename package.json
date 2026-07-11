@@ -7,7 +7,8 @@
   "workspaces": [
     "packages/identity",
     "packages/config",
-    "packages/i18n"
+    "packages/i18n",
+    "packages/api-errors"
   ],
   "scripts": {
     "dev": "vite",
@@ -20,7 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:proxy": "node test-proxy.js",
-    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit",
+    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit",
     "i18n:check": "npm run i18n:check -w @metalayer/i18n"
   },
   "repository": {
