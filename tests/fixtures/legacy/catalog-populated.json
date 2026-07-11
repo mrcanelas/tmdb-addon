@@ -1,0 +1,22 @@
+{
+  "metas": [
+    {
+      "id": "tmdb:106646",
+      "type": "movie",
+      "name": "The Wolf of Wall Street",
+      "poster": "https://image.tmdb.org/t/p/w500/poster.jpg",
+      "background": "https://image.tmdb.org/t/p/w1280/background.jpg",
+      "description": "Example movie description",
+      "releaseInfo": "2013",
+      "imdbRating": "8.2"
+    },
+    {
+      "id": "tmdb:1396",
+      "type": "series",
+      "name": "Breaking Bad",
+      "poster": "https://image.tmdb.org/t/p/w500/poster2.jpg",
+      "releaseInfo": "2008-2013",
+      "imdbRating": "9.5"
+    }
+  ]
+}

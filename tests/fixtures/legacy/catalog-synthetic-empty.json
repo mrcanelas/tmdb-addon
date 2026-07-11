@@ -1,0 +1,13 @@
+{
+  "metas": [
+    {
+      "id": "tmdb:no-content",
+      "type": "movie",
+      "name": "No Content Available",
+      "poster": "http://localhost:1337/no-content.png?v=1",
+      "background": "http://localhost:1337/no-content.png?v=1",
+      "description": "No content found for the selected filter. Please try a different option.",
+      "genres": ["No Results"]
+    }
+  ]
+}

@@ -20,7 +20,14 @@ export {
 
 export {
   LegacyManifestSchema,
+  CatalogResponseSchema,
   EmptyCatalogResponseSchema,
   assertEmptyCatalogResponse,
+  LegacySyntheticEmptyMetaSchema,
+  LegacySyntheticEmptyCatalogSchema,
+  MetaResponseSchema,
+  assertNotFakeErrorCatalog,
   type LegacyManifest,
+  type CatalogResponse,
+  type MetaResponse,
 } from './stremio-contracts.js';

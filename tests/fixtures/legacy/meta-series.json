@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "id": "tmdb:1396",
+    "type": "series",
+    "name": "Breaking Bad",
+    "poster": "https://image.tmdb.org/t/p/w500/poster.jpg",
+    "background": "https://image.tmdb.org/t/p/w1280/background.jpg",
+    "description": "Example series metadata",
+    "releaseInfo": "2008-2013",
+    "imdbRating": "9.5",
+    "genres": ["Drama", "Crime"],
+    "videos": [],
+    "seasons": [
+      {
+        "id": "tmdb:1396:1",
+        "season": 1,
+        "name": "Season 1",
+        "poster": "https://image.tmdb.org/t/p/w500/season1.jpg"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "language": "en-US",
+  "searchEnabled": "true",
+  "geminikey": "REDACTED_GEMINI_KEY",
+  "groqkey": "REDACTED_GROQ_KEY",
+  "catalogs": [
+    {
+      "id": "tmdb.search",
+      "type": "movie",
+      "showInHome": false
+    },
+    {
+      "id": "tmdb.aisearch",
+      "type": "movie",
+      "showInHome": false
+    }
+  ]
+}
