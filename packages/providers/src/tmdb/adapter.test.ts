@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TmdbProviderAdapter } from './tmdb/adapter.js';
+import { TmdbProviderAdapter } from './adapter.js';
 
 describe('@metalayer/providers tmdb adapter', () => {
   it('fetches TMDB movie details through an injectable HTTP client', async () => {
