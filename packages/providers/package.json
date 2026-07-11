@@ -1,7 +1,7 @@
 {
   "name": "@metalayer/providers",
   "version": "1.0.0-alpha.1",
-  "description": "Provider capability declarations and registry for MetaLayer",
+  "description": "Provider capability registry, locale adapters, runtime policies, and adapters for MetaLayer",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
