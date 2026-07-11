@@ -4,14 +4,17 @@ import {
   CANONICAL_LOCALE,
   negotiateInterfaceLocale,
 } from '@metalayer/i18n';
-import enUS from '@metalayer/i18n/locales/en-US/common.json';
-import ptBR from '@metalayer/i18n/locales/pt-BR/common.json';
-import esES from '@metalayer/i18n/locales/es-ES/common.json';
+import enUSCommon from '@metalayer/i18n/locales/en-US/common.json';
+import ptBRCommon from '@metalayer/i18n/locales/pt-BR/common.json';
+import esESCommon from '@metalayer/i18n/locales/es-ES/common.json';
+import enUSSources from '@metalayer/i18n/locales/en-US/sources.json';
+import ptBRSources from '@metalayer/i18n/locales/pt-BR/sources.json';
+import esESSources from '@metalayer/i18n/locales/es-ES/sources.json';
 
 const resources = {
-  'en-US': { common: enUS },
-  'pt-BR': { common: ptBR },
-  'es-ES': { common: esES },
+  'en-US': { common: enUSCommon, sources: enUSSources },
+  'pt-BR': { common: ptBRCommon, sources: ptBRSources },
+  'es-ES': { common: esESCommon, sources: esESSources },
 };
 
 void i18n.use(initReactI18next).init({
@@ -22,6 +25,7 @@ void i18n.use(initReactI18next).init({
   ]),
   fallbackLng: CANONICAL_LOCALE,
   defaultNS: 'common',
+  ns: ['common', 'sources'],
   interpolation: {
     escapeValue: false,
   },

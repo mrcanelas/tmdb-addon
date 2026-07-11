@@ -1,8 +1,13 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { OverviewPage } from '@/pages/OverviewPage';
+import { SourcesPage } from '@/pages/SourcesPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
+
+const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
+  (item) => item.path !== '/' && item.path !== '/sources',
+);
 
 export function App() {
   return (
@@ -10,7 +15,8 @@ export function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<OverviewPage />} />
-          {CONFIGURE_NAV.filter((item) => item.path !== '/').map((item) => (
+          <Route path="sources" element={<SourcesPage />} />
+          {PLACEHOLDER_ROUTES.map((item) => (
             <Route
               key={item.id}
               path={item.path.slice(1)}
