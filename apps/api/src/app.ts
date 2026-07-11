@@ -1,16 +1,57 @@
 import Fastify from 'fastify';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { createApiError } from '@metalayer/api-errors';
+import {
+  createMemoryConfigurationStore,
+  SqliteConfigurationStore,
+  type ConfigurationStore,
+} from '@metalayer/persistence';
 import { correlationPlugin } from './plugins/correlation.js';
 import { apiV1Routes } from './routes/api-v1.js';
+import { nativeManifestRoutes } from './routes/native-manifest.js';
 
-export async function buildApp(options: { logger?: boolean } = {}) {
+export interface BuildAppOptions {
+  logger?: boolean;
+  store?: ConfigurationStore;
+  encryptionKey?: string;
+  sqlitePath?: string;
+}
+
+function resolveStore(options: BuildAppOptions): ConfigurationStore {
+  if (options.store) return options.store;
+
+  const encryptionKey =
+    options.encryptionKey ?? process.env.METALAYER_ENCRYPTION_KEY ?? '';
+  const sqlitePath = options.sqlitePath ?? process.env.METALAYER_SQLITE_PATH ?? '';
+
+  if (!encryptionKey) {
+    throw new Error('METALAYER_ENCRYPTION_KEY is required to start MetaLayer API');
+  }
+
+  if (!sqlitePath || sqlitePath === ':memory:') {
+    return createMemoryConfigurationStore(encryptionKey);
+  }
+
+  mkdirSync(dirname(sqlitePath), { recursive: true });
+  return new SqliteConfigurationStore({ sqlitePath, encryptionKey });
+}
+
+export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
     logger: options.logger ?? true,
   });
 
-  await app.register(correlationPlugin);
+  const store = resolveStore(options);
+  app.decorate('configStore', store);
 
+  app.addHook('onClose', async () => {
+    store.close();
+  });
+
+  await app.register(correlationPlugin);
   await app.register(apiV1Routes, { prefix: '/api/v1' });
+  await app.register(nativeManifestRoutes);
 
   app.setNotFoundHandler((request, reply) => {
     const error = createApiError({

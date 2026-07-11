@@ -1,8 +1,10 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app.js';
 
+const TEST_KEY = Buffer.alloc(32, 5).toString('base64');
+
 describe('@metalayer/api', () => {
-  const appPromise = buildApp({ logger: false });
+  const appPromise = buildApp({ logger: false, encryptionKey: TEST_KEY, sqlitePath: ':memory:' });
 
   afterAll(async () => {
     const app = await appPromise;
