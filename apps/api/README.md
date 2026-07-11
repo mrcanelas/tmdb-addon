@@ -31,3 +31,6 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
 
 Secrets are stored encrypted (AES-256-GCM) and returned only as states (`connected`).
+
+Request logs redact `editCredential`, vault `secrets`, and sensitive headers (`Authorization`, `X-MetaLayer-Edit-Credential`).
+Internal error responses never echo raw exception messages to clients.

@@ -7,6 +7,7 @@ import {
   SqliteConfigurationStore,
   type ConfigurationStore,
 } from '@metalayer/persistence';
+import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
@@ -37,9 +38,21 @@ function resolveStore(options: BuildAppOptions): ConfigurationStore {
   return new SqliteConfigurationStore({ sqlitePath, encryptionKey });
 }
 
+function buildLoggerOption(enabled: boolean) {
+  if (!enabled) return false;
+
+  // Fastify logger typing is strict; keep redact config and cast the option object.
+  return {
+    redact: {
+      paths: [...FASTIFY_LOG_REDACT_PATHS],
+      censor: '[REDACTED]',
+    },
+  } as NonNullable<Parameters<typeof Fastify>[0]>['logger'];
+}
+
 export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: options.logger ?? true,
+    logger: buildLoggerOption(options.logger ?? true),
   });
 
   const store = resolveStore(options);
@@ -67,10 +80,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   app.setErrorHandler((err, request, reply) => {
-    request.log.error(err);
+    request.log.error(redactSensitive(err));
     const error = createApiError({
       code: 'INTERNAL_ERROR',
-      message: err instanceof Error ? err.message : 'Unexpected error',
+      message: 'Unexpected error',
       correlationId: request.correlationId ?? 'unknown',
     });
     return reply.status(500).send(error);

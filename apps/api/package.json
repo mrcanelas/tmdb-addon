@@ -18,6 +18,7 @@
     "@metalayer/config": "*",
     "@metalayer/identity": "*",
     "@metalayer/persistence": "*",
+    "@metalayer/security": "*",
     "dotenv": "^16.5.0",
     "fastify": "^5.4.0",
     "fastify-plugin": "^6.0.0"
