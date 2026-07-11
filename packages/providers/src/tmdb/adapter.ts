@@ -1,4 +1,6 @@
 import { classifyHttpStatus, ProviderError } from '../core/errors.js';
+import { buildProviderCacheKey } from '../core/cache-key.js';
+import type { ProviderCacheStore } from '../core/provider-cache.js';
 import {
   DEFAULT_PROVIDER_HTTP_POLICY,
   ProviderHealthTracker,
@@ -35,6 +37,9 @@ export interface TmdbAdapterOptions {
   baseUrl?: string;
   fetchImpl?: TmdbFetch;
   policy?: Partial<ProviderHttpPolicy>;
+  cache?: ProviderCacheStore;
+  /** Default 15 minutes. */
+  cacheTtlMs?: number;
 }
 
 export class TmdbProviderAdapter implements ProviderAdapter {
@@ -47,6 +52,9 @@ export class TmdbProviderAdapter implements ProviderAdapter {
   private readonly defaultApiKey?: string;
   private readonly fetchImpl: TmdbFetch;
   private readonly health: ProviderHealthTracker;
+  private readonly cache?: ProviderCacheStore;
+  private readonly cacheTtlMs: number;
+  lastCacheStatus: 'hit' | 'miss' | 'stale' | 'bypass' = 'bypass';
 
   constructor(options: TmdbAdapterOptions = {}) {
     const definition = getProvider('tmdb');
@@ -59,6 +67,8 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
     this.health = new ProviderHealthTracker(this.policy);
+    this.cache = options.cache;
+    this.cacheTtlMs = options.cacheTtlMs ?? 15 * 60_000;
   }
 
   getHealth(): ProviderHealthSnapshot {
@@ -74,11 +84,13 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     ctx: ProviderContext,
     movieId: number,
   ): Promise<TmdbMovieSummary> {
-    const raw = await this.requestJson<Record<string, unknown>>(
-      ctx,
-      `/movie/${movieId}`,
-    );
-    return mapMovie(raw);
+    return this.withCache(ctx, 'movie', String(movieId), async () => {
+      const raw = await this.requestJson<Record<string, unknown>>(
+        ctx,
+        `/movie/${movieId}`,
+      );
+      return mapMovie(raw);
+    });
   }
 
   async searchMovies(
@@ -86,15 +98,58 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     query: string,
     page = 1,
   ): Promise<TmdbMovieSummary[]> {
-    const raw = await this.requestJson<{ results?: Array<Record<string, unknown>> }>(
+    return this.withCache(
       ctx,
-      '/search/movie',
-      {
-        query,
-        page: String(page),
+      'search-movie',
+      `${query.toLowerCase()}#${page}`,
+      async () => {
+        const raw = await this.requestJson<{
+          results?: Array<Record<string, unknown>>;
+        }>(ctx, '/search/movie', {
+          query,
+          page: String(page),
+        });
+        return (raw.results ?? []).map(mapMovie);
       },
     );
-    return (raw.results ?? []).map(mapMovie);
+  }
+
+  private async withCache<T>(
+    ctx: ProviderContext,
+    operation: string,
+    identity: string,
+    load: () => Promise<T>,
+  ): Promise<T> {
+    const fallbackChain = this.locale.getFallbacks(ctx.locale ?? 'en-US');
+    const key = buildProviderCacheKey({
+      providerId: this.id,
+      operation,
+      identity,
+      locale: ctx.locale,
+      region: ctx.region,
+      fallbackChain,
+    });
+
+    if (!this.cache) {
+      this.lastCacheStatus = 'bypass';
+      return load();
+    }
+
+    const existing = this.cache.get<T>(key);
+    if (existing) {
+      this.lastCacheStatus = existing.status;
+      return existing.entry.value;
+    }
+
+    const value = await load();
+    this.cache.set(key, value, {
+      ttlMs: this.cacheTtlMs,
+      source: this.id,
+      degraded: false,
+      staleEligible: true,
+    });
+    this.lastCacheStatus = 'miss';
+    return value;
   }
 
   private resolveApiKey(ctx: ProviderContext): string {

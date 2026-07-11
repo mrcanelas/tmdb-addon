@@ -1,4 +1,5 @@
 import type { ProviderAdapter, ProviderHttpPolicy } from './core/runtime.js';
+import type { ProviderCacheStore } from './core/provider-cache.js';
 import type { TmdbFetch } from './tmdb/adapter.js';
 import { TmdbProviderAdapter } from './tmdb/adapter.js';
 import { FanartArtworkAdapter } from './artwork/fanart.js';
@@ -10,6 +11,8 @@ export interface CreateProviderAdapterOptions {
   apiKey?: string;
   fetchImpl?: TmdbFetch;
   policy?: Partial<ProviderHttpPolicy>;
+  cache?: ProviderCacheStore;
+  cacheTtlMs?: number;
 }
 
 /**
@@ -29,6 +32,8 @@ export function createProviderAdapter(
         apiKey: options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        cache: options.cache,
+        cacheTtlMs: options.cacheTtlMs,
       });
     case 'fanart':
       return new FanartArtworkAdapter({

@@ -34,6 +34,7 @@ export type {
 export type { HealthState } from './core/health.js';
 
 export { buildProviderCacheKey, hashFallbackChain } from './core/cache-key.js';
+export type { ProviderCacheStore, ProviderCacheGetResult } from './core/provider-cache.js';
 
 export type {
   ProviderLocaleAdapter,

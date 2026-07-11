@@ -50,4 +50,39 @@ describe('@metalayer/providers tmdb adapter', () => {
       adapter.ping({ correlationId: 'corr-2' }),
     ).rejects.toMatchObject({ code: 'auth', retryable: false });
   });
+
+  it('caches movie responses per locale without putting secrets in keys', async () => {
+    const store = new Map<string, { value: unknown }>();
+    const cache = {
+      get<T>(key: string) {
+        const entry = store.get(key);
+        if (!entry) return null;
+        return { status: 'hit' as const, entry: { value: entry.value as T } };
+      },
+      set<T>(key: string, value: T) {
+        store.set(key, { value });
+      },
+    };
+    let calls = 0;
+    const adapter = new TmdbProviderAdapter({
+      apiKey: 'test-key',
+      cache,
+      fetchImpl: async () => {
+        calls += 1;
+        return new Response(
+          JSON.stringify({ id: 550, title: 'Clube da Luta', original_title: 'Fight Club' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const ctx = { correlationId: 'c', locale: 'pt-BR', region: 'BR' };
+    await adapter.getMovie(ctx, 550);
+    expect(adapter.lastCacheStatus).toBe('miss');
+    await adapter.getMovie(ctx, 550);
+    expect(adapter.lastCacheStatus).toBe('hit');
+    expect(calls).toBe(1);
+    expect([...store.keys()][0]).not.toContain('test-key');
+    expect([...store.keys()][0]).toContain('pt-BR');
+  });
 });
