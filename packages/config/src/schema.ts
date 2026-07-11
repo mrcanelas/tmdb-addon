@@ -46,6 +46,14 @@ export const MetaLayerConfigSchema = z.object({
   localization: LocalizationPreferencesSchema,
   catalogs: z.array(CatalogDefinitionSchema).default([]),
   featureFlags: z.record(z.boolean()).default({}),
+  legacyImport: z
+    .object({
+      source: z.literal('tmdb-addon'),
+      importedAt: z.string().datetime(),
+      ageRating: z.string().optional(),
+      castCount: z.number().optional(),
+    })
+    .optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

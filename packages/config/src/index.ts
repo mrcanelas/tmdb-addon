@@ -19,6 +19,15 @@ export {
 } from './legacy.js';
 
 export {
+  parseLegacyImportSource,
+  planLegacyImport,
+  toPublicImportPlan,
+  type LegacyImportAttentionItem,
+  type LegacyImportReport,
+  type LegacyImportPlan,
+} from './legacy-import.js';
+
+export {
   LegacyManifestSchema,
   CatalogResponseSchema,
   EmptyCatalogResponseSchema,
