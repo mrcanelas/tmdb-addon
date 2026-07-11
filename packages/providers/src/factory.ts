@@ -13,6 +13,7 @@ export interface CreateProviderAdapterOptions {
   policy?: Partial<ProviderHttpPolicy>;
   cache?: ProviderCacheStore;
   cacheTtlMs?: number;
+  stremioPublicId?: 'imdb' | 'tmdb';
 }
 
 /**
@@ -34,6 +35,7 @@ export function createProviderAdapter(
         policy: options.policy,
         cache: options.cache,
         cacheTtlMs: options.cacheTtlMs,
+        stremioPublicId: options.stremioPublicId,
       });
     case 'fanart':
       return new FanartArtworkAdapter({

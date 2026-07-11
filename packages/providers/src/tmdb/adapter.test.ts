@@ -36,6 +36,7 @@ describe('@metalayer/providers tmdb adapter', () => {
       id: 550,
       title: 'Clube da Luta',
       originalTitle: 'Fight Club',
+      publicId: 'tmdb:550',
     });
     expect(adapter.getHealth().state).toBe('healthy');
     expect(calls).toHaveLength(1);
@@ -49,6 +50,35 @@ describe('@metalayer/providers tmdb adapter', () => {
     await expect(
       adapter.ping({ correlationId: 'corr-2' }),
     ).rejects.toMatchObject({ code: 'auth', retryable: false });
+  });
+
+  it('uses IMDb as the default public Stremio id when present', async () => {
+    const adapter = new TmdbProviderAdapter({
+      apiKey: 'test-key',
+      fetchImpl: async (url) => {
+        if (String(url).includes('/find/')) {
+          return new Response(JSON.stringify({ movie_results: [{ id: 550 }] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response(
+          JSON.stringify({
+            id: 550,
+            title: 'Fight Club',
+            imdb_id: 'tt0137523',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const movie = await adapter.getMovieByPublicId(
+      { correlationId: 'imdb-1', locale: 'en-US' },
+      'tt0137523',
+    );
+    expect(movie.publicId).toBe('tt0137523');
+    expect(movie.id).toBe(550);
   });
 
   it('caches movie responses per locale without putting secrets in keys', async () => {
@@ -70,7 +100,11 @@ describe('@metalayer/providers tmdb adapter', () => {
       fetchImpl: async () => {
         calls += 1;
         return new Response(
-          JSON.stringify({ id: 550, title: 'Clube da Luta', original_title: 'Fight Club' }),
+          JSON.stringify({
+            id: 550,
+            title: 'Clube da Luta',
+            original_title: 'Fight Club',
+          }),
           { status: 200, headers: { 'Content-Type': 'application/json' } },
         );
       },

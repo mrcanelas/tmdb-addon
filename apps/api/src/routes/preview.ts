@@ -11,24 +11,14 @@ type PreviewQuery = {
   locale?: string;
   region?: string;
   apiKey?: string;
+  /** Override ADR 0006 default (`imdb`). */
+  publicIdMode?: 'imdb' | 'tmdb';
 };
 
 export const previewRoutes: FastifyPluginAsync = async (app) => {
-  app.get<{ Params: { tmdbId: string }; Querystring: PreviewQuery }>(
-    '/preview/movie/:tmdbId',
+  app.get<{ Params: { id: string }; Querystring: PreviewQuery }>(
+    '/preview/movie/:id',
     async (request, reply) => {
-      const tmdbId = Number(request.params.tmdbId);
-      if (!Number.isFinite(tmdbId) || tmdbId <= 0) {
-        return reply.status(400).send(
-          createApiError({
-            code: 'VALIDATION_FAILED',
-            message: 'tmdbId must be a positive number',
-            correlationId: request.correlationId,
-            params: { field: 'tmdbId' },
-          }),
-        );
-      }
-
       const apiKey =
         request.query.apiKey ||
         process.env.METALAYER_TMDB_API_KEY ||
@@ -38,6 +28,7 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
         apiKey,
         fetchImpl: app.providerFetch,
         cache: app.providerCache,
+        stremioPublicId: request.query.publicIdMode || 'imdb',
       });
 
       if (!(adapter instanceof TmdbProviderAdapter)) {
@@ -51,14 +42,14 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
       }
 
       try {
-        const movie = await adapter.getMovie(
+        const movie = await adapter.getMovieByPublicId(
           {
             correlationId: request.correlationId,
             locale: request.query.locale || 'en-US',
             region: request.query.region,
             apiKey,
           },
-          tmdbId,
+          request.params.id,
         );
 
         return {
@@ -78,7 +69,14 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
                 cause: error,
               });
 
-        return reply.status(providerError.code === 'auth' ? 400 : 502).send({
+        const status =
+          providerError.code === 'auth'
+            ? 400
+            : providerError.code === 'not_found' || providerError.code === 'validation'
+              ? 404
+              : 502;
+
+        return reply.status(status).send({
           ok: false,
           error: {
             code:
@@ -102,5 +100,4 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
   });
 };
 
-// Keep MemoryCache type visible for Fastify decoration typing consumers.
 export type { MemoryCache };
