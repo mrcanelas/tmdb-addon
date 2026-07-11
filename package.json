@@ -8,20 +8,24 @@
     "packages/identity",
     "packages/config",
     "packages/i18n",
-    "packages/api-errors"
+    "packages/api-errors",
+    "apps/configure"
   ],
   "scripts": {
     "dev": "vite",
+    "dev:configure": "npm run dev -w @metalayer/configure",
     "dev:server": "nodemon addon/server.js",
     "build": "vite build",
+    "build:configure": "npm run build -w @metalayer/configure",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:configure": "npm run preview -w @metalayer/configure",
     "start": "node addon/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:proxy": "node test-proxy.js",
-    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit",
+    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit && tsc -p apps/configure/tsconfig.json --noEmit",
     "i18n:check": "npm run i18n:check -w @metalayer/i18n",
     "i18n:pseudo": "npm run i18n:pseudo -w @metalayer/i18n"
   },
