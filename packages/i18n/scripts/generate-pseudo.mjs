@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'locales');
-const namespaces = ['common'];
+const namespaces = ['common', 'sources'];
 
 const ACCENT_MAP = {
   A: 'Å',

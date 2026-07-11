@@ -6,26 +6,25 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'locales');
 const stableLocales = ['en-US', 'pt-BR', 'es-ES'];
 const pseudoLocales = ['en-XA', 'ar-XB'];
-const namespaces = ['common'];
+const namespaces = ['common', 'sources'];
 
 function loadLocale(locale, namespace) {
   return JSON.parse(readFileSync(join(localesDir, locale, `${namespace}.json`), 'utf8'));
 }
 
-const canonical = {};
-for (const namespace of namespaces) {
-  Object.assign(canonical, loadLocale('en-US', namespace));
-}
-
-const canonicalKeys = Object.keys(canonical).sort();
 const errors = [];
+let totalKeys = 0;
 
-for (const locale of [...stableLocales, ...pseudoLocales]) {
-  for (const namespace of namespaces) {
+for (const namespace of namespaces) {
+  const canonical = loadLocale('en-US', namespace);
+  const canonicalKeys = Object.keys(canonical).sort();
+  totalKeys += canonicalKeys.length;
+
+  for (const locale of [...stableLocales, ...pseudoLocales]) {
     let messages;
     try {
       messages = loadLocale(locale, namespace);
-    } catch (error) {
+    } catch {
       errors.push(`[${locale}/${namespace}] missing catalog file`);
       continue;
     }
@@ -48,5 +47,5 @@ if (errors.length) {
 }
 
 console.log(
-  `i18n:check passed (${canonicalKeys.length} keys × ${stableLocales.length} stable + ${pseudoLocales.length} pseudo)`,
+  `i18n:check passed (${totalKeys} keys × ${namespaces.length} namespaces × ${stableLocales.length} stable + ${pseudoLocales.length} pseudo)`,
 );
