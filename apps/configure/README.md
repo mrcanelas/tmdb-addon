@@ -19,4 +19,8 @@ npm run dev:configure
 npm run build:configure
 ```
 
-Dev server defaults to http://localhost:5174
+Dev server defaults to http://localhost:5174 and proxies `/api` and `/c` to the MetaLayer API on `http://127.0.0.1:1338`.
+
+Optional: `PUBLIC_METALAYER_API_BASE` for a remote API (otherwise same-origin / proxy).
+
+Sources page loads `/api/v1/sources` and can run live provider tests via `/api/v1/sources/:id/test` (API key is sent only for that request and is not persisted in the UI).

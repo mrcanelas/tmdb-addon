@@ -17,7 +17,7 @@ Full artwork/rating fetchers and production response caches remain.
 | TMDB adapter | Done | ping, getMovie, searchMovies (injectable fetch) |
 | Artwork adapters | Stub | Fanart / RPDB credential ping stubs |
 | Rating adapters | Stub | IMDb unsupported stub |
-| Provider diagnostics | Done | `GET/POST /api/v1/sources` (+ vault-backed test) |
+| Provider diagnostics | Done | `GET/POST /api/v1/sources` + Sources UI test action |
 
 ## Exit criterion (AGENTS.md §37 Phase C)
 
