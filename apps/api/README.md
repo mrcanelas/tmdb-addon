@@ -36,6 +36,8 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/api/v1/sources` | List provider capability registry |
 | GET | `/api/v1/sources/:providerId` | Provider details + locale example |
 | POST | `/api/v1/sources/:providerId/test` | Ping provider (apiKey, env, or vault) |
+| GET | `/api/v1/preview/movie/:tmdbId` | Cached TMDB movie preview |
+| GET | `/api/v1/cache/stats` | Provider cache stats |
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
 
 Secrets are stored encrypted (AES-256-GCM) and returned only as states (`connected`).

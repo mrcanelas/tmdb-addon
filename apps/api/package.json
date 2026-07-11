@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@metalayer/api-errors": "*",
+    "@metalayer/cache": "*",
     "@metalayer/config": "*",
     "@metalayer/identity": "*",
     "@metalayer/persistence": "*",

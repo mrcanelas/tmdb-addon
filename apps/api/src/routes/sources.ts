@@ -175,6 +175,7 @@ export const sourcesRoutes: FastifyPluginAsync = async (app) => {
       const adapter = createProviderAdapter(providerId, {
         apiKey,
         fetchImpl: app.providerFetch,
+        cache: app.providerCache,
       });
       if (!adapter) {
         return reply.status(400).send(
