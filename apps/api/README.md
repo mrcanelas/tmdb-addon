@@ -22,6 +22,7 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/api/v1/health` | Liveness / version |
 | GET | `/api/v1/ping` | Cheap probe |
 | POST | `/api/v1/configurations` | Create persistent config + vault secrets |
+| POST | `/api/v1/configurations/import-legacy` | Import TMDB Addon config (`dryRun` supported) |
 | GET | `/api/v1/configurations/:configId` | Read config (requires `X-MetaLayer-Edit-Credential`) |
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
 

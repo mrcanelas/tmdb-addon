@@ -1,5 +1,10 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { createDefaultMetaLayerConfig, parseMetaLayerConfig } from '@metalayer/config';
+import {
+  createDefaultMetaLayerConfig,
+  parseMetaLayerConfig,
+  planLegacyImport,
+  toPublicImportPlan,
+} from '@metalayer/config';
 import { createApiError } from '@metalayer/api-errors';
 import type { ConfigurationStore } from '@metalayer/persistence';
 
@@ -14,6 +19,14 @@ type CreateBody = {
   editCredential?: string;
   secrets?: Record<string, string>;
   config?: unknown;
+};
+
+type ImportLegacyBody = {
+  name?: string;
+  editCredential?: string;
+  legacy?: unknown;
+  /** When true, only return the import report — do not persist. */
+  dryRun?: boolean;
 };
 
 export const configurationsRoutes: FastifyPluginAsync = async (app) => {
@@ -54,12 +67,77 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
       secrets: body.secrets,
     });
 
-    // Never echo editCredential or plaintext secrets.
     return reply.status(201).send({
       configId: created.configId,
       manifestPath: created.manifestPath,
       config: created.config,
       secrets: created.secrets,
+      createdAt: created.createdAt,
+      updatedAt: created.updatedAt,
+      correlationId: request.correlationId,
+    });
+  });
+
+  app.post<{ Body: ImportLegacyBody }>('/configurations/import-legacy', async (request, reply) => {
+    const body = request.body ?? {};
+    if (body.legacy === undefined || body.legacy === null) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'legacy configuration payload is required',
+          correlationId: request.correlationId,
+          params: { field: 'legacy' },
+        }),
+      );
+    }
+
+    let plan;
+    try {
+      plan = planLegacyImport(body.legacy, { name: body.name });
+    } catch {
+      return reply.status(400).send(
+        createApiError({
+          code: 'LEGACY_IMPORT_FAILED',
+          message: 'Could not parse legacy TMDB Addon configuration',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    const publicPlan = toPublicImportPlan(plan);
+
+    if (body.dryRun) {
+      return {
+        dryRun: true,
+        ...publicPlan,
+        correlationId: request.correlationId,
+      };
+    }
+
+    if (!body.editCredential || body.editCredential.length < 8) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'editCredential must be at least 8 characters to persist an import',
+          correlationId: request.correlationId,
+          params: { field: 'editCredential' },
+        }),
+      );
+    }
+
+    const created = app.configStore.create({
+      config: plan.config,
+      editCredential: body.editCredential,
+      secrets: plan.secrets,
+    });
+
+    return reply.status(201).send({
+      dryRun: false,
+      configId: created.configId,
+      manifestPath: created.manifestPath,
+      config: created.config,
+      secrets: created.secrets,
+      report: publicPlan.report,
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
       correlationId: request.correlationId,
