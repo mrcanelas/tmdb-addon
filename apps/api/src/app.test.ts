@@ -50,4 +50,14 @@ describe('@metalayer/api', () => {
       correlationId: 'missing-1',
     });
   });
+
+  it('answers CORS preflight for configure UI', async () => {
+    const app = await appPromise;
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/sources',
+    });
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-origin']).toBeTruthy();
+  });
 });

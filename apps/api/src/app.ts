@@ -10,6 +10,7 @@ import {
 import type { TmdbFetch } from '@metalayer/providers';
 import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
+import { corsPlugin } from './plugins/cors.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
 
@@ -73,6 +74,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
     store.close();
   });
 
+  await app.register(corsPlugin);
   await app.register(correlationPlugin);
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
