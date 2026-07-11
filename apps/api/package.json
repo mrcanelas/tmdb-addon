@@ -1,0 +1,27 @@
+{
+  "name": "@metalayer/api",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "MetaLayer HTTP API (Fastify) — management routes and future native Stremio routes",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@metalayer/api-errors": "*",
+    "@metalayer/identity": "*",
+    "fastify": "^5.4.0",
+    "fastify-plugin": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.5.3"
+  }
+}

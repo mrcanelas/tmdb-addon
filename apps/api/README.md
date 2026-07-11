@@ -1,4 +1,23 @@
-# Reserved for MetaLayer API (modular monolith extraction).
+# MetaLayer API (greenfield)
 
-The legacy Stremio addon currently runs from `/addon`.
-This app directory will host the MetaLayer management API and native `/c/:configId` routes.
+Fastify + TypeScript HTTP layer for MetaLayer (ADR 0004).
+
+- Management API prefix: `/api/v1`
+- Legacy Stremio addon remains in `/addon` until native `/c/:configId` routes land here
+
+## Scripts
+
+```bash
+npm run dev:api
+npm run build:api
+npm run start:api
+```
+
+Default listen: `http://0.0.0.0:1338`
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/v1/health` | Liveness / version |
+| GET | `/api/v1/ping` | Cheap readiness probe |
+
+Errors use `@metalayer/api-errors` with `x-correlation-id`.
