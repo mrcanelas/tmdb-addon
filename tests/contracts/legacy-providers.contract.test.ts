@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compressToEncodedURIComponent } from 'lz-string';
-import { describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
+import { describe, expect, it } from 'vitest';
 import {
+  compressToEncodedURIComponent,
   listLegacySecretsPresent,
   parseLegacyAddonConfig,
 } from '../../packages/config/src/index.ts';

@@ -1,4 +1,4 @@
-import { decompressFromEncodedURIComponent } from 'lz-string';
+import { decompressFromEncodedURIComponent } from './lz-string.js';
 import { createDefaultMetaLayerConfig, type CatalogDefinition, type MetaLayerConfig } from './schema.js';
 import {
   listLegacySecretsPresent,

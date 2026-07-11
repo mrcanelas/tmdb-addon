@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compressToEncodedURIComponent } from 'lz-string';
+import { compressToEncodedURIComponent } from './lz-string.js';
 import { planLegacyImport, toPublicImportPlan } from './legacy-import.js';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

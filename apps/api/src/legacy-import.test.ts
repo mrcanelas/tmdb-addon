@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compressToEncodedURIComponent } from 'lz-string';
+import { compressToEncodedURIComponent } from '@metalayer/config';
 import { buildApp } from './app.js';
 import { createMemoryConfigurationStore } from '@metalayer/persistence';
 

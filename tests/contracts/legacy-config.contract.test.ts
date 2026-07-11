@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import {
+  compressToEncodedURIComponent,
+  decompressFromEncodedURIComponent,
   listLegacySecretsPresent,
   parseLegacyAddonConfig,
 } from '../../packages/config/src/index.ts';
-import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { parseConfig } = require('../../addon/utils/parseProps.js');

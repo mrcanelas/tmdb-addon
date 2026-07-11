@@ -28,6 +28,11 @@ export {
 } from './legacy-import.js';
 
 export {
+  compressToEncodedURIComponent,
+  decompressFromEncodedURIComponent,
+} from './lz-string.js';
+
+export {
   LegacyManifestSchema,
   CatalogResponseSchema,
   EmptyCatalogResponseSchema,
