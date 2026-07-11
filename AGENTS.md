@@ -3247,6 +3247,8 @@ Exit:
 
 - legacy behavior is covered by contract tests.
 
+**Status (2026-07-11): complete.** See `docs/phase-a-exit.md`.
+
 ## Phase B — Security and persistence
 
 Tasks:
