@@ -9,6 +9,7 @@
     "packages/config",
     "packages/i18n",
     "packages/api-errors",
+    "packages/providers",
     "apps/configure"
   ],
   "scripts": {
@@ -25,7 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:proxy": "node test-proxy.js",
-    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit && tsc -p apps/configure/tsconfig.json --noEmit",
+    "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit && tsc -p packages/providers/tsconfig.json --noEmit && tsc -p apps/configure/tsconfig.json --noEmit",
     "i18n:check": "npm run i18n:check -w @metalayer/i18n",
     "i18n:pseudo": "npm run i18n:pseudo -w @metalayer/i18n"
   },

@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage", "apps/api/**", "apps/dashboard/**", "apps/worker/**", "apps/configure/dist/**", "docker/**", "packages/database/**", "packages/providers/**", "packages/types/**", "packages/utils/**"] },
+  { ignores: ["dist", "coverage", "apps/api/**", "apps/dashboard/**", "apps/worker/**", "apps/configure/dist/**", "docker/**", "packages/database/**", "packages/types/**", "packages/utils/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
