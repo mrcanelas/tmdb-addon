@@ -30,5 +30,6 @@
   "errors.PROVIDER_UNAVAILABLE": "Provider {{provider}} is temporarily unavailable.",
   "errors.RATE_LIMITED": "Rate limit exceeded. Try again later.",
   "errors.VALIDATION_FAILED": "Validation failed.",
+  "errors.ROUTE_NOT_FOUND": "The requested route was not found.",
   "errors.INTERNAL_ERROR": "An internal error occurred."
 }

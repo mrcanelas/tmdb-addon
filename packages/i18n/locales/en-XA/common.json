@@ -30,5 +30,6 @@
   "errors.PROVIDER_UNAVAILABLE": "Prøvîdér Prø{{provider}} îs témpørårîly ûñåvåîlåblé. îs témpø",
   "errors.RATE_LIMITED": "Råté lîmît éxçéédéd. Try ågåîñ låtér.Råté lîmît é",
   "errors.VALIDATION_FAILED": "Vålîdåtîøñ fåîléd.Vålîdå",
+  "errors.ROUTE_NOT_FOUND": "Thé réqûéstéd røûté wås ñøt føûñd.Thé réqûést",
   "errors.INTERNAL_ERROR": "Åñ îñtérñål érrør øççûrréd.Åñ îñtérñ"
 }

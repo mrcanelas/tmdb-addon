@@ -30,5 +30,6 @@
   "errors.PROVIDER_UNAVAILABLE": "O provedor {{provider}} está temporariamente indisponível.",
   "errors.RATE_LIMITED": "Limite de requisições excedido. Tente novamente mais tarde.",
   "errors.VALIDATION_FAILED": "Falha na validação.",
+  "errors.ROUTE_NOT_FOUND": "A rota solicitada não foi encontrada.",
   "errors.INTERNAL_ERROR": "Ocorreu um erro interno."
 }

@@ -30,5 +30,6 @@
   "errors.PROVIDER_UNAVAILABLE": "El proveedor {{provider}} no está disponible temporalmente.",
   "errors.RATE_LIMITED": "Se excedió el límite de solicitudes. Inténtelo de nuevo más tarde.",
   "errors.VALIDATION_FAILED": "La validación falló.",
+  "errors.ROUTE_NOT_FOUND": "No se encontró la ruta solicitada.",
   "errors.INTERNAL_ERROR": "Se produjo un error interno."
 }
