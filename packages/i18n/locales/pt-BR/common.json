@@ -1,5 +1,16 @@
 {
   "common.appName": "MetaLayer",
   "common.tagline": "Seus metadados. Seus catálogos. Do seu jeito.",
-  "errors.SOURCE_CREDENTIAL_MISSING": "Credenciais ausentes para {{source}}."
+  "errors.SOURCE_CREDENTIAL_MISSING": "Credenciais ausentes para {{source}}.",
+  "errors.SOURCE_CREDENTIAL_INVALID": "Credenciais inválidas para {{source}}.",
+  "errors.CONFIGURATION_NOT_FOUND": "Configuração não encontrada.",
+  "errors.CONFIGURATION_INVALID": "Configuração inválida.",
+  "errors.CONFIGURATION_VERSION_UNSUPPORTED": "A versão de configuração {{version}} não é suportada.",
+  "errors.EDIT_CREDENTIAL_INVALID": "Credencial de edição inválida.",
+  "errors.LEGACY_IMPORT_FAILED": "Falha ao importar a configuração legada.",
+  "errors.PROVIDER_UNSUPPORTED_RULE": "O provedor {{provider}} não oferece a regra {{rule}}.",
+  "errors.PROVIDER_UNAVAILABLE": "O provedor {{provider}} está temporariamente indisponível.",
+  "errors.RATE_LIMITED": "Limite de requisições excedido. Tente novamente mais tarde.",
+  "errors.VALIDATION_FAILED": "Falha na validação.",
+  "errors.INTERNAL_ERROR": "Ocorreu um erro interno."
 }

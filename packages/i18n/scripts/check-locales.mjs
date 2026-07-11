@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'locales');
 const stableLocales = ['en-US', 'pt-BR', 'es-ES'];
+const pseudoLocales = ['en-XA', 'ar-XB'];
 const namespaces = ['common'];
 
 function loadLocale(locale, namespace) {
@@ -19,9 +20,15 @@ for (const namespace of namespaces) {
 const canonicalKeys = Object.keys(canonical).sort();
 const errors = [];
 
-for (const locale of stableLocales) {
+for (const locale of [...stableLocales, ...pseudoLocales]) {
   for (const namespace of namespaces) {
-    const messages = loadLocale(locale, namespace);
+    let messages;
+    try {
+      messages = loadLocale(locale, namespace);
+    } catch (error) {
+      errors.push(`[${locale}/${namespace}] missing catalog file`);
+      continue;
+    }
     for (const key of canonicalKeys) {
       if (!(key in messages)) {
         errors.push(`[${locale}/${namespace}] missing key: ${key}`);
@@ -40,4 +47,6 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`i18n:check passed (${canonicalKeys.length} keys × ${stableLocales.length} locales)`);
+console.log(
+  `i18n:check passed (${canonicalKeys.length} keys × ${stableLocales.length} stable + ${pseudoLocales.length} pseudo)`,
+);

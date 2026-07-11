@@ -1,0 +1,16 @@
+{
+  "common.appName": "MétåLåyérMét",
+  "common.tagline": "Yøûr métådåtå. Yøûr çåtåløgs. Yøûr wåy.Yøûr métådåt",
+  "errors.SOURCE_CREDENTIAL_MISSING": "Mîssîñg çrédéñtîåls før Mîssîñg {{source}}..",
+  "errors.SOURCE_CREDENTIAL_INVALID": "Îñvålîd çrédéñtîåls før Îñvålîd {{source}}..",
+  "errors.CONFIGURATION_NOT_FOUND": "Çøñfîgûråtîøñ wås ñøt føûñd.Çøñfîgûrå",
+  "errors.CONFIGURATION_INVALID": "Çøñfîgûråtîøñ îs îñvålîd.Çøñfîgûr",
+  "errors.CONFIGURATION_VERSION_UNSUPPORTED": "Çøñfîgûråtîøñ vérsîøñ Çøñfîgû{{version}} îs ñøt sûppørtéd. îs ñø",
+  "errors.EDIT_CREDENTIAL_INVALID": "Édît çrédéñtîål îs îñvålîd.Édît çréd",
+  "errors.LEGACY_IMPORT_FAILED": "Légåçy çøñfîgûråtîøñ împørt fåîléd.Légåçy çøñf",
+  "errors.PROVIDER_UNSUPPORTED_RULE": "Prøvîdér Prø{{provider}} døés ñøt sûppørt rûlé  døés ñ{{rule}}..",
+  "errors.PROVIDER_UNAVAILABLE": "Prøvîdér Prø{{provider}} îs témpørårîly ûñåvåîlåblé. îs témpø",
+  "errors.RATE_LIMITED": "Råté lîmît éxçéédéd. Try ågåîñ låtér.Råté lîmît é",
+  "errors.VALIDATION_FAILED": "Vålîdåtîøñ fåîléd.Vålîdå",
+  "errors.INTERNAL_ERROR": "Åñ îñtérñål érrør øççûrréd.Åñ îñtérñ"
+}

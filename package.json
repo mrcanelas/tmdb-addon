@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "test:proxy": "node test-proxy.js",
     "typecheck": "tsc -p packages/config/tsconfig.json --noEmit && tsc -p packages/i18n/tsconfig.json --noEmit && tsc -p packages/identity/tsconfig.json --noEmit && tsc -p packages/api-errors/tsconfig.json --noEmit",
-    "i18n:check": "npm run i18n:check -w @metalayer/i18n"
+    "i18n:check": "npm run i18n:check -w @metalayer/i18n",
+    "i18n:pseudo": "npm run i18n:pseudo -w @metalayer/i18n"
   },
   "repository": {
     "type": "git",

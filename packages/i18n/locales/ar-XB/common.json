@@ -1,0 +1,16 @@
+{
+  "common.appName": "‏MetaLayer‎",
+  "common.tagline": "‏Your metadata. Your catalogs. Your way.‎",
+  "errors.SOURCE_CREDENTIAL_MISSING": "‏Missing credentials for ‎{{source}}‏.‎",
+  "errors.SOURCE_CREDENTIAL_INVALID": "‏Invalid credentials for ‎{{source}}‏.‎",
+  "errors.CONFIGURATION_NOT_FOUND": "‏Configuration was not found.‎",
+  "errors.CONFIGURATION_INVALID": "‏Configuration is invalid.‎",
+  "errors.CONFIGURATION_VERSION_UNSUPPORTED": "‏Configuration version ‎{{version}}‏ is not supported.‎",
+  "errors.EDIT_CREDENTIAL_INVALID": "‏Edit credential is invalid.‎",
+  "errors.LEGACY_IMPORT_FAILED": "‏Legacy configuration import failed.‎",
+  "errors.PROVIDER_UNSUPPORTED_RULE": "‏Provider ‎{{provider}}‏ does not support rule ‎{{rule}}‏.‎",
+  "errors.PROVIDER_UNAVAILABLE": "‏Provider ‎{{provider}}‏ is temporarily unavailable.‎",
+  "errors.RATE_LIMITED": "‏Rate limit exceeded. Try again later.‎",
+  "errors.VALIDATION_FAILED": "‏Validation failed.‎",
+  "errors.INTERNAL_ERROR": "‏An internal error occurred.‎"
+}

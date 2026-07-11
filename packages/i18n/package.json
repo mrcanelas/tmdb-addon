@@ -13,6 +13,7 @@
   "scripts": {
     "test": "vitest run --config ../../vitest.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "i18n:check": "node ./scripts/check-locales.mjs"
+    "i18n:check": "node ./scripts/check-locales.mjs",
+    "i18n:pseudo": "node ./scripts/generate-pseudo.mjs"
   }
 }

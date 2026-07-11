@@ -9,3 +9,9 @@ export {
   type LocaleId,
   type LocaleDefinition,
 } from './locale-registry.js';
+
+export {
+  toPseudoExpanded,
+  toPseudoRtl,
+  transformMessageCatalog,
+} from './pseudo.js';
