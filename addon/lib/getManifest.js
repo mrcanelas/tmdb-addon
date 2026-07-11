@@ -2,7 +2,7 @@ require("dotenv").config();
 const { getGenreList } = require("./getGenreList");
 const { getLanguages } = require("./getLanguages");
 const { getGenresFromMDBList } = require("../utils/mdbList");
-const packageJson = require("../../package.json");
+const { getActiveManifestIdentity } = require("@metalayer/identity");
 const catalogsTranslations = require("../static/translations.json");
 const CATALOG_TYPES = require("../static/catalog-types.json");
 const DEFAULT_LANGUAGE = "en-US";
@@ -250,13 +250,15 @@ async function getManifest(config) {
     `Active Catalogs: ${catalogs.length}`
   ].join(' | ');
 
+  const identity = getActiveManifestIdentity();
+
   return {
-    id: packageJson.name,
-    version: packageJson.version,
+    id: identity.id,
+    version: identity.version,
     favicon: `${process.env.HOST_NAME}/favicon.png`,
     logo: `${process.env.HOST_NAME}/logo.png`,
     background: `${process.env.HOST_NAME}/background.png`,
-    name: "The Movie Database Addon",
+    name: identity.name,
     description: "Stremio addon that provides rich metadata for movies and TV shows from TMDB, featuring customizable catalogs, multi-language support, favorites lists, watchlist, ratings, and IMDb integration. Current settings: " + activeConfigs,
     resources: ["catalog", "meta"],
     types: ["movie", "series"],

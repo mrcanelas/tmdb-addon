@@ -1,0 +1,5 @@
+{
+  "common.appName": "MetaLayer",
+  "common.tagline": "Seus metadados. Seus catálogos. Do seu jeito.",
+  "errors.SOURCE_CREDENTIAL_MISSING": "Credenciais ausentes para {{source}}."
+}

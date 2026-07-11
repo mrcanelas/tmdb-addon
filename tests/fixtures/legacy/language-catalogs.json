@@ -1,0 +1,20 @@
+{
+  "language": "pt-BR",
+  "includeAdult": "false",
+  "searchEnabled": "true",
+  "tmdbPrefix": "true",
+  "catalogs": [
+    {
+      "id": "tmdb.popular",
+      "type": "movie",
+      "name": "Popular",
+      "showInHome": true
+    },
+    {
+      "id": "tmdb.trending",
+      "type": "series",
+      "name": "Trending",
+      "showInHome": true
+    }
+  ]
+}

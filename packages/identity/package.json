@@ -1,0 +1,15 @@
+{
+  "name": "@metalayer/identity",
+  "version": "1.0.0-alpha.1",
+  "description": "Manifest and product identity constants for MetaLayer and legacy TMDB Addon compatibility",
+  "license": "Apache-2.0",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "vitest run --config ../../vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}
