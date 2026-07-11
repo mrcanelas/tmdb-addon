@@ -13,6 +13,7 @@ describe('@metalayer/config', () => {
     expect(config.configVersion).toBe(METALAYER_CONFIG_VERSION);
     expect(config.name).toBe('Family');
     expect(config.localization.interfaceLocale).toBe('en-US');
+    expect(config.identity.stremioPublicId).toBe('imdb');
     expect(() => parseMetaLayerConfig(config)).not.toThrow();
   });
 

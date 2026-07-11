@@ -2,11 +2,13 @@ export {
   METALAYER_CONFIG_VERSION,
   MetaLayerConfigSchema,
   LocalizationPreferencesSchema,
+  IdentityPreferencesSchema,
   CatalogDefinitionSchema,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
   type MetaLayerConfig,
   type LocalizationPreferences,
+  type IdentityPreferences,
   type CatalogDefinition,
 } from './schema.js';
 

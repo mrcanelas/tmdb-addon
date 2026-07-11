@@ -171,6 +171,11 @@ export function planLegacyImport(
     }
   }
 
+  // ADR 0006: MetaLayer defaults to IMDb public ids; honor explicit legacy false.
+  const returnImdbId = asBoolean(legacy.returnImdbId);
+  const stremioPublicId = returnImdbId === false ? 'tmdb' : 'imdb';
+  imported.push('identity.stremioPublicId');
+
   if (legacy.searchEnabled !== undefined) imported.push('search');
   if (legacy.ageRating) imported.push('ageRating');
 
@@ -216,6 +221,9 @@ export function planLegacyImport(
       certificationRegion: region,
       releaseRegion: region,
       timezone: 'UTC',
+    },
+    identity: {
+      stremioPublicId,
     },
     catalogs,
     featureFlags,

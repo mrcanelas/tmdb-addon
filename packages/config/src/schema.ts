@@ -40,10 +40,16 @@ export const CatalogDefinitionSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
+/** ADR 0006 — public Stremio ids default to IMDb when available. */
+export const IdentityPreferencesSchema = z.object({
+  stremioPublicId: z.enum(['imdb', 'tmdb']).default('imdb'),
+});
+
 export const MetaLayerConfigSchema = z.object({
   configVersion: z.literal(METALAYER_CONFIG_VERSION),
   name: z.string().min(1),
   localization: LocalizationPreferencesSchema,
+  identity: IdentityPreferencesSchema.default({ stremioPublicId: 'imdb' }),
   catalogs: z.array(CatalogDefinitionSchema).default([]),
   featureFlags: z.record(z.boolean()).default({}),
   legacyImport: z
@@ -59,6 +65,7 @@ export const MetaLayerConfigSchema = z.object({
 });
 
 export type LocalizationPreferences = z.infer<typeof LocalizationPreferencesSchema>;
+export type IdentityPreferences = z.infer<typeof IdentityPreferencesSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
 
@@ -77,6 +84,9 @@ export function createDefaultMetaLayerConfig(
       descriptionMode: 'localized',
       contentRegion: 'US',
       timezone: 'UTC',
+    },
+    identity: {
+      stremioPublicId: 'imdb',
     },
     catalogs: [],
     featureFlags: {},
