@@ -5,12 +5,15 @@ Fastify + TypeScript HTTP layer for MetaLayer (ADR 0004, ADR 0005).
 ## Scripts
 
 ```bash
+npm run dev
 npm run dev:api
 npm run build:api
 npm run start:api
 ```
 
-Requires `METALAYER_ENCRYPTION_KEY` (32-byte base64 or hex).  
+From the repo root, `npm run dev` starts this API together with `apps/configure`.
+
+Requires `METALAYER_ENCRYPTION_KEY` (32-byte base64 or hex) in the root `.env` (see `.env.example`).  
 Optional `METALAYER_SQLITE_PATH` (default in-memory if unset/empty for safety in tests; set `./data/metalayer.sqlite` for Lite).
 
 Default listen: `http://0.0.0.0:1338`

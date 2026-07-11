@@ -218,15 +218,23 @@ cd tmdb-addon
 npm install
 
 # Start development servers
-npm run dev:server  # Backend (port 1337)
-npm run dev         # Frontend (port 5173)
+
+# MetaLayer (API + configure UI)
+npm run dev              # API :1338 + configure :5174
+
+# Legacy TMDB Addon
+npm run dev:server       # Backend (port 1337)
+npm run dev:legacy       # Legacy Vite configure UI (port 5173)
 ```
 
 ### Available Scripts
 ```bash
-npm run dev          # Start frontend development server
-npm run dev:server   # Start backend development server
-npm run build        # Build project for production
+npm run dev          # MetaLayer API + configure UI
+npm run dev:api      # MetaLayer API only
+npm run dev:configure # MetaLayer configure UI only
+npm run dev:legacy   # Legacy Vite frontend
+npm run dev:server   # Legacy addon backend
+npm run build        # Build legacy project for production
 npm run lint         # Run linter
 npm start            # Start production server
 npm run test:proxy  # Test proxy configuration

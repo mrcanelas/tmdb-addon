@@ -16,9 +16,10 @@
     "apps/api"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n api,configure -c blue,green \"npm run dev:api\" \"npm run dev:configure\"",
     "dev:configure": "npm run dev -w @metalayer/configure",
     "dev:api": "npm run dev -w @metalayer/api",
+    "dev:legacy": "vite",
     "dev:server": "nodemon addon/server.js",
     "build": "vite build",
     "build:configure": "npm run build -w @metalayer/configure",
@@ -105,6 +106,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^10.0.3",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
