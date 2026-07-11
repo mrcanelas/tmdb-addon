@@ -7,4 +7,5 @@ export {
   verifyEditCredential,
   generateConfigId,
   generateVaultEntryId,
+  generateRevisionId,
 } from './vault.js';

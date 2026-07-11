@@ -39,4 +39,46 @@ describe('@metalayer/persistence', () => {
     expect(store.verifyEditAccess(created.configId, 'nope')).toBe(false);
     expect(JSON.stringify(created)).not.toContain('another-edit-token');
   });
+
+  it('stores revisions on create/update and can restore a previous snapshot', () => {
+    const created = store.create({
+      config: createDefaultMetaLayerConfig({ name: 'v1' }),
+      editCredential: 'rev-edit-token',
+    });
+
+    const firstRevisions = store.listRevisions(created.configId);
+    expect(firstRevisions).toHaveLength(1);
+    expect(firstRevisions[0].revisionNumber).toBe(1);
+
+    store.update(created.configId, {
+      config: createDefaultMetaLayerConfig({ name: 'v2' }),
+      note: 'rename',
+    });
+
+    const revisions = store.listRevisions(created.configId);
+    expect(revisions).toHaveLength(2);
+    expect(revisions[0].revisionNumber).toBe(2);
+
+    const initial = store.getRevision(created.configId, firstRevisions[0].revisionId);
+    expect(initial?.config.name).toBe('v1');
+
+    const restored = store.restoreRevision(created.configId, firstRevisions[0].revisionId);
+    expect(restored?.config.name).toBe('v1');
+    expect(store.listRevisions(created.configId)).toHaveLength(3);
+  });
+
+  it('exports a safe payload without secrets plaintext or edit credentials', () => {
+    const created = store.create({
+      config: createDefaultMetaLayerConfig({ name: 'Export me' }),
+      editCredential: 'export-edit-token',
+      secrets: { trakt: 'trakt-secret' },
+    });
+
+    const exported = store.exportSafe(created.configId);
+    expect(exported?.format).toBe('metalayer-config-export');
+    expect(exported?.includesSecrets).toBe(false);
+    expect(exported?.secrets).toEqual({ trakt: 'connected' });
+    expect(JSON.stringify(exported)).not.toContain('trakt-secret');
+    expect(JSON.stringify(exported)).not.toContain('export-edit-token');
+  });
 });

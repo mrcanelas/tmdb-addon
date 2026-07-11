@@ -123,3 +123,7 @@ export function generateConfigId(): string {
 export function generateVaultEntryId(): string {
   return `sec_${toBase64Url(randomBytes(16))}`;
 }
+
+export function generateRevisionId(): string {
+  return `rev_${toBase64Url(randomBytes(12))}`;
+}
