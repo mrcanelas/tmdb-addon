@@ -21,3 +21,16 @@ export declare const LEGACY: LegacyIdentity;
 export declare const METALAYER: MetaLayerIdentity;
 export declare const ACTIVE_MODE: 'legacy' | 'metalayer';
 export declare function getActiveManifestIdentity(): ManifestIdentity;
+
+export {
+  normalizeImdbId,
+  normalizeTmdbPublicId,
+  parsePublicId,
+  selectStremioPublicId,
+  stremioIdPrefixes,
+} from './public-id';
+export type {
+  StremioPublicIdPreference,
+  PublicIdKind,
+  ParsedPublicId,
+} from './public-id';

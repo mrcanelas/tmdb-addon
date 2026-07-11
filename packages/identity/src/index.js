@@ -43,9 +43,22 @@ function getActiveManifestIdentity() {
   };
 }
 
+const {
+  normalizeImdbId,
+  normalizeTmdbPublicId,
+  parsePublicId,
+  selectStremioPublicId,
+  stremioIdPrefixes,
+} = require('./public-id.js');
+
 module.exports = {
   LEGACY,
   METALAYER,
   ACTIVE_MODE,
   getActiveManifestIdentity,
+  normalizeImdbId,
+  normalizeTmdbPublicId,
+  parsePublicId,
+  selectStremioPublicId,
+  stremioIdPrefixes,
 };
