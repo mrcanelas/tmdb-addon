@@ -3266,6 +3266,8 @@ Exit:
 
 - new configurations contain no secrets in URLs.
 
+**Status (2026-07-11): core complete (rotation tooling deferred).** See `docs/phase-b-exit.md`.
+
 ## Phase C — Provider framework
 
 Tasks:
