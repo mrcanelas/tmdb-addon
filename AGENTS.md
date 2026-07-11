@@ -3288,6 +3288,8 @@ Exit:
 
 - core is provider-neutral.
 
+**Status (2026-07-11): partial.** See `docs/phase-c-exit.md`.
+
 ## Phase D — Catalog Studio
 
 Tasks:
