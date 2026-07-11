@@ -1,7 +1,7 @@
 # Phase C exit checklist (Provider framework)
 
-Status: **partial** — shared provider contracts, locale adapters, TMDB metadata adapter, and artwork/ratings stubs exist.
-Full artwork/rating fetchers, provider diagnostics API, and locale-sensitive cache wiring in API routes remain.
+Status: **partial** — shared provider contracts, locale adapters, TMDB metadata adapter, artwork/ratings stubs, and API source diagnostics exist.
+Full artwork/rating fetchers and production response caches remain.
 
 ## Checklist
 
@@ -11,13 +11,13 @@ Full artwork/rating fetchers, provider diagnostics API, and locale-sensitive cac
 | Capability registry | Done | existing `PROVIDER_REGISTRY` |
 | Provider locale adapters | Done | TMDB, language-only, unsupported |
 | Localized capability declarations | Done | registry + locale adapters |
-| Locale-sensitive cache strategy | Partial | `buildProviderCacheKey` helper; not yet wired into API caches |
+| Locale-sensitive cache strategy | Partial | `buildProviderCacheKey` exposed in source test responses |
 | Provider health | Done | tracker + circuit breaker |
 | Timeout and retry policies | Done | `withTimeout` / `withRetry` |
 | TMDB adapter | Done | ping, getMovie, searchMovies (injectable fetch) |
 | Artwork adapters | Stub | Fanart / RPDB credential ping stubs |
 | Rating adapters | Stub | IMDb unsupported stub |
-| Provider diagnostics | Deferred | Sources UI + `/diagnostics` later |
+| Provider diagnostics | Done | `GET/POST /api/v1/sources` (+ vault-backed test) |
 
 ## Exit criterion (AGENTS.md §37 Phase C)
 
