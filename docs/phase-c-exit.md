@@ -1,7 +1,7 @@
 # Phase C exit checklist (Provider framework)
 
-Status: **partial** — shared provider contracts, locale adapters, TMDB metadata adapter, artwork/ratings stubs, and API source diagnostics exist.
-Full artwork/rating fetchers and production response caches remain.
+Status: **partial** — shared provider contracts, locale adapters, TMDB metadata adapter, Fanart/RPDB artwork adapters, ratings stub, and API source diagnostics exist.
+Production response caches and IMDb rating fetchers remain.
 
 ## Checklist
 
@@ -15,7 +15,7 @@ Full artwork/rating fetchers and production response caches remain.
 | Provider health | Done | tracker + circuit breaker |
 | Timeout and retry policies | Done | `withTimeout` / `withRetry` |
 | TMDB adapter | Done | ping, getMovie, searchMovies (injectable fetch) |
-| Artwork adapters | Stub | Fanart / RPDB credential ping stubs |
+| Artwork adapters | Done | Fanart movie artwork + RPDB poster URL builder/ping |
 | Rating adapters | Stub | IMDb unsupported stub |
 | Provider diagnostics | Done | `GET/POST /api/v1/sources` + Sources UI test action |
 

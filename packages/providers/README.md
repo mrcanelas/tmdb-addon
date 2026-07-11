@@ -10,7 +10,8 @@ src/
   core/                      # errors, health, timeout/retry, cache keys
   locale/                    # ProviderLocaleAdapter implementations
   tmdb/                      # TMDB metadata adapter (Phase C)
-  artwork/ / ratings/        # stubs until full fetchers land
+  artwork/                   # Fanart + RPDB artwork adapters
+  ratings/                   # rating stubs until fetchers land
 ```
 
 Core MetaLayer packages must depend on the shared contracts (`ProviderAdapter`,
@@ -33,5 +34,19 @@ const tmdb = new TmdbProviderAdapter({ apiKey: process.env.TMDB_API });
 await tmdb.ping({ correlationId: '…', locale: 'pt-BR', region: 'BR' });
 const movie = await tmdb.getMovie({ correlationId: '…', locale: 'pt-BR' }, 550);
 ```
+
+## Artwork adapters
+
+```ts
+import { FanartArtworkAdapter, RpdbArtworkAdapter } from '@metalayer/providers';
+
+const fanart = new FanartArtworkAdapter({ apiKey: process.env.FANART_API });
+const art = await fanart.getMovieArtwork({ correlationId: '…', locale: 'pt-BR' }, 550);
+
+const rpdb = new RpdbArtworkAdapter({ apiKey: process.env.RPDB_API });
+const posters = rpdb.getMovieArtwork({ correlationId: '…', locale: 'pt-BR' }, 550);
+```
+
+RPDB poster URLs embed the provider key by design of that service; MetaLayer should prefer a server-side image proxy before exposing them in public Stremio responses.
 
 HTTP is injectable for tests (`fetchImpl`). Live smoke calls stay out of default CI.

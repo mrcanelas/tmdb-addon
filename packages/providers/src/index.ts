@@ -54,7 +54,16 @@ export type {
   TmdbMovieSummary,
 } from './tmdb/adapter.js';
 
-export { FanartArtworkAdapter, RpdbArtworkAdapter } from './artwork/stubs.js';
+export { FanartArtworkAdapter } from './artwork/fanart.js';
+export type { FanartAdapterOptions } from './artwork/fanart.js';
+export { RpdbArtworkAdapter } from './artwork/rpdb.js';
+export type { RpdbAdapterOptions, RpdbMediaType } from './artwork/rpdb.js';
+export type {
+  ArtworkAsset,
+  ArtworkBundle,
+  ArtworkKind,
+  ProviderFetch,
+} from './artwork/types.js';
 export { ImdbRatingsStubAdapter } from './ratings/stubs.js';
 
 export {

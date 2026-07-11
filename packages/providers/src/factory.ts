@@ -1,7 +1,8 @@
 import type { ProviderAdapter, ProviderHttpPolicy } from './core/runtime.js';
 import type { TmdbFetch } from './tmdb/adapter.js';
 import { TmdbProviderAdapter } from './tmdb/adapter.js';
-import { FanartArtworkAdapter, RpdbArtworkAdapter } from './artwork/stubs.js';
+import { FanartArtworkAdapter } from './artwork/fanart.js';
+import { RpdbArtworkAdapter } from './artwork/rpdb.js';
 import { ImdbRatingsStubAdapter } from './ratings/stubs.js';
 import { getProvider } from './registry.js';
 
@@ -30,9 +31,17 @@ export function createProviderAdapter(
         policy: options.policy,
       });
     case 'fanart':
-      return new FanartArtworkAdapter(options.policy);
+      return new FanartArtworkAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
     case 'rpdb':
-      return new RpdbArtworkAdapter(options.policy);
+      return new RpdbArtworkAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
     case 'imdb':
       return new ImdbRatingsStubAdapter(options.policy);
     default:

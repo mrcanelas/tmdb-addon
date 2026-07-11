@@ -10,7 +10,14 @@ describe('@metalayer/api sources diagnostics', () => {
     logger: false,
     store,
     providerFetch: async (url) => {
-      if (String(url).includes('api_key=vaulted-tmdb-key')) {
+      const value = String(url);
+      if (value.includes('webservice.fanart.tv') || value.includes('ratingposterdb.com')) {
+        return new Response(JSON.stringify({ movieposter: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (value.includes('api_key=vaulted-tmdb-key')) {
         return new Response(JSON.stringify({ images: {} }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
