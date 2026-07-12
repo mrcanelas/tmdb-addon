@@ -88,3 +88,180 @@ export function toPublicSource(
     adapterAvailable,
   };
 }
+
+const SESSION_KEY = 'metalayer.catalogStudio.session';
+
+export interface CatalogListItem {
+  instanceId: string;
+  provider: string;
+  providerCatalogId: string;
+  mediaType: 'movie' | 'series' | 'anime';
+  originalName: string;
+  customName?: string;
+  name?: { default: string; values?: Record<string, string> };
+  enabled: boolean;
+  showInHome: boolean;
+  position: number;
+  tags: string[];
+}
+
+export interface ManifestCatalogEntry {
+  instanceId: string;
+  id: string;
+  type: 'movie' | 'series' | 'anime';
+  name: string;
+  showInHome: boolean;
+}
+
+export type StudioCatalogAction =
+  | 'rename'
+  | 'duplicate'
+  | 'move'
+  | 'enable'
+  | 'disable'
+  | 'showInHome'
+  | 'hideInHome';
+
+export interface CatalogSession {
+  configId: string;
+  editCredential: string;
+}
+
+export function readCatalogSession(): CatalogSession | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CatalogSession;
+    if (!parsed.configId || !parsed.editCredential) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCatalogSession(session: CatalogSession): void {
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+export function clearCatalogSession(): void {
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+function sampleCatalogs() {
+  const id = () => `cat_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+  return [
+    {
+      instanceId: id(),
+      provider: 'tmdb',
+      providerCatalogId: 'trending',
+      mediaType: 'movie' as const,
+      originalName: 'Trending Movies',
+      enabled: true,
+      showInHome: true,
+      position: 0,
+      tags: [],
+    },
+    {
+      instanceId: id(),
+      provider: 'tmdb',
+      providerCatalogId: 'popular',
+      mediaType: 'series' as const,
+      originalName: 'Popular Series',
+      enabled: true,
+      showInHome: true,
+      position: 1,
+      tags: [],
+    },
+    {
+      instanceId: id(),
+      provider: 'tmdb',
+      providerCatalogId: 'top_rated',
+      mediaType: 'anime' as const,
+      originalName: 'Top Anime',
+      enabled: true,
+      showInHome: false,
+      position: 2,
+      tags: [],
+    },
+  ];
+}
+
+export async function bootstrapCatalogDraft(): Promise<{
+  configId: string;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  const editCredential = `draft-${crypto.randomUUID().replace(/-/g, '')}`;
+  const now = new Date().toISOString();
+  const created = await apiFetch<{
+    configId: string;
+    config: { catalogs: CatalogListItem[] };
+  }>('/api/v1/configurations', {
+    method: 'POST',
+    body: JSON.stringify({
+      editCredential,
+      name: 'Catalog Studio draft',
+      config: {
+        configVersion: 1,
+        name: 'Catalog Studio draft',
+        localization: {
+          interfaceLocale: 'en-US',
+          metadataLocale: 'en-US',
+          metadataFallbackLocales: [],
+          titleMode: 'localized',
+          descriptionMode: 'localized',
+          contentRegion: 'US',
+          timezone: 'UTC',
+        },
+        identity: { stremioPublicId: 'imdb' },
+        catalogs: sampleCatalogs(),
+        featureFlags: {},
+        createdAt: now,
+        updatedAt: now,
+      },
+    }),
+  });
+
+  writeCatalogSession({ configId: created.configId, editCredential });
+  return fetchCatalogs(created.configId, editCredential);
+}
+
+export async function fetchCatalogs(
+  configId: string,
+  editCredential: string,
+  locale?: string,
+): Promise<{
+  configId: string;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  const query = locale ? `?locale=${encodeURIComponent(locale)}` : '';
+  return apiFetch(`/api/v1/configurations/${configId}/catalogs${query}`, {
+    headers: {
+      'x-metalayer-edit-credential': editCredential,
+    },
+  });
+}
+
+export async function mutateCatalog(
+  configId: string,
+  editCredential: string,
+  instanceId: string,
+  body: {
+    action: StudioCatalogAction;
+    customName?: string;
+    toIndex?: number;
+  },
+): Promise<{
+  configId: string;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/catalogs/${instanceId}`, {
+    method: 'POST',
+    headers: {
+      'x-metalayer-edit-credential': editCredential,
+    },
+    body: JSON.stringify(body),
+  });
+}

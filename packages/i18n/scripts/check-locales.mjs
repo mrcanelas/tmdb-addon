@@ -6,7 +6,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'locales');
 const stableLocales = ['en-US', 'pt-BR', 'es-ES'];
 const pseudoLocales = ['en-XA', 'ar-XB'];
-const namespaces = ['common', 'sources'];
+const namespaces = ['common', 'sources', 'catalogs'];
 
 function loadLocale(locale, namespace) {
   return JSON.parse(readFileSync(join(localesDir, locale, `${namespace}.json`), 'utf8'));

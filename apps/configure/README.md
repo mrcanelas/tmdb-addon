@@ -27,3 +27,5 @@ Dev server defaults to http://localhost:5174 and proxies `/api` and `/c` to the 
 Optional: `PUBLIC_METALAYER_API_BASE` for a remote API (otherwise same-origin / proxy).
 
 Sources page loads `/api/v1/sources` and can run live provider tests via `/api/v1/sources/:id/test` (API key is sent only for that request and is not persisted in the UI).
+
+Catalog Studio (`/catalog-studio`) creates a session draft configuration (edit credential in `sessionStorage`) and keeps studio order aligned with the projected manifest order via `/api/v1/configurations/:configId/catalogs`.

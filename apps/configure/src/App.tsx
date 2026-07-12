@@ -2,11 +2,13 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { OverviewPage } from '@/pages/OverviewPage';
 import { SourcesPage } from '@/pages/SourcesPage';
+import { CatalogStudioPage } from '@/pages/CatalogStudioPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 
 const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
-  (item) => item.path !== '/' && item.path !== '/sources',
+  (item) =>
+    item.path !== '/' && item.path !== '/sources' && item.path !== '/catalog-studio',
 );
 
 export function App() {
@@ -16,6 +18,7 @@ export function App() {
         <Route element={<AppShell />}>
           <Route index element={<OverviewPage />} />
           <Route path="sources" element={<SourcesPage />} />
+          <Route path="catalog-studio" element={<CatalogStudioPage />} />
           {PLACEHOLDER_ROUTES.map((item) => (
             <Route
               key={item.id}

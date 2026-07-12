@@ -17,6 +17,7 @@
   "nav.saveInstall": "Save & Install",
   "overview.body": "MetaLayer configuration scaffold. Modules will land here as Phase A continues; the legacy Vite UI remains for TMDB Addon compatibility.",
   "overview.ctaSources": "Open Sources",
+  "overview.ctaCatalogStudio": "Open Catalog Studio",
   "overview.ctaImport": "Import TMDB Addon config",
   "placeholder.body": "This module is scaffolded and not implemented yet.",
   "errors.SOURCE_CREDENTIAL_MISSING": "Missing credentials for {{source}}.",

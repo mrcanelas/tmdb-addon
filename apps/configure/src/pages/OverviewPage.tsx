@@ -15,6 +15,9 @@ export function OverviewPage() {
         <Button type="button" asChild>
           <Link to="/sources">{t('overview.ctaSources')}</Link>
         </Button>
+        <Button type="button" variant="outline" asChild>
+          <Link to="/catalog-studio">{t('overview.ctaCatalogStudio')}</Link>
+        </Button>
         <Button type="button" variant="outline" disabled>
           {t('overview.ctaImport')}
         </Button>

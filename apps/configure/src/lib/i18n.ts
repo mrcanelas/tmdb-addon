@@ -10,11 +10,14 @@ import esESCommon from '@metalayer/i18n/locales/es-ES/common.json';
 import enUSSources from '@metalayer/i18n/locales/en-US/sources.json';
 import ptBRSources from '@metalayer/i18n/locales/pt-BR/sources.json';
 import esESSources from '@metalayer/i18n/locales/es-ES/sources.json';
+import enUSCatalogs from '@metalayer/i18n/locales/en-US/catalogs.json';
+import ptBRCatalogs from '@metalayer/i18n/locales/pt-BR/catalogs.json';
+import esESCatalogs from '@metalayer/i18n/locales/es-ES/catalogs.json';
 
 const resources = {
-  'en-US': { common: enUSCommon, sources: enUSSources },
-  'pt-BR': { common: ptBRCommon, sources: ptBRSources },
-  'es-ES': { common: esESCommon, sources: esESSources },
+  'en-US': { common: enUSCommon, sources: enUSSources, catalogs: enUSCatalogs },
+  'pt-BR': { common: ptBRCommon, sources: ptBRSources, catalogs: ptBRCatalogs },
+  'es-ES': { common: esESCommon, sources: esESSources, catalogs: esESCatalogs },
 };
 
 void i18n.use(initReactI18next).init({
@@ -25,7 +28,7 @@ void i18n.use(initReactI18next).init({
   ]),
   fallbackLng: CANONICAL_LOCALE,
   defaultNS: 'common',
-  ns: ['common', 'sources'],
+  ns: ['common', 'sources', 'catalogs'],
   interpolation: {
     escapeValue: false,
   },

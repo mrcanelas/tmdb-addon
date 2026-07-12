@@ -17,6 +17,7 @@
   "nav.saveInstall": "Salvar e instalar",
   "overview.body": "Scaffold da configuração do MetaLayer. Os módulos entram conforme a Fase A avança; a UI Vite legada permanece para compatibilidade com o TMDB Addon.",
   "overview.ctaSources": "Abrir Fontes",
+  "overview.ctaCatalogStudio": "Abrir Catalog Studio",
   "overview.ctaImport": "Importar config do TMDB Addon",
   "placeholder.body": "Este módulo está no scaffold e ainda não foi implementado.",
   "errors.SOURCE_CREDENTIAL_MISSING": "Credenciais ausentes para {{source}}.",
