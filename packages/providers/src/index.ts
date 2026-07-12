@@ -53,6 +53,7 @@ export type {
   TmdbAdapterOptions,
   TmdbFetch,
   TmdbMovieSummary,
+  TmdbCatalogItem,
 } from './tmdb/adapter.js';
 
 export { FanartArtworkAdapter } from './artwork/fanart.js';

@@ -39,6 +39,15 @@ export interface TmdbMovieSummary {
   publicId: string;
 }
 
+export interface TmdbCatalogItem {
+  id: number;
+  name: string;
+  mediaType: 'movie' | 'series' | 'anime';
+  posterPath?: string | null;
+  releaseDate?: string;
+  publicId: string;
+}
+
 export type TmdbFetch = (
   input: string,
   init?: RequestInit,
@@ -192,6 +201,36 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     );
   }
 
+  /**
+   * Lightweight catalog page for Studio preview (trending/popular/top_rated/…).
+   */
+  async getCatalogPage(
+    ctx: ProviderContext,
+    input: {
+      providerCatalogId: string;
+      mediaType: 'movie' | 'series' | 'anime';
+      page?: number;
+    },
+  ): Promise<TmdbCatalogItem[]> {
+    const page = input.page ?? 1;
+    const tmdbType = input.mediaType === 'movie' ? 'movie' : 'tv';
+    const path = resolveCatalogPath(input.providerCatalogId, tmdbType);
+
+    return this.withCache(
+      ctx,
+      'catalog-page',
+      `${tmdbType}:${input.providerCatalogId}#${page}`,
+      async () => {
+        const raw = await this.requestJson<{
+          results?: Array<Record<string, unknown>>;
+        }>(ctx, path, { page: String(page) });
+        return (raw.results ?? []).map((item) =>
+          mapCatalogItem(item, input.mediaType, this.stremioPublicId),
+        );
+      },
+    );
+  }
+
   private async withCache<T>(
     ctx: ProviderContext,
     operation: string,
@@ -328,6 +367,57 @@ function mapMovie(
     publicId:
       selectStremioPublicId({
         imdbId,
+        tmdbId,
+        preference,
+      }) ?? `tmdb:${tmdbId}`,
+  };
+}
+
+function resolveCatalogPath(
+  providerCatalogId: string,
+  tmdbType: 'movie' | 'tv',
+): string {
+  switch (providerCatalogId) {
+    case 'trending':
+      return `/trending/${tmdbType}/week`;
+    case 'popular':
+      return `/${tmdbType}/popular`;
+    case 'top_rated':
+      return `/${tmdbType}/top_rated`;
+    case 'upcoming':
+      return tmdbType === 'movie' ? '/movie/upcoming' : '/tv/on_the_air';
+    case 'now_playing':
+      return tmdbType === 'movie' ? '/movie/now_playing' : '/tv/airing_today';
+    default:
+      return `/${tmdbType}/popular`;
+  }
+}
+
+function mapCatalogItem(
+  raw: Record<string, unknown>,
+  mediaType: 'movie' | 'series' | 'anime',
+  preference: StremioPublicIdPreference,
+): TmdbCatalogItem {
+  const tmdbId = Number(raw.id);
+  const name = String(raw.title ?? raw.name ?? '');
+  const releaseDate =
+    typeof raw.release_date === 'string'
+      ? raw.release_date
+      : typeof raw.first_air_date === 'string'
+        ? raw.first_air_date
+        : undefined;
+
+  return {
+    id: tmdbId,
+    name,
+    mediaType,
+    posterPath:
+      typeof raw.poster_path === 'string' || raw.poster_path === null
+        ? (raw.poster_path as string | null)
+        : undefined,
+    releaseDate,
+    publicId:
+      selectStremioPublicId({
         tmdbId,
         preference,
       }) ?? `tmdb:${tmdbId}`,
