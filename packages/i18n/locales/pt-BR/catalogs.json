@@ -25,6 +25,7 @@
   "catalogs.actions.delete": "Excluir",
   "catalogs.actions.export": "Exportar",
   "catalogs.actions.import": "Importar",
+  "catalogs.actions.importFileAria": "Importar catálogos de um arquivo JSON",
   "catalogs.actions.createMerged": "Adicionar mesclado",
   "catalogs.actions.createRotated": "Adicionar rotação",
   "catalogs.field.type": "Tipo",

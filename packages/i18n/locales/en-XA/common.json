@@ -46,6 +46,8 @@
   "shell.commandPalette.toggleMode": "Tøgglé Sîmplé / Ådvåñçéd mødéTøgglé Sî",
   "shell.commandPalette.toggleTheme": "Tøgglé lîght / dårk théméTøgglé l",
   "shell.commandPalette.switchLocale": "Swîtçh îñtérfåçé låñgûågé tø Swîtçh îñ{{locale}}",
+  "shell.locale.aria": "Îñtérfåçé låñgûågéÎñtérf",
+  "shell.locale.switch": "Ûsé Ûs{{locale}}",
   "errors.SOURCE_CREDENTIAL_MISSING": "Mîssîñg çrédéñtîåls før Mîssîñg {{source}}..",
   "errors.SOURCE_CREDENTIAL_INVALID": "Îñvålîd çrédéñtîåls før Îñvålîd {{source}}..",
   "errors.CONFIGURATION_NOT_FOUND": "Çøñfîgûråtîøñ wås ñøt føûñd.Çøñfîgûrå",

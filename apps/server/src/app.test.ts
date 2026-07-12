@@ -24,7 +24,7 @@ describe('@metalayer/server', () => {
     const body = response.json();
     expect(body.status).toBe('ok');
     expect(body.service).toBe('metalayer-api');
-    expect(body.version).toMatch(/^1\.0\.0-alpha\./);
+    expect(body.version).toMatch(/^1\.0\.0-(alpha|beta|rc)\./);
     expect(body.correlationId).toBe('test-corr-1');
   });
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LocalizationPreferences } from '@metalayer/config';
 import { LocalizationPreferencesSchema } from '@metalayer/config';
-import { STABLE_LOCALES } from '@metalayer/i18n';
+import { applyDocumentLocale, STABLE_LOCALES } from '@metalayer/i18n';
 import { Button } from '@metalayer/shared-ui';
 import {
   ensureStudioSession,
@@ -62,9 +62,7 @@ const DESCRIPTION_MODES = ['localized', 'original', 'best-available'] as const;
 
 function applyInterfaceLocale(locale: string) {
   void i18n.changeLanguage(locale);
-  if (typeof document !== 'undefined') {
-    document.documentElement.lang = locale;
-  }
+  applyDocumentLocale(locale);
 }
 
 function parseFallbacks(raw: string): string[] {

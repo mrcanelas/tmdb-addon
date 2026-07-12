@@ -1,9 +1,14 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Command } from 'cmdk';
+import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { CONFIGURE_NAV } from '@/navigation';
 import { useConfigureUiStore } from '@/stores/ui-store';
+
+const SHELL_LOCALES = LOCALE_REGISTRY.filter(
+  (locale) => locale.status === 'stable' || locale.status === 'pseudo',
+);
 
 export function CommandPalette() {
   const { t, i18n } = useTranslation();
@@ -13,6 +18,7 @@ export function CommandPalette() {
   const mode = useConfigureUiStore((s) => s.mode);
   const toggleMode = useConfigureUiStore((s) => s.toggleMode);
   const toggleTheme = useConfigureUiStore((s) => s.toggleTheme);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -24,6 +30,29 @@ export function CommandPalette() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [setOpen]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
+    };
+  }, [open, setOpen]);
 
   const navItems = useMemo(
     () =>
@@ -42,6 +71,9 @@ export function CommandPalette() {
       <Command
         className="ml-glass w-full max-w-lg overflow-hidden rounded-[var(--ml-radius)] shadow-xl"
         label={t('shell.commandPalette.label')}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('shell.commandPalette.label')}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="border-b border-[var(--ml-border)] px-3 py-2">
@@ -93,18 +125,20 @@ export function CommandPalette() {
             >
               {t('shell.commandPalette.toggleTheme')}
             </Command.Item>
-            {(['en-US', 'pt-BR', 'es-ES'] as const).map((locale) => (
+            {SHELL_LOCALES.map((locale) => (
               <Command.Item
-                key={locale}
-                value={`locale-${locale}`}
+                key={locale.id}
+                value={`locale-${locale.id}`}
                 className="cursor-pointer rounded-md px-3 py-2 text-sm text-[var(--ml-text)] aria-selected:bg-[var(--ml-elevated)]"
                 onSelect={() => {
-                  void i18n.changeLanguage(locale);
-                  document.documentElement.lang = locale;
+                  void i18n.changeLanguage(locale.id);
+                  applyDocumentLocale(locale.id);
                   setOpen(false);
                 }}
               >
-                {t('shell.commandPalette.switchLocale', { locale })}
+                {t('shell.commandPalette.switchLocale', {
+                  locale: locale.displayName,
+                })}
               </Command.Item>
             ))}
           </Command.Group>

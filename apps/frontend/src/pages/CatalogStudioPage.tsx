@@ -230,6 +230,7 @@ export function CatalogStudioPage() {
             type="file"
             accept="application/json,.json"
             className="hidden"
+            aria-label={t('catalogs.actions.importFileAria')}
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) void onImportFile(file);

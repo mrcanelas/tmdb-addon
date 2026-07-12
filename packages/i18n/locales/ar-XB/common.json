@@ -46,6 +46,8 @@
   "shell.commandPalette.toggleMode": "‏Toggle Simple / Advanced mode‎",
   "shell.commandPalette.toggleTheme": "‏Toggle light / dark theme‎",
   "shell.commandPalette.switchLocale": "‏Switch interface language to ‎{{locale}}‏‎",
+  "shell.locale.aria": "‏Interface language‎",
+  "shell.locale.switch": "‏Use ‎{{locale}}‏‎",
   "errors.SOURCE_CREDENTIAL_MISSING": "‏Missing credentials for ‎{{source}}‏.‎",
   "errors.SOURCE_CREDENTIAL_INVALID": "‏Invalid credentials for ‎{{source}}‏.‎",
   "errors.CONFIGURATION_NOT_FOUND": "‏Configuration was not found.‎",

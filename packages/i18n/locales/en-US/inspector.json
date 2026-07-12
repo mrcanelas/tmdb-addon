@@ -27,5 +27,8 @@
   "inspector.fields.rating": "Rating",
   "inspector.fields.voteCount": "Vote count",
   "inspector.fields.releaseDate": "Release date",
-  "inspector.fields.externalIds": "External IDs"
+  "inspector.fields.externalIds": "External IDs",
+  "inspector.yes": "yes",
+  "inspector.no": "no",
+  "inspector.plan": "Plan"
 }

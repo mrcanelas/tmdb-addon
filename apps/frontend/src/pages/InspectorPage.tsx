@@ -217,7 +217,10 @@ export function InspectorPage() {
                         {field.selectedLocale ?? field.requestedLocale ?? '—'}
                       </div>
                       <div>
-                        {t('inspector.fallback')}: {field.fallbackUsed ? 'yes' : 'no'}
+                        {t('inspector.fallback')}:{' '}
+                        {field.fallbackUsed
+                          ? t('inspector.yes')
+                          : t('inspector.no')}
                       </div>
                       <div className="sm:col-span-2">
                         {t('inspector.attempted')}:{' '}
@@ -242,7 +245,7 @@ export function InspectorPage() {
                           </ol>
                           {field.effectivePlanHash ? (
                             <p className="mt-1 text-xs">
-                              plan:{' '}
+                              {t('inspector.plan')}:{' '}
                               <span className="font-mono">
                                 {field.effectivePlanHash}
                               </span>

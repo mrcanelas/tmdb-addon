@@ -28,7 +28,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | post-beta (Phase B carry-over) |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
-| Full i18n/RTL layout hardening | Phase M tasks |
+| Full i18n/RTL layout hardening | **Partial** — `applyDocumentLocale` (lang+dir), shell/palette a11y, Inspector/Catalog i18n strings; deeper layout audit remains |
 | Performance measurement against §34 objectives | Phase M tasks |
 | Security / migration review sign-off | Phase M → N |
 
@@ -38,13 +38,13 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 |---|---|
 | Feature freeze for new major modules | Open — minimize new surface |
 | UX review of configure primary pages | Open |
-| Accessibility pass | Open |
+| Accessibility pass | Partial — locale group aria, command palette dialog/Escape/focus restore, file import aria |
 | Performance measurement | Open |
 | Migration testing (legacy import fixtures) | Open |
 | Provider reliability / degradation | Open |
 | Security review | Open |
-| Translation review (en-US / pt-BR / es-ES) | Open |
-| Pseudo-locale and RTL layout review | Open |
+| Translation review (en-US / pt-BR / es-ES) | Partial — hardening keys added; full review Open |
+| Pseudo-locale and RTL layout review | Partial — document `dir` + ar-XB in shell; layout audit Open |
 | Field Resolution Chains review | Open |
 | Documentation pass | Open |
 

@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import {
   CANONICAL_LOCALE,
+  applyDocumentLocale,
   negotiateInterfaceLocale,
 } from '@metalayer/i18n';
 import enUSCommon from '@metalayer/i18n/locales/en-US/common.json';
@@ -118,6 +119,16 @@ void i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
+}).then(() => {
+  if (typeof document !== 'undefined') {
+    applyDocumentLocale(i18n.language);
+  }
+});
+
+i18n.on('languageChanged', (locale) => {
+  if (typeof document !== 'undefined') {
+    applyDocumentLocale(locale);
+  }
 });
 
 export { i18n };

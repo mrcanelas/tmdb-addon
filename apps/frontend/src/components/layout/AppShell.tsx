@@ -2,11 +2,16 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { Button } from '@metalayer/shared-ui';
+import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { CONFIGURE_NAV } from '@/navigation';
 import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { CommandPalette } from '@/components/layout/CommandPalette';
+
+const SHELL_LOCALES = LOCALE_REGISTRY.filter(
+  (locale) => locale.status === 'stable' || locale.status === 'pseudo',
+);
 
 export function AppShell() {
   const { t, i18n } = useTranslation();
@@ -50,19 +55,27 @@ export function AppShell() {
           ))}
         </nav>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {(['en-US', 'pt-BR', 'es-ES'] as const).map((locale) => (
+        <div
+          className="mt-6 flex flex-wrap gap-2"
+          role="group"
+          aria-label={t('shell.locale.aria')}
+        >
+          {SHELL_LOCALES.map((locale) => (
             <Button
-              key={locale}
+              key={locale.id}
               type="button"
               size="sm"
-              variant={i18n.language === locale ? 'primary' : 'outline'}
+              variant={i18n.language === locale.id ? 'primary' : 'outline'}
+              aria-label={t('shell.locale.switch', {
+                locale: locale.displayName,
+              })}
+              aria-pressed={i18n.language === locale.id}
               onPress={() => {
-                void i18n.changeLanguage(locale);
-                document.documentElement.lang = locale;
+                void i18n.changeLanguage(locale.id);
+                applyDocumentLocale(locale.id);
               }}
             >
-              {locale}
+              {locale.id}
             </Button>
           ))}
         </div>

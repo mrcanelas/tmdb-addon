@@ -27,5 +27,8 @@
   "inspector.fields.rating": "RåtîñgRå",
   "inspector.fields.voteCount": "Vøté çøûñtVøt",
   "inspector.fields.releaseDate": "Réléåsé dåtéRélé",
-  "inspector.fields.externalIds": "Éxtérñål ÎDsÉxté"
+  "inspector.fields.externalIds": "Éxtérñål ÎDsÉxté",
+  "inspector.yes": "yésy",
+  "inspector.no": "ñøñ",
+  "inspector.plan": "PlåñPl"
 }
