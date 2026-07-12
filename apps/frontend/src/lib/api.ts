@@ -761,3 +761,24 @@ export async function saveResolutionConfig(
     body: JSON.stringify({ resolution }),
   });
 }
+
+export async function fetchLocalization(
+  configId: string,
+  editCredential: string,
+): Promise<{ localization: import('@metalayer/config').LocalizationPreferences }> {
+  return apiFetch(`/api/v1/configurations/${configId}/localization`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function saveLocalization(
+  configId: string,
+  editCredential: string,
+  localization: import('@metalayer/config').LocalizationPreferences,
+): Promise<{ localization: import('@metalayer/config').LocalizationPreferences }> {
+  return apiFetch(`/api/v1/configurations/${configId}/localization`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ localization }),
+  });
+}

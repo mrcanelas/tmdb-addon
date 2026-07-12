@@ -3660,21 +3660,21 @@ The version remains in the `1.0.0` prerelease line until stable.
 - configure `/configure` and admin `/admin` basenames; API serves SPA dist;
 - configure shell: Simple/Advanced, theme, command palette (`Ctrl+K`);
 - TanStack Query + RHF + Zod pattern (Sources model; Tracking/Corrections migrated);
-- Layered Minimalism page primitives (`PageHeader`, `SectionCard`, empty/error/loading).
+- Layered Minimalism page primitives (`PageHeader`, `SectionCard`, empty/error/loading);
+- Language & Region configure UI + `GET/PUT .../localization` (`docs/language-region.md`).
 
 ### Highest-priority gaps before Phase M (beta)
 
-1. **Language & Region UI** — independent interface locale, metadata locale, and region controls (schema/i18n exist; configure page still placeholder).
-2. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
-3. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
-4. **Save & Install / Onboarding** — still scaffold or partial (Appearance ships Field Resolution Chains builder).
-5. **Field Resolution Chains UX depth** — profile/catalog/title inheritance UI, explicit step editor, episode-order wiring (core F2 shipped; see `docs/phase-f-exit.md`).
-6. **Tracking OAuth browser flows** and live list sync (Trakt/SIMKL/AniList/MAL).
-7. **Encryption key rotation tooling** (Phase B deferred).
-8. **Postgres + Redis end-to-end** for Server mode (Lite SQLite path works).
-9. **UX depth** — migrate remaining configure pages to Query/form patterns; polish Catalog Studio / Rules / Sorting / Inspector to Layered Minimalism; admin Recharts overview.
-10. **i18n completeness** — no hard-coded strings on primary pages; full en-US / pt-BR / es-ES; plural/date formatting; pseudo/RTL layout tests.
-11. **Release hardening** — security review, migration review, performance objectives measured, stable release gates.
+1. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
+2. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
+3. **Save & Install / Onboarding** — still scaffold or partial (Appearance and Language & Region ship).
+4. **Field Resolution Chains UX depth** — profile/catalog/title inheritance UI, explicit step editor, episode-order wiring (core F2 shipped; see `docs/phase-f-exit.md`).
+5. **Tracking OAuth browser flows** and live list sync (Trakt/SIMKL/AniList/MAL).
+6. **Encryption key rotation tooling** (Phase B deferred).
+7. **Postgres + Redis end-to-end** for Server mode (Lite SQLite path works).
+8. **UX depth** — migrate remaining configure pages to Query/form patterns; polish Catalog Studio / Rules / Sorting / Inspector to Layered Minimalism; admin Recharts overview.
+9. **i18n completeness** — no hard-coded strings on primary pages; full en-US / pt-BR / es-ES; plural/date formatting; pseudo/RTL layout tests.
+10. **Release hardening** — security review, migration review, performance objectives measured, stable release gates.
 
 ---
 
@@ -4305,7 +4305,7 @@ No.
 
 MetaLayer migration and reconstruction are complete when every item below is checked.
 
-Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0), including Field Resolution Chains (F2). Items still open are primarily remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
+Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0), including Field Resolution Chains (F2) and Language & Region configure UI. Items still open are primarily remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
 
 - [x] MetaLayer is the primary brand for greenfield apps (`apps/frontend`, `apps/dashboard`, `apps/server`).
 - [ ] The stable version is `1.0.0` (still on `1.0.0-alpha.*`).
@@ -4314,7 +4314,7 @@ Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0), in
 - [x] Native configurations do not expose secrets in URLs.
 - [x] Secrets are encrypted at rest (Secret Vault AES-256-GCM).
 - [ ] Interface localization is complete for en-US, pt-BR, and es-ES (catalogs exist; primary UI still incomplete).
-- [ ] Interface, metadata language, and regional settings are independent in the configure UI (Language & Region page still scaffold).
+- [x] Interface, metadata language, and regional settings are independent in the configure UI (Language & Region; Simple syncs, Advanced separates).
 - [x] Metadata fallback chains are configurable and explainable via Field Resolution Chains (§10 F2; inheritance UX follow-up).
 - [ ] Catalog names support localization end-to-end in UI.
 - [x] API errors use stable codes.
