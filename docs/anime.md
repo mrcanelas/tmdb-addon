@@ -28,7 +28,9 @@ See `@metalayer/anime` `pickAnimeTitle`.
 
 ## Tracking
 
-`AnimeTrackingPort` defines list/status shapes. OAuth token vault + sync land in Phase I.
+`AnimeTrackingPort` and `@metalayer/tracking` define watch status shapes and hide-watched annotation.
+
+OAuth token vault kinds (`oauth_access` / `oauth_refresh`) and reconnection states are Phase I foundations. Full browser OAuth sync for AniList/MAL lands with the broader Tracking module.
 
 ## Identity
 
