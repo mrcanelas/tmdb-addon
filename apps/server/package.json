@@ -25,6 +25,7 @@
     "@metalayer/providers": "workspace:*",
     "@metalayer/metadata-resolver": "workspace:*",
     "@metalayer/rules": "workspace:*",
+    "@metalayer/search-ai": "workspace:*",
     "@metalayer/security": "workspace:*",
     "@metalayer/sorting": "workspace:*",
     "@metalayer/tracking": "workspace:*",

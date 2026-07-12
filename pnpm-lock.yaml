@@ -295,6 +295,9 @@ importers:
       '@metalayer/rules':
         specifier: workspace:*
         version: link:../../packages/rules
+      '@metalayer/search-ai':
+        specifier: workspace:*
+        version: link:../../packages/search-ai
       '@metalayer/security':
         specifier: workspace:*
         version: link:../../packages/security
@@ -425,6 +428,21 @@ importers:
       '@metalayer/providers':
         specifier: workspace:*
         version: link:../providers
+
+  packages/search-ai:
+    dependencies:
+      '@metalayer/catalogs':
+        specifier: workspace:*
+        version: link:../catalogs
+      '@metalayer/config':
+        specifier: workspace:*
+        version: link:../config
+      '@metalayer/identity-graph':
+        specifier: workspace:*
+        version: link:../identity-graph
+      '@metalayer/rules':
+        specifier: workspace:*
+        version: link:../rules
 
   packages/security: {}
 
