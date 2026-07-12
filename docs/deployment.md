@@ -122,6 +122,34 @@ pnpm metalayer:vault-reencrypt
 
 Uses SQLite (`METALAYER_SQLITE_PATH`) or Postgres (`POSTGRES_URL`) automatically.
 
+### Proactive tracking token refresh (Trakt / MAL)
+
+Refresh OAuth access tokens before expiry so watchlist/history features stay connected without waiting for a 401.
+
+```bash
+# Dry-run (lists eligible configs; no provider calls in dry-run for skipped targets)
+pnpm metalayer:tracking-refresh --dry-run
+
+# Apply refresh
+pnpm metalayer:tracking-refresh
+```
+
+**Cron example** (every 6 hours):
+
+```cron
+0 */6 * * * cd /path/to/metalayer && pnpm metalayer:tracking-refresh >> /var/log/metalayer-tracking-refresh.log 2>&1
+```
+
+**In-process scheduler** (single long-lived API container):
+
+```bash
+METALAYER_TRACKING_REFRESH_ENABLED=true
+# optional; default 6h, minimum 60s
+# METALAYER_TRACKING_REFRESH_INTERVAL_MS=21600000
+```
+
+Requires `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` and/or `MAL_CLIENT_ID` / `MAL_CLIENT_SECRET` for the providers you use. Never logs tokens or vault plaintext.
+
 ## Security notes
 
 - Do not bake encryption keys or dashboard tokens into Docker images.

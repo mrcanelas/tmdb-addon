@@ -3672,7 +3672,7 @@ See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 2. ~~**Encryption key rotation tooling**~~ (**Done** — key ring + `pnpm metalayer:vault-reencrypt`)
 3. **Advanced configure module**
 4. **Series specials / alternative episode orders** (corrections layer)
-5. **Proactive token refresh jobs** (optional; on-demand refresh covers Trakt/MAL)
+5. ~~**Proactive token refresh jobs**~~ (**Done** — `pnpm metalayer:tracking-refresh` + optional scheduler)
 
 ---
 

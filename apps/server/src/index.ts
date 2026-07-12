@@ -4,6 +4,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { buildApp } from './app.js';
+import {
+  isTrackingRefreshEnabled,
+  parseTrackingRefreshIntervalMs,
+  runProactiveTrackingRefresh,
+} from './tracking-token-refresh.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -64,6 +69,41 @@ const app = await buildApp();
 try {
   await app.listen({ port, host });
   app.log.info(`MetaLayer API listening on http://${host}:${port}`);
+
+  if (isTrackingRefreshEnabled()) {
+    const intervalMs = parseTrackingRefreshIntervalMs();
+    const runRefresh = async () => {
+      try {
+        const result = await runProactiveTrackingRefresh({
+          store: app.configStore,
+          fetchImpl: app.providerFetch,
+        });
+        app.log.info(
+          {
+            scanned: result.scanned,
+            refreshed: result.refreshed,
+            skipped: result.skipped,
+            failed: result.failed.length,
+          },
+          'tracking proactive refresh completed',
+        );
+      } catch (error) {
+        app.log.error(
+          { err: error instanceof Error ? error.message : String(error) },
+          'tracking proactive refresh failed',
+        );
+      }
+    };
+    void runRefresh();
+    const timer = setInterval(() => {
+      void runRefresh();
+    }, intervalMs);
+    if (typeof timer.unref === 'function') timer.unref();
+    app.log.info(
+      { intervalMs },
+      'METALAYER_TRACKING_REFRESH_ENABLED — proactive OAuth refresh scheduled',
+    );
+  }
 } catch (error) {
   app.log.error(error);
   process.exit(1);

@@ -25,12 +25,16 @@ import {
   exchangeSimklAuthorizationCode,
   exchangeTraktAuthorizationCode,
   generateMalPkceVerifier,
-  refreshMalAccessToken,
-  refreshTraktAccessToken,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import type { TmdbFetch } from '@metalayer/providers';
 import { randomBytes } from 'node:crypto';
+import {
+  REFRESHABLE_TRACKING_PROVIDERS,
+  clearTrackingAccessTokens,
+  persistTrackingOAuthMetadata,
+  tryRefreshTrackingToken,
+} from '../tracking-token-refresh.js';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
@@ -100,95 +104,7 @@ async function resolveConnectionState(
   return transitionTokenState('not_configured', { type: 'auth_success' });
 }
 
-async function clearTrackingAccessTokens(
-  app: { configStore: ConfigurationStore },
-  configId: string,
-  provider: TrackingProviderId,
-  options?: { keepRefresh?: boolean },
-) {
-  await app.configStore.deleteVaultSecret(configId, provider, 'oauth_access');
-  await app.configStore.deleteVaultSecret(configId, provider, 'api_key');
-  if (!options?.keepRefresh) {
-    await app.configStore.deleteVaultSecret(configId, provider, 'oauth_refresh');
-  }
-}
-
-const REFRESHABLE_PROVIDERS = new Set<TrackingProviderId>(['trakt', 'mal']);
-
-async function tryRefreshTrackingToken(input: {
-  app: {
-    configStore: ConfigurationStore;
-    providerFetch?: TmdbFetch;
-  };
-  configId: string;
-  provider: TrackingProviderId;
-}): Promise<{ accessToken: string } | null> {
-  if (!REFRESHABLE_PROVIDERS.has(input.provider)) return null;
-
-  const fetchImpl = input.app.providerFetch ?? fetch;
-  const refreshToken = await input.app.configStore.getSecretPlaintext(
-    input.configId,
-    input.provider,
-    'oauth_refresh',
-  );
-  if (!refreshToken) return null;
-
-  if (input.provider === 'trakt') {
-    const clientId = process.env.TRAKT_CLIENT_ID;
-    const clientSecret = process.env.TRAKT_CLIENT_SECRET;
-    if (!clientId || !clientSecret) return null;
-    const tokens = await refreshTraktAccessToken({
-      refreshToken,
-      clientId,
-      clientSecret,
-      fetchImpl,
-    });
-    await input.app.configStore.upsertVaultSecret(
-      input.configId,
-      'trakt',
-      'oauth_access',
-      tokens.accessToken,
-    );
-    if (tokens.refreshToken) {
-      await input.app.configStore.upsertVaultSecret(
-        input.configId,
-        'trakt',
-        'oauth_refresh',
-        tokens.refreshToken,
-      );
-    }
-    return { accessToken: tokens.accessToken };
-  }
-
-  if (input.provider === 'mal') {
-    const clientId = process.env.MAL_CLIENT_ID;
-    const clientSecret = process.env.MAL_CLIENT_SECRET;
-    if (!clientId || !clientSecret) return null;
-    const tokens = await refreshMalAccessToken({
-      refreshToken,
-      clientId,
-      clientSecret,
-      fetchImpl,
-    });
-    await input.app.configStore.upsertVaultSecret(
-      input.configId,
-      'mal',
-      'oauth_access',
-      tokens.accessToken,
-    );
-    if (tokens.refreshToken) {
-      await input.app.configStore.upsertVaultSecret(
-        input.configId,
-        'mal',
-        'oauth_refresh',
-        tokens.refreshToken,
-      );
-    }
-    return { accessToken: tokens.accessToken };
-  }
-
-  return null;
-}
+const REFRESHABLE_PROVIDERS = REFRESHABLE_TRACKING_PROVIDERS;
 
 function isTrackingAdapter(
   adapter: unknown,
@@ -236,9 +152,10 @@ async function loadLiveWatchStates(input: {
 
     try {
       const refreshed = await tryRefreshTrackingToken({
-        app: input.app,
+        store: input.app.configStore,
         configId: input.configId,
         provider: input.provider,
+        fetchImpl: input.app.providerFetch,
       });
       if (refreshed) {
         return await run(refreshed.accessToken);
@@ -249,7 +166,7 @@ async function loadLiveWatchStates(input: {
 
     // SIMKL/AniList have no refresh grant; Trakt/MAL refresh missing/failed.
     // Keep refresh token (if any) so status can surface `expired` + Connect.
-    await clearTrackingAccessTokens(input.app, input.configId, input.provider, {
+    await clearTrackingAccessTokens(input.app.configStore, input.configId, input.provider, {
       keepRefresh: REFRESHABLE_PROVIDERS.has(input.provider),
     });
     throw error;
@@ -298,12 +215,13 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
     try {
       const refreshed = await tryRefreshTrackingToken({
-        app,
+        store: app.configStore,
         configId: request.params.configId,
         provider,
+        fetchImpl: app.providerFetch,
       });
       if (!refreshed) {
-        await clearTrackingAccessTokens(app, request.params.configId, provider, {
+        await clearTrackingAccessTokens(app.configStore, request.params.configId, provider, {
           keepRefresh: true,
         });
         return {
@@ -320,7 +238,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         correlationId: request.correlationId,
       };
     } catch {
-      await clearTrackingAccessTokens(app, request.params.configId, provider, {
+      await clearTrackingAccessTokens(app.configStore, request.params.configId, provider, {
         keepRefresh: true,
       });
       return {
@@ -593,6 +511,12 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
           tokens.refreshToken,
         );
       }
+      await persistTrackingOAuthMetadata(
+        app.configStore,
+        request.params.configId,
+        'trakt',
+        tokens.expiresIn,
+      );
       return {
         connected: true,
         state: 'connected' as const,
@@ -1111,10 +1035,11 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
           tokens.refreshToken,
         );
       }
-      await app.configStore.deleteVaultSecret(
+      await persistTrackingOAuthMetadata(
+        app.configStore,
         request.params.configId,
         'mal',
-        'session',
+        tokens.expiresIn,
       );
       return {
         connected: true,
