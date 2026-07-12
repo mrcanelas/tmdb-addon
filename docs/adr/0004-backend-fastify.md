@@ -23,7 +23,7 @@ AIOStreams uses Express 5 as a thin server over a TS core. That is a useful refe
 
 ## Decision
 
-1. New MetaLayer HTTP app (`apps/api`) uses **Fastify** on Node.js.
+1. New MetaLayer HTTP app (`apps/server`) uses **Fastify** on Node.js.
 2. Domain logic stays in `@metalayer/*` packages; Fastify remains a thin transport/adapter layer.
 3. Prefer Fastify JSON Schema (and/or Zod via official patterns) for request/response validation at the boundary.
 4. Use Fastify hooks/plugins for correlation IDs, logging, rate limiting, and static asset serving.

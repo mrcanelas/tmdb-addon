@@ -8,7 +8,7 @@
 
 MetaLayer needs two browser applications (`AGENTS.md` §26 / §31):
 
-- end-user configuration UI (`apps/configure`);
+- end-user configuration UI (`apps/frontend`);
 - operator dashboard (`apps/dashboard`).
 
 Both must support Simple/Advanced modes, i18n (`en-US`, `pt-BR`, `es-ES`), RTL foundations, mobile-first layout, and Lite self-hosting where a static build can be served by the API container.

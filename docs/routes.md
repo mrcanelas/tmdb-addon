@@ -31,7 +31,7 @@ Documented in `docs/api.md`, including TMDB session helpers and Trakt OAuth call
 
 ## Native MetaLayer routes (Phase B — partial)
 
-Implemented by `apps/api` (port `1338` by default):
+Implemented by `apps/server` (port `1338` by default):
 
 | Method | Path | Purpose |
 |---|---|---|

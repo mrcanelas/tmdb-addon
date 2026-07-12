@@ -8,27 +8,27 @@
 
 > legacy behavior is covered by contract tests.
 
-Satisfied by fixtures + Vitest contracts under `tests/fixtures/legacy` and `tests/contracts`, plus package unit tests for identity, config, i18n, api-errors, providers, and `apps/api`.
+Satisfied by fixtures + Vitest contracts under `tests/fixtures/legacy` and `tests/contracts`, plus package unit tests for identity, config, i18n, api-errors, providers, and `apps/server`.
 
 ## Task checklist
 
 | Task | Evidence |
 |---|---|
 | Establish CI | `.github/workflows/ci.yml` — lint, typecheck, i18n, test, build (legacy + configure + api) |
-| Test runner | Vitest (`npm run test`) |
+| Test runner | Vitest (`pnpm test`) |
 | Legacy fixtures | `tests/fixtures/legacy/*` (config, secrets, Trakt/MDBList/RPDB/AI, manifest, catalog, meta) |
 | Document current routes | `docs/routes.md` |
 | Decouple manifest identity | `@metalayer/identity` + ADR 0001 |
 | Versioned configuration schema | `@metalayer/config` (`configVersion: 1`) |
 | Locale registry + negotiation | `@metalayer/i18n` |
 | Translation namespaces | `common`, `sources` (+ pseudo `en-XA` / `ar-XB`) |
-| Foundational UI strings (MetaLayer apps) | `apps/configure` uses i18n keys (legacy `configure/` intentionally not rewritten) |
+| Foundational UI strings (MetaLayer apps) | `apps/frontend` uses i18n keys (legacy `configure/` intentionally not rewritten) |
 | Structured API error codes | `@metalayer/api-errors` |
-| Pseudo-locales | `npm run i18n:pseudo` + catalogs |
+| Pseudo-locales | `pnpm i18n:pseudo` + catalogs |
 | ADR process | `docs/adr/0000`–`0004` |
 | Code ownership boundaries | `docs/code-ownership.md` + `.github/CODEOWNERS` |
-| Greenfield configure scaffold | `apps/configure` (Rsbuild + shadcn) |
-| Greenfield API scaffold | `apps/api` (Fastify) |
+| Greenfield configure scaffold | `apps/frontend` (Rsbuild + shadcn) |
+| Greenfield API scaffold | `apps/server` (Fastify) |
 
 ## Known legacy deviations recorded in contracts
 
@@ -48,11 +48,11 @@ Phase B+ must not preserve synthetic error cards on native MetaLayer catalog rou
 ## Commands to verify exit
 
 ```bash
-npm run lint
-npm run typecheck
-npm run i18n:check
-npm run test
-npm run build
-npm run build:configure
-npm run build:api
+pnpm lint
+pnpm typecheck
+pnpm i18n:check
+pnpm test
+pnpm build
+pnpm build:frontend
+pnpm build:server
 ```

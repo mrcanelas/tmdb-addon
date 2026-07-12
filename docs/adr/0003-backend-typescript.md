@@ -6,7 +6,7 @@
 
 ## Context
 
-MetaLayer’s new API (`apps/api`), workers, and shared packages need a long-term language choice.
+MetaLayer’s new API (`apps/server`), workers, and shared packages need a long-term language choice.
 
 Goals that favor a typed backend:
 
@@ -29,7 +29,7 @@ The legacy `addon/` CommonJS JavaScript server remains until MetaLayer routes an
 
 ## Consequences
 
-- One language across `@metalayer/*`, `apps/api`, and future workers.
+- One language across `@metalayer/*`, `apps/server`, and future workers.
 - Stronger typing for config schemas, API errors, and telemetry fields.
 - Build/typecheck becomes part of CI for backend packages (already partially true).
 - Temporary dual runtime: JS legacy addon + TS MetaLayer packages/apps.

@@ -1285,15 +1285,15 @@ CI must detect:
 Target command:
 
 ```bash
-npm run i18n:check
+pnpm i18n:check
 ```
 
 Optional commands:
 
 ```bash
-npm run i18n:extract
-npm run i18n:pseudo
-npm run i18n:coverage
+pnpm i18n:extract
+pnpm i18n:pseudo
+pnpm i18n:coverage
 ```
 
 ## 9.24 Translation coverage
@@ -2619,8 +2619,8 @@ Modules should be extractable later if scaling requires it.
 
 ```text
 apps/
-  api/
-  configure/
+  server/
+  frontend/
   dashboard/
   worker/
 
@@ -3081,13 +3081,13 @@ Maintain fixtures for:
 Target commands:
 
 ```bash
-npm run lint
-npm run typecheck
-npm run i18n:check
-npm run test
-npm run test:integration
-npm run test:e2e
-npm run build
+pnpm lint
+pnpm typecheck
+pnpm i18n:check
+pnpm test
+pnpm test:integration
+pnpm test:e2e
+pnpm build
 ```
 
 ---
@@ -3691,18 +3691,18 @@ After stable `1.0.0`, breaking changes require a major release.
 Run:
 
 ```bash
-npm run lint
-npm run typecheck
-npm run i18n:check
-npm run test
-npm run build
+pnpm lint
+pnpm typecheck
+pnpm i18n:check
+pnpm test
+pnpm build
 ```
 
 When relevant, also run:
 
 ```bash
-npm run test:integration
-npm run test:e2e
+pnpm test:integration
+pnpm test:e2e
 ```
 
 Then verify:

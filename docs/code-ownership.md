@@ -6,8 +6,8 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 
 | Path | Responsibility | Notes |
 |---|---|---|
-| `apps/configure` | End-user MetaLayer configuration UI | Greenfield Rsbuild + React + shadcn (ADR 0002). Not a port of `configure/`. |
-| `apps/api` | MetaLayer HTTP API | Fastify + TypeScript (ADR 0004). Thin transport over `@metalayer/*`. |
+| `apps/frontend` | End-user MetaLayer configuration UI | Greenfield Rsbuild + React + shadcn (ADR 0002). Package `@metalayer/frontend`. Not a port of `configure/`. |
+| `apps/server` | MetaLayer HTTP API | Fastify + TypeScript (ADR 0004). Package `@metalayer/server`. Thin transport over `@metalayer/*`. |
 | `apps/dashboard` | Operator dashboard | Reserved; not started. |
 | `apps/worker` | Background jobs | Reserved; not started. |
 
@@ -15,12 +15,15 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 
 | Path | Responsibility |
 |---|---|
+| `packages/core` | Shared barrel over foundation packages; `pnpm -F core dev` watches types. |
 | `packages/identity` | Manifest/product identity constants (not derived from package.json). |
 | `packages/config` | Versioned MetaLayer config schema, legacy config parsing, Stremio response contracts. |
 | `packages/i18n` | Locale registry, negotiation, message catalogs, pseudo-locales. |
 | `packages/api-errors` | Stable management API error codes. |
 | `packages/security` | Secret Vault crypto + edit-credential hashing (ADR 0005). |
 | `packages/persistence` | SQLite configuration + vault storage for Lite. |
+| `packages/catalogs` | Catalog Studio ordering and mutations. |
+| `packages/providers` / `packages/cache` | Provider framework and locale-sensitive cache. |
 | `packages/database` | Future schema/migrations (scaffold only). |
 | `packages/types` / `packages/utils` | Reserved shared packages — avoid catch-all growth. |
 

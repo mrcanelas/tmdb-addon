@@ -11,7 +11,7 @@ Merged catalogs, rotations, tags/groups UI depth, and catalog import/export rema
 | Unified catalog ordering (movie/series/anime) | Done | `@metalayer/catalogs` `sortCatalogsByPosition` / `toManifestCatalogEntries` |
 | Catalog instances (not provider IDs as UI ids) | Done | `instanceId` on `CatalogDefinition` |
 | Rename / duplicate / enable / Home / reorder | Done | studio helpers + `/api/v1/configurations/:id/catalogs` |
-| Catalog Studio UI | Done (minimal) | `apps/configure` `/catalog-studio` with studio vs manifest preview |
+| Catalog Studio UI | Done (minimal) | `apps/frontend` `/catalog-studio` with studio vs manifest preview |
 | Preview of catalog *results* | Deferred | needs catalog fetch pipeline (later) |
 | Tags / groups | Partial | schema `tags` + optional `group`; UI later |
 | Merged catalogs | Deferred | Phase D follow-up |

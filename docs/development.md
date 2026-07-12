@@ -5,9 +5,9 @@ This guide will help you set up your development environment and understand the 
 ## Prerequisites
 
 - Node.js 20.x or higher
-- npm 9.x or higher
+- pnpm 11.x (see `packageManager` in root `package.json`)
 - Git
-- MongoDB (local or Atlas)
+- MongoDB (local or Atlas) — legacy addon only
 - Basic knowledge of TypeScript and React
 
 ## Project Structure
@@ -31,7 +31,7 @@ cd tmdb-addon
 
 2. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 3. Set up environment variables:
@@ -50,13 +50,14 @@ TRAKT_CLIENT_ID=your_trakt_client_id
 TRAKT_CLIENT_SECRET=your_trakt_client_secret
 ```
 
-4. Start development server:
+4. Start development servers:
 ```bash
-# Terminal 1 - Backend
-npm run dev:server
+# MetaLayer (recommended)
+pnpm dev
 
-# Terminal 2 - Frontend
-npm run dev
+# Legacy TMDB Addon (optional)
+pnpm dev:legacy-addon
+pnpm dev:legacy
 ```
 
 ## Development Workflow
@@ -73,15 +74,15 @@ git checkout -b feature/your-feature-name
 3. **Testing**:
 ```bash
 # Run tests
-npm test
+pnpm test
 
 # Run linter
-npm run lint
+pnpm lint
 ```
 
 4. **Building**:
 ```bash
-npm run build
+pnpm build
 ```
 
 ## Code Style
