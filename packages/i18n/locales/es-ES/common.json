@@ -39,6 +39,8 @@
   "errors.AI_CONFIRMATION_REQUIRED": "Las propuestas de IA requieren confirmación explícita antes de aplicarse.",
   "errors.AI_PROPOSAL_NOT_FOUND": "No se encontró la propuesta de IA.",
   "errors.AI_PROMPT_INVALID": "El prompt de IA no es válido.",
+  "errors.DASHBOARD_UNAUTHORIZED": "El token de operador del dashboard no es válido.",
+  "errors.DASHBOARD_TOKEN_MISSING": "El token de operador del dashboard no está configurado en el servidor.",
   "errors.RATE_LIMITED": "Se excedió el límite de solicitudes. Inténtelo de nuevo más tarde.",
   "errors.VALIDATION_FAILED": "La validación falló.",
   "errors.ROUTE_NOT_FOUND": "No se encontró la ruta solicitada.",

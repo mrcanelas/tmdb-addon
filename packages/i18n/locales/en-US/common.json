@@ -39,6 +39,8 @@
   "errors.AI_CONFIRMATION_REQUIRED": "AI proposals require explicit confirmation before applying.",
   "errors.AI_PROPOSAL_NOT_FOUND": "AI proposal was not found.",
   "errors.AI_PROMPT_INVALID": "AI prompt is invalid.",
+  "errors.DASHBOARD_UNAUTHORIZED": "Dashboard operator token is invalid.",
+  "errors.DASHBOARD_TOKEN_MISSING": "Dashboard operator token is not configured on the server.",
   "errors.RATE_LIMITED": "Rate limit exceeded. Try again later.",
   "errors.VALIDATION_FAILED": "Validation failed.",
   "errors.ROUTE_NOT_FOUND": "The requested route was not found.",

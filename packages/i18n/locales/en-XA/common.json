@@ -39,6 +39,8 @@
   "errors.AI_CONFIRMATION_REQUIRED": "ÅÎ prøpøsåls réqûîré éxplîçît çøñfîrmåtîøñ béføré åpplyîñg.ÅÎ prøpøsåls réqûî",
   "errors.AI_PROPOSAL_NOT_FOUND": "ÅÎ prøpøsål wås ñøt føûñd.ÅÎ prøpø",
   "errors.AI_PROMPT_INVALID": "ÅÎ prømpt îs îñvålîd.ÅÎ prøm",
+  "errors.DASHBOARD_UNAUTHORIZED": "Dåshbøård øpéråtør tøkéñ îs îñvålîd.Dåshbøård ø",
+  "errors.DASHBOARD_TOKEN_MISSING": "Dåshbøård øpéråtør tøkéñ îs ñøt çøñfîgûréd øñ thé sérvér.Dåshbøård øpéråtør",
   "errors.RATE_LIMITED": "Råté lîmît éxçéédéd. Try ågåîñ låtér.Råté lîmît é",
   "errors.VALIDATION_FAILED": "Vålîdåtîøñ fåîléd.Vålîdå",
   "errors.ROUTE_NOT_FOUND": "Thé réqûéstéd røûté wås ñøt føûñd.Thé réqûést",
