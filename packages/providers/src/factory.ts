@@ -8,6 +8,7 @@ import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { AnilistProviderAdapter } from './anilist/adapter.js';
 import { AnilistTrackingAdapter } from './anilist/tracking.js';
 import { MalJikanProviderAdapter } from './mal/adapter.js';
+import { MalTrackingAdapter } from './mal/tracking.js';
 import { KitsuProviderAdapter } from './kitsu/adapter.js';
 import { TraktTrackingAdapter } from './trakt/adapter.js';
 import { SimklTrackingAdapter } from './simkl/adapter.js';
@@ -81,6 +82,14 @@ export function createProviderAdapter(
         policy: options.policy,
       });
     case 'mal':
+      if (options.accessToken) {
+        return new MalTrackingAdapter({
+          accessToken: options.accessToken,
+          clientId: process.env.MAL_CLIENT_ID,
+          fetchImpl: options.fetchImpl,
+          policy: options.policy,
+        });
+      }
       return new MalJikanProviderAdapter({
         baseUrl: options.jikanBaseUrl,
         fetchImpl: options.fetchImpl,

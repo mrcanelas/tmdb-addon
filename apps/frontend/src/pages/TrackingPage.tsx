@@ -18,7 +18,15 @@ const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>([
   'trakt',
   'simkl',
   'anilist',
+  'mal',
 ]);
+
+const OAUTH_ORDER: TrackingOAuthProvider[] = [
+  'trakt',
+  'simkl',
+  'anilist',
+  'mal',
+];
 
 function trackingTone(
   state: string,
@@ -43,6 +51,8 @@ function brandLabel(provider: TrackingOAuthProvider): string {
       return 'SIMKL';
     case 'anilist':
       return 'AniList';
+    case 'mal':
+      return 'MyAnimeList';
     default:
       return 'Trakt';
   }
@@ -51,9 +61,10 @@ function brandLabel(provider: TrackingOAuthProvider): string {
 function pickPreviewProvider(
   connected: Partial<Record<TrackingOAuthProvider, boolean>>,
 ): TrackingOAuthProvider {
-  if (connected.trakt) return 'trakt';
-  if (connected.simkl) return 'simkl';
-  return 'anilist';
+  for (const provider of OAUTH_ORDER) {
+    if (connected[provider]) return provider;
+  }
+  return 'trakt';
 }
 
 export function TrackingPage() {
@@ -71,6 +82,9 @@ export function TrackingPage() {
     anilist:
       providers.find((provider) => provider.provider === 'anilist')?.state ===
       'connected',
+    mal:
+      providers.find((provider) => provider.provider === 'mal')?.state ===
+      'connected',
   };
   const previewProvider = pickPreviewProvider(connected);
   const previewMutation = useHideWatchedPreviewMutation(previewProvider);
@@ -80,31 +94,41 @@ export function TrackingPage() {
   const simklDisconnect = useTrackingDisconnectMutation('simkl');
   const anilistConnect = useTrackingConnectMutation('anilist');
   const anilistDisconnect = useTrackingDisconnectMutation('anilist');
+  const malConnect = useTrackingConnectMutation('mal');
+  const malDisconnect = useTrackingDisconnectMutation('mal');
 
   const bootstrapping = sessionQuery.isLoading || statusQuery.isLoading;
   const loadError = sessionQuery.isError || statusQuery.isError;
-  const anyTrackingConnected = Boolean(
-    connected.trakt || connected.simkl || connected.anilist,
-  );
+  const anyTrackingConnected = OAUTH_ORDER.some((id) => connected[id]);
   const connectPending =
-    traktConnect.isPending || simklConnect.isPending || anilistConnect.isPending;
+    traktConnect.isPending ||
+    simklConnect.isPending ||
+    anilistConnect.isPending ||
+    malConnect.isPending;
   const connectError =
-    traktConnect.isError || simklConnect.isError || anilistConnect.isError;
+    traktConnect.isError ||
+    simklConnect.isError ||
+    anilistConnect.isError ||
+    malConnect.isError;
   const failedConnectBrand = traktConnect.isError
     ? 'Trakt'
     : simklConnect.isError
       ? 'SIMKL'
-      : 'AniList';
+      : anilistConnect.isError
+        ? 'AniList'
+        : 'MyAnimeList';
 
   function connectMutation(provider: TrackingOAuthProvider) {
     if (provider === 'simkl') return simklConnect;
     if (provider === 'anilist') return anilistConnect;
+    if (provider === 'mal') return malConnect;
     return traktConnect;
   }
 
   function disconnectMutation(provider: TrackingOAuthProvider) {
     if (provider === 'simkl') return simklDisconnect;
     if (provider === 'anilist') return anilistDisconnect;
+    if (provider === 'mal') return malDisconnect;
     return traktDisconnect;
   }
 

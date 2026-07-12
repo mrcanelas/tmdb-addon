@@ -98,7 +98,11 @@ export function useTrackingCallbackMutation(provider: TrackingOAuthProvider) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { code: string; redirectUri: string }) => {
+    mutationFn: async (input: {
+      code: string;
+      redirectUri: string;
+      state?: string;
+    }) => {
       const session = sessionQuery.data ?? (await sessionQuery.refetch()).data;
       if (!session) throw new Error('Studio session missing');
       return completeTrackingOAuth(

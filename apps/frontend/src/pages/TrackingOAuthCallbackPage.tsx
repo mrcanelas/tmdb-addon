@@ -11,6 +11,7 @@ const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>([
   'trakt',
   'simkl',
   'anilist',
+  'mal',
 ]);
 
 function brandLabel(provider: TrackingOAuthProvider): string {
@@ -19,6 +20,8 @@ function brandLabel(provider: TrackingOAuthProvider): string {
       return 'SIMKL';
     case 'anilist':
       return 'AniList';
+    case 'mal':
+      return 'MyAnimeList';
     default:
       return 'Trakt';
   }
@@ -45,8 +48,9 @@ export function TrackingOAuthCallbackPage() {
       return;
     }
     const redirectUri = `${window.location.origin}/configure/oauth/${provider}/callback`;
+    const oauthState = params.get('state') ?? undefined;
     void callbackMutation
-      .mutateAsync({ code, redirectUri })
+      .mutateAsync({ code, redirectUri, state: oauthState })
       .then(() => {
         setDone(true);
         window.close();

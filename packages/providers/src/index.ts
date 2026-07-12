@@ -95,6 +95,18 @@ export type {
 } from './anilist/tracking.js';
 export { MalJikanProviderAdapter } from './mal/adapter.js';
 export type { JikanAdapterOptions } from './mal/adapter.js';
+export {
+  MalTrackingAdapter,
+  buildMalAuthorizeUrl,
+  exchangeMalAuthorizationCode,
+  generateMalPkceVerifier,
+  refreshMalAccessToken,
+} from './mal/tracking.js';
+export type {
+  MalOAuthTokens,
+  MalTrackingAdapterOptions,
+  MalWatchStateFixture,
+} from './mal/tracking.js';
 export { KitsuProviderAdapter } from './kitsu/adapter.js';
 export type { KitsuAdapterOptions } from './kitsu/adapter.js';
 export { TraktTrackingAdapter, buildTraktAuthorizeUrl, exchangeTraktAuthorizationCode } from './trakt/adapter.js';

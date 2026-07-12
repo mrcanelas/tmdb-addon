@@ -622,7 +622,7 @@ export async function disconnectTrakt(
   return disconnectTracking(configId, editCredential, 'trakt');
 }
 
-export type TrackingOAuthProvider = 'trakt' | 'simkl' | 'anilist';
+export type TrackingOAuthProvider = 'trakt' | 'simkl' | 'anilist' | 'mal';
 
 export async function fetchTrackingAuthUrl(
   configId: string,
@@ -642,7 +642,7 @@ export async function completeTrackingOAuth(
   configId: string,
   editCredential: string,
   provider: TrackingOAuthProvider,
-  body: { code: string; redirectUri: string },
+  body: { code: string; redirectUri: string; state?: string },
 ): Promise<{ connected: boolean; state: string }> {
   return apiFetch(
     `/api/v1/configurations/${configId}/tracking/${provider}/callback`,

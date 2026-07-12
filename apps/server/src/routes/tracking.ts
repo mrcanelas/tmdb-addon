@@ -11,15 +11,21 @@ import {
 } from '@metalayer/tracking';
 import {
   AnilistTrackingAdapter,
+  MalTrackingAdapter,
+  ProviderError,
   SimklTrackingAdapter,
   TraktTrackingAdapter,
   buildAnilistAuthorizeUrl,
+  buildMalAuthorizeUrl,
   buildSimklAuthorizeUrl,
   buildTraktAuthorizeUrl,
   createProviderAdapter,
   exchangeAnilistAuthorizationCode,
+  exchangeMalAuthorizationCode,
   exchangeSimklAuthorizationCode,
   exchangeTraktAuthorizationCode,
+  generateMalPkceVerifier,
+  refreshMalAccessToken,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import { randomBytes } from 'node:crypto';
@@ -82,6 +88,85 @@ function resolveConnectionState(
   return transitionTokenState('not_configured', { type: 'auth_success' });
 }
 
+function isTrackingAdapter(
+  adapter: unknown,
+): adapter is
+  | TraktTrackingAdapter
+  | SimklTrackingAdapter
+  | AnilistTrackingAdapter
+  | MalTrackingAdapter {
+  return (
+    adapter instanceof TraktTrackingAdapter ||
+    adapter instanceof SimklTrackingAdapter ||
+    adapter instanceof AnilistTrackingAdapter ||
+    adapter instanceof MalTrackingAdapter
+  );
+}
+
+async function loadLiveWatchStates(input: {
+  app: {
+    configStore: ConfigurationStore;
+    providerFetch: typeof fetch;
+  };
+  configId: string;
+  provider: TrackingProviderId;
+  accessToken?: string;
+  correlationId: string;
+}): Promise<WatchStateEntry[]> {
+  const run = async (token: string | undefined) => {
+    const adapter = createProviderAdapter(input.provider, {
+      accessToken: token,
+      fetchImpl: input.app.providerFetch,
+    });
+    if (!isTrackingAdapter(adapter)) return [] as WatchStateEntry[];
+    return adapter.getWatchStates({
+      correlationId: input.correlationId,
+    }) as Promise<WatchStateEntry[]>;
+  };
+
+  try {
+    return await run(input.accessToken);
+  } catch (error) {
+    if (
+      input.provider !== 'mal' ||
+      !(error instanceof ProviderError) ||
+      error.code !== 'auth'
+    ) {
+      throw error;
+    }
+    const refreshToken = input.app.configStore.getSecretPlaintext(
+      input.configId,
+      'mal',
+      'oauth_refresh',
+    );
+    const clientId = process.env.MAL_CLIENT_ID;
+    const clientSecret = process.env.MAL_CLIENT_SECRET;
+    if (!refreshToken || !clientId || !clientSecret) throw error;
+
+    const tokens = await refreshMalAccessToken({
+      refreshToken,
+      clientId,
+      clientSecret,
+      fetchImpl: input.app.providerFetch,
+    });
+    input.app.configStore.upsertVaultSecret(
+      input.configId,
+      'mal',
+      'oauth_access',
+      tokens.accessToken,
+    );
+    if (tokens.refreshToken) {
+      input.app.configStore.upsertVaultSecret(
+        input.configId,
+        'mal',
+        'oauth_refresh',
+        tokens.refreshToken,
+      );
+    }
+    return run(tokens.accessToken);
+  }
+}
+
 export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/status',
@@ -141,7 +226,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const result = await safeLoadWatchStates(provider, async () => {
+      const result = await safeLoadWatchStates(provider, async () => {
       if (request.body?.fail) {
         throw new Error(`${provider} tracking unavailable`);
       }
@@ -152,22 +237,13 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }));
       }
 
-      const adapter = createProviderAdapter(provider, {
+      return loadLiveWatchStates({
+        app,
+        configId: request.params.configId,
+        provider,
         accessToken: request.body?.accessToken || vaultToken || undefined,
-        fetchImpl: app.providerFetch,
+        correlationId: request.correlationId,
       });
-
-      if (
-        adapter instanceof TraktTrackingAdapter ||
-        adapter instanceof SimklTrackingAdapter ||
-        adapter instanceof AnilistTrackingAdapter
-      ) {
-        return adapter.getWatchStates({
-          correlationId: request.correlationId,
-        });
-      }
-
-      return [];
     });
 
     return {
@@ -220,20 +296,13 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }));
       }
 
-      const adapter = createProviderAdapter(provider, {
+      return loadLiveWatchStates({
+        app,
+        configId: request.params.configId,
+        provider,
         accessToken: vaultToken || undefined,
-        fetchImpl: app.providerFetch,
+        correlationId: request.correlationId,
       });
-      if (
-        adapter instanceof TraktTrackingAdapter ||
-        adapter instanceof SimklTrackingAdapter ||
-        adapter instanceof AnilistTrackingAdapter
-      ) {
-        return adapter.getWatchStates({
-          correlationId: request.correlationId,
-        });
-      }
-      return [];
     });
 
     const annotated = annotateWatchedCandidates(
@@ -718,6 +787,223 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       app.configStore.deleteVaultSecret(
         request.params.configId,
         'anilist',
+        'api_key',
+      );
+
+      return {
+        connected: false,
+        state: 'not_configured' as const,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.get<{
+    Params: { configId: string };
+    Querystring: { redirectUri?: string };
+  }>('/configurations/:configId/tracking/mal/auth-url', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.MAL_CLIENT_ID;
+    if (!clientId) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'MAL_CLIENT_ID is not configured on this instance',
+          correlationId: request.correlationId,
+          params: { source: 'MyAnimeList' },
+        }),
+      );
+    }
+
+    const redirectUri =
+      request.query.redirectUri || process.env.MAL_REDIRECT_URI || '';
+    if (!redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'redirectUri is required',
+          correlationId: request.correlationId,
+          params: { field: 'redirectUri' },
+        }),
+      );
+    }
+
+    const nonce = randomBytes(8).toString('hex');
+    const codeVerifier = generateMalPkceVerifier();
+    const state = Buffer.from(
+      JSON.stringify({
+        configId: request.params.configId,
+        nonce,
+      }),
+    ).toString('base64url');
+
+    // Persist PKCE verifier until callback (MAL requires plain code_challenge).
+    app.configStore.upsertVaultSecret(
+      request.params.configId,
+      'mal',
+      'session',
+      JSON.stringify({ nonce, codeVerifier }),
+    );
+
+    return {
+      authUrl: buildMalAuthorizeUrl({
+        clientId,
+        redirectUri,
+        state,
+        codeChallenge: codeVerifier,
+      }),
+      state,
+      redirectUri,
+      correlationId: request.correlationId,
+    };
+  });
+
+  app.post<{
+    Params: { configId: string };
+    Body: { code?: string; redirectUri?: string; state?: string };
+  }>('/configurations/:configId/tracking/mal/callback', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.MAL_CLIENT_ID;
+    const clientSecret = process.env.MAL_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'MAL_CLIENT_ID/MAL_CLIENT_SECRET are not configured',
+          correlationId: request.correlationId,
+          params: { source: 'MyAnimeList' },
+        }),
+      );
+    }
+
+    const code = request.body?.code;
+    const redirectUri =
+      request.body?.redirectUri || process.env.MAL_REDIRECT_URI || '';
+    if (!code || !redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'code and redirectUri are required',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    const sessionRaw = app.configStore.getSecretPlaintext(
+      request.params.configId,
+      'mal',
+      'session',
+    );
+    let codeVerifier: string | undefined;
+    if (sessionRaw) {
+      try {
+        const session = JSON.parse(sessionRaw) as {
+          nonce?: string;
+          codeVerifier?: string;
+        };
+        if (request.body?.state) {
+          const decoded = JSON.parse(
+            Buffer.from(request.body.state, 'base64url').toString('utf8'),
+          ) as { nonce?: string };
+          if (decoded.nonce && session.nonce && decoded.nonce !== session.nonce) {
+            return reply.status(400).send(
+              createApiError({
+                code: 'VALIDATION_FAILED',
+                message: 'OAuth state nonce mismatch',
+                correlationId: request.correlationId,
+              }),
+            );
+          }
+        }
+        codeVerifier = session.codeVerifier;
+      } catch {
+        codeVerifier = undefined;
+      }
+    }
+    if (!codeVerifier) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'MAL PKCE session is missing; restart Connect',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    try {
+      const tokens = await exchangeMalAuthorizationCode({
+        code,
+        redirectUri,
+        clientId,
+        clientSecret,
+        codeVerifier,
+        fetchImpl: app.providerFetch,
+      });
+      app.configStore.upsertVaultSecret(
+        request.params.configId,
+        'mal',
+        'oauth_access',
+        tokens.accessToken,
+      );
+      if (tokens.refreshToken) {
+        app.configStore.upsertVaultSecret(
+          request.params.configId,
+          'mal',
+          'oauth_refresh',
+          tokens.refreshToken,
+        );
+      }
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'mal',
+        'session',
+      );
+      return {
+        connected: true,
+        state: 'connected' as const,
+        correlationId: request.correlationId,
+      };
+    } catch (error) {
+      return reply.status(502).send(
+        createApiError({
+          code: 'PROVIDER_UNAVAILABLE',
+          message:
+            error instanceof Error ? error.message : 'MAL OAuth callback failed',
+          correlationId: request.correlationId,
+          params: { source: 'MyAnimeList' },
+        }),
+      );
+    }
+  });
+
+  app.delete<{ Params: { configId: string } }>(
+    '/configurations/:configId/tracking/mal',
+    async (request, reply) => {
+      const access = requireEdit(app, request, request.params.configId);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'mal',
+        'oauth_access',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'mal',
+        'oauth_refresh',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'mal',
+        'session',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'mal',
         'api_key',
       );
 

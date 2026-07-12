@@ -352,4 +352,92 @@ describe('@metalayer/server tracking', () => {
     process.env.ANILIST_CLIENT_ID = previousId;
     process.env.ANILIST_CLIENT_SECRET = previousSecret;
   });
+
+  it('builds MAL auth URL with PKCE, exchanges code into vault, and disconnects', async () => {
+    const previousId = process.env.MAL_CLIENT_ID;
+    const previousSecret = process.env.MAL_CLIENT_SECRET;
+    process.env.MAL_CLIENT_ID = 'mal-client';
+    process.env.MAL_CLIENT_SECRET = 'mal-secret';
+
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 41).toString('base64'));
+    let capturedVerifier: string | undefined;
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (url, init) => {
+        expect(String(url)).toContain('myanimelist.net/v1/oauth2/token');
+        expect(init?.method).toBe('POST');
+        const body = String(init?.body ?? '');
+        expect(body).toContain('code_verifier=');
+        expect(body).toContain('grant_type=authorization_code');
+        const match = /code_verifier=([^&]+)/.exec(body);
+        capturedVerifier = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+        return new Response(
+          JSON.stringify({
+            access_token: 'mal-live-access',
+            refresh_token: 'mal-live-refresh',
+            expires_in: 3600,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'mal-oauth-edit',
+        config: createDefaultMetaLayerConfig({ name: 'MalOAuth' }),
+      },
+    });
+    const { configId } = created.json();
+    const headers = { 'x-metalayer-edit-credential': 'mal-oauth-edit' };
+    const redirectUri = 'http://localhost:1338/configure/oauth/mal/callback';
+
+    const authUrl = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/mal/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+      headers,
+    });
+    expect(authUrl.statusCode).toBe(200);
+    expect(authUrl.json().authUrl).toContain('myanimelist.net/v1/oauth2/authorize');
+    expect(authUrl.json().authUrl).toContain('code_challenge=');
+    expect(authUrl.json().authUrl).toContain('mal-client');
+    const state = authUrl.json().state as string;
+
+    const callback = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/mal/callback`,
+      headers,
+      payload: { code: 'auth-code', redirectUri, state },
+    });
+    expect(callback.statusCode).toBe(200);
+    expect(callback.json().connected).toBe(true);
+    expect(JSON.stringify(callback.json())).not.toContain('mal-live-access');
+    expect(capturedVerifier).toBeTruthy();
+    expect(capturedVerifier!.length).toBeGreaterThanOrEqual(43);
+
+    const status = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/status`,
+      headers,
+    });
+    const mal = status
+      .json()
+      .providers.find((item: { provider: string }) => item.provider === 'mal');
+    expect(mal.state).toBe('connected');
+
+    const disconnected = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/configurations/${configId}/tracking/mal`,
+      headers,
+    });
+    expect(disconnected.statusCode).toBe(200);
+    expect(disconnected.json().state).toBe('not_configured');
+
+    await app.close();
+    process.env.MAL_CLIENT_ID = previousId;
+    process.env.MAL_CLIENT_SECRET = previousSecret;
+  });
 });

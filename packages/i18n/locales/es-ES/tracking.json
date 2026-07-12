@@ -15,7 +15,7 @@
   "tracking.preview": "Vista previa de ocultar vistos",
   "tracking.previewRunning": "Ejecutando vista previa…",
   "tracking.previewOk": "Vista previa de ocultar vistos completada (degradado: {{degraded}}).",
-  "tracking.previewNeedsConnection": "Conecta Trakt, SIMKL o AniList para previsualizar hide-watched con el historial en vivo.",
+  "tracking.previewNeedsConnection": "Conecta Trakt, SIMKL, AniList o MyAnimeList para previsualizar hide-watched con el historial en vivo.",
   "tracking.included": "Incluidos",
   "tracking.excluded": "Excluidos",
   "tracking.emptyTitle": "No hay proveedores de tracking listados",
