@@ -3,6 +3,10 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createApiError } from '@metalayer/api-errors';
 import {
+  CorrectionRegistry,
+  loadSampleCommunityCorrections,
+} from '@metalayer/corrections';
+import {
   createMemoryConfigurationStore,
   SqliteConfigurationStore,
   type ConfigurationStore,
@@ -23,6 +27,7 @@ export interface BuildAppOptions {
   /** Injectable HTTP for provider adapters (tests / offline). */
   providerFetch?: TmdbFetch;
   providerCache?: MemoryCache;
+  correctionRegistry?: CorrectionRegistry;
 }
 
 declare module 'fastify' {
@@ -30,6 +35,7 @@ declare module 'fastify' {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
     providerCache: MemoryCache;
+    correctionRegistry: CorrectionRegistry;
   }
 }
 
@@ -70,9 +76,17 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   const store = resolveStore(options);
+  const correctionRegistry =
+    options.correctionRegistry ??
+    (() => {
+      const registry = new CorrectionRegistry();
+      registry.loadCommunity(loadSampleCommunityCorrections());
+      return registry;
+    })();
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
   app.decorate('providerCache', options.providerCache ?? new MemoryCache());
+  app.decorate('correctionRegistry', correctionRegistry);
 
   app.addHook('onClose', async () => {
     store.close();

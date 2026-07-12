@@ -274,6 +274,9 @@ importers:
       '@metalayer/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@metalayer/corrections':
+        specifier: workspace:*
+        version: link:../../packages/corrections
       '@metalayer/identity':
         specifier: workspace:*
         version: link:../../packages/identity
@@ -373,6 +376,12 @@ importers:
       typescript:
         specifier: ^5.5.3
         version: 5.9.3
+
+  packages/corrections:
+    dependencies:
+      '@metalayer/identity-graph':
+        specifier: workspace:*
+        version: link:../identity-graph
 
   packages/i18n: {}
 

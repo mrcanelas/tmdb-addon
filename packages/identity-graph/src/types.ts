@@ -66,7 +66,7 @@ export interface CanonicalIdentity {
 
 /**
  * Mapping precedence (AGENTS.md §18.6) — higher wins.
- * Corrections are stubs until Phase J.
+ * Local/community corrections feed verified-local / verified-community via Phase J bridge.
  */
 export const MAPPING_PRECEDENCE: Record<IdentityMatchMethod | 'verified-local' | 'verified-community', number> = {
   'verified-local': 100,

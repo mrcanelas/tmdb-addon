@@ -18,6 +18,7 @@
     "@metalayer/cache": "workspace:*",
     "@metalayer/catalogs": "workspace:*",
     "@metalayer/config": "workspace:*",
+    "@metalayer/corrections": "workspace:*",
     "@metalayer/identity": "workspace:*",
     "@metalayer/identity-graph": "workspace:*",
     "@metalayer/persistence": "workspace:*",

@@ -13,7 +13,7 @@ import {
 } from './types.js';
 
 export interface IdentityCorrectionStub {
-  /** When present, wins over automatic edges (Phase J will flesh this out). */
+  /** Local/community identity corrections from @metalayer/corrections. */
   edge: IdentityEdge;
 }
 
