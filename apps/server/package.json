@@ -21,6 +21,7 @@
     "@metalayer/identity": "workspace:*",
     "@metalayer/persistence": "workspace:*",
     "@metalayer/providers": "workspace:*",
+    "@metalayer/metadata-resolver": "workspace:*",
     "@metalayer/rules": "workspace:*",
     "@metalayer/security": "workspace:*",
     "@metalayer/sorting": "workspace:*",
