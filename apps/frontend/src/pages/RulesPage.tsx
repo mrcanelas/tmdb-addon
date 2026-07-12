@@ -7,7 +7,11 @@ import {
   saveGlobalRules,
   type RuleSetDraft,
 } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button } from '@metalayer/shared-ui';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { SectionCard } from '@/components/metalayer/SectionCard';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const SAMPLE_ITEMS = [
   { id: 'adult-hit', title: 'Adult Hit', rating: 9, adult: true, voteCount: 1000 },
@@ -16,7 +20,7 @@ const SAMPLE_ITEMS = [
 ];
 
 export function RulesPage() {
-  const { t } = useTranslation('rules');
+  const { t } = useTranslation(['rules', 'common']);
   const [rules, setRules] = useState<RuleSetDraft>({
     excludeAdult: true,
     minimumRating: 7,
@@ -24,40 +28,46 @@ export function RulesPage() {
   const [warnings, setWarnings] = useState<Array<{ rule: string; reason: string }>>([]);
   const [included, setIncluded] = useState<string[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'saved'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'ok' | 'error'>(
+    'idle',
+  );
+
+  async function load() {
+    setStatus('loading');
+    try {
+      const session = await ensureStudioSession();
+      const effective = await fetchEffectiveRules(
+        session.configId,
+        session.editCredential,
+      );
+      setRules({
+        excludeAdult: effective.effective.excludeAdult ?? true,
+        digitallyReleasedOnly: effective.effective.digitallyReleasedOnly,
+        releasedOnly: effective.effective.releasedOnly,
+        minimumRating: effective.effective.minimumRating ?? 7,
+        minimumVotes: effective.effective.minimumVotes,
+      });
+      setWarnings(effective.warnings);
+      setStatus('ready');
+      setSaveState('idle');
+    } catch {
+      setStatus('error');
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const session = await ensureStudioSession();
-        const effective = await fetchEffectiveRules(session.configId, session.editCredential);
-        if (cancelled) return;
-        setRules({
-          excludeAdult: effective.effective.excludeAdult ?? true,
-          digitallyReleasedOnly: effective.effective.digitallyReleasedOnly,
-          releasedOnly: effective.effective.releasedOnly,
-          minimumRating: effective.effective.minimumRating ?? 7,
-          minimumVotes: effective.effective.minimumVotes,
-        });
-        setWarnings(effective.warnings);
-        setStatus('ready');
-      } catch {
-        if (!cancelled) setStatus('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    void load();
   }, []);
 
   async function onSave() {
+    setSaveState('saving');
     try {
       const session = await ensureStudioSession();
       await saveGlobalRules(session.configId, session.editCredential, rules);
-      setStatus('saved');
+      setSaveState('ok');
     } catch {
-      setStatus('error');
+      setSaveState('error');
     }
   }
 
@@ -81,130 +91,193 @@ export function RulesPage() {
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">{t('rules.title')}</h1>
-        <p className="max-w-2xl text-muted-foreground">{t('rules.intro')}</p>
-        <p className="text-sm text-muted-foreground">{t('rules.inheritance')}</p>
-        {status === 'loading' ? (
-          <p className="text-sm text-muted-foreground">{t('rules.bootstrapping')}</p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">{t('rules.loadError')}</p>
-        ) : null}
-        {status === 'saved' ? (
-          <p className="text-sm text-muted-foreground">{t('rules.saved')}</p>
-        ) : null}
-      </header>
+      <PageHeader
+        title={t('rules.title')}
+        description={t('rules.intro')}
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onPress={() => {
+                void onPreview();
+              }}
+              isDisabled={status !== 'ready'}
+            >
+              {t('rules.preview')}
+            </Button>
+            <Button
+              type="button"
+              onPress={() => {
+                void onSave();
+              }}
+              isDisabled={status !== 'ready' || saveState === 'saving'}
+            >
+              {saveState === 'saving' ? t('rules.saving') : t('rules.save')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="grid max-w-xl gap-4">
-        <label className="flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={Boolean(rules.excludeAdult)}
-            onChange={(event) =>
-              setRules((current) => ({ ...current, excludeAdult: event.target.checked }))
-            }
-          />
-          {t('rules.excludeAdult')}
-        </label>
-        <label className="flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={Boolean(rules.digitallyReleasedOnly)}
-            onChange={(event) =>
-              setRules((current) => ({
-                ...current,
-                digitallyReleasedOnly: event.target.checked,
-              }))
-            }
-          />
-          {t('rules.digitallyReleasedOnly')}
-        </label>
-        <label className="flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={Boolean(rules.releasedOnly)}
-            onChange={(event) =>
-              setRules((current) => ({ ...current, releasedOnly: event.target.checked }))
-            }
-          />
-          {t('rules.releasedOnly')}
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span>{t('rules.minimumRating')}</span>
-          <input
-            type="number"
-            min={0}
-            max={10}
-            step={0.1}
-            className="h-10 rounded-md border border-input bg-background px-3"
-            value={rules.minimumRating ?? ''}
-            onChange={(event) =>
-              setRules((current) => ({
-                ...current,
-                minimumRating: event.target.value ? Number(event.target.value) : undefined,
-              }))
-            }
-          />
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span>{t('rules.minimumVotes')}</span>
-          <input
-            type="number"
-            min={0}
-            className="h-10 rounded-md border border-input bg-background px-3"
-            value={rules.minimumVotes ?? ''}
-            onChange={(event) =>
-              setRules((current) => ({
-                ...current,
-                minimumVotes: event.target.value ? Number(event.target.value) : undefined,
-              }))
-            }
-          />
-        </label>
-      </div>
+      {status === 'loading' ? (
+        <LoadingState label={t('rules.bootstrapping')} />
+      ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => void onSave()}>
-          {t('rules.save')}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => void onPreview()}>
-          {t('rules.preview')}
-        </Button>
-      </div>
+      {status === 'error' ? (
+        <ErrorState
+          message={t('rules.loadError')}
+          retryLabel={t('state.retry', { ns: 'common' })}
+          onRetry={() => {
+            void load();
+          }}
+        />
+      ) : null}
 
-      {(included.length > 0 || excluded.length > 0) && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <h2 className="mb-2 font-semibold">{t('rules.included')}</h2>
-            <ul className="space-y-1 text-sm">
-              {included.map((id) => (
-                <li key={id}>{id}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="mb-2 font-semibold">{t('rules.excluded')}</h2>
-            <ul className="space-y-1 text-sm">
-              {excluded.map((id) => (
-                <li key={id}>{id}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      {status === 'ready' ? (
+        <>
+          <p className="text-sm ml-text-muted">{t('rules.inheritance')}</p>
 
-      {warnings.length > 0 ? (
-        <div>
-          <h2 className="mb-2 font-semibold">{t('rules.warnings')}</h2>
-          <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-400">
-            {warnings.map((warning) => (
-              <li key={warning.rule}>
-                {warning.rule}: {warning.reason}
-              </li>
-            ))}
-          </ul>
-        </div>
+          <SectionCard title={t('rules.filtersTitle')}>
+            <fieldset className="relative grid max-w-xl gap-4 border-0 p-0">
+              <legend className="absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]">
+                {t('rules.filtersLegend')}
+              </legend>
+              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(rules.excludeAdult)}
+                  onChange={(event) => {
+                    setRules((current) => ({
+                      ...current,
+                      excludeAdult: event.target.checked,
+                    }));
+                    setSaveState('idle');
+                  }}
+                />
+                {t('rules.excludeAdult')}
+              </label>
+              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(rules.digitallyReleasedOnly)}
+                  onChange={(event) => {
+                    setRules((current) => ({
+                      ...current,
+                      digitallyReleasedOnly: event.target.checked,
+                    }));
+                    setSaveState('idle');
+                  }}
+                />
+                {t('rules.digitallyReleasedOnly')}
+              </label>
+              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(rules.releasedOnly)}
+                  onChange={(event) => {
+                    setRules((current) => ({
+                      ...current,
+                      releasedOnly: event.target.checked,
+                    }));
+                    setSaveState('idle');
+                  }}
+                />
+                {t('rules.releasedOnly')}
+              </label>
+              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+                <span>{t('rules.minimumRating')}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  step={0.1}
+                  aria-describedby="rules-rating-hint"
+                  className="h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]"
+                  value={rules.minimumRating ?? ''}
+                  onChange={(event) => {
+                    setRules((current) => ({
+                      ...current,
+                      minimumRating: event.target.value
+                        ? Number(event.target.value)
+                        : undefined,
+                    }));
+                    setSaveState('idle');
+                  }}
+                />
+                <span id="rules-rating-hint" className="text-xs ml-text-muted">
+                  {t('rules.minimumRatingHint')}
+                </span>
+              </label>
+              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+                <span>{t('rules.minimumVotes')}</span>
+                <input
+                  type="number"
+                  min={0}
+                  aria-describedby="rules-votes-hint"
+                  className="h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]"
+                  value={rules.minimumVotes ?? ''}
+                  onChange={(event) => {
+                    setRules((current) => ({
+                      ...current,
+                      minimumVotes: event.target.value
+                        ? Number(event.target.value)
+                        : undefined,
+                    }));
+                    setSaveState('idle');
+                  }}
+                />
+                <span id="rules-votes-hint" className="text-xs ml-text-muted">
+                  {t('rules.minimumVotesHint')}
+                </span>
+              </label>
+            </fieldset>
+          </SectionCard>
+
+          {saveState === 'ok' ? (
+            <p className="text-sm text-[var(--ml-success)]" role="status">
+              {t('rules.saved')}
+            </p>
+          ) : null}
+          {saveState === 'error' ? (
+            <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
+              {t('rules.saveError')}
+            </p>
+          ) : null}
+
+          {(included.length > 0 || excluded.length > 0) && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <SectionCard title={t('rules.included')}>
+                <ul className="space-y-1 text-sm text-[var(--ml-text)]">
+                  {included.map((id) => (
+                    <li key={id}>{id}</li>
+                  ))}
+                </ul>
+              </SectionCard>
+              <SectionCard title={t('rules.excluded')}>
+                <ul className="space-y-1 text-sm text-[var(--ml-text)]">
+                  {excluded.map((id) => (
+                    <li key={id}>{id}</li>
+                  ))}
+                </ul>
+              </SectionCard>
+            </div>
+          )}
+
+          {warnings.length > 0 ? (
+            <SectionCard title={t('rules.warnings')}>
+              <ul
+                className="space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                role="status"
+              >
+                {warnings.map((warning) => (
+                  <li key={warning.rule}>
+                    {warning.rule}: {warning.reason}
+                  </li>
+                ))}
+              </ul>
+            </SectionCard>
+          ) : null}
+        </>
       ) : null}
     </section>
   );

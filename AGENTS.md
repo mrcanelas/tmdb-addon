@@ -3668,10 +3668,10 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist) — in progress (Appearance/Rules/shell a11y slice)
 2. ~~**Encryption key rotation tooling**~~ (**Done** — key ring + `pnpm metalayer:vault-reencrypt`)
-3. **Advanced configure module**
-4. **Series specials / alternative episode orders** (corrections layer)
+3. ~~**Advanced configure module**~~ (**Partial MVP** — identity + cache diagnostics + feature flags)
+4. ~~**Series specials / alternative episode orders**~~ (**Partial MVP** — corrections on native series meta)
 5. ~~**Proactive token refresh jobs**~~ (**Done** — `pnpm metalayer:tracking-refresh` + optional scheduler)
 
 ---

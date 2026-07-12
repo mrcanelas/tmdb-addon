@@ -29,6 +29,7 @@ export function AppHeader() {
             type="button"
             size="sm"
             variant={mode === 'simple' ? 'primary' : 'quiet'}
+            aria-pressed={mode === 'simple'}
             onPress={() => setMode('simple')}
           >
             {t('shell.mode.simple')}
@@ -37,6 +38,7 @@ export function AppHeader() {
             type="button"
             size="sm"
             variant={mode === 'advanced' ? 'primary' : 'quiet'}
+            aria-pressed={mode === 'advanced'}
             onPress={() => setMode('advanced')}
           >
             {t('shell.mode.advanced')}

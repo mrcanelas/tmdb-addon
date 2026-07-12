@@ -29,7 +29,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
-| Full i18n/RTL layout hardening | **Partial** — `applyDocumentLocale` (lang+dir), shell/palette a11y, Inspector/Catalog i18n strings; deeper layout audit remains |
+| Full i18n/RTL layout hardening | **Partial** — `applyDocumentLocale` (lang+dir); shell landmarks + mode `aria-pressed`; Button ARIA forwarding; Appearance/ResolutionChainBuilder + Rules page a11y/i18n; deeper Catalog Studio audit remains |
 | Performance measurement against §34 objectives | Phase M tasks |
 | Security / migration review sign-off | Phase M → N |
 
@@ -39,12 +39,12 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 |---|---|
 | Feature freeze for new major modules | Open — minimize new surface |
 | UX review of configure primary pages | Open |
-| Accessibility pass | Partial — locale group aria, command palette dialog/Escape/focus restore, file import aria |
+| Accessibility pass | Partial — locale group aria, command palette, shell landmarks/mode pressed, ResolutionChainBuilder move labels, Rules fieldset + live regions |
 | Performance measurement | Open |
 | Migration testing (legacy import fixtures) | Open |
 | Provider reliability / degradation | Open |
 | Security review | Open |
-| Translation review (en-US / pt-BR / es-ES) | Partial — hardening keys added; full review Open |
+| Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell keys hardened; full review Open |
 | Pseudo-locale and RTL layout review | Partial — document `dir` + ar-XB in shell; layout audit Open |
 | Field Resolution Chains review | Open |
 | Documentation pass | Open |

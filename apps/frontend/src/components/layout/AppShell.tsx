@@ -24,7 +24,10 @@ export function AppShell() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-6 px-4 py-6 md:flex-row md:gap-10 md:px-8 md:py-10">
-      <aside className="ml-glass md:w-[260px] md:shrink-0 rounded-[var(--ml-radius)] p-4">
+      <aside
+        className="ml-glass md:w-[260px] md:shrink-0 rounded-[var(--ml-radius)] p-4"
+        aria-label={t('shell.sidebar.aria')}
+      >
         <div className="mb-6">
           <p className="text-2xl font-semibold tracking-tight text-[var(--ml-text)]">
             {t('common.appName')}
@@ -83,7 +86,7 @@ export function AppShell() {
 
       <div className="min-w-0 flex-1">
         <AppHeader />
-        <main>
+        <main aria-labelledby="page-title">
           <Outlet />
         </main>
       </div>

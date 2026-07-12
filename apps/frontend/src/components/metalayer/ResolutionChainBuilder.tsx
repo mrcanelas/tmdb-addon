@@ -12,7 +12,10 @@ export interface ResolutionChainBuilderProps {
   allowLocales?: boolean;
 }
 
-function localeLabel(locale: LocalePreference, t: (key: string) => string): string {
+function localeLabel(
+  locale: LocalePreference,
+  t: (key: string, options?: Record<string, string>) => string,
+): string {
   switch (locale.type) {
     case 'locale':
       return locale.value;
@@ -25,7 +28,7 @@ function localeLabel(locale: LocalePreference, t: (key: string) => string): stri
     case 'provider-default':
       return t('resolution.locale.providerDefault');
     default:
-      return '?';
+      return t('resolution.locale.unknown');
   }
 }
 
@@ -111,6 +114,7 @@ export function ResolutionChainBuilder({
               type="button"
               size="sm"
               variant={value.strategy === strategy ? 'primary' : 'quiet'}
+              aria-pressed={value.strategy === strategy}
               onPress={() => setStrategy(strategy)}
             >
               {t(labelKey)}
@@ -124,75 +128,94 @@ export function ResolutionChainBuilder({
               {t('resolution.locales')}
             </p>
             <ul className="space-y-1">
-              {locales.map((locale, index) => (
-                <li
-                  key={`${locale.type}-${'value' in locale ? locale.value : index}`}
-                  className="flex items-center justify-between gap-2 text-sm"
-                >
-                  <span className="text-[var(--ml-text)]">{localeLabel(locale, t)}</span>
-                  <div className="flex gap-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onPress={() =>
-                        onChange({
-                          ...value,
-                          locales: moveItem(locales, index, -1),
-                        })
-                      }
-                    >
-                      ↑
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onPress={() =>
-                        onChange({
-                          ...value,
-                          locales: moveItem(locales, index, 1),
-                        })
-                      }
-                    >
-                      ↓
-                    </Button>
-                  </div>
-                </li>
-              ))}
+              {locales.map((locale, index) => {
+                const label = localeLabel(locale, t);
+                return (
+                  <li
+                    key={`${locale.type}-${'value' in locale ? locale.value : index}`}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="text-[var(--ml-text)]">{label}</span>
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        isIconOnly
+                        aria-label={t('resolution.moveUpNamed', { item: label })}
+                        onPress={() =>
+                          onChange({
+                            ...value,
+                            locales: moveItem(locales, index, -1),
+                          })
+                        }
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        isIconOnly
+                        aria-label={t('resolution.moveDownNamed', { item: label })}
+                        onPress={() =>
+                          onChange({
+                            ...value,
+                            locales: moveItem(locales, index, 1),
+                          })
+                        }
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
+                aria-label={t('resolution.addLocale', { locale: 'pt-BR' })}
                 onPress={() => addLocale({ type: 'locale', value: 'pt-BR' })}
               >
-                + pt-BR
+                {t('resolution.addLocale', { locale: 'pt-BR' })}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
+                aria-label={t('resolution.addLocale', { locale: 'en-US' })}
                 onPress={() => addLocale({ type: 'locale', value: 'en-US' })}
               >
-                + en-US
+                {t('resolution.addLocale', { locale: 'en-US' })}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
+                aria-label={t('resolution.addLocale', {
+                  locale: t('resolution.locale.original'),
+                })}
                 onPress={() => addLocale({ type: 'original-language' })}
               >
-                + {t('resolution.locale.original')}
+                {t('resolution.addLocale', {
+                  locale: t('resolution.locale.original'),
+                })}
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
+                aria-label={t('resolution.addLocale', {
+                  locale: t('resolution.locale.noLanguage'),
+                })}
                 onPress={() => addLocale({ type: 'no-language' })}
               >
-                + {t('resolution.locale.noLanguage')}
+                {t('resolution.addLocale', {
+                  locale: t('resolution.locale.noLanguage'),
+                })}
               </Button>
             </div>
           </div>
@@ -215,6 +238,8 @@ export function ResolutionChainBuilder({
                       type="button"
                       size="sm"
                       variant="outline"
+                      isIconOnly
+                      aria-label={t('resolution.moveUpNamed', { item: provider })}
                       onPress={() =>
                         onChange({
                           ...value,
@@ -228,6 +253,8 @@ export function ResolutionChainBuilder({
                       type="button"
                       size="sm"
                       variant="outline"
+                      isIconOnly
+                      aria-label={t('resolution.moveDownNamed', { item: provider })}
                       onPress={() =>
                         onChange({
                           ...value,
@@ -249,9 +276,10 @@ export function ResolutionChainBuilder({
                   size="sm"
                   variant="outline"
                   isDisabled={providers.includes(provider)}
+                  aria-label={t('resolution.addProvider', { provider })}
                   onPress={() => addProvider(provider)}
                 >
-                  + {provider}
+                  {t('resolution.addProvider', { provider })}
                 </Button>
               ))}
             </div>

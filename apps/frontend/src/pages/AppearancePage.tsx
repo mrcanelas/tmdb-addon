@@ -116,7 +116,7 @@ export function AppearancePage() {
   return (
     <section className="space-y-6">
       <PageHeader
-        title={t('resolution.title')}
+        title={t('nav.appearance', { ns: 'common' })}
         description={t('resolution.intro')}
         actions={
           <Button

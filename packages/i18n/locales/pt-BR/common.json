@@ -48,6 +48,7 @@
   "shell.commandPalette.switchLocale": "Mudar idioma da interface para {{locale}}",
   "shell.locale.aria": "Idioma da interface",
   "shell.locale.switch": "Usar {{locale}}",
+  "shell.sidebar.aria": "Navegação da configuração",
   "errors.SOURCE_CREDENTIAL_MISSING": "Credenciais ausentes para {{source}}.",
   "errors.SOURCE_CREDENTIAL_INVALID": "Credenciais inválidas para {{source}}.",
   "errors.CONFIGURATION_NOT_FOUND": "Configuração não encontrada.",

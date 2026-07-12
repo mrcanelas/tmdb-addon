@@ -10,7 +10,20 @@ export type MetaLayerButtonVariant =
   | 'quiet'
   | 'outline';
 
-export interface ButtonProps {
+type ForwardedAriaProps = Pick<
+  HeroButtonProps,
+  | 'aria-label'
+  | 'aria-labelledby'
+  | 'aria-describedby'
+  | 'aria-pressed'
+  | 'aria-expanded'
+  | 'aria-controls'
+  | 'aria-haspopup'
+  | 'aria-current'
+  | 'id'
+>;
+
+export interface ButtonProps extends ForwardedAriaProps {
   variant?: MetaLayerButtonVariant;
   size?: 'sm' | 'md' | 'lg';
   children?: HeroButtonProps['children'];
@@ -43,6 +56,15 @@ export function Button({
   onPress,
   fullWidth,
   isIconOnly,
+  id,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
+  'aria-pressed': ariaPressed,
+  'aria-expanded': ariaExpanded,
+  'aria-controls': ariaControls,
+  'aria-haspopup': ariaHasPopup,
+  'aria-current': ariaCurrent,
 }: ButtonProps) {
   return (
     <HeroButton
@@ -54,6 +76,15 @@ export function Button({
       onPress={onPress}
       fullWidth={fullWidth}
       isIconOnly={isIconOnly}
+      id={id}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
+      aria-pressed={ariaPressed}
+      aria-expanded={ariaExpanded}
+      aria-controls={ariaControls}
+      aria-haspopup={ariaHasPopup}
+      aria-current={ariaCurrent}
     >
       {children}
     </HeroButton>
