@@ -5,6 +5,7 @@ import { configurationsRoutes } from './configurations.js';
 import { sourcesRoutes } from './sources.js';
 import { previewRoutes } from './preview.js';
 import { catalogsRoutes } from './catalogs.js';
+import { rulesSortingRoutes } from './rules-sorting.js';
 
 /**
  * Versioned management API surface (AGENTS.md §27.2).
@@ -14,6 +15,7 @@ export const apiV1Routes: FastifyPluginAsync = async (app) => {
   await app.register(pingRoutes);
   await app.register(configurationsRoutes);
   await app.register(catalogsRoutes);
+  await app.register(rulesSortingRoutes);
   await app.register(sourcesRoutes);
   await app.register(previewRoutes);
 };

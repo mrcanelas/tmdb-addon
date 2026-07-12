@@ -21,7 +21,9 @@
     "@metalayer/identity": "workspace:*",
     "@metalayer/persistence": "workspace:*",
     "@metalayer/providers": "workspace:*",
+    "@metalayer/rules": "workspace:*",
     "@metalayer/security": "workspace:*",
+    "@metalayer/sorting": "workspace:*",
     "dotenv": "^16.5.0",
     "fastify": "^5.4.0",
     "fastify-plugin": "^6.0.0"

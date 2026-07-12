@@ -19,7 +19,9 @@
     "@metalayer/catalogs": "workspace:*",
     "@metalayer/config": "workspace:*",
     "@metalayer/identity": "workspace:*",
-    "@metalayer/i18n": "workspace:*"
+    "@metalayer/i18n": "workspace:*",
+    "@metalayer/rules": "workspace:*",
+    "@metalayer/sorting": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.5.3"
