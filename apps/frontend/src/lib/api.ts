@@ -604,12 +604,7 @@ export async function fetchTraktAuthUrl(
   editCredential: string,
   redirectUri: string,
 ): Promise<{ authUrl: string; state: string }> {
-  return apiFetch(
-    `/api/v1/configurations/${configId}/tracking/trakt/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
-    {
-      headers: { 'x-metalayer-edit-credential': editCredential },
-    },
-  );
+  return fetchTrackingAuthUrl(configId, editCredential, 'trakt', redirectUri);
 }
 
 export async function completeTraktOAuth(
@@ -617,18 +612,54 @@ export async function completeTraktOAuth(
   editCredential: string,
   body: { code: string; redirectUri: string },
 ): Promise<{ connected: boolean; state: string }> {
-  return apiFetch(`/api/v1/configurations/${configId}/tracking/trakt/callback`, {
-    method: 'POST',
-    headers: { 'x-metalayer-edit-credential': editCredential },
-    body: JSON.stringify(body),
-  });
+  return completeTrackingOAuth(configId, editCredential, 'trakt', body);
 }
 
 export async function disconnectTrakt(
   configId: string,
   editCredential: string,
 ): Promise<{ connected: boolean; state: string }> {
-  return apiFetch(`/api/v1/configurations/${configId}/tracking/trakt`, {
+  return disconnectTracking(configId, editCredential, 'trakt');
+}
+
+export type TrackingOAuthProvider = 'trakt' | 'simkl';
+
+export async function fetchTrackingAuthUrl(
+  configId: string,
+  editCredential: string,
+  provider: TrackingOAuthProvider,
+  redirectUri: string,
+): Promise<{ authUrl: string; state: string }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/tracking/${provider}/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+    {
+      headers: { 'x-metalayer-edit-credential': editCredential },
+    },
+  );
+}
+
+export async function completeTrackingOAuth(
+  configId: string,
+  editCredential: string,
+  provider: TrackingOAuthProvider,
+  body: { code: string; redirectUri: string },
+): Promise<{ connected: boolean; state: string }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/tracking/${provider}/callback`,
+    {
+      method: 'POST',
+      headers: { 'x-metalayer-edit-credential': editCredential },
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export async function disconnectTracking(
+  configId: string,
+  editCredential: string,
+  provider: TrackingOAuthProvider,
+): Promise<{ connected: boolean; state: string }> {
+  return apiFetch(`/api/v1/configurations/${configId}/tracking/${provider}`, {
     method: 'DELETE',
     headers: { 'x-metalayer-edit-credential': editCredential },
   });

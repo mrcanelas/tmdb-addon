@@ -2,16 +2,19 @@ import { useTranslation } from 'react-i18next';
 import { Button, StatusBadge } from '@metalayer/shared-ui';
 import {
   useHideWatchedPreviewMutation,
+  useTrackingConnectMutation,
+  useTrackingDisconnectMutation,
   useTrackingStatusQuery,
-  useTraktConnectMutation,
-  useTraktDisconnectMutation,
 } from '@/api/hooks/use-tracking';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
+import type { TrackingOAuthProvider } from '@/lib/api';
 import { PageHeader } from '@/components/metalayer/PageHeader';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { EmptyState } from '@/components/metalayer/EmptyState';
+
+const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>(['trakt', 'simkl']);
 
 function trackingTone(
   state: string,
@@ -34,15 +37,35 @@ export function TrackingPage() {
   const { t } = useTranslation(['tracking', 'common']);
   const sessionQuery = useStudioSessionQuery();
   const statusQuery = useTrackingStatusQuery();
-  const previewMutation = useHideWatchedPreviewMutation();
-  const connectMutation = useTraktConnectMutation();
-  const disconnectMutation = useTraktDisconnectMutation();
-
   const providers = statusQuery.data?.providers ?? [];
+  const traktConnected =
+    providers.find((provider) => provider.provider === 'trakt')?.state ===
+    'connected';
+  const simklConnected =
+    providers.find((provider) => provider.provider === 'simkl')?.state ===
+    'connected';
+  const previewProvider: TrackingOAuthProvider = traktConnected
+    ? 'trakt'
+    : 'simkl';
+  const previewMutation = useHideWatchedPreviewMutation(previewProvider);
+  const traktConnect = useTrackingConnectMutation('trakt');
+  const traktDisconnect = useTrackingDisconnectMutation('trakt');
+  const simklConnect = useTrackingConnectMutation('simkl');
+  const simklDisconnect = useTrackingDisconnectMutation('simkl');
+
   const bootstrapping = sessionQuery.isLoading || statusQuery.isLoading;
   const loadError = sessionQuery.isError || statusQuery.isError;
-  const trakt = providers.find((provider) => provider.provider === 'trakt');
-  const traktConnected = trakt?.state === 'connected';
+  const anyTrackingConnected = traktConnected || simklConnected;
+  const connectPending = traktConnect.isPending || simklConnect.isPending;
+  const connectError = traktConnect.isError || simklConnect.isError;
+
+  function connectMutation(provider: TrackingOAuthProvider) {
+    return provider === 'simkl' ? simklConnect : traktConnect;
+  }
+
+  function disconnectMutation(provider: TrackingOAuthProvider) {
+    return provider === 'simkl' ? simklDisconnect : traktDisconnect;
+  }
 
   return (
     <section className="space-y-6">
@@ -72,59 +95,69 @@ export function TrackingPage() {
             <EmptyState title={t('tracking.emptyTitle')} />
           ) : (
             <ul className="space-y-3">
-              {providers.map((provider) => (
-                <li
-                  key={provider.provider}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
-                >
-                  <span className="font-medium text-[var(--ml-text)]">
-                    {provider.provider}
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge tone={trackingTone(provider.state)}>
-                      {t(`tracking.state.${provider.state}`)}
-                    </StatusBadge>
-                    <span className="text-sm ml-text-muted">
-                      {provider.adapterAvailable
-                        ? t('tracking.adapterReady')
-                        : t('tracking.adapterMissing')}
+              {providers.map((provider) => {
+                const oauthProvider = provider.provider as TrackingOAuthProvider;
+                const supportsOauth = OAUTH_PROVIDERS.has(oauthProvider);
+                return (
+                  <li
+                    key={provider.provider}
+                    className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
+                  >
+                    <span className="font-medium text-[var(--ml-text)]">
+                      {provider.provider}
                     </span>
-                    {provider.provider === 'trakt' ? (
-                      provider.state === 'connected' ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onPress={() => {
-                            void disconnectMutation.mutateAsync().then(() => {
-                              void statusQuery.refetch();
-                            });
-                          }}
-                          isDisabled={disconnectMutation.isPending}
-                        >
-                          {t('tracking.actions.disconnect')}
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onPress={() => {
-                            void connectMutation.mutateAsync();
-                          }}
-                          isDisabled={connectMutation.isPending}
-                        >
-                          {t('tracking.actions.connect')}
-                        </Button>
-                      )
-                    ) : null}
-                  </div>
-                </li>
-              ))}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={trackingTone(provider.state)}>
+                        {t(`tracking.state.${provider.state}`)}
+                      </StatusBadge>
+                      <span className="text-sm ml-text-muted">
+                        {provider.adapterAvailable
+                          ? t('tracking.adapterReady')
+                          : t('tracking.adapterMissing')}
+                      </span>
+                      {supportsOauth ? (
+                        provider.state === 'connected' ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onPress={() => {
+                              void disconnectMutation(oauthProvider)
+                                .mutateAsync()
+                                .then(() => {
+                                  void statusQuery.refetch();
+                                });
+                            }}
+                            isDisabled={
+                              disconnectMutation(oauthProvider).isPending
+                            }
+                          >
+                            {t('tracking.actions.disconnect')}
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onPress={() => {
+                              void connectMutation(oauthProvider).mutateAsync();
+                            }}
+                            isDisabled={connectPending}
+                          >
+                            {t('tracking.actions.connect')}
+                          </Button>
+                        )
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
-          {connectMutation.isError ? (
+          {connectError ? (
             <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
-              {t('tracking.oauth.error')}
+              {t('tracking.oauth.error', {
+                provider: traktConnect.isError ? 'Trakt' : 'SIMKL',
+              })}
             </p>
           ) : null}
         </SectionCard>
@@ -140,14 +173,14 @@ export function TrackingPage() {
             bootstrapping ||
             loadError ||
             previewMutation.isPending ||
-            !traktConnected
+            !anyTrackingConnected
           }
         >
           {previewMutation.isPending
             ? t('tracking.previewRunning')
             : t('tracking.preview')}
         </Button>
-        {!traktConnected ? (
+        {!anyTrackingConnected ? (
           <p className="mt-3 text-sm ml-text-muted">
             {t('tracking.previewNeedsConnection')}
           </p>

@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  completeTraktOAuth,
-  disconnectTrakt,
+  completeTrackingOAuth,
+  disconnectTracking,
+  fetchTrackingAuthUrl,
   fetchTrackingStatus,
-  fetchTraktAuthUrl,
   previewHideWatched,
+  type TrackingOAuthProvider,
 } from '@/lib/api';
 import { queryKeys } from '@/api/query-keys';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
@@ -21,7 +22,9 @@ export function useTrackingStatusQuery() {
   });
 }
 
-export function useHideWatchedPreviewMutation() {
+export function useHideWatchedPreviewMutation(
+  provider: TrackingOAuthProvider = 'trakt',
+) {
   const sessionQuery = useStudioSessionQuery();
 
   return useMutation({
@@ -34,34 +37,38 @@ export function useHideWatchedPreviewMutation() {
           { id: 'tt0137523', title: 'Fight Club' },
           { id: 'tt0111161', title: 'Shawshank' },
         ],
-        // Prefer live vault sync; fixtures only when disconnected.
         fixtures: undefined,
-        provider: 'trakt',
+        provider,
       });
     },
   });
 }
 
-export function useTraktConnectMutation() {
+export function useTrackingConnectMutation(provider: TrackingOAuthProvider) {
   const sessionQuery = useStudioSessionQuery();
 
   return useMutation({
     mutationFn: async () => {
       const session = sessionQuery.data ?? (await sessionQuery.refetch()).data;
       if (!session) throw new Error('Studio session missing');
-      const redirectUri = `${window.location.origin}/configure/oauth/trakt/callback`;
-      const { authUrl } = await fetchTraktAuthUrl(
+      const redirectUri = `${window.location.origin}/configure/oauth/${provider}/callback`;
+      const { authUrl } = await fetchTrackingAuthUrl(
         session.configId,
         session.editCredential,
+        provider,
         redirectUri,
       );
-      window.open(authUrl, 'metalayer-trakt-oauth', 'width=600,height=720');
+      window.open(
+        authUrl,
+        `metalayer-${provider}-oauth`,
+        'width=600,height=720',
+      );
       return { authUrl };
     },
   });
 }
 
-export function useTraktDisconnectMutation() {
+export function useTrackingDisconnectMutation(provider: TrackingOAuthProvider) {
   const sessionQuery = useStudioSessionQuery();
   const queryClient = useQueryClient();
 
@@ -69,7 +76,11 @@ export function useTraktDisconnectMutation() {
     mutationFn: async () => {
       const session = sessionQuery.data ?? (await sessionQuery.refetch()).data;
       if (!session) throw new Error('Studio session missing');
-      return disconnectTrakt(session.configId, session.editCredential);
+      return disconnectTracking(
+        session.configId,
+        session.editCredential,
+        provider,
+      );
     },
     onSuccess: async () => {
       const configId = sessionQuery.data?.configId;
@@ -82,7 +93,7 @@ export function useTraktDisconnectMutation() {
   });
 }
 
-export function useTraktCallbackMutation() {
+export function useTrackingCallbackMutation(provider: TrackingOAuthProvider) {
   const sessionQuery = useStudioSessionQuery();
   const queryClient = useQueryClient();
 
@@ -90,9 +101,10 @@ export function useTraktCallbackMutation() {
     mutationFn: async (input: { code: string; redirectUri: string }) => {
       const session = sessionQuery.data ?? (await sessionQuery.refetch()).data;
       if (!session) throw new Error('Studio session missing');
-      return completeTraktOAuth(
+      return completeTrackingOAuth(
         session.configId,
         session.editCredential,
+        provider,
         input,
       );
     },
@@ -105,4 +117,19 @@ export function useTraktCallbackMutation() {
       }
     },
   });
+}
+
+/** @deprecated Prefer useTrackingConnectMutation('trakt') */
+export function useTraktConnectMutation() {
+  return useTrackingConnectMutation('trakt');
+}
+
+/** @deprecated Prefer useTrackingDisconnectMutation('trakt') */
+export function useTraktDisconnectMutation() {
+  return useTrackingDisconnectMutation('trakt');
+}
+
+/** @deprecated Prefer useTrackingCallbackMutation('trakt') */
+export function useTraktCallbackMutation() {
+  return useTrackingCallbackMutation('trakt');
 }

@@ -14,7 +14,7 @@ import { AppearancePage } from '@/pages/AppearancePage';
 import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
 import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { ProfilesPage } from '@/pages/ProfilesPage';
-import { TraktOAuthCallbackPage } from '@/pages/TraktOAuthCallbackPage';
+import { TrackingOAuthCallbackPage } from '@/pages/TrackingOAuthCallbackPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 import { AppQueryProvider } from '@/providers/AppQueryProvider';
@@ -62,8 +62,8 @@ function ThemedApp() {
               <Route path="save-install" element={<SaveInstallPage />} />
               <Route path="profiles" element={<ProfilesPage />} />
               <Route
-                path="oauth/trakt/callback"
-                element={<TraktOAuthCallbackPage />}
+                path="oauth/:provider/callback"
+                element={<TrackingOAuthCallbackPage />}
               />
               {PLACEHOLDER_ROUTES.map((item) => (
                 <Route

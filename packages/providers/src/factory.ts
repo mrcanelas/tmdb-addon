@@ -93,6 +93,7 @@ export function createProviderAdapter(
     case 'simkl':
       return new SimklTrackingAdapter({
         accessToken: options.accessToken ?? options.apiKey,
+        clientId: process.env.SIMKL_CLIENT_ID,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
       });

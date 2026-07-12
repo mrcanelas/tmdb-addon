@@ -15,15 +15,15 @@
   "tracking.preview": "Preview hide watched",
   "tracking.previewRunning": "Running preview…",
   "tracking.previewOk": "Hide-watched preview completed (degraded: {{degraded}}).",
-  "tracking.previewNeedsConnection": "Connect Trakt to preview hide-watched with live watch history.",
+  "tracking.previewNeedsConnection": "Connect Trakt or SIMKL to preview hide-watched with live watch history.",
   "tracking.included": "Included",
   "tracking.excluded": "Excluded",
   "tracking.emptyTitle": "No tracking providers listed",
   "tracking.actions.connect": "Connect",
   "tracking.actions.disconnect": "Disconnect",
-  "tracking.oauth.title": "Trakt connection",
-  "tracking.oauth.intro": "Completing the Trakt OAuth handshake for this configuration.",
-  "tracking.oauth.connecting": "Connecting Trakt…",
-  "tracking.oauth.success": "Trakt connected. You can close this window.",
-  "tracking.oauth.error": "Could not complete the Trakt OAuth connection."
+  "tracking.oauth.title": "{{provider}} connection",
+  "tracking.oauth.intro": "Completing the {{provider}} OAuth handshake for this configuration.",
+  "tracking.oauth.connecting": "Connecting {{provider}}…",
+  "tracking.oauth.success": "{{provider}} connected. You can close this window.",
+  "tracking.oauth.error": "Could not complete the {{provider}} OAuth connection."
 }

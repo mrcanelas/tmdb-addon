@@ -93,8 +93,16 @@ export type {
   TraktWatchStateFixture,
   TraktOAuthTokens,
 } from './trakt/adapter.js';
-export { SimklTrackingAdapter } from './simkl/adapter.js';
-export type { SimklAdapterOptions, SimklWatchStateFixture } from './simkl/adapter.js';
+export {
+  SimklTrackingAdapter,
+  buildSimklAuthorizeUrl,
+  exchangeSimklAuthorizationCode,
+} from './simkl/adapter.js';
+export type {
+  SimklAdapterOptions,
+  SimklOAuthTokens,
+  SimklWatchStateFixture,
+} from './simkl/adapter.js';
 
 export {
   createProviderAdapter,

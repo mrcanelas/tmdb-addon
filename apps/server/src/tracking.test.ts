@@ -197,4 +197,81 @@ describe('@metalayer/server tracking', () => {
     process.env.TRAKT_CLIENT_ID = previousId;
     process.env.TRAKT_CLIENT_SECRET = previousSecret;
   });
+
+  it('builds SIMKL auth URL, exchanges code into vault, and disconnects', async () => {
+    const previousId = process.env.SIMKL_CLIENT_ID;
+    const previousSecret = process.env.SIMKL_CLIENT_SECRET;
+    process.env.SIMKL_CLIENT_ID = 'simkl-client';
+    process.env.SIMKL_CLIENT_SECRET = 'simkl-secret';
+
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 39).toString('base64'));
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (url, init) => {
+        expect(String(url)).toContain('api.simkl.com/oauth/token');
+        expect(init?.method).toBe('POST');
+        return new Response(
+          JSON.stringify({
+            access_token: 'simkl-live-access',
+            expires_in: 157680000,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'simkl-oauth-edit',
+        config: createDefaultMetaLayerConfig({ name: 'SimklOAuth' }),
+      },
+    });
+    const { configId } = created.json();
+    const headers = { 'x-metalayer-edit-credential': 'simkl-oauth-edit' };
+    const redirectUri = 'http://localhost:1338/configure/oauth/simkl/callback';
+
+    const authUrl = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/simkl/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+      headers,
+    });
+    expect(authUrl.statusCode).toBe(200);
+    expect(authUrl.json().authUrl).toContain('simkl.com/oauth/authorize');
+    expect(authUrl.json().authUrl).toContain('simkl-client');
+
+    const callback = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/simkl/callback`,
+      headers,
+      payload: { code: 'auth-code', redirectUri },
+    });
+    expect(callback.statusCode).toBe(200);
+    expect(callback.json().connected).toBe(true);
+    expect(JSON.stringify(callback.json())).not.toContain('simkl-live-access');
+
+    const status = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/status`,
+      headers,
+    });
+    const simkl = status
+      .json()
+      .providers.find((item: { provider: string }) => item.provider === 'simkl');
+    expect(simkl.state).toBe('connected');
+
+    const disconnected = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/configurations/${configId}/tracking/simkl`,
+      headers,
+    });
+    expect(disconnected.statusCode).toBe(200);
+    expect(disconnected.json().state).toBe('not_configured');
+
+    await app.close();
+    process.env.SIMKL_CLIENT_ID = previousId;
+    process.env.SIMKL_CLIENT_SECRET = previousSecret;
+  });
 });
