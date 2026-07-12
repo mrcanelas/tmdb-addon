@@ -1,0 +1,47 @@
+# MetaLayer Server — multi-user profile with Redis (+ optional Postgres)
+# Postgres wiring is prepared; Lite SQLite remains the alpha persistence path
+# until Server migrations land.
+services:
+  metalayer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    image: ghcr.io/metalayer/metalayer-server:latest
+    container_name: metalayer-server
+    ports:
+      - "1338:1338"
+    environment:
+      METALAYER_DEPLOYMENT_MODE: server
+      METALAYER_API_PORT: "1338"
+      METALAYER_SQLITE_PATH: /data/metalayer.sqlite
+      REDIS_URL: redis://redis:6379
+      # POSTGRES_URL: postgresql://metalayer:metalayer@postgres:5432/metalayer
+      METALAYER_TELEMETRY_ENABLED: "false"
+    env_file:
+      - ../.env
+    volumes:
+      - metalayer_server_data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: metalayer-redis
+    restart: unless-stopped
+    volumes:
+      - metalayer_redis:/data
+
+  # Optional — enable when Server Postgres persistence ships:
+  # postgres:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: metalayer
+  #     POSTGRES_PASSWORD: metalayer
+  #     POSTGRES_DB: metalayer
+  #   volumes:
+  #     - metalayer_postgres:/var/lib/postgresql/data
+
+volumes:
+  metalayer_server_data:
+  metalayer_redis:

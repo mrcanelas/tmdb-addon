@@ -1,0 +1,26 @@
+# MetaLayer Lite — personal / family deployment
+services:
+  metalayer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.lite
+    image: ghcr.io/metalayer/metalayer-lite:latest
+    container_name: metalayer-lite
+    ports:
+      - "1338:1338"
+    environment:
+      METALAYER_DEPLOYMENT_MODE: lite
+      METALAYER_API_PORT: "1338"
+      METALAYER_SQLITE_PATH: /data/metalayer.sqlite
+      METALAYER_TELEMETRY_ENABLED: "false"
+      # Required — inject via env_file or secrets, never commit:
+      # METALAYER_ENCRYPTION_KEY:
+      # METALAYER_DASHBOARD_TOKEN:
+    env_file:
+      - ../.env
+    volumes:
+      - metalayer_lite_data:/data
+    restart: unless-stopped
+
+volumes:
+  metalayer_lite_data:

@@ -26,7 +26,8 @@
     "test:proxy": "node test-proxy.js",
     "typecheck": "pnpm -F \"./packages/**\" -F \"./apps/**\" -r --if-present typecheck",
     "i18n:check": "pnpm -F @metalayer/i18n i18n:check",
-    "i18n:pseudo": "pnpm -F @metalayer/i18n i18n:pseudo"
+    "i18n:pseudo": "pnpm -F @metalayer/i18n i18n:pseudo",
+    "metalayer:upgrade-check": "node ./scripts/metalayer-upgrade-check.mjs"
   },
   "repository": {
     "type": "git",

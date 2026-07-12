@@ -1,0 +1,60 @@
+name: Publish MetaLayer Docker images (GHCR)
+
+on:
+  push:
+    tags:
+      - 'metalayer-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag (e.g. 1.0.0-alpha.1)'
+        required: true
+
+jobs:
+  metalayer-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> "$GITHUB_ENV"
+          else
+            echo "TAG=${GITHUB_REF_NAME#metalayer-v}" >> "$GITHUB_ENV"
+          fi
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Lite
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.lite
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/metalayer-lite:${{ env.TAG }}
+            ghcr.io/${{ github.repository_owner }}/metalayer-lite:latest
+
+      - name: Build and push Server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.server
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/metalayer-server:${{ env.TAG }}
+            ghcr.io/${{ github.repository_owner }}/metalayer-server:latest

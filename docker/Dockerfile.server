@@ -1,0 +1,39 @@
+# MetaLayer Server — same API image profile with Server-mode defaults.
+# Pair with docker-compose.server.yml (Postgres + Redis sidecars).
+# Build from repo root:
+#   docker build -f docker/Dockerfile.server -t metalayer-server .
+
+FROM node:20-alpine AS deps
+WORKDIR /app
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile
+
+FROM deps AS build
+COPY apps/server ./apps/server
+COPY tsconfig.base.json ./
+RUN pnpm -F @metalayer/server build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN corepack enable \
+  && addgroup -S metalayer \
+  && adduser -S metalayer -G metalayer
+ENV NODE_ENV=production \
+    METALAYER_DEPLOYMENT_MODE=server \
+    METALAYER_API_HOST=0.0.0.0 \
+    METALAYER_API_PORT=1338 \
+    METALAYER_TELEMETRY_ENABLED=false
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --prod
+COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY apps/server/package.json ./apps/server/
+RUN mkdir -p /data && chown -R metalayer:metalayer /data /app
+USER metalayer
+VOLUME ["/data"]
+EXPOSE 1338
+CMD ["node", "apps/server/dist/index.js"]
