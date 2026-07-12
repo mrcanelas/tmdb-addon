@@ -21,14 +21,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -76,10 +76,10 @@ async function gatherIdsFromPublicId(
   correlationId: string,
   apiKey?: string,
 ): Promise<ProviderIdBag> {
-  const view = app.configStore.getPublic(configId)!;
+  const view = (await app.configStore.getPublic(configId))!;
   const key =
     apiKey ||
-    app.configStore.getSecretPlaintext(configId, 'tmdb') ||
+    await app.configStore.getSecretPlaintext(configId, 'tmdb') ||
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
@@ -125,7 +125,7 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
       apiKey?: string;
     };
   }>('/configurations/:configId/identity/resolve', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const body = request.body ?? {};
@@ -217,7 +217,7 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
       mediaType?: 'movie' | 'series' | 'anime';
     };
   }>('/configurations/:configId/identity/diagnostics', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const ids = request.body?.ids;

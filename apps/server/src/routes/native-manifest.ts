@@ -56,7 +56,7 @@ export const nativeManifestRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/c/:configId/manifest.json',
     async (request, reply) => {
-      const view = app.configStore.getPublic(request.params.configId);
+      const view = await app.configStore.getPublic(request.params.configId);
       if (!view) {
         return reply.status(404).send(
           createApiError({
@@ -78,7 +78,7 @@ export const nativeManifestRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string; profileId: string } }>(
     '/c/:configId/p/:profileId/manifest.json',
     async (request, reply) => {
-      const view = app.configStore.getPublic(request.params.configId);
+      const view = await app.configStore.getPublic(request.params.configId);
       if (!view) {
         return reply.status(404).send(
           createApiError({

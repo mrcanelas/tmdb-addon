@@ -1,6 +1,4 @@
-# MetaLayer Server — multi-user profile with Redis (+ optional Postgres)
-# Postgres wiring is prepared; Lite SQLite remains the alpha persistence path
-# until Server migrations land.
+# MetaLayer Server — multi-user profile with Redis + Postgres
 services:
   metalayer:
     build:
@@ -13,16 +11,16 @@ services:
     environment:
       METALAYER_DEPLOYMENT_MODE: server
       METALAYER_API_PORT: "1338"
-      METALAYER_SQLITE_PATH: /data/metalayer.sqlite
+      POSTGRES_URL: postgresql://metalayer:metalayer@postgres:5432/metalayer
       REDIS_URL: redis://redis:6379
-      # POSTGRES_URL: postgresql://metalayer:metalayer@postgres:5432/metalayer
       METALAYER_TELEMETRY_ENABLED: "false"
     env_file:
       - ../.env
-    volumes:
-      - metalayer_server_data:/data
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   redis:
@@ -32,16 +30,22 @@ services:
     volumes:
       - metalayer_redis:/data
 
-  # Optional — enable when Server Postgres persistence ships:
-  # postgres:
-  #   image: postgres:16-alpine
-  #   environment:
-  #     POSTGRES_USER: metalayer
-  #     POSTGRES_PASSWORD: metalayer
-  #     POSTGRES_DB: metalayer
-  #   volumes:
-  #     - metalayer_postgres:/var/lib/postgresql/data
+  postgres:
+    image: postgres:16-alpine
+    container_name: metalayer-postgres
+    environment:
+      POSTGRES_USER: metalayer
+      POSTGRES_PASSWORD: metalayer
+      POSTGRES_DB: metalayer
+    volumes:
+      - metalayer_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metalayer -d metalayer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
 volumes:
-  metalayer_server_data:
   metalayer_redis:
+  metalayer_postgres:

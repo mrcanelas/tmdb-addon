@@ -11,14 +11,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -48,10 +48,10 @@ export const localizationRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/localization',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      const view = app.configStore.getPublic(request.params.configId)!;
+      const view = (await app.configStore.getPublic(request.params.configId))!;
       return {
         localization: view.config.localization,
         correlationId: request.correlationId,
@@ -63,7 +63,7 @@ export const localizationRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { localization: unknown; note?: string };
   }>('/configurations/:configId/localization', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     let parsed: LocalizationPreferences;
@@ -80,8 +80,8 @@ export const localizationRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
-    const updated = app.configStore.update(request.params.configId, {
+    const view = (await app.configStore.getPublic(request.params.configId))!;
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         localization: parsed,

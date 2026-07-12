@@ -27,14 +27,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -65,10 +65,10 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Querystring: { provider?: string; catalogInstanceId?: string };
   }>('/configurations/:configId/rules/effective', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const catalog = request.query.catalogInstanceId
       ? view.config.catalogs.find((item) => item.instanceId === request.query.catalogInstanceId)
       : undefined;
@@ -99,10 +99,10 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
       provider?: string;
     };
   }>('/configurations/:configId/rules/preview', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const catalog = request.body?.catalogInstanceId
       ? view.config.catalogs.find((item) => item.instanceId === request.body?.catalogInstanceId)
       : undefined;
@@ -155,10 +155,10 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { globalRules?: RuleSet; note?: string };
   }>('/configurations/:configId/rules', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     let globalRules = view.config.globalRules;
     if (request.body?.globalRules) {
       try {
@@ -175,7 +175,7 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
       }
     }
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         globalRules,
@@ -200,10 +200,10 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
       seedKey?: string;
     };
   }>('/configurations/:configId/sorting/preview', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const catalog = request.body?.catalogInstanceId
       ? view.config.catalogs.find((item) => item.instanceId === request.body?.catalogInstanceId)
       : undefined;
@@ -251,10 +251,10 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { globalSorting?: SortingPlan | null; note?: string };
   }>('/configurations/:configId/sorting', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     let globalSorting = view.config.globalSorting;
     if (request.body?.globalSorting === null) {
       globalSorting = undefined;
@@ -280,7 +280,7 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
     if (globalSorting) nextConfig.globalSorting = globalSorting;
     else delete nextConfig.globalSorting;
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: nextConfig,
       note: request.body?.note ?? 'sorting:update-global',
     });

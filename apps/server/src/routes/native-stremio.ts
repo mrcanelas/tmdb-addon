@@ -122,7 +122,7 @@ async function loadCatalogMetas(
     config.localization.availabilityRegion ||
     config.localization.contentRegion;
   const apiKey =
-    app.configStore.getSecretPlaintext(configId, 'tmdb') ||
+    await app.configStore.getSecretPlaintext(configId, 'tmdb') ||
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
@@ -223,7 +223,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     },
     reply: ReplyLike,
   ) {
-    const view = app.configStore.getPublic(request.params.configId);
+    const view = await app.configStore.getPublic(request.params.configId);
     if (!view) {
       return reply.status(404).send(
         createApiError({
@@ -294,7 +294,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     },
     reply: ReplyLike,
   ) {
-    const view = app.configStore.getPublic(request.params.configId);
+    const view = await app.configStore.getPublic(request.params.configId);
     if (!view) {
       return reply.status(404).send(
         createApiError({
@@ -370,7 +370,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const apiKey =
-      app.configStore.getSecretPlaintext(view.configId, 'tmdb') ||
+      await app.configStore.getSecretPlaintext(view.configId, 'tmdb') ||
       process.env.METALAYER_TMDB_API_KEY ||
       process.env.TMDB_API;
 

@@ -40,14 +40,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
-): { ok: true } | { ok: false; status: number; body: unknown } {
+): Promise<{ ok: true } | { ok: false; status: number; body: unknown }> {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false,
@@ -92,10 +92,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string }; Querystring: { locale?: string } }>(
     '/configurations/:configId/catalogs',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      const view = app.configStore.getPublic(request.params.configId)!;
+      const view = (await app.configStore.getPublic(request.params.configId))!;
       return studioPayload(
         view.configId,
         view.config.catalogs,
@@ -108,10 +108,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/catalogs/export',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      const view = app.configStore.getPublic(request.params.configId)!;
+      const view = (await app.configStore.getPublic(request.params.configId))!;
       return {
         configId: view.configId,
         catalogs: exportCatalogDefinitions(view.config.catalogs),
@@ -134,10 +134,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       sourceInstanceIds?: string[];
     };
   }>('/configurations/:configId/catalogs', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const body = request.body ?? {};
     let catalogs = view.config.catalogs;
 
@@ -195,7 +195,7 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         catalogs,
@@ -228,10 +228,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       note?: string;
     };
   }>('/configurations/:configId/catalogs/:instanceId', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const body = request.body ?? { action: 'rename' as const };
     const { instanceId } = request.params;
     let catalogs = view.config.catalogs;
@@ -313,7 +313,7 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
         );
     }
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         catalogs,
@@ -330,10 +330,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
     Body: { page?: number; apiKey?: string };
     Querystring: { locale?: string; region?: string };
   }>('/configurations/:configId/catalogs/:instanceId/preview', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const locale =
       request.query.locale || view.config.localization.metadataLocale || 'en-US';
     const region =
@@ -342,7 +342,7 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       view.config.localization.contentRegion;
     const apiKey =
       request.body?.apiKey ||
-      app.configStore.getSecretPlaintext(request.params.configId, 'tmdb') ||
+      await app.configStore.getSecretPlaintext(request.params.configId, 'tmdb') ||
       process.env.METALAYER_TMDB_API_KEY ||
       process.env.TMDB_API;
 

@@ -70,37 +70,43 @@ export interface UpdateConfigurationInput {
 }
 
 export interface ConfigurationStore {
-  create(input: CreateConfigurationInput): PublicConfigurationView;
-  update(configId: string, input: UpdateConfigurationInput): PublicConfigurationView | null;
-  getPublic(configId: string): PublicConfigurationView | null;
-  listConfigIds(): string[];
-  verifyEditAccess(configId: string, editCredential: string): boolean;
+  create(input: CreateConfigurationInput): Promise<PublicConfigurationView>;
+  update(
+    configId: string,
+    input: UpdateConfigurationInput,
+  ): Promise<PublicConfigurationView | null>;
+  getPublic(configId: string): Promise<PublicConfigurationView | null>;
+  listConfigIds(): Promise<string[]>;
+  verifyEditAccess(configId: string, editCredential: string): Promise<boolean>;
   getSecretPlaintext(
     configId: string,
     provider: string,
     kind?: SecretKind,
-  ): string | null;
+  ): Promise<string | null>;
   upsertVaultSecret(
     configId: string,
     provider: string,
     kind: SecretKind,
     plaintext: string,
-  ): boolean;
+  ): Promise<boolean>;
   deleteVaultSecret(
     configId: string,
     provider: string,
     kind: SecretKind,
-  ): boolean;
-  listSecretStates(configId: string): Record<string, SecretCredentialState>;
-  listRevisions(configId: string): ConfigurationRevisionSummary[];
-  getRevision(configId: string, revisionId: string): ConfigurationRevision | null;
+  ): Promise<boolean>;
+  listSecretStates(configId: string): Promise<Record<string, SecretCredentialState>>;
+  listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]>;
+  getRevision(
+    configId: string,
+    revisionId: string,
+  ): Promise<ConfigurationRevision | null>;
   restoreRevision(
     configId: string,
     revisionId: string,
     note?: string,
-  ): PublicConfigurationView | null;
-  exportSafe(configId: string): SafeConfigurationExport | null;
-  close(): void;
+  ): Promise<PublicConfigurationView | null>;
+  exportSafe(configId: string): Promise<SafeConfigurationExport | null>;
+  close(): Promise<void>;
 }
 
 function ensureSchema(db: DatabaseSync): void {
@@ -218,7 +224,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     }
   }
 
-  create(input: CreateConfigurationInput): PublicConfigurationView {
+  async create(input: CreateConfigurationInput): Promise<PublicConfigurationView> {
     const configId = generateConfigId();
     const now = new Date().toISOString();
     const editHash = hashEditCredential(input.editCredential);
@@ -244,11 +250,14 @@ export class SqliteConfigurationStore implements ConfigurationStore {
       throw error;
     }
 
-    return this.getPublic(configId)!;
+    return (await this.getPublic(configId))!;
   }
 
-  update(configId: string, input: UpdateConfigurationInput): PublicConfigurationView | null {
-    const existing = this.getPublic(configId);
+  async update(
+    configId: string,
+    input: UpdateConfigurationInput,
+  ): Promise<PublicConfigurationView | null> {
+    const existing = await this.getPublic(configId);
     if (!existing) return null;
 
     const now = new Date().toISOString();
@@ -282,7 +291,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return this.getPublic(configId);
   }
 
-  getPublic(configId: string): PublicConfigurationView | null {
+  async getPublic(configId: string): Promise<PublicConfigurationView | null> {
     const row = this.db
       .prepare(
         `SELECT config_id, config_json, created_at, updated_at
@@ -297,21 +306,21 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return {
       configId: row.config_id,
       config: JSON.parse(row.config_json) as MetaLayerConfig,
-      secrets: this.listSecretStates(configId),
+      secrets: await this.listSecretStates(configId),
       manifestPath: `/c/${row.config_id}/manifest.json`,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
   }
 
-  listConfigIds(): string[] {
+  async listConfigIds(): Promise<string[]> {
     const rows = this.db
       .prepare(`SELECT config_id FROM configurations ORDER BY created_at ASC`)
       .all() as Array<{ config_id: string }>;
     return rows.map((row) => row.config_id);
   }
 
-  verifyEditAccess(configId: string, editCredential: string): boolean {
+  async verifyEditAccess(configId: string, editCredential: string): Promise<boolean> {
     const row = this.db
       .prepare(`SELECT edit_credential_hash FROM configurations WHERE config_id = ?`)
       .get(configId) as { edit_credential_hash: string } | undefined;
@@ -319,11 +328,11 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return verifyEditCredential(editCredential, row.edit_credential_hash);
   }
 
-  getSecretPlaintext(
+  async getSecretPlaintext(
     configId: string,
     provider: string,
     kind: SecretKind = 'api_key',
-  ): string | null {
+  ): Promise<string | null> {
     const row = this.db
       .prepare(
         `SELECT ciphertext FROM vault_secrets
@@ -343,14 +352,14 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return decryptSecret(row.ciphertext, this.key);
   }
 
-  upsertVaultSecret(
+  async upsertVaultSecret(
     configId: string,
     provider: string,
     kind: SecretKind,
     plaintext: string,
-  ): boolean {
+  ): Promise<boolean> {
     if (!plaintext) return false;
-    const existing = this.getPublic(configId);
+    const existing = await this.getPublic(configId);
     if (!existing) return false;
     const now = new Date().toISOString();
     const envelope = encryptSecret(plaintext, this.key);
@@ -378,11 +387,11 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return true;
   }
 
-  deleteVaultSecret(
+  async deleteVaultSecret(
     configId: string,
     provider: string,
     kind: SecretKind,
-  ): boolean {
+  ): Promise<boolean> {
     const result = this.db
       .prepare(
         `DELETE FROM vault_secrets WHERE config_id = ? AND provider = ? AND kind = ?`,
@@ -391,7 +400,9 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return Number(result.changes ?? 0) > 0;
   }
 
-  listSecretStates(configId: string): Record<string, SecretCredentialState> {
+  async listSecretStates(
+    configId: string,
+  ): Promise<Record<string, SecretCredentialState>> {
     const rows = this.db
       .prepare(`SELECT provider FROM vault_secrets WHERE config_id = ?`)
       .all(configId) as Array<{ provider: string }>;
@@ -402,7 +413,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return states;
   }
 
-  listRevisions(configId: string): ConfigurationRevisionSummary[] {
+  async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {
     const rows = this.db
       .prepare(
         `SELECT revision_id, revision_number, created_at, note
@@ -425,7 +436,10 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     }));
   }
 
-  getRevision(configId: string, revisionId: string): ConfigurationRevision | null {
+  async getRevision(
+    configId: string,
+    revisionId: string,
+  ): Promise<ConfigurationRevision | null> {
     const row = this.db
       .prepare(
         `SELECT revision_id, revision_number, config_json, created_at, note
@@ -452,12 +466,12 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     };
   }
 
-  restoreRevision(
+  async restoreRevision(
     configId: string,
     revisionId: string,
     note?: string,
-  ): PublicConfigurationView | null {
-    const revision = this.getRevision(configId, revisionId);
+  ): Promise<PublicConfigurationView | null> {
+    const revision = await this.getRevision(configId, revisionId);
     if (!revision) return null;
     return this.update(configId, {
       config: revision.config,
@@ -465,8 +479,8 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     });
   }
 
-  exportSafe(configId: string): SafeConfigurationExport | null {
-    const view = this.getPublic(configId);
+  async exportSafe(configId: string): Promise<SafeConfigurationExport | null> {
+    const view = await this.getPublic(configId);
     if (!view) return null;
     return {
       format: 'metalayer-config-export',
@@ -479,7 +493,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     };
   }
 
-  close(): void {
+  async close(): Promise<void> {
     this.db.close();
   }
 }

@@ -12,3 +12,4 @@ export {
   type SecretKind,
   type StoredConfiguration,
 } from './store.js';
+export { PostgresConfigurationStore } from './postgres-store.js';

@@ -19,14 +19,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -88,10 +88,10 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/resolution',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      const view = app.configStore.getPublic(request.params.configId)!;
+      const view = (await app.configStore.getPublic(request.params.configId))!;
       const resolution = resolveStoredResolution(view.config);
       return {
         resolution,
@@ -105,7 +105,7 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { resolution: unknown; note?: string };
   }>('/configurations/:configId/resolution', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     let parsed: ResolutionConfig;
@@ -122,13 +122,13 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const syncedProviders = {
       ...view.config.fieldProviders,
       ...fieldProvidersFromResolution(parsed),
     };
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         resolution: parsed,
@@ -154,7 +154,7 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       catalogId?: string;
     };
   }>('/configurations/:configId/resolution/compile', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const field = ResolvableFieldSchema.safeParse(request.body?.field);
@@ -169,7 +169,7 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const resolution = resolveStoredResolution(view.config);
     const effective = compileResolutionPlan({
       field: field.data,
@@ -200,7 +200,7 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       originalLanguage?: string;
     };
   }>('/configurations/:configId/resolution/test', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const field = ResolvableFieldSchema.safeParse(request.body?.field);
@@ -215,7 +215,7 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const resolution = resolveStoredResolution(view.config);
     const effective = compileResolutionPlan({
       field: field.data,

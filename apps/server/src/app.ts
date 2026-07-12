@@ -12,6 +12,7 @@ import {
 } from '@metalayer/observability';
 import {
   createMemoryConfigurationStore,
+  PostgresConfigurationStore,
   SqliteConfigurationStore,
   type ConfigurationStore,
 } from '@metalayer/persistence';
@@ -56,15 +57,23 @@ declare module 'fastify' {
   }
 }
 
-function resolveStore(options: BuildAppOptions): ConfigurationStore {
+async function resolveStore(options: BuildAppOptions): Promise<ConfigurationStore> {
   if (options.store) return options.store;
 
   const encryptionKey =
     options.encryptionKey ?? process.env.METALAYER_ENCRYPTION_KEY ?? '';
   const sqlitePath = options.sqlitePath ?? process.env.METALAYER_SQLITE_PATH ?? '';
+  const postgresUrl = process.env.POSTGRES_URL ?? '';
 
   if (!encryptionKey) {
     throw new Error('METALAYER_ENCRYPTION_KEY is required to start MetaLayer API');
+  }
+
+  if (postgresUrl) {
+    return PostgresConfigurationStore.connect({
+      connectionString: postgresUrl,
+      encryptionKey,
+    });
   }
 
   if (!sqlitePath || sqlitePath === ':memory:') {
@@ -91,7 +100,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
     logger: buildLoggerOption(options.logger ?? true),
   });
 
-  const store = resolveStore(options);
+  const store = await resolveStore(options);
   const correctionRegistry =
     options.correctionRegistry ??
     (() => {
@@ -131,7 +140,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   app.addHook('onClose', async () => {
-    store.close();
+    await store.close();
   });
 
   await app.register(corsPlugin);

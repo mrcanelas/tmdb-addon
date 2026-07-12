@@ -19,14 +19,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -81,7 +81,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/corrections',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
       const registry = app.correctionRegistry;
@@ -106,7 +106,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
       id?: string;
     };
   }>('/configurations/:configId/corrections', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const body = request.body;
@@ -156,7 +156,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string; correctionId: string };
     Body: { action: ModerationAction['type']; replacementId?: string };
   }>('/configurations/:configId/corrections/:correctionId', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const actionType = request.body?.action;
@@ -211,7 +211,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { configId: string; correctionId: string } }>(
     '/configurations/:configId/corrections/:correctionId',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
       const removed = app.correctionRegistry.deleteLocal(
@@ -247,7 +247,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
       episode?: number;
     };
   }>('/configurations/:configId/corrections/preview', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const provider = request.body?.provider ?? 'imdb';

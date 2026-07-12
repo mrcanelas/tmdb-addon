@@ -3668,7 +3668,7 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **Postgres + Redis** Server end-to-end
+1. **Redis shared cache** (sidecar already in Server compose)
 2. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
 3. **Encryption key rotation tooling** (Phase B carry-over)
 4. **Advanced configure module**

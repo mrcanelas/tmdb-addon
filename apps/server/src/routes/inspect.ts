@@ -39,14 +39,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -113,7 +113,7 @@ async function gatherLiveBag(
     config.localization.availabilityRegion || config.localization.contentRegion;
   const apiKey =
     input.apiKey ||
-    app.configStore.getSecretPlaintext(configId, 'tmdb') ||
+    await app.configStore.getSecretPlaintext(configId, 'tmdb') ||
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
@@ -219,7 +219,7 @@ async function gatherLiveBag(
     }
   }
 
-  const fanartKey = app.configStore.getSecretPlaintext(configId, 'fanart');
+  const fanartKey = await app.configStore.getSecretPlaintext(configId, 'fanart');
   if (fanartKey) {
     try {
       const fanart = createProviderAdapter('fanart', {
@@ -248,7 +248,7 @@ async function gatherLiveBag(
     }
   }
 
-  const rpdbKey = app.configStore.getSecretPlaintext(configId, 'rpdb');
+  const rpdbKey = await app.configStore.getSecretPlaintext(configId, 'rpdb');
   if (rpdbKey) {
     try {
       const rpdb = createProviderAdapter('rpdb', {
@@ -295,9 +295,9 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/field-providers',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
-      const view = app.configStore.getPublic(request.params.configId)!;
+      const view = (await app.configStore.getPublic(request.params.configId))!;
       return {
         fieldProviders: view.config.fieldProviders,
         correlationId: request.correlationId,
@@ -309,7 +309,7 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { fieldProviders: FieldProviders; note?: string };
   }>('/configurations/:configId/field-providers', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const parsed = FieldProvidersSchema.safeParse(request.body?.fieldProviders);
@@ -324,8 +324,8 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
-    const updated = app.configStore.update(request.params.configId, {
+    const view = (await app.configStore.getPublic(request.params.configId))!;
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         fieldProviders: parsed.data,
@@ -349,7 +349,7 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
       apiKey?: string;
     };
   }>('/configurations/:configId/inspect', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const body = request.body ?? {};
@@ -366,7 +366,7 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const started = Date.now();
 
     try {

@@ -60,7 +60,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
     const access = requireOperator(request);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const configIds = app.configStore.listConfigIds();
+    const configIds = await app.configStore.listConfigIds();
     const health = buildHealthSnapshot({
       metrics: app.metrics,
       version: METALAYER.version,
@@ -99,7 +99,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         metrics: app.metrics,
         version: METALAYER.version,
         startedAt: app.startedAt,
-        activeConfigurations: app.configStore.listConfigIds().length,
+        activeConfigurations: (await app.configStore.listConfigIds()).length,
       }),
       correlationId: request.correlationId,
     };
@@ -137,17 +137,20 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
     const access = requireOperator(request);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const configurations = app.configStore.listConfigIds().map((configId) => {
-      const view = app.configStore.getPublic(configId)!;
-      return {
-        configId,
-        name: view.config.name,
-        updatedAt: view.updatedAt,
-        catalogCount: view.config.catalogs.length,
-        secretStates: view.secrets,
-        manifestPath: view.manifestPath,
-      };
-    });
+    const configIds = await app.configStore.listConfigIds();
+    const configurations = await Promise.all(
+      configIds.map(async (configId) => {
+        const view = (await app.configStore.getPublic(configId))!;
+        return {
+          configId,
+          name: view.config.name,
+          updatedAt: view.updatedAt,
+          catalogCount: view.config.catalogs.length,
+          secretStates: view.secrets,
+          manifestPath: view.manifestPath,
+        };
+      }),
+    );
 
     return { configurations, correlationId: request.correlationId };
   });
@@ -166,10 +169,12 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
     const access = requireOperator(request);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const configurations = app.configStore
-      .listConfigIds()
-      .map((configId) => app.configStore.exportSafe(configId))
-      .filter(Boolean);
+    const backupConfigIds = await app.configStore.listConfigIds();
+    const configurations = (
+      await Promise.all(
+        backupConfigIds.map((configId) => app.configStore.exportSafe(configId)),
+      )
+    ).filter(Boolean);
 
     const backup = buildSafeBackup({
       version: METALAYER.version,

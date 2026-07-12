@@ -1,7 +1,7 @@
 {
   "name": "@metalayer/persistence",
   "version": "1.0.0-beta.1",
-  "description": "SQLite persistence for MetaLayer configurations and Secret Vault (Lite)",
+  "description": "Configuration and Secret Vault persistence for MetaLayer (SQLite Lite + Postgres Server)",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
@@ -15,9 +15,13 @@
   },
   "dependencies": {
     "@metalayer/config": "workspace:*",
-    "@metalayer/security": "workspace:*"
+    "@metalayer/security": "workspace:*",
+    "pg": "^8.22.0"
   },
   "engines": {
     "node": ">=22.5.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0"
   }
 }

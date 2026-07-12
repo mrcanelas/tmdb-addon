@@ -37,14 +37,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -78,17 +78,17 @@ const TRACKING_PROVIDERS: TrackingProviderId[] = [
   'kitsu',
 ];
 
-function resolveConnectionState(
+async function resolveConnectionState(
   app: { configStore: ConfigurationStore },
   configId: string,
   provider: TrackingProviderId,
-): TokenConnectionState {
+): Promise<TokenConnectionState> {
   const access =
-    app.configStore.getSecretPlaintext(configId, provider, 'oauth_access') ||
-    app.configStore.getSecretPlaintext(configId, provider, 'api_key');
+    await app.configStore.getSecretPlaintext(configId, provider, 'oauth_access') ||
+    await app.configStore.getSecretPlaintext(configId, provider, 'api_key');
   if (!access) {
     // Refresh token without access means a prior refresh failed — prompt reconnect.
-    const refresh = app.configStore.getSecretPlaintext(
+    const refresh = await app.configStore.getSecretPlaintext(
       configId,
       provider,
       'oauth_refresh',
@@ -100,16 +100,16 @@ function resolveConnectionState(
   return transitionTokenState('not_configured', { type: 'auth_success' });
 }
 
-function clearTrackingAccessTokens(
+async function clearTrackingAccessTokens(
   app: { configStore: ConfigurationStore },
   configId: string,
   provider: TrackingProviderId,
   options?: { keepRefresh?: boolean },
 ) {
-  app.configStore.deleteVaultSecret(configId, provider, 'oauth_access');
-  app.configStore.deleteVaultSecret(configId, provider, 'api_key');
+  await app.configStore.deleteVaultSecret(configId, provider, 'oauth_access');
+  await app.configStore.deleteVaultSecret(configId, provider, 'api_key');
   if (!options?.keepRefresh) {
-    app.configStore.deleteVaultSecret(configId, provider, 'oauth_refresh');
+    await app.configStore.deleteVaultSecret(configId, provider, 'oauth_refresh');
   }
 }
 
@@ -126,7 +126,7 @@ async function tryRefreshTrackingToken(input: {
   if (!REFRESHABLE_PROVIDERS.has(input.provider)) return null;
 
   const fetchImpl = input.app.providerFetch ?? fetch;
-  const refreshToken = input.app.configStore.getSecretPlaintext(
+  const refreshToken = await input.app.configStore.getSecretPlaintext(
     input.configId,
     input.provider,
     'oauth_refresh',
@@ -143,14 +143,14 @@ async function tryRefreshTrackingToken(input: {
       clientSecret,
       fetchImpl,
     });
-    input.app.configStore.upsertVaultSecret(
+    await input.app.configStore.upsertVaultSecret(
       input.configId,
       'trakt',
       'oauth_access',
       tokens.accessToken,
     );
     if (tokens.refreshToken) {
-      input.app.configStore.upsertVaultSecret(
+      await input.app.configStore.upsertVaultSecret(
         input.configId,
         'trakt',
         'oauth_refresh',
@@ -170,14 +170,14 @@ async function tryRefreshTrackingToken(input: {
       clientSecret,
       fetchImpl,
     });
-    input.app.configStore.upsertVaultSecret(
+    await input.app.configStore.upsertVaultSecret(
       input.configId,
       'mal',
       'oauth_access',
       tokens.accessToken,
     );
     if (tokens.refreshToken) {
-      input.app.configStore.upsertVaultSecret(
+      await input.app.configStore.upsertVaultSecret(
         input.configId,
         'mal',
         'oauth_refresh',
@@ -249,7 +249,7 @@ async function loadLiveWatchStates(input: {
 
     // SIMKL/AniList have no refresh grant; Trakt/MAL refresh missing/failed.
     // Keep refresh token (if any) so status can surface `expired` + Connect.
-    clearTrackingAccessTokens(input.app, input.configId, input.provider, {
+    await clearTrackingAccessTokens(input.app, input.configId, input.provider, {
       keepRefresh: REFRESHABLE_PROVIDERS.has(input.provider),
     });
     throw error;
@@ -260,14 +260,16 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/status',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      const providers = TRACKING_PROVIDERS.map((provider) => ({
-        provider,
-        state: resolveConnectionState(app, request.params.configId, provider),
-        adapterAvailable: Boolean(createProviderAdapter(provider)),
-      }));
+      const providers = await Promise.all(
+        TRACKING_PROVIDERS.map(async (provider) => ({
+          provider,
+          state: await resolveConnectionState(app, request.params.configId, provider),
+          adapterAvailable: Boolean(createProviderAdapter(provider)),
+        })),
+      );
 
       return {
         providers,
@@ -279,7 +281,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.post<{
     Params: { configId: string; provider: string };
   }>('/configurations/:configId/tracking/:provider/refresh', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const provider = request.params.provider as TrackingProviderId;
@@ -301,7 +303,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         provider,
       });
       if (!refreshed) {
-        clearTrackingAccessTokens(app, request.params.configId, provider, {
+        await clearTrackingAccessTokens(app, request.params.configId, provider, {
           keepRefresh: true,
         });
         return {
@@ -318,7 +320,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         correlationId: request.correlationId,
       };
     } catch {
-      clearTrackingAccessTokens(app, request.params.configId, provider, {
+      await clearTrackingAccessTokens(app, request.params.configId, provider, {
         keepRefresh: true,
       });
       return {
@@ -339,20 +341,20 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       fail?: boolean;
     };
   }>('/configurations/:configId/tracking/lookup', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const provider = request.body?.provider ?? 'trakt';
     const vaultToken =
-      app.configStore.getSecretPlaintext(
+      await app.configStore.getSecretPlaintext(
         request.params.configId,
         provider,
         'oauth_access',
       ) ||
-      app.configStore.getSecretPlaintext(request.params.configId, provider, 'api_key');
+      await app.configStore.getSecretPlaintext(request.params.configId, provider, 'api_key');
 
     if (request.body?.accessToken) {
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         provider,
         'oauth_access',
@@ -360,7 +362,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
     if (request.body?.refreshToken) {
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         provider,
         'oauth_refresh',
@@ -393,8 +395,8 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       entries: result.entries,
       degraded: result.index.degraded,
       failure: result.failure,
-      connectionState: (() => {
-        const resolved = resolveConnectionState(
+      connectionState: await (async () => {
+        const resolved = await resolveConnectionState(
           app,
           request.params.configId,
           provider,
@@ -420,18 +422,18 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       provider?: TrackingProviderId;
     };
   }>('/configurations/:configId/tracking/preview-hide-watched', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const provider = request.body?.provider ?? 'trakt';
     const items = request.body?.items ?? [];
     const vaultToken =
-      app.configStore.getSecretPlaintext(
+      await app.configStore.getSecretPlaintext(
         request.params.configId,
         provider,
         'oauth_access',
       ) ||
-      app.configStore.getSecretPlaintext(
+      await app.configStore.getSecretPlaintext(
         request.params.configId,
         provider,
         'api_key',
@@ -487,7 +489,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Querystring: { redirectUri?: string };
   }>('/configurations/:configId/tracking/trakt/auth-url', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.TRAKT_CLIENT_ID;
@@ -540,7 +542,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { code?: string; redirectUri?: string };
   }>('/configurations/:configId/tracking/trakt/callback', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.TRAKT_CLIENT_ID;
@@ -577,14 +579,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         clientSecret,
         fetchImpl: app.providerFetch,
       });
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         'trakt',
         'oauth_access',
         tokens.accessToken,
       );
       if (tokens.refreshToken) {
-        app.configStore.upsertVaultSecret(
+        await app.configStore.upsertVaultSecret(
           request.params.configId,
           'trakt',
           'oauth_refresh',
@@ -612,21 +614,21 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/trakt',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'trakt',
         'oauth_access',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'trakt',
         'oauth_refresh',
       );
       // Legacy create-path may have stored trakt under api_key kind.
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'trakt',
         'api_key',
@@ -644,7 +646,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Querystring: { redirectUri?: string };
   }>('/configurations/:configId/tracking/simkl/auth-url', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.SIMKL_CLIENT_ID;
@@ -695,7 +697,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { code?: string; redirectUri?: string };
   }>('/configurations/:configId/tracking/simkl/callback', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.SIMKL_CLIENT_ID;
@@ -732,14 +734,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         clientSecret,
         fetchImpl: app.providerFetch,
       });
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         'simkl',
         'oauth_access',
         tokens.accessToken,
       );
       if (tokens.refreshToken) {
-        app.configStore.upsertVaultSecret(
+        await app.configStore.upsertVaultSecret(
           request.params.configId,
           'simkl',
           'oauth_refresh',
@@ -767,20 +769,20 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/simkl',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'simkl',
         'oauth_access',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'simkl',
         'oauth_refresh',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'simkl',
         'api_key',
@@ -798,7 +800,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Querystring: { redirectUri?: string };
   }>('/configurations/:configId/tracking/anilist/auth-url', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.ANILIST_CLIENT_ID;
@@ -849,7 +851,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { code?: string; redirectUri?: string };
   }>('/configurations/:configId/tracking/anilist/callback', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.ANILIST_CLIENT_ID;
@@ -886,14 +888,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         clientSecret,
         fetchImpl: app.providerFetch,
       });
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         'anilist',
         'oauth_access',
         tokens.accessToken,
       );
       if (tokens.refreshToken) {
-        app.configStore.upsertVaultSecret(
+        await app.configStore.upsertVaultSecret(
           request.params.configId,
           'anilist',
           'oauth_refresh',
@@ -923,20 +925,20 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/anilist',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'anilist',
         'oauth_access',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'anilist',
         'oauth_refresh',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'anilist',
         'api_key',
@@ -954,7 +956,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Querystring: { redirectUri?: string };
   }>('/configurations/:configId/tracking/mal/auth-url', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.MAL_CLIENT_ID;
@@ -992,7 +994,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     ).toString('base64url');
 
     // Persist PKCE verifier until callback (MAL requires plain code_challenge).
-    app.configStore.upsertVaultSecret(
+    await app.configStore.upsertVaultSecret(
       request.params.configId,
       'mal',
       'session',
@@ -1016,7 +1018,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { code?: string; redirectUri?: string; state?: string };
   }>('/configurations/:configId/tracking/mal/callback', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const clientId = process.env.MAL_CLIENT_ID;
@@ -1045,7 +1047,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const sessionRaw = app.configStore.getSecretPlaintext(
+    const sessionRaw = await app.configStore.getSecretPlaintext(
       request.params.configId,
       'mal',
       'session',
@@ -1095,21 +1097,21 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         codeVerifier,
         fetchImpl: app.providerFetch,
       });
-      app.configStore.upsertVaultSecret(
+      await app.configStore.upsertVaultSecret(
         request.params.configId,
         'mal',
         'oauth_access',
         tokens.accessToken,
       );
       if (tokens.refreshToken) {
-        app.configStore.upsertVaultSecret(
+        await app.configStore.upsertVaultSecret(
           request.params.configId,
           'mal',
           'oauth_refresh',
           tokens.refreshToken,
         );
       }
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'mal',
         'session',
@@ -1135,25 +1137,25 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { configId: string } }>(
     '/configurations/:configId/tracking/mal',
     async (request, reply) => {
-      const access = requireEdit(app, request, request.params.configId);
+      const access = await requireEdit(app, request, request.params.configId);
       if (!access.ok) return reply.status(access.status).send(access.body);
 
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'mal',
         'oauth_access',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'mal',
         'oauth_refresh',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'mal',
         'session',
       );
-      app.configStore.deleteVaultSecret(
+      await app.configStore.deleteVaultSecret(
         request.params.configId,
         'mal',
         'api_key',

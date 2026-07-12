@@ -58,8 +58,8 @@ async function requireEditAccess(
     return false;
   }
 
-  if (!app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       await reply.status(404).send(
         createApiError({
@@ -116,7 +116,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const created = app.configStore.create({
+    const created = await app.configStore.create({
       config,
       editCredential: body.editCredential,
       secrets: body.secrets,
@@ -180,7 +180,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const created = app.configStore.create({
+    const created = await app.configStore.create({
       config: plan.config,
       editCredential: body.editCredential,
       secrets: plan.secrets,
@@ -210,7 +210,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
       try {
         config = body.config
           ? parseMetaLayerConfig(body.config)
-          : app.configStore.getPublic(configId)!.config;
+          : (await app.configStore.getPublic(configId))!.config;
         if (body.name) {
           config = { ...config, name: body.name };
         }
@@ -224,7 +224,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
-      const updated = app.configStore.update(configId, {
+      const updated = await app.configStore.update(configId, {
         config,
         note: body.note,
         secrets: body.secrets,
@@ -242,7 +242,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { configId } = request.params;
       if (!(await requireEditAccess(app, request, reply, configId))) return;
-      const view = app.configStore.getPublic(configId)!;
+      const view = (await app.configStore.getPublic(configId))!;
       return {
         ...view,
         correlationId: request.correlationId,
@@ -257,7 +257,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
       if (!(await requireEditAccess(app, request, reply, configId))) return;
       return {
         configId,
-        revisions: app.configStore.listRevisions(configId),
+        revisions: await app.configStore.listRevisions(configId),
         correlationId: request.correlationId,
       };
     },
@@ -268,7 +268,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { configId, revisionId } = request.params;
       if (!(await requireEditAccess(app, request, reply, configId))) return;
-      const revision = app.configStore.getRevision(configId, revisionId);
+      const revision = await app.configStore.getRevision(configId, revisionId);
       if (!revision) {
         return reply.status(404).send(
           createApiError({
@@ -292,7 +292,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { configId, revisionId } = request.params;
       if (!(await requireEditAccess(app, request, reply, configId))) return;
-      const restored = app.configStore.restoreRevision(
+      const restored = await app.configStore.restoreRevision(
         configId,
         revisionId,
         request.body?.note,
@@ -319,7 +319,7 @@ export const configurationsRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { configId } = request.params;
       if (!(await requireEditAccess(app, request, reply, configId))) return;
-      const exported = app.configStore.exportSafe(configId);
+      const exported = await app.configStore.exportSafe(configId);
       if (!exported) {
         return reply.status(404).send(
           createApiError({

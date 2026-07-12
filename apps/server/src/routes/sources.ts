@@ -74,7 +74,7 @@ async function resolveApiKey(options: {
       return 'failed';
     }
 
-    if (!options.app.configStore.verifyEditAccess(options.body.configId, credential)) {
+    if (!await options.app.configStore.verifyEditAccess(options.body.configId, credential)) {
       await options.reply.status(401).send(
         createApiError({
           code: 'EDIT_CREDENTIAL_INVALID',
@@ -85,7 +85,7 @@ async function resolveApiKey(options: {
       return 'failed';
     }
 
-    const fromVault = options.app.configStore.getSecretPlaintext(
+    const fromVault = await options.app.configStore.getSecretPlaintext(
       options.body.configId,
       options.providerId,
     );

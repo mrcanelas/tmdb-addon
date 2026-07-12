@@ -51,8 +51,8 @@ The API serves built SPAs from `apps/frontend/dist` and `apps/dashboard/dist` (o
 
 ```text
 API container
-Redis sidecar
-Postgres planned
+Postgres configuration + vault store
+Redis sidecar (provisioned; shared cache wiring follows)
 Operator dashboard token required
 Rate limiting / horizontal scaling later
 ```
@@ -61,7 +61,9 @@ Rate limiting / horizontal scaling later
 docker compose -f docker/docker-compose.server.yml up -d --build
 ```
 
-Alpha persistence remains SQLite until Server Postgres migrations ship. Redis is provisioned for the Server profile.
+Set `POSTGRES_URL` (Compose sets it automatically) and `METALAYER_ENCRYPTION_KEY`. When `POSTGRES_URL` is present, the API uses `PostgresConfigurationStore` instead of SQLite. Lite remains SQLite via `METALAYER_SQLITE_PATH`.
+
+Redis is started for the Server profile; request/provider cache still defaults to in-process memory until `RedisCache` lands.
 
 ## GHCR images
 

@@ -20,14 +20,14 @@ function readEditCredential(request: FastifyRequest): string | undefined {
   return Array.isArray(header) ? header[0] : header;
 }
 
-function requireEdit(
+async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
   configId: string,
 ) {
   const credential = readEditCredential(request);
-  if (!credential || !app.configStore.verifyEditAccess(configId, credential)) {
-    const exists = app.configStore.getPublic(configId);
+  if (!credential || !await app.configStore.verifyEditAccess(configId, credential)) {
+    const exists = await app.configStore.getPublic(configId);
     if (!exists) {
       return {
         ok: false as const,
@@ -74,7 +74,7 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { query?: string; providers?: string[] };
   }>('/configurations/:configId/search/combined', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const query = request.body?.query?.trim();
@@ -106,7 +106,7 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { prompt?: string };
   }>('/configurations/:configId/search/smart-discovery', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const prompt = request.body?.prompt?.trim();
@@ -154,7 +154,7 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
       }>;
     };
   }>('/configurations/:configId/search/ranked-list', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const prompt = request.body?.prompt?.trim();
@@ -193,7 +193,7 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
     Params: { configId: string };
     Body: { proposalId?: string; confirm?: boolean; name?: string };
   }>('/configurations/:configId/ai/apply-proposal', async (request, reply) => {
-    const access = requireEdit(app, request, request.params.configId);
+    const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     try {
@@ -242,14 +242,14 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
       };
     }
 
-    const view = app.configStore.getPublic(request.params.configId)!;
+    const view = (await app.configStore.getPublic(request.params.configId))!;
     const applied = applyConfirmedProposal(
       proposal,
       view.config.catalogs,
       view.config.globalRules,
     );
 
-    const updated = app.configStore.update(request.params.configId, {
+    const updated = await app.configStore.update(request.params.configId, {
       config: {
         ...view.config,
         catalogs: applied.catalogs,

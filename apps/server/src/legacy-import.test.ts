@@ -43,7 +43,7 @@ describe('@metalayer/server legacy import', () => {
     expect(body.report.secretsToVault).toEqual(expect.arrayContaining(['tmdb', 'trakt']));
     expect(body.config.catalogs.length).toBeGreaterThan(0);
     expect(JSON.stringify(body)).not.toContain('REDACTED_TMDB_KEY');
-    expect(store.getPublic('missing')).toBeNull();
+    expect(await store.getPublic('missing')).toBeNull();
   });
 
   it('persists imported legacy config with vaulted secrets and native manifest path', async () => {
