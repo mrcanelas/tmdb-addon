@@ -548,3 +548,44 @@ export async function inspectMetadata(
     body: JSON.stringify(body),
   });
 }
+
+export interface TrackingProviderStatus {
+  provider: string;
+  state: string;
+  adapterAvailable: boolean;
+}
+
+export async function fetchTrackingStatus(
+  configId: string,
+  editCredential: string,
+): Promise<{ providers: TrackingProviderStatus[] }> {
+  return apiFetch(`/api/v1/configurations/${configId}/tracking/status`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function previewHideWatched(
+  configId: string,
+  editCredential: string,
+  body: {
+    hideWatched?: boolean;
+    items?: Array<Record<string, unknown>>;
+    fixtures?: Array<Record<string, unknown>>;
+    failTracking?: boolean;
+    provider?: string;
+  },
+): Promise<{
+  included: string[];
+  excluded: string[];
+  degraded: boolean;
+  ok: boolean;
+}> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/tracking/preview-hide-watched`,
+    {
+      method: 'POST',
+      headers: { 'x-metalayer-edit-credential': editCredential },
+      body: JSON.stringify(body),
+    },
+  );
+}

@@ -1,0 +1,19 @@
+{
+  "tracking.title": "TråçkîñgTrå",
+  "tracking.intro": "Çøññéçt wåtçh tråçkîñg åççøûñts. Fåîlûrés dégrådé øbsérvåbly åñd ñévér bréåk métådåtå.Çøññéçt wåtçh tråçkîñg åçç",
+  "tracking.loadError": "Çøûld ñøt løåd tråçkîñg ståtûs frøm thé ÅPÎ.Çøûld ñøt løåd",
+  "tracking.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg",
+  "tracking.providers": "Tråçkîñg prøvîdérsTråçkî",
+  "tracking.state.not_configured": "Ñøt çøñfîgûrédÑøt ç",
+  "tracking.state.connected": "ÇøññéçtédÇøñ",
+  "tracking.state.expired": "ÉxpîrédÉxp",
+  "tracking.state.invalid": "ÎñvålîdÎñv",
+  "tracking.state.reconnect_required": "Réçøññéçt réqûîrédRéçøññ",
+  "tracking.state.degraded": "DégrådédDég",
+  "tracking.adapterReady": "Ådåptér réådyÅdåp",
+  "tracking.adapterMissing": "Ådåptér ñøt réådyÅdåpté",
+  "tracking.preview": "Prévîéw hîdé wåtçhédPrévîé",
+  "tracking.previewOk": "Hîdé-wåtçhéd prévîéw çømplétéd (dégrådéd: Hîdé-wåtçhéd {{degraded}}).)",
+  "tracking.included": "ÎñçlûdédÎñç",
+  "tracking.excluded": "ÉxçlûdédÉxç"
+}

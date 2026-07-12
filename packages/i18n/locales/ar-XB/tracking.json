@@ -1,0 +1,19 @@
+{
+  "tracking.title": "‏Tracking‎",
+  "tracking.intro": "‏Connect watch tracking accounts. Failures degrade observably and never break metadata.‎",
+  "tracking.loadError": "‏Could not load tracking status from the API.‎",
+  "tracking.bootstrapping": "‏Preparing draft configuration…‎",
+  "tracking.providers": "‏Tracking providers‎",
+  "tracking.state.not_configured": "‏Not configured‎",
+  "tracking.state.connected": "‏Connected‎",
+  "tracking.state.expired": "‏Expired‎",
+  "tracking.state.invalid": "‏Invalid‎",
+  "tracking.state.reconnect_required": "‏Reconnect required‎",
+  "tracking.state.degraded": "‏Degraded‎",
+  "tracking.adapterReady": "‏Adapter ready‎",
+  "tracking.adapterMissing": "‏Adapter not ready‎",
+  "tracking.preview": "‏Preview hide watched‎",
+  "tracking.previewOk": "‏Hide-watched preview completed (degraded: ‎{{degraded}}‏).‎",
+  "tracking.included": "‏Included‎",
+  "tracking.excluded": "‏Excluded‎"
+}

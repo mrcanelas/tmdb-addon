@@ -22,6 +22,9 @@ import esESSorting from '@metalayer/i18n/locales/es-ES/sorting.json';
 import enUSInspector from '@metalayer/i18n/locales/en-US/inspector.json';
 import ptBRInspector from '@metalayer/i18n/locales/pt-BR/inspector.json';
 import esESInspector from '@metalayer/i18n/locales/es-ES/inspector.json';
+import enUSTracking from '@metalayer/i18n/locales/en-US/tracking.json';
+import ptBRTracking from '@metalayer/i18n/locales/pt-BR/tracking.json';
+import esESTracking from '@metalayer/i18n/locales/es-ES/tracking.json';
 
 const resources = {
   'en-US': {
@@ -31,6 +34,7 @@ const resources = {
     rules: enUSRules,
     sorting: enUSSorting,
     inspector: enUSInspector,
+    tracking: enUSTracking,
   },
   'pt-BR': {
     common: ptBRCommon,
@@ -39,6 +43,7 @@ const resources = {
     rules: ptBRRules,
     sorting: ptBRSorting,
     inspector: ptBRInspector,
+    tracking: ptBRTracking,
   },
   'es-ES': {
     common: esESCommon,
@@ -47,6 +52,7 @@ const resources = {
     rules: esESRules,
     sorting: esESSorting,
     inspector: esESInspector,
+    tracking: esESTracking,
   },
 };
 
@@ -58,7 +64,7 @@ void i18n.use(initReactI18next).init({
   ]),
   fallbackLng: CANONICAL_LOCALE,
   defaultNS: 'common',
-  ns: ['common', 'sources', 'catalogs', 'rules', 'sorting', 'inspector'],
+  ns: ['common', 'sources', 'catalogs', 'rules', 'sorting', 'inspector', 'tracking'],
   interpolation: {
     escapeValue: false,
   },

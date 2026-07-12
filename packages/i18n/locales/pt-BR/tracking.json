@@ -1,0 +1,19 @@
+{
+  "tracking.title": "Tracking",
+  "tracking.intro": "Conecte contas de acompanhamento. Falhas degradam de forma observável e nunca quebram metadados.",
+  "tracking.loadError": "Não foi possível carregar o status de tracking da API.",
+  "tracking.bootstrapping": "Preparando configuração rascunho…",
+  "tracking.providers": "Provedores de tracking",
+  "tracking.state.not_configured": "Não configurado",
+  "tracking.state.connected": "Conectado",
+  "tracking.state.expired": "Expirado",
+  "tracking.state.invalid": "Inválido",
+  "tracking.state.reconnect_required": "Reconexão necessária",
+  "tracking.state.degraded": "Degradado",
+  "tracking.adapterReady": "Adapter pronto",
+  "tracking.adapterMissing": "Adapter indisponível",
+  "tracking.preview": "Prévia de ocultar assistidos",
+  "tracking.previewOk": "Prévia concluída (degradado: {{degraded}}).",
+  "tracking.included": "Incluídos",
+  "tracking.excluded": "Excluídos"
+}
