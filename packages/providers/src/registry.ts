@@ -95,6 +95,23 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     }),
   },
   {
+    id: 'simkl',
+    name: 'SIMKL',
+    categories: ['tracking', 'catalog'],
+    connectionState: 'not_configured',
+    requiresCredential: false,
+    requiresOAuth: true,
+    capabilities: metadataBase({
+      mediaTypes: ['movie', 'series', 'anime'],
+      metadataFields: ['externalIds'],
+      catalogFeatures: ['personalLists', 'recommendations'],
+      supportsTracking: true,
+      supportsOAuth: true,
+      supportsAgeRating: false,
+      supportsRegion: false,
+    }),
+  },
+  {
     id: 'mdblist',
     name: 'MDBList',
     categories: ['catalog', 'ratings'],

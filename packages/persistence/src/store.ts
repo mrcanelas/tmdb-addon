@@ -13,7 +13,11 @@ import {
 
 export type SecretKind = 'api_key' | 'oauth_access' | 'oauth_refresh' | 'session';
 
-export type SecretCredentialState = 'connected' | 'not_configured';
+export type SecretCredentialState =
+  | 'connected'
+  | 'not_configured'
+  | 'expired'
+  | 'invalid';
 
 export interface StoredConfiguration {
   configId: string;
@@ -70,7 +74,17 @@ export interface ConfigurationStore {
   update(configId: string, input: UpdateConfigurationInput): PublicConfigurationView | null;
   getPublic(configId: string): PublicConfigurationView | null;
   verifyEditAccess(configId: string, editCredential: string): boolean;
-  getSecretPlaintext(configId: string, provider: string): string | null;
+  getSecretPlaintext(
+    configId: string,
+    provider: string,
+    kind?: SecretKind,
+  ): string | null;
+  upsertVaultSecret(
+    configId: string,
+    provider: string,
+    kind: SecretKind,
+    plaintext: string,
+  ): boolean;
   listSecretStates(configId: string): Record<string, SecretCredentialState>;
   listRevisions(configId: string): ConfigurationRevisionSummary[];
   getRevision(configId: string, revisionId: string): ConfigurationRevision | null;
@@ -292,15 +306,63 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     return verifyEditCredential(editCredential, row.edit_credential_hash);
   }
 
-  getSecretPlaintext(configId: string, provider: string): string | null {
+  getSecretPlaintext(
+    configId: string,
+    provider: string,
+    kind: SecretKind = 'api_key',
+  ): string | null {
     const row = this.db
       .prepare(
         `SELECT ciphertext FROM vault_secrets
-         WHERE config_id = ? AND provider = ? AND kind = 'api_key'`,
+         WHERE config_id = ? AND provider = ? AND kind = ?`,
       )
-      .get(configId, provider) as { ciphertext: string } | undefined;
-    if (!row) return null;
+      .get(configId, provider, kind) as { ciphertext: string } | undefined;
+    if (!row) {
+      // Legacy import stored refresh as provider `trakt_refresh` with api_key kind.
+      if (kind === 'oauth_refresh') {
+        return this.getSecretPlaintext(configId, `${provider}_refresh`, 'api_key');
+      }
+      if (kind === 'oauth_access') {
+        return this.getSecretPlaintext(configId, provider, 'api_key');
+      }
+      return null;
+    }
     return decryptSecret(row.ciphertext, this.key);
+  }
+
+  upsertVaultSecret(
+    configId: string,
+    provider: string,
+    kind: SecretKind,
+    plaintext: string,
+  ): boolean {
+    if (!plaintext) return false;
+    const existing = this.getPublic(configId);
+    if (!existing) return false;
+    const now = new Date().toISOString();
+    const envelope = encryptSecret(plaintext, this.key);
+    this.db
+      .prepare(
+        `
+      INSERT INTO vault_secrets (id, config_id, provider, kind, ciphertext, key_version, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(config_id, provider, kind) DO UPDATE SET
+        ciphertext = excluded.ciphertext,
+        key_version = excluded.key_version,
+        updated_at = excluded.updated_at
+    `,
+      )
+      .run(
+        generateVaultEntryId(),
+        configId,
+        provider,
+        kind,
+        envelope,
+        1,
+        now,
+        now,
+      );
+    return true;
   }
 
   listSecretStates(configId: string): Record<string, SecretCredentialState> {

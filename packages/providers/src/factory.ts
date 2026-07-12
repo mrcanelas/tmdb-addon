@@ -8,6 +8,8 @@ import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { AnilistProviderAdapter } from './anilist/adapter.js';
 import { MalJikanProviderAdapter } from './mal/adapter.js';
 import { KitsuProviderAdapter } from './kitsu/adapter.js';
+import { TraktTrackingAdapter } from './trakt/adapter.js';
+import { SimklTrackingAdapter } from './simkl/adapter.js';
 import { getProvider } from './registry.js';
 
 export { listAdapterProviderIds } from './adapter-ids.js';
@@ -21,6 +23,8 @@ export interface CreateProviderAdapterOptions {
   stremioPublicId?: 'imdb' | 'tmdb';
   /** Self-hosted or alternate Jikan base URL. */
   jikanBaseUrl?: string;
+  /** OAuth access token for tracking providers. */
+  accessToken?: string;
 }
 
 /**
@@ -76,6 +80,18 @@ export function createProviderAdapter(
       });
     case 'kitsu':
       return new KitsuProviderAdapter({
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
+    case 'trakt':
+      return new TraktTrackingAdapter({
+        accessToken: options.accessToken ?? options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
+    case 'simkl':
+      return new SimklTrackingAdapter({
+        accessToken: options.accessToken ?? options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
       });

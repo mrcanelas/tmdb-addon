@@ -5,7 +5,7 @@ describe('@metalayer/providers', () => {
   it('registers core planned providers with capability declarations', () => {
     const providers = listProviders();
     expect(providers.map((p) => p.id)).toEqual(
-      expect.arrayContaining(['tmdb', 'tvdb', 'trakt', 'anilist', 'mal', 'kitsu', 'gemini']),
+      expect.arrayContaining(['tmdb', 'tvdb', 'trakt', 'simkl', 'anilist', 'mal', 'kitsu', 'gemini']),
     );
     const tmdb = getProvider('tmdb');
     expect(tmdb?.capabilities.supportsLanguage).toBe(true);
@@ -19,7 +19,7 @@ describe('@metalayer/providers', () => {
     const tracking = listProvidersByCategory('tracking');
     expect(tracking.every((p) => p.categories.includes('tracking'))).toBe(true);
     expect(tracking.map((p) => p.id)).toEqual(
-      expect.arrayContaining(['trakt', 'anilist', 'mal', 'kitsu']),
+      expect.arrayContaining(['trakt', 'simkl', 'anilist', 'mal', 'kitsu']),
     );
   });
 });

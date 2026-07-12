@@ -298,6 +298,9 @@ importers:
       '@metalayer/sorting':
         specifier: workspace:*
         version: link:../../packages/sorting
+      '@metalayer/tracking':
+        specifier: workspace:*
+        version: link:../../packages/tracking
       dotenv:
         specifier: ^16.5.0
         version: 16.6.1
@@ -421,6 +424,12 @@ importers:
       '@metalayer/config':
         specifier: workspace:*
         version: link:../config
+
+  packages/tracking:
+    dependencies:
+      '@metalayer/rules':
+        specifier: workspace:*
+        version: link:../rules
 
 packages:
 
