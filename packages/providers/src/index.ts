@@ -54,6 +54,8 @@ export type {
   TmdbFetch,
   TmdbMovieSummary,
   TmdbSeriesSummary,
+  TmdbSeasonSummary,
+  TmdbEpisodeSummary,
   TmdbCatalogItem,
 } from './tmdb/adapter.js';
 

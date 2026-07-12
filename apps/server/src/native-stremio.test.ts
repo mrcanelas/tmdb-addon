@@ -153,6 +153,23 @@ describe('@metalayer/server native Stremio routes', () => {
             { status: 200, headers: { 'Content-Type': 'application/json' } },
           );
         }
+        if (url.includes('/tv/1396/season/1')) {
+          return new Response(
+            JSON.stringify({
+              season_number: 1,
+              episodes: [
+                {
+                  episode_number: 1,
+                  name: 'Pilot',
+                  overview: 'Walter White…',
+                  air_date: '2008-01-20',
+                  still_path: '/e1.jpg',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
         if (url.includes('/tv/1396')) {
           return new Response(
             JSON.stringify({
@@ -163,6 +180,11 @@ describe('@metalayer/server native Stremio routes', () => {
               poster_path: '/bb.jpg',
               backdrop_path: '/bbb.jpg',
               vote_average: 8.9,
+              number_of_seasons: 1,
+              seasons: [
+                { season_number: 0, name: 'Specials', episode_count: 1 },
+                { season_number: 1, name: 'Season 1', episode_count: 1 },
+              ],
               external_ids: { imdb_id: 'tt0903747' },
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -216,6 +238,15 @@ describe('@metalayer/server native Stremio routes', () => {
         type: 'series',
         name: 'Breaking Bad',
         id: 'tt0903747',
+        videos: [
+          expect.objectContaining({
+            id: 'tt0903747:1:1',
+            title: 'Pilot',
+            season: 1,
+            episode: 1,
+          }),
+        ],
+        behaviorHints: { hasScheduledVideos: true },
       }),
     );
 

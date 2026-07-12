@@ -3671,9 +3671,9 @@ See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 1. **Tracking OAuth browser flows** and live list sync
 2. **Postgres + Redis** Server end-to-end
 3. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
-4. **Episode videos / seasons** on native series meta
-5. **Encryption key rotation tooling** (Phase B carry-over)
-6. **Advanced configure module**
+4. **Encryption key rotation tooling** (Phase B carry-over)
+5. **Advanced configure module**
+6. **Series specials / alternative episode orders** (corrections layer)
 
 ---
 

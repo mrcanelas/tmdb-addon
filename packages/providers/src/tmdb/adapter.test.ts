@@ -118,6 +118,58 @@ describe('@metalayer/providers tmdb adapter', () => {
     expect(series.firstAirDate).toBe('2008-01-20');
   });
 
+  it('loads season episodes and skips season 0 specials', async () => {
+    const adapter = new TmdbProviderAdapter({
+      apiKey: 'test-key',
+      fetchImpl: async (url) => {
+        const href = String(url);
+        if (href.includes('/tv/1396/season/1')) {
+          return new Response(
+            JSON.stringify({
+              season_number: 1,
+              episodes: [
+                {
+                  episode_number: 1,
+                  name: 'Pilot',
+                  overview: 'Walter…',
+                  air_date: '2008-01-20',
+                  still_path: '/e1.jpg',
+                },
+                {
+                  episode_number: 2,
+                  name: 'Cat\'s in the Bag...',
+                  air_date: '2008-01-27',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        return new Response('{}', { status: 404 });
+      },
+    });
+
+    const episodes = await adapter.getSeriesEpisodes(
+      { correlationId: 'eps-1', locale: 'en-US' },
+      {
+        id: 1396,
+        title: 'Breaking Bad',
+        publicId: 'tt0903747',
+        numberOfSeasons: 1,
+        seasons: [
+          { seasonNumber: 0, name: 'Specials' },
+          { seasonNumber: 1, name: 'Season 1', episodeCount: 2 },
+        ],
+      },
+    );
+    expect(episodes).toHaveLength(2);
+    expect(episodes[0]).toMatchObject({
+      seasonNumber: 1,
+      episodeNumber: 1,
+      name: 'Pilot',
+    });
+  });
+
   it('caches movie responses per locale without putting secrets in keys', async () => {
     const store = new Map<string, { value: unknown }>();
     const cache = {

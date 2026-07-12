@@ -391,6 +391,39 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
           { ...ctx, apiKey },
           request.params.id,
         );
+        let videos: Array<{
+          id: string;
+          title: string;
+          name: string;
+          season: number;
+          episode: number;
+          released?: string;
+          thumbnail?: string;
+          overview?: string;
+        }> = [];
+        try {
+          const episodes = await adapter.getSeriesEpisodes(
+            { ...ctx, apiKey },
+            series,
+          );
+          videos = episodes.map((episode) => {
+            const id = series.imdbId
+              ? `${series.imdbId}:${episode.seasonNumber}:${episode.episodeNumber}`
+              : `tmdb:${series.id}:${episode.seasonNumber}:${episode.episodeNumber}`;
+            return {
+              id,
+              title: episode.name,
+              name: episode.name,
+              season: episode.seasonNumber,
+              episode: episode.episodeNumber,
+              released: episode.airDate,
+              thumbnail: tmdbImageUrl(episode.stillPath, 'w500'),
+              overview: episode.overview,
+            };
+          });
+        } catch {
+          videos = [];
+        }
         return {
           meta: {
             id: series.publicId,
@@ -404,6 +437,10 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
               series.voteAverage !== undefined
                 ? series.voteAverage.toFixed(1)
                 : undefined,
+            videos,
+            behaviorHints: {
+              hasScheduledVideos: videos.length > 0,
+            },
           },
         };
       }

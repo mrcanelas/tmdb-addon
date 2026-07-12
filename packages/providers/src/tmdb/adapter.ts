@@ -47,8 +47,28 @@ export interface TmdbSeriesSummary {
   voteAverage?: number;
   originalLanguage?: string;
   imdbId?: string;
+  numberOfSeasons?: number;
+  seasons?: TmdbSeasonSummary[];
   /** Public Stremio id — IMDb by default when known (ADR 0006). */
   publicId: string;
+}
+
+export interface TmdbSeasonSummary {
+  seasonNumber: number;
+  episodeCount?: number;
+  name?: string;
+  airDate?: string;
+}
+
+export interface TmdbEpisodeSummary {
+  seasonNumber: number;
+  episodeNumber: number;
+  name: string;
+  overview?: string;
+  airDate?: string;
+  stillPath?: string | null;
+  runtime?: number;
+  voteAverage?: number;
 }
 
 export interface TmdbCatalogItem {
@@ -189,6 +209,67 @@ export class TmdbProviderAdapter implements ProviderAdapter {
       message: `Unsupported public id: ${publicId}`,
       retryable: false,
     });
+  }
+
+  async getSeasonEpisodes(
+    ctx: ProviderContext,
+    seriesId: number,
+    seasonNumber: number,
+  ): Promise<TmdbEpisodeSummary[]> {
+    return this.withCache(
+      ctx,
+      'tv-season',
+      `${seriesId}:${seasonNumber}`,
+      async () => {
+        const raw = await this.requestJson<{
+          episodes?: Array<Record<string, unknown>>;
+          season_number?: number;
+        }>(ctx, `/tv/${seriesId}/season/${seasonNumber}`);
+        const season =
+          typeof raw.season_number === 'number'
+            ? raw.season_number
+            : seasonNumber;
+        return (raw.episodes ?? []).map((episode) =>
+          mapEpisode(episode, season),
+        );
+      },
+    );
+  }
+
+  /**
+   * Load regular-season episodes (skips season 0 specials). Caps concurrency
+   * for very long-running shows.
+   */
+  async getSeriesEpisodes(
+    ctx: ProviderContext,
+    series: TmdbSeriesSummary,
+    options: { maxSeasons?: number } = {},
+  ): Promise<TmdbEpisodeSummary[]> {
+    const maxSeasons = options.maxSeasons ?? 40;
+    const seasonNumbers = (series.seasons ?? [])
+      .map((season) => season.seasonNumber)
+      .filter((number) => number >= 1)
+      .sort((a, b) => a - b)
+      .slice(0, maxSeasons);
+
+    if (seasonNumbers.length === 0 && series.numberOfSeasons) {
+      for (let n = 1; n <= Math.min(series.numberOfSeasons, maxSeasons); n += 1) {
+        seasonNumbers.push(n);
+      }
+    }
+
+    const episodes: TmdbEpisodeSummary[] = [];
+    const batchSize = 5;
+    for (let i = 0; i < seasonNumbers.length; i += batchSize) {
+      const batch = seasonNumbers.slice(i, i + batchSize);
+      const pages = await Promise.all(
+        batch.map((seasonNumber) =>
+          this.getSeasonEpisodes(ctx, series.id, seasonNumber),
+        ),
+      );
+      for (const page of pages) episodes.push(...page);
+    }
+    return episodes;
   }
 
   async findTmdbIdByImdb(
@@ -458,12 +539,55 @@ function mapSeries(
         ? raw.original_language
         : undefined,
     imdbId: imdbId ?? undefined,
+    numberOfSeasons:
+      typeof raw.number_of_seasons === 'number'
+        ? raw.number_of_seasons
+        : undefined,
+    seasons: Array.isArray(raw.seasons)
+      ? raw.seasons
+          .map((item) => mapSeason(item as Record<string, unknown>))
+          .filter((season): season is TmdbSeasonSummary => season !== null)
+      : undefined,
     publicId:
       selectStremioPublicId({
         imdbId,
         tmdbId,
         preference,
       }) ?? `tmdb:${tmdbId}`,
+  };
+}
+
+function mapSeason(raw: Record<string, unknown>): TmdbSeasonSummary | null {
+  const seasonNumber =
+    typeof raw.season_number === 'number' ? raw.season_number : null;
+  if (seasonNumber === null) return null;
+  return {
+    seasonNumber,
+    episodeCount:
+      typeof raw.episode_count === 'number' ? raw.episode_count : undefined,
+    name: typeof raw.name === 'string' ? raw.name : undefined,
+    airDate: typeof raw.air_date === 'string' ? raw.air_date : undefined,
+  };
+}
+
+function mapEpisode(
+  raw: Record<string, unknown>,
+  seasonNumber: number,
+): TmdbEpisodeSummary {
+  return {
+    seasonNumber,
+    episodeNumber:
+      typeof raw.episode_number === 'number' ? raw.episode_number : 0,
+    name: String(raw.name ?? ''),
+    overview: typeof raw.overview === 'string' ? raw.overview : undefined,
+    airDate: typeof raw.air_date === 'string' ? raw.air_date : undefined,
+    stillPath:
+      typeof raw.still_path === 'string' || raw.still_path === null
+        ? (raw.still_path as string | null)
+        : undefined,
+    runtime: typeof raw.runtime === 'number' ? raw.runtime : undefined,
+    voteAverage:
+      typeof raw.vote_average === 'number' ? raw.vote_average : undefined,
   };
 }
 
