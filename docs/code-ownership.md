@@ -8,7 +8,7 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 |---|---|---|
 | `apps/frontend` | End-user MetaLayer configuration UI | Greenfield Rsbuild + React + shadcn (ADR 0002). Package `@metalayer/frontend`. Not a port of `configure/`. |
 | `apps/server` | MetaLayer HTTP API | Fastify + TypeScript (ADR 0004). Package `@metalayer/server`. Thin transport over `@metalayer/*`. |
-| `apps/dashboard` | Operator dashboard | Reserved; not started. |
+| `apps/dashboard` | Operator dashboard | Greenfield Rsbuild + React (`@metalayer/dashboard`). |
 | `apps/worker` | Background jobs | Reserved; not started. |
 
 ## Packages
@@ -26,6 +26,7 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 | `packages/sorting` | Multi-step sorting plans and stable randomization. |
 | `packages/catalogs` | Catalog Studio ordering and mutations. |
 | `packages/providers` / `packages/cache` | Provider framework and locale-sensitive cache. |
+| `packages/observability` | Metrics, bounded logs, health snapshots, safe backups. |
 | `packages/database` | Future schema/migrations (scaffold only). |
 | `packages/types` / `packages/utils` | Reserved shared packages — avoid catch-all growth. |
 

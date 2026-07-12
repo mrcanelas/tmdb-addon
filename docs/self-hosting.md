@@ -1,4 +1,25 @@
-# Self-Hosting Guide
+# Self-hosting
+
+## MetaLayer (current)
+
+For MetaLayer Lite and Server deployments, follow:
+
+- [Deployment](./deployment.md)
+- Phase exit: [phase-l-exit.md](./phase-l-exit.md)
+
+Quick Lite path:
+
+```bash
+# configure .env with METALAYER_ENCRYPTION_KEY and METALAYER_DASHBOARD_TOKEN
+docker compose -f docker/docker-compose.lite.yml up -d --build
+curl http://localhost:1338/api/v1/health
+```
+
+The sections below document the **legacy TMDB Addon** self-hosting paths and remain for compatibility.
+
+---
+
+# Legacy TMDB Addon self-hosting
 
 This guide provides instructions for self-hosting the TMDB Addon for Stremio.
 
