@@ -243,17 +243,23 @@ export class TmdbProviderAdapter implements ProviderAdapter {
   async getSeriesEpisodes(
     ctx: ProviderContext,
     series: TmdbSeriesSummary,
-    options: { maxSeasons?: number } = {},
+    options: { maxSeasons?: number; includeSpecials?: boolean } = {},
   ): Promise<TmdbEpisodeSummary[]> {
     const maxSeasons = options.maxSeasons ?? 40;
+    const minSeason = options.includeSpecials ? 0 : 1;
     const seasonNumbers = (series.seasons ?? [])
       .map((season) => season.seasonNumber)
-      .filter((number) => number >= 1)
+      .filter((number) => number >= minSeason)
       .sort((a, b) => a - b)
       .slice(0, maxSeasons);
 
     if (seasonNumbers.length === 0 && series.numberOfSeasons) {
-      for (let n = 1; n <= Math.min(series.numberOfSeasons, maxSeasons); n += 1) {
+      const start = minSeason;
+      for (
+        let n = start;
+        n <= Math.min(series.numberOfSeasons, maxSeasons);
+        n += 1
+      ) {
         seasonNumbers.push(n);
       }
     }

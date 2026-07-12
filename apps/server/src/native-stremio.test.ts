@@ -265,4 +265,115 @@ describe('@metalayer/server native Stremio routes', () => {
 
     await app.close();
   });
+
+  it('applies episode reassignment corrections on native series meta', async () => {
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 36).toString('base64'));
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (input) => {
+        const url = String(input);
+        if (url.includes('/find/')) {
+          return new Response(
+            JSON.stringify({ tv_results: [{ id: 1396 }] }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        if (url.includes('/tv/1396/season/0')) {
+          return new Response(
+            JSON.stringify({
+              season_number: 0,
+              episodes: [
+                {
+                  episode_number: 1,
+                  name: 'Pilot Special',
+                  air_date: '2008-01-13',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        if (url.includes('/tv/1396/season/1')) {
+          return new Response(
+            JSON.stringify({
+              season_number: 1,
+              episodes: [
+                {
+                  episode_number: 1,
+                  name: 'Pilot',
+                  overview: 'Walter White…',
+                  air_date: '2008-01-20',
+                  still_path: '/e1.jpg',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        if (url.includes('/tv/1396')) {
+          return new Response(
+            JSON.stringify({
+              id: 1396,
+              name: 'Breaking Bad',
+              overview: 'A chemistry teacher…',
+              first_air_date: '2008-01-20',
+              poster_path: '/bb.jpg',
+              backdrop_path: '/bbb.jpg',
+              vote_average: 8.9,
+              number_of_seasons: 1,
+              seasons: [
+                { season_number: 0, name: 'Specials', episode_count: 1 },
+                { season_number: 1, name: 'Season 1', episode_count: 1 },
+              ],
+              external_ids: { imdb_id: 'tt0903747' },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+        return new Response('{}', { status: 404 });
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'native-series-correction-credential',
+        secrets: { tmdb: 'test-tmdb-key' },
+        config: createDefaultMetaLayerConfig({ name: 'SeriesCorrection' }),
+      },
+    });
+    expect(created.statusCode).toBe(201);
+    const { configId } = created.json();
+
+    app.correctionRegistry.upsertLocal(configId, {
+      target: { provider: 'imdb', id: 'tt0903747', entityKind: 'series' },
+      type: 'episode_reassignment',
+      payload: {
+        from: { season: 1, episode: 1 },
+        to: { season: 0, episode: 1 },
+      },
+      reason: 'Move pilot to specials row',
+      sources: [{ kind: 'test-fixture', label: 'native-stremio' }],
+    });
+
+    const series = await app.inject({
+      method: 'GET',
+      url: `/c/${configId}/meta/series/tt0903747.json`,
+    });
+    expect(series.statusCode).toBe(200);
+    expect(series.json().meta.videos).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'tt0903747:0:1',
+          title: 'Pilot',
+          season: 0,
+          episode: 1,
+        }),
+      ]),
+    );
+
+    await app.close();
+  });
 });

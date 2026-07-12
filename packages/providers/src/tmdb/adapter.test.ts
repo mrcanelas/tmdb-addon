@@ -123,6 +123,21 @@ describe('@metalayer/providers tmdb adapter', () => {
       apiKey: 'test-key',
       fetchImpl: async (url) => {
         const href = String(url);
+        if (href.includes('/tv/1396/season/0')) {
+          return new Response(
+            JSON.stringify({
+              season_number: 0,
+              episodes: [
+                {
+                  episode_number: 1,
+                  name: 'Pilot Special',
+                  air_date: '2008-01-13',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
         if (href.includes('/tv/1396/season/1')) {
           return new Response(
             JSON.stringify({
@@ -168,6 +183,22 @@ describe('@metalayer/providers tmdb adapter', () => {
       episodeNumber: 1,
       name: 'Pilot',
     });
+
+    const withSpecials = await adapter.getSeriesEpisodes(
+      { correlationId: 'eps-2', locale: 'en-US' },
+      {
+        id: 1396,
+        title: 'Breaking Bad',
+        publicId: 'tt0903747',
+        numberOfSeasons: 1,
+        seasons: [
+          { seasonNumber: 0, name: 'Specials' },
+          { seasonNumber: 1, name: 'Season 1', episodeCount: 2 },
+        ],
+      },
+      { includeSpecials: true },
+    );
+    expect(withSpecials.some((item) => item.seasonNumber === 0)).toBe(true);
   });
 
   it('caches movie responses per locale without putting secrets in keys', async () => {

@@ -39,3 +39,30 @@ export function filterCorrectionsForTarget(
     (item) => item.target.provider === provider && item.target.id === id,
   );
 }
+
+export function filterCorrectionsForIdentity(
+  corrections: MetadataCorrection[],
+  ids: {
+    imdb?: string | null;
+    tmdb?: string | number | null;
+    tvdb?: string | number | null;
+  },
+): MetadataCorrection[] {
+  const targets: Array<{ provider: string; id: string }> = [];
+  if (ids.imdb) targets.push({ provider: 'imdb', id: ids.imdb });
+  if (ids.tmdb !== undefined && ids.tmdb !== null) {
+    targets.push({ provider: 'tmdb', id: String(ids.tmdb) });
+  }
+  if (ids.tvdb !== undefined && ids.tvdb !== null) {
+    targets.push({ provider: 'tvdb', id: String(ids.tvdb) });
+  }
+
+  if (targets.length === 0) return [];
+
+  return corrections.filter((item) =>
+    targets.some(
+      (target) =>
+        item.target.provider === target.provider && item.target.id === target.id,
+    ),
+  );
+}

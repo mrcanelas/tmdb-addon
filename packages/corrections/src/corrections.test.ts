@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { resolveIdentityMapping } from '@metalayer/identity-graph';
 import {
   CorrectionRegistry,
+  applyEpisodeCorrectionsToVideos,
   applyMetadataCorrections,
   applyModeration,
+  correctionsReferenceSpecialSeason,
+  filterCorrectionsForIdentity,
   loadSampleCommunityCorrections,
   remapEpisode,
   resolveActiveCorrections,
@@ -120,6 +123,70 @@ describe('@metalayer/corrections', () => {
     });
     expect(mapping.selectedByProvider.imdb?.method).toBe('manual');
     expect(mapping.selectedByProvider.imdb?.verified).toBe(true);
+  });
+
+  it('filters corrections by cross-provider identity and remaps video lists', () => {
+    const corrections = [
+      {
+        id: 'ep-imdb',
+        schemaVersion: 1 as const,
+        target: { provider: 'imdb' as const, id: 'tt0903747', entityKind: 'series' as const },
+        type: 'episode_reassignment' as const,
+        payload: {
+          from: { season: 1, episode: 1 },
+          to: { season: 0, episode: 1 },
+        },
+        reason: 'pilot special',
+        sources: [{ kind: 'test-fixture' as const, label: 'fixture' }],
+        status: 'verified' as const,
+        scope: 'community' as const,
+        createdAt: '2026-07-12T00:00:00.000Z',
+        updatedAt: '2026-07-12T00:00:00.000Z',
+      },
+      {
+        id: 'ep-other',
+        schemaVersion: 1 as const,
+        target: { provider: 'imdb' as const, id: 'tt9999999', entityKind: 'series' as const },
+        type: 'episode_reassignment' as const,
+        payload: {
+          from: { season: 1, episode: 1 },
+          to: { season: 2, episode: 1 },
+        },
+        reason: 'other show',
+        sources: [{ kind: 'test-fixture' as const, label: 'fixture' }],
+        status: 'verified' as const,
+        scope: 'community' as const,
+        createdAt: '2026-07-12T00:00:00.000Z',
+        updatedAt: '2026-07-12T00:00:00.000Z',
+      },
+    ];
+
+    const matched = filterCorrectionsForIdentity(corrections, {
+      imdb: 'tt0903747',
+      tmdb: 1396,
+    });
+    expect(matched).toHaveLength(1);
+    expect(matched[0]!.id).toBe('ep-imdb');
+    expect(correctionsReferenceSpecialSeason(matched)).toBe(true);
+
+    const remapped = applyEpisodeCorrectionsToVideos(
+      [
+        {
+          id: 'tt0903747:1:1',
+          title: 'Pilot',
+          name: 'Pilot',
+          season: 1,
+          episode: 1,
+        },
+      ],
+      matched,
+      { imdbId: 'tt0903747', tmdbId: 1396 },
+    );
+    expect(remapped[0]).toMatchObject({
+      id: 'tt0903747:0:1',
+      season: 0,
+      episode: 1,
+    });
   });
 
   it('loads community samples and supports moderation + rollback', () => {

@@ -198,3 +198,79 @@ export function remapEpisode(
 
   return { ...current, correctionId, absolute };
 }
+
+export type StremioEpisodeVideo = {
+  id: string;
+  title: string;
+  name: string;
+  season: number;
+  episode: number;
+  released?: string;
+  thumbnail?: string;
+  overview?: string;
+};
+
+const EPISODE_CORRECTION_TYPES = new Set([
+  'episode_reassignment',
+  'season_reassignment',
+  'absolute_numbering',
+  'dvd_order',
+  'broadcast_order',
+  'alternative_numbering',
+]);
+
+/** True when active corrections reference season 0 (specials). */
+export function correctionsReferenceSpecialSeason(
+  corrections: MetadataCorrection[],
+): boolean {
+  for (const correction of corrections.filter(isActiveCorrection)) {
+    if (
+      correction.type === 'episode_reassignment' ||
+      correction.type === 'season_reassignment'
+    ) {
+      const payload = correction.payload as EpisodeMappingPayload;
+      if (payload?.from?.season === 0 || payload?.to?.season === 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Apply episode/season remapping corrections to Stremio video entries. */
+export function applyEpisodeCorrectionsToVideos(
+  videos: StremioEpisodeVideo[],
+  corrections: MetadataCorrection[],
+  seriesIds: { imdbId?: string; tmdbId?: number },
+): StremioEpisodeVideo[] {
+  const episodeCorrections = corrections.filter((item) =>
+    EPISODE_CORRECTION_TYPES.has(item.type),
+  );
+  if (episodeCorrections.length === 0) return videos;
+
+  return videos.map((video) => {
+    const remapped = remapEpisode(
+      video.season,
+      video.episode,
+      episodeCorrections,
+    );
+    if (
+      remapped.season === video.season &&
+      remapped.episode === video.episode &&
+      !remapped.correctionId
+    ) {
+      return video;
+    }
+
+    const id = seriesIds.imdbId
+      ? `${seriesIds.imdbId}:${remapped.season}:${remapped.episode}`
+      : `tmdb:${seriesIds.tmdbId}:${remapped.season}:${remapped.episode}`;
+
+    return {
+      ...video,
+      id,
+      season: remapped.season,
+      episode: remapped.episode,
+    };
+  });
+}

@@ -28,6 +28,7 @@ export {
   correctionConflictKey,
   resolveActiveCorrections,
   filterCorrectionsForTarget,
+  filterCorrectionsForIdentity,
 } from './precedence.js';
 
 export {
@@ -36,7 +37,13 @@ export {
 } from './registry.js';
 export type { CreateCorrectionInput, ValidationSummary } from './registry.js';
 
-export { applyMetadataCorrections, remapEpisode } from './apply.js';
+export {
+  applyMetadataCorrections,
+  remapEpisode,
+  correctionsReferenceSpecialSeason,
+  applyEpisodeCorrectionsToVideos,
+} from './apply.js';
+export type { StremioEpisodeVideo } from './apply.js';
 
 export { applyModeration, allowedModerationStatuses } from './moderate.js';
 export type { ModerationAction } from './moderate.js';

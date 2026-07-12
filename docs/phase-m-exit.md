@@ -21,7 +21,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Item | Target |
 |---|---|
 | Profiles UI + `/c/.../p/:profileId/manifest.json` | **Done** (CRUD + manifest + profile-scoped catalog/meta) |
-| Series (and anime) live meta gather on native route | **Done** (TMDB series + AniList anime + series episode videos; specials/order corrections follow-up) |
+| Series (and anime) live meta gather on native route | **Done** (TMDB series + AniList anime + series episode videos; **episode reassignment + specials on native meta MVP**) |
 | Advanced configure module | **Partial (MVP)** — identity preference + cache diagnostics + feature-flag readout |
 | Tracking OAuth browser flows + live list sync | **Done (MVP)** — Trakt + SIMKL + AniList + MAL; shared Trakt/MAL refresh-on-401 + reconnect status |
 

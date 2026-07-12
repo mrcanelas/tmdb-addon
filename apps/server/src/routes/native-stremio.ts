@@ -13,6 +13,12 @@ import {
 } from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import {
+  applyEpisodeCorrectionsToVideos,
+  correctionsReferenceSpecialSeason,
+  filterCorrectionsForIdentity,
+  type CorrectionRegistry,
+} from '@metalayer/corrections';
+import {
   AnilistProviderAdapter,
   KitsuProviderAdapter,
   MalJikanProviderAdapter,
@@ -28,6 +34,7 @@ declare module 'fastify' {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
     providerCache: CacheStore;
+    correctionRegistry: CorrectionRegistry;
   }
 }
 
@@ -402,25 +409,39 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
           overview?: string;
         }> = [];
         try {
+          const resolvedCorrections = app.correctionRegistry.listResolved(
+            view.configId,
+          );
+          const seriesCorrections = filterCorrectionsForIdentity(
+            resolvedCorrections,
+            { imdb: series.imdbId, tmdb: series.id },
+          );
+          const includeSpecials =
+            correctionsReferenceSpecialSeason(seriesCorrections);
           const episodes = await adapter.getSeriesEpisodes(
             { ...ctx, apiKey },
             series,
+            { includeSpecials },
           );
-          videos = episodes.map((episode) => {
-            const id = series.imdbId
-              ? `${series.imdbId}:${episode.seasonNumber}:${episode.episodeNumber}`
-              : `tmdb:${series.id}:${episode.seasonNumber}:${episode.episodeNumber}`;
-            return {
-              id,
-              title: episode.name,
-              name: episode.name,
-              season: episode.seasonNumber,
-              episode: episode.episodeNumber,
-              released: episode.airDate,
-              thumbnail: tmdbImageUrl(episode.stillPath, 'w500'),
-              overview: episode.overview,
-            };
-          });
+          videos = applyEpisodeCorrectionsToVideos(
+            episodes.map((episode) => {
+              const id = series.imdbId
+                ? `${series.imdbId}:${episode.seasonNumber}:${episode.episodeNumber}`
+                : `tmdb:${series.id}:${episode.seasonNumber}:${episode.episodeNumber}`;
+              return {
+                id,
+                title: episode.name,
+                name: episode.name,
+                season: episode.seasonNumber,
+                episode: episode.episodeNumber,
+                released: episode.airDate,
+                thumbnail: tmdbImageUrl(episode.stillPath, 'w500'),
+                overview: episode.overview,
+              };
+            }),
+            seriesCorrections,
+            { imdbId: series.imdbId, tmdbId: series.id },
+          );
         } catch {
           videos = [];
         }
