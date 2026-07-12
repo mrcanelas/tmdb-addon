@@ -138,6 +138,35 @@ export const IdentityPreferencesSchema = z.object({
   stremioPublicId: z.enum(['imdb', 'tmdb']).default('imdb'),
 });
 
+export const ResolvableFieldSchema = z.enum([
+  'title',
+  'originalTitle',
+  'description',
+  'poster',
+  'background',
+  'rating',
+  'voteCount',
+  'releaseDate',
+  'externalIds',
+]);
+
+export const DEFAULT_FIELD_PROVIDERS: Record<string, string[]> = {
+  title: ['tmdb'],
+  originalTitle: ['tmdb'],
+  description: ['tmdb'],
+  poster: ['rpdb', 'fanart', 'tmdb'],
+  background: ['fanart', 'tmdb'],
+  rating: ['imdb', 'tmdb'],
+  voteCount: ['tmdb'],
+  releaseDate: ['tmdb'],
+  externalIds: ['tmdb'],
+};
+
+/** Ordered provider chains per resolvable field (AGENTS.md §10.3). */
+export const FieldProvidersSchema = z
+  .record(z.array(z.string().min(1)).min(1))
+  .default(DEFAULT_FIELD_PROVIDERS);
+
 export const MetaLayerConfigSchema = z.object({
   configVersion: z.literal(METALAYER_CONFIG_VERSION),
   name: z.string().min(1),
@@ -146,6 +175,7 @@ export const MetaLayerConfigSchema = z.object({
   catalogs: z.array(CatalogDefinitionSchema).default([]),
   globalRules: RuleSetSchema.default({}),
   globalSorting: SortingPlanSchema.optional(),
+  fieldProviders: FieldProvidersSchema,
   featureFlags: z.record(z.boolean()).default({}),
   legacyImport: z
     .object({
@@ -168,6 +198,8 @@ export type RuleSet = z.infer<typeof RuleSetSchema>;
 export type SortingField = z.infer<typeof SortingFieldSchema>;
 export type SortingCriterion = z.infer<typeof SortingCriterionSchema>;
 export type SortingPlan = z.infer<typeof SortingPlanSchema>;
+export type ResolvableField = z.infer<typeof ResolvableFieldSchema>;
+export type FieldProviders = z.infer<typeof FieldProvidersSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
 
@@ -192,6 +224,7 @@ export function createDefaultMetaLayerConfig(
     },
     catalogs: [],
     globalRules: {},
+    fieldProviders: DEFAULT_FIELD_PROVIDERS,
     featureFlags: {},
     createdAt: now,
     updatedAt: now,

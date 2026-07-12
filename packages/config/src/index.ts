@@ -10,6 +10,9 @@ export {
   SortingFieldSchema,
   SortingCriterionSchema,
   SortingPlanSchema,
+  ResolvableFieldSchema,
+  FieldProvidersSchema,
+  DEFAULT_FIELD_PROVIDERS,
   CatalogDefinitionSchema,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
@@ -23,6 +26,8 @@ export {
   type SortingField,
   type SortingCriterion,
   type SortingPlan,
+  type ResolvableField,
+  type FieldProviders,
   type CatalogDefinition,
 } from './schema.js';
 
