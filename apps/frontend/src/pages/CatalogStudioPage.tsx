@@ -15,15 +15,25 @@ import {
   type ManifestCatalogEntry,
   type StudioCatalogAction,
 } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button } from '@metalayer/shared-ui';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { SectionCard } from '@/components/metalayer/SectionCard';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
+import { StudioPromptDialog } from '@/components/metalayer/StudioPromptDialog';
 
 function displayName(catalog: CatalogListItem): string {
   return catalog.customName || catalog.name?.default || catalog.originalName;
 }
 
+type CatalogEditDialog =
+  | { kind: 'rename'; catalogId: string; value: string }
+  | { kind: 'tags'; catalogId: string; value: string }
+  | { kind: 'group'; catalogId: string; value: string };
+
 export function CatalogStudioPage() {
-  const { t, i18n } = useTranslation('catalogs');
+  const { t, i18n } = useTranslation(['catalogs', 'common']);
   const [catalogs, setCatalogs] = useState<CatalogListItem[]>([]);
   const [manifestOrder, setManifestOrder] = useState<ManifestCatalogEntry[]>([]);
   const [configId, setConfigId] = useState<string | null>(null);
@@ -32,6 +42,7 @@ export function CatalogStudioPage() {
   const [previewMetas, setPreviewMetas] = useState<CatalogMetaPreview[]>([]);
   const [previewWarnings, setPreviewWarnings] = useState<string[]>([]);
   const [previewTitle, setPreviewTitle] = useState<string | null>(null);
+  const [editDialog, setEditDialog] = useState<CatalogEditDialog | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const applyPayload = useCallback(
@@ -191,93 +202,177 @@ export function CatalogStudioPage() {
     applyPayload(result);
   }
 
+  function openEditDialog(
+    kind: CatalogEditDialog['kind'],
+    catalog: CatalogListItem,
+  ) {
+    if (kind === 'rename') {
+      setEditDialog({
+        kind,
+        catalogId: catalog.instanceId,
+        value: displayName(catalog),
+      });
+      return;
+    }
+    if (kind === 'tags') {
+      setEditDialog({
+        kind,
+        catalogId: catalog.instanceId,
+        value: catalog.tags.join(', '),
+      });
+      return;
+    }
+    setEditDialog({
+      kind: 'group',
+      catalogId: catalog.instanceId,
+      value: catalog.group ?? '',
+    });
+  }
+
+  async function submitEditDialog() {
+    if (!editDialog) return;
+    const { kind, catalogId, value } = editDialog;
+    if (kind === 'rename') {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      await runAction(catalogId, 'rename', { customName: trimmed });
+    } else if (kind === 'tags') {
+      await runAction(catalogId, 'setTags', {
+        tags: value
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      });
+    } else {
+      await runAction(catalogId, 'setGroup', {
+        group: value.trim() || null,
+      });
+    }
+    setEditDialog(null);
+  }
+
+  const dialogTitle =
+    editDialog?.kind === 'rename'
+      ? t('catalogs.dialog.renameTitle')
+      : editDialog?.kind === 'tags'
+        ? t('catalogs.dialog.tagsTitle')
+        : editDialog?.kind === 'group'
+          ? t('catalogs.dialog.groupTitle')
+          : '';
+
+  const dialogLabel =
+    editDialog?.kind === 'rename'
+      ? t('catalogs.renamePrompt')
+      : editDialog?.kind === 'tags'
+        ? t('catalogs.tagsPrompt')
+        : editDialog?.kind === 'group'
+          ? t('catalogs.groupPrompt')
+          : '';
+
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t('catalogs.title')}
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">{t('catalogs.intro')}</p>
-        <p className="max-w-2xl text-sm text-muted-foreground">{t('catalogs.syncHint')}</p>
-        {configId ? (
-          <p className="font-mono text-xs text-muted-foreground">
-            {t('catalogs.configId', { id: configId })}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap gap-2 pt-1">
-          <Button type="button" variant="outline" size="sm" onClick={() => void load(true)}>
-            {t('catalogs.actions.resetDraft')}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void onExport()}>
-            {t('catalogs.actions.export')}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {t('catalogs.actions.import')}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void onCreateMerged()}>
-            {t('catalogs.actions.createMerged')}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void onCreateRotated()}>
-            {t('catalogs.actions.createRotated')}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            aria-label={t('catalogs.actions.importFileAria')}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void onImportFile(file);
-              event.target.value = '';
-            }}
-          />
-        </div>
-        {status === 'loading' ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            {t('catalogs.bootstrapping')}
-          </p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400" role="status">
-            {t('catalogs.loadError')}
-          </p>
-        ) : null}
-      </header>
+      <PageHeader
+        title={t('catalogs.title')}
+        description={t('catalogs.intro')}
+        actions={
+          <>
+            <Button type="button" variant="outline" size="sm" onPress={() => void load(true)}>
+              {t('catalogs.actions.resetDraft')}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onPress={() => void onExport()}>
+              {t('catalogs.actions.export')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onPress={() => fileInputRef.current?.click()}
+            >
+              {t('catalogs.actions.import')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onPress={() => void onCreateMerged()}
+            >
+              {t('catalogs.actions.createMerged')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onPress={() => void onCreateRotated()}
+            >
+              {t('catalogs.actions.createRotated')}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              aria-label={t('catalogs.actions.importFileAria')}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void onImportFile(file);
+                event.target.value = '';
+              }}
+            />
+          </>
+        }
+      />
+
+      <p className="max-w-2xl text-sm ml-text-muted">{t('catalogs.syncHint')}</p>
+      {configId ? (
+        <p className="font-mono text-xs ml-text-muted">
+          {t('catalogs.configId', { id: configId })}
+        </p>
+      ) : null}
+
+      {status === 'loading' ? (
+        <LoadingState label={t('catalogs.bootstrapping')} />
+      ) : null}
+
+      {status === 'error' ? (
+        <ErrorState
+          message={t('catalogs.loadError')}
+          retryLabel={t('state.retry', { ns: 'common' })}
+          onRetry={() => {
+            void load();
+          }}
+        />
+      ) : null}
 
       {status === 'ready' && catalogs.length === 0 ? (
-        <p className="text-muted-foreground">{t('catalogs.empty')}</p>
+        <p className="ml-text-muted">{t('catalogs.empty')}</p>
       ) : null}
 
       {status === 'ready' && catalogs.length > 0 ? (
         <div className="grid gap-8 lg:grid-cols-2">
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold tracking-tight">{t('catalogs.studioList')}</h2>
+          <SectionCard title={t('catalogs.studioList')}>
             <ol className="space-y-3">
               {catalogs.map((catalog, index) => {
                 const busy = busyId === catalog.instanceId;
+                const name = displayName(catalog);
                 return (
                   <li
                     key={catalog.instanceId}
-                    className="border-b border-border/60 pb-3 last:border-b-0"
+                    className="border-b border-[var(--ml-border)] pb-3 last:border-b-0"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <div>
-                        <p className="font-medium">
-                          <span className="me-2 font-mono text-xs text-muted-foreground">
+                        <p className="font-medium text-[var(--ml-text)]">
+                          <span className="me-2 font-mono text-xs ml-text-muted">
                             {catalog.position + 1}.
                           </span>
-                          {displayName(catalog)}
+                          {name}
                         </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm ml-text-muted">
                           {t('catalogs.field.provider')}: {catalog.provider}.
                           {catalog.providerCatalogId}
-                          {catalog.group ? ` · ${t('catalogs.field.group')}: ${catalog.group}` : ''}
+                          {catalog.group
+                            ? ` · ${t('catalogs.field.group')}: ${catalog.group}`
+                            : ''}
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -308,8 +403,11 @@ export function CatalogStudioPage() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={busy || index === 0}
-                        onClick={() => void runAction(catalog.instanceId, 'move', { toIndex: index - 1 })}
+                        isDisabled={busy || index === 0}
+                        aria-label={t('catalogs.actions.moveUpNamed', { name })}
+                        onPress={() =>
+                          void runAction(catalog.instanceId, 'move', { toIndex: index - 1 })
+                        }
                       >
                         {t('catalogs.actions.moveUp')}
                       </Button>
@@ -317,95 +415,65 @@ export function CatalogStudioPage() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={busy || index === catalogs.length - 1}
-                        onClick={() => void runAction(catalog.instanceId, 'move', { toIndex: index + 1 })}
+                        isDisabled={busy || index === catalogs.length - 1}
+                        aria-label={t('catalogs.actions.moveDownNamed', { name })}
+                        onPress={() =>
+                          void runAction(catalog.instanceId, 'move', { toIndex: index + 1 })
+                        }
                       >
                         {t('catalogs.actions.moveDown')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => void onPreview(catalog)}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => void onPreview(catalog)}
                       >
                         {t('catalogs.actions.preview')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => {
-                          const next = window.prompt(
-                            t('catalogs.renamePrompt'),
-                            displayName(catalog),
-                          );
-                          if (next?.trim()) {
-                            void runAction(catalog.instanceId, 'rename', {
-                              customName: next.trim(),
-                            });
-                          }
-                        }}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => openEditDialog('rename', catalog)}
                       >
                         {t('catalogs.actions.rename')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => {
-                          const next = window.prompt(
-                            t('catalogs.tagsPrompt'),
-                            catalog.tags.join(', '),
-                          );
-                          if (next !== null) {
-                            void runAction(catalog.instanceId, 'setTags', {
-                              tags: next
-                                .split(',')
-                                .map((tag) => tag.trim())
-                                .filter(Boolean),
-                            });
-                          }
-                        }}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => openEditDialog('tags', catalog)}
                       >
                         {t('catalogs.actions.tags')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => {
-                          const next = window.prompt(
-                            t('catalogs.groupPrompt'),
-                            catalog.group ?? '',
-                          );
-                          if (next !== null) {
-                            void runAction(catalog.instanceId, 'setGroup', {
-                              group: next.trim() || null,
-                            });
-                          }
-                        }}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => openEditDialog('group', catalog)}
                       >
                         {t('catalogs.actions.group')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => void runAction(catalog.instanceId, 'duplicate')}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => void runAction(catalog.instanceId, 'duplicate')}
                       >
                         {t('catalogs.actions.duplicate')}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() =>
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() =>
                           void runAction(
                             catalog.instanceId,
                             catalog.enabled ? 'disable' : 'enable',
@@ -421,9 +489,9 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => void runAction(catalog.instanceId, 'delete')}
+                        variant="quiet"
+                        isDisabled={busy}
+                        onPress={() => void runAction(catalog.instanceId, 'delete')}
                       >
                         {t('catalogs.actions.delete')}
                       </Button>
@@ -432,59 +500,77 @@ export function CatalogStudioPage() {
                 );
               })}
             </ol>
-          </div>
+          </SectionCard>
 
           <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold tracking-tight">
-                {t('catalogs.manifestPreview')}
-              </h2>
-              <ol className="space-y-2 border-s border-border/60 ps-4">
+            <SectionCard title={t('catalogs.manifestPreview')}>
+              <ol className="space-y-2 border-s border-[var(--ml-border)] ps-4">
                 {manifestOrder.map((entry, index) => (
-                  <li key={entry.instanceId} className="text-sm">
-                    <span className="me-2 font-mono text-xs text-muted-foreground">
+                  <li key={entry.instanceId} className="text-sm text-[var(--ml-text)]">
+                    <span className="me-2 font-mono text-xs ml-text-muted">
                       {index + 1}.
                     </span>
                     <span className="font-medium">{entry.name}</span>
-                    <span className="ms-2 text-muted-foreground">
+                    <span className="ms-2 ml-text-muted">
                       ({t(`catalogs.type.${entry.type}`)})
                     </span>
                   </li>
                 ))}
               </ol>
-            </div>
+            </SectionCard>
 
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold tracking-tight">
-                {previewTitle
+            <SectionCard
+              title={
+                previewTitle
                   ? t('catalogs.resultsPreviewNamed', { name: previewTitle })
-                  : t('catalogs.resultsPreview')}
-              </h2>
+                  : t('catalogs.resultsPreview')
+              }
+            >
               {previewWarnings.length > 0 ? (
-                <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                <ul
+                  className="mb-3 space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                  role="status"
+                >
                   {previewWarnings.map((warning) => (
                     <li key={warning}>{warning}</li>
                   ))}
                 </ul>
               ) : null}
               {previewMetas.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t('catalogs.resultsEmpty')}</p>
+                <p className="text-sm ml-text-muted">{t('catalogs.resultsEmpty')}</p>
               ) : (
                 <ol className="space-y-2">
                   {previewMetas.slice(0, 12).map((meta) => (
                     <li key={`${meta.id}-${meta.sourceInstanceId ?? ''}`} className="text-sm">
-                      <span className="font-medium">{meta.name}</span>
-                      <span className="ms-2 font-mono text-xs text-muted-foreground">
+                      <span className="font-medium text-[var(--ml-text)]">{meta.name}</span>
+                      <span className="ms-2 font-mono text-xs ml-text-muted">
                         {meta.id}
                       </span>
                     </li>
                   ))}
                 </ol>
               )}
-            </div>
+            </SectionCard>
           </div>
         </div>
       ) : null}
+
+      <StudioPromptDialog
+        open={editDialog !== null}
+        title={dialogTitle}
+        label={dialogLabel}
+        value={editDialog?.value ?? ''}
+        onChange={(value) => {
+          if (!editDialog) return;
+          setEditDialog({ ...editDialog, value });
+        }}
+        onConfirm={() => {
+          void submitEditDialog();
+        }}
+        onCancel={() => setEditDialog(null)}
+        confirmLabel={t('catalogs.dialog.confirm')}
+        cancelLabel={t('catalogs.dialog.cancel')}
+      />
     </section>
   );
 }
