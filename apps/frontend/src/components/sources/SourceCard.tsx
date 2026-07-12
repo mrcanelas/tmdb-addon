@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@metalayer/shared-ui';
+import { Input, StatusBadge } from '@metalayer/shared-ui';
 import type { PublicSource, SourceTestResult } from '@/lib/api';
 import { useTestSourceMutation } from '@/api/hooks/use-sources';
 import {
@@ -20,6 +20,24 @@ type TestStatus =
   | { kind: 'idle' }
   | { kind: 'success'; result: SourceTestResult }
   | { kind: 'failure'; result?: SourceTestResult; messageKey: string; code?: string };
+
+function connectionTone(
+  state: PublicSource['connectionState'],
+): 'neutral' | 'success' | 'warning' | 'error' | 'info' | 'accent' {
+  switch (state) {
+    case 'connected':
+      return 'success';
+    case 'degraded':
+    case 'expired':
+      return 'warning';
+    case 'invalid':
+      return 'error';
+    case 'coming_soon':
+      return 'info';
+    default:
+      return 'neutral';
+  }
+}
 
 export function SourceCard({ source }: SourceCardProps) {
   const { t, i18n } = useTranslation('sources');
@@ -71,7 +89,7 @@ export function SourceCard({ source }: SourceCardProps) {
   }
 
   return (
-    <article className="ml-surface p-4">
+    <article className="ml-surface flex h-full flex-col p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold tracking-tight text-[var(--ml-text)]">
@@ -90,9 +108,9 @@ export function SourceCard({ source }: SourceCardProps) {
             </Badge>
           </div>
         </div>
-        <Badge variant={comingSoon ? 'muted' : 'secondary'}>
+        <StatusBadge tone={connectionTone(source.connectionState)}>
           {t(`sources.state.${source.connectionState}`)}
-        </Badge>
+        </StatusBadge>
       </div>
 
       {capabilityLabels.length > 0 ? (
@@ -105,7 +123,9 @@ export function SourceCard({ source }: SourceCardProps) {
         </ul>
       ) : null}
 
-      <form className="mt-4 space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
+      <p className="mt-3 text-xs ml-text-muted">{t('sources.unavailableHint')}</p>
+
+      <form className="mt-auto space-y-3 pt-4" onSubmit={form.handleSubmit(onSubmit)}>
         {canTest && source.requiresCredential ? (
           <label className="block space-y-1.5">
             <span className="text-sm ml-text-muted">
@@ -143,14 +163,14 @@ export function SourceCard({ source }: SourceCardProps) {
       </form>
 
       {status.kind === 'success' ? (
-        <p className="mt-3 text-sm text-emerald-400" role="status">
+        <p className="mt-3 text-sm text-[var(--ml-success)]" role="status">
           {t('sources.test.success', {
             state: status.result.health?.state ?? 'healthy',
           })}
         </p>
       ) : null}
       {status.kind === 'failure' ? (
-        <p className="mt-3 text-sm text-red-400" role="alert">
+        <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
           {t(status.messageKey, { code: status.code ?? 'ERROR' })}
         </p>
       ) : null}

@@ -13,7 +13,9 @@
   "tracking.adapterReady": "Ådåptér réådyÅdåp",
   "tracking.adapterMissing": "Ådåptér ñøt réådyÅdåpté",
   "tracking.preview": "Prévîéw hîdé wåtçhédPrévîé",
+  "tracking.previewRunning": "Rûññîñg prévîéw…Rûññî",
   "tracking.previewOk": "Hîdé-wåtçhéd prévîéw çømplétéd (dégrådéd: Hîdé-wåtçhéd {{degraded}}).)",
   "tracking.included": "ÎñçlûdédÎñç",
-  "tracking.excluded": "ÉxçlûdédÉxç"
+  "tracking.excluded": "ÉxçlûdédÉxç",
+  "tracking.emptyTitle": "Ñø tråçkîñg prøvîdérs lîstédÑø tråçkî"
 }

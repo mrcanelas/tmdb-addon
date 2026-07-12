@@ -13,7 +13,9 @@
   "tracking.adapterReady": "Adapter listo",
   "tracking.adapterMissing": "Adapter no disponible",
   "tracking.preview": "Vista previa de ocultar vistos",
+  "tracking.previewRunning": "Ejecutando vista previa…",
   "tracking.previewOk": "Vista previa completada (degradado: {{degraded}}).",
   "tracking.included": "Incluidos",
-  "tracking.excluded": "Excluidos"
+  "tracking.excluded": "Excluidos",
+  "tracking.emptyTitle": "No hay proveedores de tracking listados"
 }

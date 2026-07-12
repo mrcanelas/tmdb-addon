@@ -1,151 +1,119 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@metalayer/shared-ui';
+import type { CorrectionItem } from '@/lib/api';
 import {
-  createLocalCorrection,
-  deleteLocalCorrection,
-  ensureStudioSession,
-  fetchCorrections,
-  previewCorrections,
-  type CorrectionItem,
-} from '@/lib/api';
-import { Button } from '@/components/ui/button';
+  useCorrectionsQuery,
+  useCreateLocalCorrectionMutation,
+  useDeleteLocalCorrectionMutation,
+  usePreviewCorrectionsMutation,
+} from '@/api/hooks/use-corrections';
+import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { SectionCard } from '@/components/metalayer/SectionCard';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
+import { EmptyState } from '@/components/metalayer/EmptyState';
 
 export function CorrectionsPage() {
-  const { t } = useTranslation('corrections');
-  const [local, setLocal] = useState<CorrectionItem[]>([]);
-  const [community, setCommunity] = useState<CorrectionItem[]>([]);
-  const [resolved, setResolved] = useState<CorrectionItem[]>([]);
-  const [previewTitle, setPreviewTitle] = useState<string | null>(null);
-  const [overlayCount, setOverlayCount] = useState(0);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const { t } = useTranslation(['corrections', 'common']);
+  const sessionQuery = useStudioSessionQuery();
+  const correctionsQuery = useCorrectionsQuery();
+  const createMutation = useCreateLocalCorrectionMutation();
+  const deleteMutation = useDeleteLocalCorrectionMutation();
+  const previewMutation = usePreviewCorrectionsMutation();
 
-  async function refresh() {
-    const session = await ensureStudioSession();
-    const result = await fetchCorrections(session.configId, session.editCredential);
-    setLocal(result.local);
-    setCommunity(result.community);
-    setResolved(result.resolved);
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await refresh();
-        if (!cancelled) setStatus('ready');
-      } catch {
-        if (!cancelled) setStatus('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function onAddLocal() {
-    try {
-      const session = await ensureStudioSession();
-      await createLocalCorrection(session.configId, session.editCredential, {
-        target: { provider: 'imdb', id: 'tt0137523', entityKind: 'movie' },
-        type: 'title_correction',
-        payload: { title: 'Fight Club (Local)' },
-        reason: 'Prefer personal title',
-        sources: [{ kind: 'manual', label: 'Operator preference' }],
-      });
-      await refresh();
-      setStatus('ready');
-    } catch {
-      setStatus('error');
-    }
-  }
-
-  async function onPreview() {
-    try {
-      const session = await ensureStudioSession();
-      const result = await previewCorrections(
-        session.configId,
-        session.editCredential,
-        {
-          provider: 'imdb',
-          id: 'tt0137523',
-          base: { title: 'Provider Title' },
-        },
-      );
-      setPreviewTitle(String(result.applied.title ?? ''));
-      setOverlayCount(result.overlays.length);
-      setStatus('ready');
-    } catch {
-      setStatus('error');
-    }
-  }
-
-  async function onRollback(id: string) {
-    try {
-      const session = await ensureStudioSession();
-      await deleteLocalCorrection(session.configId, session.editCredential, id);
-      await refresh();
-      setStatus('ready');
-    } catch {
-      setStatus('error');
-    }
-  }
+  const bootstrapping = sessionQuery.isLoading || correctionsQuery.isLoading;
+  const loadError = sessionQuery.isError || correctionsQuery.isError;
+  const local = correctionsQuery.data?.local ?? [];
+  const community = correctionsQuery.data?.community ?? [];
+  const resolved = correctionsQuery.data?.resolved ?? [];
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t('corrections.title')}
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">{t('corrections.intro')}</p>
-        {status === 'loading' ? (
-          <p className="text-sm text-muted-foreground">{t('corrections.bootstrapping')}</p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">
-            {t('corrections.loadError')}
-          </p>
-        ) : null}
-      </header>
+      <PageHeader
+        title={t('corrections.title')}
+        description={t('corrections.intro')}
+        actions={
+          <>
+            <Button
+              type="button"
+              onPress={() => {
+                void createMutation.mutateAsync();
+              }}
+              isDisabled={bootstrapping || createMutation.isPending}
+            >
+              {t('corrections.addLocal')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onPress={() => {
+                void previewMutation.mutateAsync();
+              }}
+              isDisabled={bootstrapping || previewMutation.isPending}
+            >
+              {t('corrections.preview')}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => void onAddLocal()}>
-          {t('corrections.addLocal')}
-        </Button>
-        <Button type="button" variant="secondary" onClick={() => void onPreview()}>
-          {t('corrections.preview')}
-        </Button>
-      </div>
-
-      {previewTitle !== null ? (
-        <p className="text-sm">
-          {t('corrections.previewResult', { title: previewTitle })} ·{' '}
-          {t('corrections.overlays')}: {overlayCount}
-        </p>
+      {bootstrapping ? (
+        <LoadingState label={t('corrections.bootstrapping')} />
       ) : null}
 
-      <CorrectionList
-        title={t('corrections.local')}
-        items={local}
-        emptyLabel={t('corrections.empty')}
-        statusLabel={t('corrections.status')}
-        scopeLabel={t('corrections.scope')}
-        rollbackLabel={t('corrections.rollback')}
-        onRollback={onRollback}
-      />
-      <CorrectionList
-        title={t('corrections.resolved')}
-        items={resolved}
-        emptyLabel={t('corrections.empty')}
-        statusLabel={t('corrections.status')}
-        scopeLabel={t('corrections.scope')}
-      />
-      <CorrectionList
-        title={t('corrections.community')}
-        items={community}
-        emptyLabel={t('corrections.empty')}
-        statusLabel={t('corrections.status')}
-        scopeLabel={t('corrections.scope')}
-      />
+      {loadError ? (
+        <ErrorState
+          message={t('corrections.loadError')}
+          retryLabel={t('common:state.retry')}
+          onRetry={() => {
+            void sessionQuery.refetch();
+            void correctionsQuery.refetch();
+          }}
+        />
+      ) : null}
+
+      {previewMutation.data ? (
+        <SectionCard>
+          <p className="text-sm text-[var(--ml-text)]">
+            {t('corrections.previewResult', {
+              title: String(previewMutation.data.applied.title ?? ''),
+            })}{' '}
+            · {t('corrections.overlays')}: {previewMutation.data.overlays.length}
+          </p>
+        </SectionCard>
+      ) : null}
+
+      {!bootstrapping && !loadError ? (
+        <>
+          <CorrectionList
+            title={t('corrections.local')}
+            items={local}
+            emptyLabel={t('corrections.empty')}
+            statusLabel={t('corrections.status')}
+            scopeLabel={t('corrections.scope')}
+            rollbackLabel={t('corrections.rollback')}
+            onRollback={(id) => {
+              void deleteMutation.mutateAsync(id);
+            }}
+            rollbackPending={deleteMutation.isPending}
+          />
+          <CorrectionList
+            title={t('corrections.resolved')}
+            items={resolved}
+            emptyLabel={t('corrections.empty')}
+            statusLabel={t('corrections.status')}
+            scopeLabel={t('corrections.scope')}
+          />
+          <CorrectionList
+            title={t('corrections.community')}
+            items={community}
+            emptyLabel={t('corrections.empty')}
+            statusLabel={t('corrections.status')}
+            scopeLabel={t('corrections.scope')}
+          />
+        </>
+      ) : null}
     </section>
   );
 }
@@ -158,26 +126,27 @@ function CorrectionList(props: {
   scopeLabel: string;
   rollbackLabel?: string;
   onRollback?: (id: string) => void;
+  rollbackPending?: boolean;
 }) {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg font-medium">{props.title}</h2>
+    <SectionCard title={props.title}>
       {props.items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{props.emptyLabel}</p>
+        <EmptyState title={props.emptyLabel} />
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {props.items.map((item) => (
             <li
               key={item.id}
-              className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2"
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
             >
               <div className="space-y-1">
-                <p className="font-medium">
+                <p className="font-medium text-[var(--ml-text)]">
                   {item.type} · {item.target.provider}:{item.target.id}
                 </p>
-                <p className="text-sm text-muted-foreground">{item.reason}</p>
-                <p className="text-xs text-muted-foreground">
-                  {props.statusLabel}: {item.status} · {props.scopeLabel}: {item.scope}
+                <p className="text-sm ml-text-muted">{item.reason}</p>
+                <p className="text-xs ml-text-muted">
+                  {props.statusLabel}: {item.status} · {props.scopeLabel}:{' '}
+                  {item.scope}
                 </p>
               </div>
               {props.onRollback && item.scope === 'local' ? (
@@ -185,7 +154,8 @@ function CorrectionList(props: {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => props.onRollback?.(item.id)}
+                  isDisabled={props.rollbackPending}
+                  onPress={() => props.onRollback?.(item.id)}
                 >
                   {props.rollbackLabel}
                 </Button>
@@ -194,6 +164,6 @@ function CorrectionList(props: {
           ))}
         </ul>
       )}
-    </div>
+    </SectionCard>
   );
 }

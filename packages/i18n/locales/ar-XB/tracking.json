@@ -13,7 +13,9 @@
   "tracking.adapterReady": "‏Adapter ready‎",
   "tracking.adapterMissing": "‏Adapter not ready‎",
   "tracking.preview": "‏Preview hide watched‎",
+  "tracking.previewRunning": "‏Running preview…‎",
   "tracking.previewOk": "‏Hide-watched preview completed (degraded: ‎{{degraded}}‏).‎",
   "tracking.included": "‏Included‎",
-  "tracking.excluded": "‏Excluded‎"
+  "tracking.excluded": "‏Excluded‎",
+  "tracking.emptyTitle": "‏No tracking providers listed‎"
 }
