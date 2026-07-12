@@ -4,7 +4,7 @@ import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 17).toString('base64');
 
-describe('@metalayer/api sources diagnostics', () => {
+describe('@metalayer/server sources diagnostics', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
   const appPromise = buildApp({
     logger: false,

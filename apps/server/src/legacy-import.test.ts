@@ -16,7 +16,7 @@ function loadFixture(name: string) {
   return JSON.parse(readFileSync(join(fixturesDir, name), 'utf8'));
 }
 
-describe('@metalayer/api legacy import', () => {
+describe('@metalayer/server legacy import', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
   const appPromise = buildApp({ logger: false, store });
 

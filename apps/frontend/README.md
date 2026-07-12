@@ -1,6 +1,8 @@
-# MetaLayer Configure (greenfield)
+# MetaLayer Frontend (greenfield)
 
 End-user configuration UI for MetaLayer.
+
+Package name: `@metalayer/frontend` (pnpm filter: `frontend`).
 
 Stack (ADR 0002):
 
@@ -15,12 +17,12 @@ This app is **not** a port of the legacy `configure/` Vite UI.
 ## Scripts
 
 ```bash
-npm run dev
-npm run dev:configure
-npm run build:configure
+pnpm dev
+pnpm -F frontend dev
+pnpm build:frontend
 ```
 
-`npm run dev` (repo root) starts the MetaLayer API and this configure UI together.
+From the repo root, `pnpm dev` runs `core`, `server`, and `frontend` in parallel.
 
 Dev server defaults to http://localhost:5174 and proxies `/api` and `/c` to the MetaLayer API on `http://127.0.0.1:1338`.
 

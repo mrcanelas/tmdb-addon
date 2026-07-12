@@ -4,7 +4,7 @@ import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 21).toString('base64');
 
-describe('@metalayer/api preview cache', () => {
+describe('@metalayer/server preview cache', () => {
   const cache = new MemoryCache();
   let calls = 0;
   const appPromise = buildApp({

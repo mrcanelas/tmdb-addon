@@ -1,17 +1,19 @@
-# MetaLayer API (greenfield)
+# MetaLayer Server (greenfield)
 
 Fastify + TypeScript HTTP layer for MetaLayer (ADR 0004, ADR 0005).
+
+Package name: `@metalayer/server` (pnpm filter: `server`).
 
 ## Scripts
 
 ```bash
-npm run dev
-npm run dev:api
-npm run build:api
-npm run start:api
+pnpm dev
+pnpm -F server dev
+pnpm build:server
+pnpm start:server
 ```
 
-From the repo root, `npm run dev` starts this API together with `apps/configure`.
+From the repo root, `pnpm dev` runs `core`, `server`, and `frontend` in parallel.
 
 Requires `METALAYER_ENCRYPTION_KEY` (32-byte base64 or hex) in the root `.env` (see `.env.example`).  
 In local development, if the key is missing, the API creates a durable key at `data/.metalayer-dev-encryption-key` (gitignored) and continues with a warning. Production still requires an explicit env value.

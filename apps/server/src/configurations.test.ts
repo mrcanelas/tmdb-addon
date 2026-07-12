@@ -4,7 +4,7 @@ import { createMemoryConfigurationStore } from '@metalayer/persistence';
 
 const TEST_KEY = Buffer.alloc(32, 3).toString('base64');
 
-describe('@metalayer/api configurations', () => {
+describe('@metalayer/server configurations', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
   const appPromise = buildApp({ logger: false, store });
 

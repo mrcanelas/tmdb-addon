@@ -6,7 +6,7 @@ import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 27).toString('base64');
 
-describe('@metalayer/api catalog studio', () => {
+describe('@metalayer/server catalog studio', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
   const appPromise = buildApp({ logger: false, store });
 

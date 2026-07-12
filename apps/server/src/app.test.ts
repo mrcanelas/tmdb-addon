@@ -3,7 +3,7 @@ import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 5).toString('base64');
 
-describe('@metalayer/api', () => {
+describe('@metalayer/server', () => {
   const appPromise = buildApp({ logger: false, encryptionKey: TEST_KEY, sqlitePath: ':memory:' });
 
   afterAll(async () => {

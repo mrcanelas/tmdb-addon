@@ -1,5 +1,5 @@
 {
-  "name": "@metalayer/configure",
+  "name": "@metalayer/frontend",
   "version": "1.0.0-alpha.1",
   "private": true,
   "description": "MetaLayer end-user configuration UI (greenfield)",
@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/i18n": "*",
-    "@metalayer/providers": "*",
+    "@metalayer/i18n": "workspace:*",
+    "@metalayer/providers": "workspace:*",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
