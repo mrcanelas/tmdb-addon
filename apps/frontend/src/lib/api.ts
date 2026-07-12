@@ -481,6 +481,15 @@ export interface FieldResolutionView {
   requestedLocale?: string;
   selectedLocale?: string;
   exclusionReason?: string;
+  attempts?: Array<{
+    index: number;
+    stepId: string;
+    provider: string;
+    status: string;
+    resolvedLocale?: string;
+    reason?: string;
+  }>;
+  effectivePlanHash?: string;
 }
 
 export interface MetaInspectorReport {
@@ -729,5 +738,26 @@ export async function applyAiProposal(
     method: 'POST',
     headers: { 'x-metalayer-edit-credential': editCredential },
     body: JSON.stringify(body),
+  });
+}
+
+export async function fetchResolutionConfig(
+  configId: string,
+  editCredential: string,
+): Promise<{ resolution: import('@metalayer/config').ResolutionConfig; derived: boolean }> {
+  return apiFetch(`/api/v1/configurations/${configId}/resolution`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function saveResolutionConfig(
+  configId: string,
+  editCredential: string,
+  resolution: import('@metalayer/config').ResolutionConfig,
+): Promise<{ resolution: import('@metalayer/config').ResolutionConfig }> {
+  return apiFetch(`/api/v1/configurations/${configId}/resolution`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ resolution }),
   });
 }

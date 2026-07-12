@@ -390,6 +390,8 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
       const report: MetaInspectorReport = buildInspectorReport({
         bag,
         fieldProviders: view.config.fieldProviders,
+        resolution: view.config.resolution,
+        mediaType,
         localization: view.config.localization,
         identity: {
           publicId,

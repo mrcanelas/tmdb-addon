@@ -66,3 +66,27 @@ export {
   type CatalogResponse,
   type MetaResponse,
 } from './stremio-contracts.js';
+
+export {
+  LocalePreferenceSchema,
+  RegionPreferenceSchema,
+  ResolutionStrategySchema,
+  EpisodeOrderTypeSchema,
+  ArtworkTypeSchema,
+  ResolutionStepSchema,
+  FieldResolutionPlanSchema,
+  MediaResolutionConfigSchema,
+  ResolutionConfigSchema,
+  parseResolutionConfig,
+  planFromProviderChain,
+  resolutionConfigFromFieldProviders,
+  defaultResolutionConfig,
+  getPlanForField,
+  type LocalePreference,
+  type RegionPreference,
+  type ResolutionStrategy,
+  type ResolutionStep,
+  type FieldResolutionPlan,
+  type MediaResolutionConfig,
+  type ResolutionConfig,
+} from './resolution.js';

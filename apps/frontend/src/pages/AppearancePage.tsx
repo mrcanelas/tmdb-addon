@@ -1,0 +1,177 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { FieldResolutionPlan, ResolutionConfig } from '@metalayer/config';
+import { planFromProviderChain } from '@metalayer/config';
+import { Button } from '@metalayer/shared-ui';
+import {
+  ensureStudioSession,
+  fetchResolutionConfig,
+  saveResolutionConfig,
+} from '@/lib/api';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
+import { ResolutionChainBuilder } from '@/components/metalayer/ResolutionChainBuilder';
+
+const EDIT_FIELDS = ['title', 'description', 'poster'] as const;
+
+function ensurePlan(
+  resolution: ResolutionConfig,
+  field: (typeof EDIT_FIELDS)[number],
+): FieldResolutionPlan {
+  const existing = resolution.defaults.fields[field];
+  if (existing) return existing;
+  if (field === 'title' || field === 'description') {
+    return planFromProviderChain(
+      ['tmdb', 'tvdb'],
+      [
+        { type: 'locale', value: 'pt-BR' },
+        { type: 'locale', value: 'en-US' },
+        { type: 'original-language' },
+      ],
+      'locale-first',
+    );
+  }
+  return planFromProviderChain(
+    ['rpdb', 'fanart', 'tmdb'],
+    [
+      { type: 'locale', value: 'pt-BR' },
+      { type: 'no-language' },
+      { type: 'locale', value: 'en-US' },
+    ],
+    'locale-first',
+  );
+}
+
+export function AppearancePage() {
+  const { t } = useTranslation(['resolution', 'common']);
+  const [resolution, setResolution] = useState<ResolutionConfig | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'ok' | 'error'>(
+    'idle',
+  );
+
+  async function load() {
+    setStatus('loading');
+    try {
+      const session = await ensureStudioSession();
+      const result = await fetchResolutionConfig(
+        session.configId,
+        session.editCredential,
+      );
+      const next = { ...result.resolution };
+      next.defaults = {
+        fields: { ...next.defaults.fields },
+      };
+      for (const field of EDIT_FIELDS) {
+        next.defaults.fields[field] = ensurePlan(next, field);
+      }
+      setResolution(next);
+      setStatus('ready');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  function updateField(
+    field: (typeof EDIT_FIELDS)[number],
+    plan: FieldResolutionPlan,
+  ) {
+    setResolution((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        defaults: {
+          ...current.defaults,
+          fields: {
+            ...current.defaults.fields,
+            [field]: plan,
+          },
+        },
+      };
+    });
+    setSaveState('idle');
+  }
+
+  async function onSave() {
+    if (!resolution) return;
+    setSaveState('saving');
+    try {
+      const session = await ensureStudioSession();
+      await saveResolutionConfig(
+        session.configId,
+        session.editCredential,
+        resolution,
+      );
+      setSaveState('ok');
+    } catch {
+      setSaveState('error');
+    }
+  }
+
+  return (
+    <section className="space-y-6">
+      <PageHeader
+        title={t('resolution.title')}
+        description={t('resolution.intro')}
+        actions={
+          <Button
+            type="button"
+            onPress={() => {
+              void onSave();
+            }}
+            isDisabled={!resolution || saveState === 'saving'}
+          >
+            {saveState === 'saving' ? t('resolution.saving') : t('resolution.save')}
+          </Button>
+        }
+      />
+
+      {status === 'loading' ? (
+        <LoadingState label={t('resolution.loading')} />
+      ) : null}
+
+      {status === 'error' ? (
+        <ErrorState
+          message={t('resolution.loadError')}
+          retryLabel={t('common:state.retry')}
+          onRetry={() => {
+            void load();
+          }}
+        />
+      ) : null}
+
+      {saveState === 'ok' ? (
+        <p className="text-sm text-[var(--ml-success)]" role="status">
+          {t('resolution.saveOk')}
+        </p>
+      ) : null}
+      {saveState === 'error' ? (
+        <p className="text-sm text-[var(--ml-error)]" role="alert">
+          {t('resolution.saveError')}
+        </p>
+      ) : null}
+
+      {resolution
+        ? EDIT_FIELDS.map((field) => (
+            <ResolutionChainBuilder
+              key={field}
+              fieldLabel={t(`resolution.field.${field}`)}
+              value={ensurePlan(resolution, field)}
+              onChange={(plan) => updateField(field, plan)}
+              providerOptions={
+                field === 'poster'
+                  ? ['rpdb', 'fanart', 'tmdb', 'tvdb']
+                  : ['tmdb', 'tvdb', 'imdb']
+              }
+              allowLocales
+            />
+          ))
+        : null}
+    </section>
+  );
+}

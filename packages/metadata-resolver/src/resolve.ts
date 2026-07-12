@@ -2,13 +2,16 @@ import type {
   FieldProviders,
   LocalizationPreferences,
   ResolvableField,
+  ResolutionConfig,
 } from '@metalayer/config';
-import { DEFAULT_FIELD_PROVIDERS } from '@metalayer/config';
+import { DEFAULT_FIELD_PROVIDERS, parseResolutionConfig } from '@metalayer/config';
 import {
   resolveField,
   type FieldContribution,
   type FieldResolution,
 } from './field.js';
+import { compileResolutionPlan } from './compile.js';
+import { resolveFieldFromPlan } from './resolve-plan.js';
 
 export type TitleMode = LocalizationPreferences['titleMode'];
 export type DescriptionMode = LocalizationPreferences['descriptionMode'];
@@ -42,7 +45,6 @@ export interface ResolvedMetadata {
   voteCount: FieldResolution<number>;
   releaseDate: FieldResolution<string>;
   externalIds: FieldResolution<ExternalIdsValue>;
-  /** Display title after titleMode (may combine localized + original). */
   displayTitle: string | null;
   displayDescription: string | null;
 }
@@ -71,6 +73,55 @@ function chainFor(
   const fromConfig = fieldProviders?.[field];
   if (fromConfig && fromConfig.length > 0) return fromConfig;
   return DEFAULT_FIELD_PROVIDERS[field] ?? ['tmdb'];
+}
+
+function resolveOne<T>(
+  field: ResolvableField,
+  contributions: FieldContribution<T>[],
+  options: ResolveMetadataOptions,
+): FieldResolution<T> {
+  if (options.useFieldResolutionChains === false) {
+    const policy =
+      field === 'title' || field === 'description'
+        ? 'preferred-language'
+        : field === 'rating'
+          ? 'highest-confidence'
+          : 'first-valid';
+    return resolveField(contributions, chainFor(options.fieldProviders, field), {
+      policy,
+      requestedLocale: options.localization.metadataLocale,
+      fallbackLocales: options.localization.metadataFallbackLocales,
+      now: options.now,
+    });
+  }
+
+  let resolution: ResolutionConfig | undefined;
+  if (options.resolution) {
+    try {
+      resolution = parseResolutionConfig(options.resolution);
+    } catch {
+      resolution = undefined;
+    }
+  }
+
+  const plan = compileResolutionPlan({
+    field,
+    mediaType: options.mediaType,
+    resolution,
+    fieldProviders: options.fieldProviders,
+    metadataLocale: options.localization.metadataLocale,
+    fallbackLocales: options.localization.metadataFallbackLocales,
+  });
+
+  const result = resolveFieldFromPlan(contributions, plan, {
+    originalLanguage: options.originalLanguage,
+    now: options.now,
+  });
+
+  return {
+    ...result,
+    requestedLocale: options.localization.metadataLocale,
+  };
 }
 
 export function formatTitle(input: {
@@ -121,6 +172,11 @@ export function formatDescription(input: {
 
 export interface ResolveMetadataOptions {
   fieldProviders?: FieldProviders;
+  resolution?: unknown;
+  mediaType?: 'movie' | 'series' | 'anime';
+  originalLanguage?: string;
+  /** Default true — walk compiled plans and emit attempts. */
+  useFieldResolutionChains?: boolean;
   localization: Pick<
     LocalizationPreferences,
     | 'metadataLocale'
@@ -132,63 +188,21 @@ export interface ResolveMetadataOptions {
 }
 
 /**
- * Field-level resolution with provenance (AGENTS.md §10).
- * Contributions are provider-agnostic; adapters fill the bag upstream.
+ * Field-level resolution with provenance and Field Resolution Chains (AGENTS.md §10).
  */
 export function resolveMetadata(
   bag: ProviderFieldBag,
   options: ResolveMetadataOptions,
 ): ResolvedMetadata {
-  const localeOpts = {
-    requestedLocale: options.localization.metadataLocale,
-    fallbackLocales: options.localization.metadataFallbackLocales,
-    now: options.now,
-  };
-
-  const title = resolveField(bag.title ?? [], chainFor(options.fieldProviders, 'title'), {
-    ...localeOpts,
-    policy: 'preferred-language',
-  });
-  const originalTitle = resolveField(
-    bag.originalTitle ?? [],
-    chainFor(options.fieldProviders, 'originalTitle'),
-    { now: options.now },
-  );
-  const description = resolveField(
-    bag.description ?? [],
-    chainFor(options.fieldProviders, 'description'),
-    {
-      ...localeOpts,
-      policy: 'preferred-language',
-    },
-  );
-  const poster = resolveField(bag.poster ?? [], chainFor(options.fieldProviders, 'poster'), {
-    now: options.now,
-  });
-  const background = resolveField(
-    bag.background ?? [],
-    chainFor(options.fieldProviders, 'background'),
-    { now: options.now },
-  );
-  const rating = resolveField(bag.rating ?? [], chainFor(options.fieldProviders, 'rating'), {
-    policy: 'highest-confidence',
-    now: options.now,
-  });
-  const voteCount = resolveField(
-    bag.voteCount ?? [],
-    chainFor(options.fieldProviders, 'voteCount'),
-    { now: options.now },
-  );
-  const releaseDate = resolveField(
-    bag.releaseDate ?? [],
-    chainFor(options.fieldProviders, 'releaseDate'),
-    { now: options.now },
-  );
-  const externalIds = resolveField(
-    bag.externalIds ?? [],
-    chainFor(options.fieldProviders, 'externalIds'),
-    { now: options.now },
-  );
+  const title = resolveOne('title', bag.title ?? [], options);
+  const originalTitle = resolveOne('originalTitle', bag.originalTitle ?? [], options);
+  const description = resolveOne('description', bag.description ?? [], options);
+  const poster = resolveOne('poster', bag.poster ?? [], options);
+  const background = resolveOne('background', bag.background ?? [], options);
+  const rating = resolveOne('rating', bag.rating ?? [], options);
+  const voteCount = resolveOne('voteCount', bag.voteCount ?? [], options);
+  const releaseDate = resolveOne('releaseDate', bag.releaseDate ?? [], options);
+  const externalIds = resolveOne('externalIds', bag.externalIds ?? [], options);
 
   return {
     title,
@@ -216,6 +230,9 @@ export function resolveMetadata(
 export function buildInspectorReport(input: {
   bag: ProviderFieldBag;
   fieldProviders?: FieldProviders;
+  resolution?: unknown;
+  mediaType?: 'movie' | 'series' | 'anime';
+  originalLanguage?: string;
   localization: ResolveMetadataOptions['localization'];
   identity?: {
     publicId?: string;
@@ -226,6 +243,9 @@ export function buildInspectorReport(input: {
 }): MetaInspectorReport {
   const fields = resolveMetadata(input.bag, {
     fieldProviders: input.fieldProviders,
+    resolution: input.resolution,
+    mediaType: input.mediaType ?? input.identity?.mediaType,
+    originalLanguage: input.originalLanguage,
     localization: input.localization,
     now: input.now,
   });

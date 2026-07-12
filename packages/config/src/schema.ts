@@ -176,6 +176,19 @@ export const MetaLayerConfigSchema = z.object({
   globalRules: RuleSetSchema.default({}),
   globalSorting: SortingPlanSchema.optional(),
   fieldProviders: FieldProvidersSchema,
+  /** Optional Field Resolution Chains config (AGENTS.md §10). When absent, derived from fieldProviders. */
+  resolution: z
+    .object({
+      version: z.literal(1),
+      defaults: z
+        .object({
+          fields: z.record(z.any()).default({}),
+        })
+        .default({ fields: {} }),
+      mediaTypes: z.record(z.any()).default({}),
+    })
+    .passthrough()
+    .optional(),
   featureFlags: z.record(z.boolean()).default({}),
   legacyImport: z
     .object({

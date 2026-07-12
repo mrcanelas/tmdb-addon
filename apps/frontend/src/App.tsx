@@ -10,6 +10,7 @@ import { InspectorPage } from '@/pages/InspectorPage';
 import { TrackingPage } from '@/pages/TrackingPage';
 import { CorrectionsPage } from '@/pages/CorrectionsPage';
 import { SearchAiPage } from '@/pages/SearchAiPage';
+import { AppearancePage } from '@/pages/AppearancePage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 import { AppQueryProvider } from '@/providers/AppQueryProvider';
@@ -25,7 +26,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/inspector' &&
     item.path !== '/tracking' &&
     item.path !== '/corrections' &&
-    item.path !== '/search-ai',
+    item.path !== '/search-ai' &&
+    item.path !== '/appearance',
 );
 
 function ThemedApp() {
@@ -48,6 +50,7 @@ function ThemedApp() {
               <Route path="tracking" element={<TrackingPage />} />
               <Route path="corrections" element={<CorrectionsPage />} />
               <Route path="search-ai" element={<SearchAiPage />} />
+              <Route path="appearance" element={<AppearancePage />} />
               {PLACEHOLDER_ROUTES.map((item) => (
                 <Route
                   key={item.id}

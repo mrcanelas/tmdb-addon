@@ -6,6 +6,8 @@ Canonical product and architecture requirements for Field Resolution Chains live
 AGENTS.md §10 — Metadata Resolver and Field Resolution Chains
 ```
 
+Implementation status: **shipped** as Phase F2 — see `docs/phase-f-exit.md`.
+
 Related:
 
 - Meta Inspector attempt display — `AGENTS.md` §11

@@ -223,6 +223,33 @@ export function InspectorPage() {
                         {t('inspector.attempted')}:{' '}
                         {field.attemptedProviders.join(' → ')}
                       </div>
+                      {field.attempts && field.attempts.length > 0 ? (
+                        <div className="sm:col-span-2">
+                          <p className="mb-1 font-medium text-[var(--ml-text)]">
+                            {t('inspector.attempts')}
+                          </p>
+                          <ol className="list-decimal space-y-1 ps-5 font-mono text-xs">
+                            {field.attempts.map((attempt) => (
+                              <li key={`${attempt.stepId}-${attempt.index}`}>
+                                {attempt.provider}
+                                {attempt.resolvedLocale
+                                  ? ` · ${attempt.resolvedLocale}`
+                                  : ''}{' '}
+                                — {attempt.status}
+                                {attempt.reason ? ` (${attempt.reason})` : ''}
+                              </li>
+                            ))}
+                          </ol>
+                          {field.effectivePlanHash ? (
+                            <p className="mt-1 text-xs">
+                              plan:{' '}
+                              <span className="font-mono">
+                                {field.effectivePlanHash}
+                              </span>
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
                       {field.exclusionReason ? (
                         <div className="sm:col-span-2 text-amber-700 dark:text-amber-400">
                           {t('inspector.exclusion')}: {field.exclusionReason}

@@ -23,6 +23,27 @@ export interface FieldResolution<T> {
   selectedLocale?: string;
   /** Present when no value could be selected. */
   exclusionReason?: string;
+  /** Field Resolution Chains attempt history (AGENTS.md §10). */
+  attempts?: FieldResolutionAttempt[];
+  effectivePlanHash?: string;
+}
+
+export type FieldAttemptStatus =
+  | 'selected'
+  | 'empty'
+  | 'not-found'
+  | 'skipped'
+  | 'below-confidence';
+
+export interface FieldResolutionAttempt {
+  index: number;
+  stepId: string;
+  provider: string;
+  localePreference?: unknown;
+  resolvedLocale?: string;
+  status: FieldAttemptStatus;
+  confidence?: number;
+  reason?: string;
 }
 
 export type ResolutionPolicy =

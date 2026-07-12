@@ -3641,7 +3641,7 @@ The version remains in the `1.0.0` prerelease line until stable.
 | C | Provider framework | **Core complete** (Redis shared cache deferred) | `docs/phase-c-exit.md` |
 | D | Catalog Studio | **Complete** (native Stremio catalog route follow-up) | `docs/phase-d-exit.md` |
 | E | Rule and Sorting Studios | **Complete** | `docs/phase-e-exit.md` |
-| F | Metadata Resolver and Meta Inspector | **Baseline complete**; Field Resolution Chains (§10) **not implemented yet** | `docs/phase-f-exit.md` |
+| F | Metadata Resolver and Meta Inspector | **Complete** (F1 + F2 Field Resolution Chains; inheritance/episode UX follow-ups) | `docs/phase-f-exit.md` |
 | G | Identity Graph | **Complete** | `docs/phase-g-exit.md` |
 | H | Anime | **Complete** (foundations; richer UX later) | `docs/phase-h-exit.md` |
 | I | Tracking | **Complete** (OAuth browser flows / live sync follow-up) | `docs/phase-i-exit.md` |
@@ -3664,11 +3664,11 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 ### Highest-priority gaps before Phase M (beta)
 
-1. **Field Resolution Chains** — implement §10 (schema, compiler, strategies, builder UI, Inspector attempts). Baseline resolver in Phase F is **not** the full Chains model.
-2. **Language & Region UI** — independent interface locale, metadata locale, and region controls (schema/i18n exist; configure page still placeholder).
-3. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
-4. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
-5. **Appearance / Save & Install / Onboarding** — still scaffold or partial.
+1. **Language & Region UI** — independent interface locale, metadata locale, and region controls (schema/i18n exist; configure page still placeholder).
+2. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
+3. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
+4. **Save & Install / Onboarding** — still scaffold or partial (Appearance ships Field Resolution Chains builder).
+5. **Field Resolution Chains UX depth** — profile/catalog/title inheritance UI, explicit step editor, episode-order wiring (core F2 shipped; see `docs/phase-f-exit.md`).
 6. **Tracking OAuth browser flows** and live list sync (Trakt/SIMKL/AniList/MAL).
 7. **Encryption key rotation tooling** (Phase B deferred).
 8. **Postgres + Redis end-to-end** for Server mode (Lite SQLite path works).
@@ -3805,25 +3805,23 @@ Exit (baseline):
 
 **Status (2026-07-12): baseline complete.** See `docs/phase-f-exit.md`.
 
-### F2 — Field Resolution Chains (remaining)
+### F2 — Field Resolution Chains (landed)
 
 Canonical design: §10.
 
-Still required before calling Phase F *product-complete*:
+Shipped:
 
 - versioned `FieldResolutionPlan` / `ResolutionConfig` schemas + Zod validation;
-- plan inheritance compiler (system → config → media type → field → profile → catalog → title);
-- `locale-first`, `provider-first`, and `explicit` strategy expansion;
-- provider capability filtering and skipped-attempt diagnostics;
-- artwork no-language ranking;
-- episode/anime order types integrated with corrections;
-- management APIs (`/resolution`, compile, test);
-- `ResolutionChainBuilder` (Simple + Advanced) in the configure UI;
-- Meta Inspector tabs showing full attempt chains (provider · locale · status · reason);
-- legacy `language` / `provider` / `artProvider` migration into plans;
-- cache keys with `effectivePlanHash`.
+- plan derivation from `fieldProviders` and strategy expansion (`locale-first`, `provider-first`, `explicit`);
+- runtime resolve with attempt diagnostics and `effectivePlanHash`;
+- management APIs (`GET/PUT .../resolution`, compile, test);
+- `ResolutionChainBuilder` on Appearance (title / description / poster);
+- Meta Inspector attempt list (provider · locale · status · reason);
+- `resolution` i18n namespace (en-US / pt-BR / es-ES).
 
-Until F2 lands, treat Field Resolution Chains as **designed but not shipped**.
+Deferred follow-ups (documented in `docs/phase-f-exit.md`): full profile/catalog/title inheritance UI, advanced explicit step editor, episode-order chain wiring, dedicated artwork no-language ranking, shared-cache plan hashes.
+
+**Status (2026-07-12): product-complete** (F1 + F2). See `docs/phase-f-exit.md`.
 
 ## Phase G — Identity Graph
 
@@ -3860,7 +3858,7 @@ Exit:
 
 - anime is a first-class supported type.
 
-**Status (2026-07-12): complete** (foundations). Richer anime-only Appearance/order UI waits on Field Resolution Chains F2. See `docs/phase-h-exit.md`.
+**Status (2026-07-12): complete** (foundations). Richer anime-only Appearance/order UI can build on Field Resolution Chains F2. See `docs/phase-h-exit.md`.
 
 ## Phase I — Tracking
 
@@ -3948,7 +3946,7 @@ Version:
 1.0.0-beta.N
 ```
 
-**Status: not started.** Enter only after F2 Field Resolution Chains and the highest-priority gaps in §37.0 are closed or explicitly deferred.
+**Status: not started.** Enter only after the highest-priority gaps in §37.0 are closed or explicitly deferred.
 
 Tasks:
 
@@ -4307,7 +4305,7 @@ No.
 
 MetaLayer migration and reconstruction are complete when every item below is checked.
 
-Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0). Items still open are primarily Field Resolution Chains (F2), remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
+Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0), including Field Resolution Chains (F2). Items still open are primarily remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
 
 - [x] MetaLayer is the primary brand for greenfield apps (`apps/frontend`, `apps/dashboard`, `apps/server`).
 - [ ] The stable version is `1.0.0` (still on `1.0.0-alpha.*`).
@@ -4317,7 +4315,7 @@ Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0). It
 - [x] Secrets are encrypted at rest (Secret Vault AES-256-GCM).
 - [ ] Interface localization is complete for en-US, pt-BR, and es-ES (catalogs exist; primary UI still incomplete).
 - [ ] Interface, metadata language, and regional settings are independent in the configure UI (Language & Region page still scaffold).
-- [ ] Metadata fallback chains are fully configurable and explainable via Field Resolution Chains (§10 F2).
+- [x] Metadata fallback chains are configurable and explainable via Field Resolution Chains (§10 F2; inheritance UX follow-up).
 - [ ] Catalog names support localization end-to-end in UI.
 - [x] API errors use stable codes.
 - [ ] Dates, numbers, durations, and plurals are localized across the UI.
@@ -4326,8 +4324,8 @@ Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0). It
 - [x] Rules are hierarchical and contextual.
 - [x] Sorting supports multiple criteria.
 - [x] Metadata fields have provider provenance (baseline resolver).
-- [ ] Field Resolution Chains support locale-first, provider-first, and explicit strategies (designed in §10; not shipped).
-- [ ] Meta Inspector explains results and every resolution attempt (minimal inspect UI exists; full attempt chain UI pending F2).
+- [x] Field Resolution Chains support locale-first, provider-first, and explicit strategies (§10 F2).
+- [x] Meta Inspector explains results and resolution attempts (deeper attempt UX polish still open).
 - [x] Identity Graph supports provider mappings.
 - [x] Correction Hub supports local and community corrections.
 - [x] Anime is first-class (foundations).

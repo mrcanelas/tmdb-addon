@@ -14,6 +14,7 @@
   "inspector.locale": "Locale",
   "inspector.fallback": "Fallback de idioma",
   "inspector.attempted": "Tentados",
+  "inspector.attempts": "Tentativas de resolução",
   "inspector.confidence": "Confiança",
   "inspector.exclusion": "Exclusão",
   "inspector.displayTitle": "Título exibido",
