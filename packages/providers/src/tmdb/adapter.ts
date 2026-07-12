@@ -1,4 +1,9 @@
-import { createRequire } from 'node:module';
+import {
+  normalizeImdbId,
+  parsePublicId,
+  selectStremioPublicId,
+  type StremioPublicIdPreference,
+} from '@metalayer/identity';
 import { classifyHttpStatus, ProviderError } from '../core/errors.js';
 import { buildProviderCacheKey } from '../core/cache-key.js';
 import type { ProviderCacheStore } from '../core/provider-cache.js';
@@ -15,14 +20,6 @@ import { tmdbLocaleAdapter } from '../locale/tmdb.js';
 import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
-
-const require = createRequire(import.meta.url);
-const {
-  normalizeImdbId,
-  parsePublicId,
-  selectStremioPublicId,
-} = require('@metalayer/identity') as typeof import('@metalayer/identity');
-type StremioPublicIdPreference = import('@metalayer/identity').StremioPublicIdPreference;
 
 export interface TmdbMovieSummary {
   id: number;

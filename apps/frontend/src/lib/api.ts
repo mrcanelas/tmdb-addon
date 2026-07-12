@@ -1,10 +1,35 @@
-import type {
-  ConnectionState,
-  ProviderCapabilities,
-  ProviderCategory,
-  ProviderDefinition,
-} from '@metalayer/providers';
+export type ProviderCategory =
+  | 'metadata'
+  | 'artwork'
+  | 'ratings'
+  | 'catalog'
+  | 'tracking'
+  | 'identity'
+  | 'ai';
 
+export type ConnectionState =
+  | 'not_configured'
+  | 'connected'
+  | 'invalid'
+  | 'expired'
+  | 'degraded'
+  | 'coming_soon';
+
+export interface ProviderCapabilities {
+  mediaTypes: Array<'movie' | 'series' | 'anime'>;
+  metadataFields: string[];
+  catalogFeatures: string[];
+  supportsSearch: boolean;
+  supportsPagination: boolean;
+  supportsRegion: boolean;
+  supportsLanguage: boolean;
+  supportsAgeRating: boolean;
+  supportsDigitalRelease: boolean;
+  supportsTracking: boolean;
+  supportsOAuth: boolean;
+}
+
+/** Wire shape from GET /api/v1/sources — keep free of Node-only provider adapters. */
 export interface PublicSource {
   id: string;
   name: string;
@@ -71,22 +96,6 @@ export async function testSource(
   });
   const body = (await response.json()) as SourceTestResult;
   return body;
-}
-
-export function toPublicSource(
-  provider: ProviderDefinition,
-  adapterAvailable: boolean,
-): PublicSource {
-  return {
-    id: provider.id,
-    name: provider.name,
-    categories: provider.categories,
-    connectionState: provider.connectionState,
-    requiresCredential: provider.requiresCredential,
-    requiresOAuth: provider.requiresOAuth,
-    capabilities: provider.capabilities,
-    adapterAvailable,
-  };
 }
 
 const SESSION_KEY = 'metalayer.catalogStudio.session';

@@ -7,6 +7,8 @@ import { RpdbArtworkAdapter } from './artwork/rpdb.js';
 import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { getProvider } from './registry.js';
 
+export { listAdapterProviderIds } from './adapter-ids.js';
+
 export interface CreateProviderAdapterOptions {
   apiKey?: string;
   fetchImpl?: TmdbFetch;
@@ -59,8 +61,4 @@ export function createProviderAdapter(
     default:
       return null;
   }
-}
-
-export function listAdapterProviderIds(): string[] {
-  return ['tmdb', 'fanart', 'rpdb', 'imdb'];
 }

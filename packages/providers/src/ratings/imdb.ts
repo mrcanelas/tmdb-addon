@@ -1,4 +1,4 @@
-import { createRequire } from 'node:module';
+import { normalizeImdbId } from '@metalayer/identity';
 import { classifyHttpStatus, ProviderError } from '../core/errors.js';
 import { buildProviderCacheKey } from '../core/cache-key.js';
 import type { ProviderCacheStore } from '../core/provider-cache.js';
@@ -16,9 +16,6 @@ import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
 import type { ProviderFetch } from '../artwork/types.js';
-
-const require = createRequire(import.meta.url);
-const { normalizeImdbId } = require('@metalayer/identity') as typeof import('@metalayer/identity');
 
 export type ImdbMediaType = 'movie' | 'series';
 

@@ -201,9 +201,6 @@ importers:
       '@metalayer/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
-      '@metalayer/providers':
-        specifier: workspace:*
-        version: link:../../packages/providers
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.3.0(@types/react@18.3.31)(react@18.3.1)

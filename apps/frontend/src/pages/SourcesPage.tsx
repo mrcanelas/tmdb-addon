@@ -1,21 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { listAdapterProviderIds, listProviders } from '@metalayer/providers';
 import { SourceCard } from '@/components/sources/SourceCard';
-import {
-  fetchSources,
-  toPublicSource,
-  type PublicSource,
-} from '@/lib/api';
+import { fetchSources, type PublicSource } from '@/lib/api';
 
 export function SourcesPage() {
   const { t } = useTranslation('sources');
-  const [sources, setSources] = useState<PublicSource[]>(() =>
-    listProviders().map((provider) =>
-      toPublicSource(provider, listAdapterProviderIds().includes(provider.id)),
-    ),
-  );
+  const [sources, setSources] = useState<PublicSource[]>([]);
   const [loadError, setLoadError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,6 +20,8 @@ export function SourcesPage() {
         }
       } catch {
         if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -42,15 +36,17 @@ export function SourcesPage() {
           {t('sources.title')}
         </h1>
         <p className="max-w-2xl text-muted-foreground">{t('sources.intro')}</p>
-        <p className="max-w-2xl text-sm text-muted-foreground">{t('sources.unavailableHint')}</p>
+        {loading ? (
+          <p className="text-sm text-muted-foreground">{t('sources.loading')}</p>
+        ) : null}
         {loadError ? (
-          <p className="max-w-2xl text-sm text-amber-700 dark:text-amber-400" role="status">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
             {t('sources.loadError')}
           </p>
         ) : null}
       </header>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {sources.map((source) => (
           <SourceCard key={source.id} source={source} />
         ))}
