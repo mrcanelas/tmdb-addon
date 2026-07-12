@@ -11,6 +11,7 @@ import { identityRoutes } from './identity.js';
 import { trackingRoutes } from './tracking.js';
 import { correctionsRoutes } from './corrections.js';
 import { searchAiRoutes } from './search-ai.js';
+import { dashboardRoutes } from './dashboard.js';
 
 /**
  * Versioned management API surface (AGENTS.md §27.2).
@@ -26,6 +27,7 @@ export const apiV1Routes: FastifyPluginAsync = async (app) => {
   await app.register(trackingRoutes);
   await app.register(correctionsRoutes);
   await app.register(searchAiRoutes);
+  await app.register(dashboardRoutes);
   await app.register(sourcesRoutes);
   await app.register(previewRoutes);
 };

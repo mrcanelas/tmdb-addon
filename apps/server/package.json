@@ -24,6 +24,7 @@
     "@metalayer/persistence": "workspace:*",
     "@metalayer/providers": "workspace:*",
     "@metalayer/metadata-resolver": "workspace:*",
+    "@metalayer/observability": "workspace:*",
     "@metalayer/rules": "workspace:*",
     "@metalayer/search-ai": "workspace:*",
     "@metalayer/security": "workspace:*",

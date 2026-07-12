@@ -196,6 +196,43 @@ importers:
         specifier: ^3.0.9
         version: 3.2.7(@types/node@22.20.1)(supports-color@5.5.0)
 
+  apps/dashboard:
+    dependencies:
+      '@metalayer/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      i18next:
+        specifier: ^25.2.1
+        version: 25.10.10(typescript@5.9.3)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-i18next:
+        specifier: ^15.5.2
+        version: 15.7.4(i18next@25.10.10(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      react-router-dom:
+        specifier: ^6.30.0
+        version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@rsbuild/core':
+        specifier: ^1.3.22
+        version: 1.7.6
+      '@rsbuild/plugin-react':
+        specifier: ^1.3.2
+        version: 1.4.6(@rsbuild/core@1.7.6)
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      typescript:
+        specifier: ^5.5.3
+        version: 5.9.3
+
   apps/frontend:
     dependencies:
       '@metalayer/i18n':
@@ -286,6 +323,9 @@ importers:
       '@metalayer/metadata-resolver':
         specifier: workspace:*
         version: link:../../packages/metadata-resolver
+      '@metalayer/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@metalayer/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
@@ -401,6 +441,12 @@ importers:
       '@metalayer/config':
         specifier: workspace:*
         version: link:../config
+
+  packages/observability:
+    dependencies:
+      '@metalayer/security':
+        specifier: workspace:*
+        version: link:../security
 
   packages/persistence:
     dependencies:

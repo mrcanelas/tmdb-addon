@@ -7,6 +7,10 @@ import {
   loadSampleCommunityCorrections,
 } from '@metalayer/corrections';
 import {
+  BoundedLogBuffer,
+  MetricsRegistry,
+} from '@metalayer/observability';
+import {
   createMemoryConfigurationStore,
   SqliteConfigurationStore,
   type ConfigurationStore,
@@ -28,6 +32,10 @@ export interface BuildAppOptions {
   providerFetch?: TmdbFetch;
   providerCache?: MemoryCache;
   correctionRegistry?: CorrectionRegistry;
+  metrics?: MetricsRegistry;
+  logBuffer?: BoundedLogBuffer;
+  /** Override for dashboard auth tests. */
+  env?: NodeJS.ProcessEnv;
 }
 
 declare module 'fastify' {
@@ -36,6 +44,9 @@ declare module 'fastify' {
     providerFetch?: TmdbFetch;
     providerCache: MemoryCache;
     correctionRegistry: CorrectionRegistry;
+    metrics: MetricsRegistry;
+    logBuffer: BoundedLogBuffer;
+    startedAt: Date;
   }
 }
 
@@ -61,7 +72,6 @@ function resolveStore(options: BuildAppOptions): ConfigurationStore {
 function buildLoggerOption(enabled: boolean) {
   if (!enabled) return false;
 
-  // Fastify logger typing is strict; keep redact config and cast the option object.
   return {
     redact: {
       paths: [...FASTIFY_LOG_REDACT_PATHS],
@@ -83,10 +93,36 @@ export async function buildApp(options: BuildAppOptions = {}) {
       registry.loadCommunity(loadSampleCommunityCorrections());
       return registry;
     })();
+  const metrics = options.metrics ?? new MetricsRegistry();
+  const logBuffer = options.logBuffer ?? new BoundedLogBuffer();
+
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
   app.decorate('providerCache', options.providerCache ?? new MemoryCache());
   app.decorate('correctionRegistry', correctionRegistry);
+  app.decorate('metrics', metrics);
+  app.decorate('logBuffer', logBuffer);
+  app.decorate('startedAt', new Date());
+
+  app.addHook('onRequest', async (request) => {
+    (request as { _startedAtMs?: number })._startedAtMs = Date.now();
+    metrics.increment('requestsTotal');
+  });
+
+  app.addHook('onResponse', async (request, reply) => {
+    const started = (request as { _startedAtMs?: number })._startedAtMs;
+    if (typeof started === 'number') {
+      metrics.recordLatency(Date.now() - started);
+    }
+    if (reply.statusCode >= 500) {
+      metrics.increment('errorsTotal');
+      logBuffer.append({
+        level: 'error',
+        message: `${request.method} ${request.url} → ${reply.statusCode}`,
+        correlationId: request.correlationId,
+      });
+    }
+  });
 
   app.addHook('onClose', async () => {
     store.close();
@@ -112,6 +148,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   app.setErrorHandler((err, request, reply) => {
     request.log.error(redactSensitive(err));
+    metrics.increment('errorsTotal');
+    logBuffer.append({
+      level: 'error',
+      message: 'Unhandled error',
+      correlationId: request.correlationId,
+      context: { name: err instanceof Error ? err.name : 'unknown' },
+    });
     const error = createApiError({
       code: 'INTERNAL_ERROR',
       message: 'Unexpected error',
