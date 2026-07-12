@@ -21,6 +21,27 @@ export const LocalizationPreferencesSchema = z.object({
   timezone: z.string().min(1).default('UTC'),
 });
 
+export const MergeSourceSchema = z.object({
+  instanceId: z.string().min(1),
+  weight: z.number().positive().optional(),
+});
+
+export const MergeDefinitionSchema = z.object({
+  mode: z.enum([
+    'append',
+    'interleave',
+    'dedupe-union',
+    'weighted-mix',
+    'priority-fallback',
+  ]),
+  sources: z.array(MergeSourceSchema).min(2),
+});
+
+export const RotationDefinitionSchema = z.object({
+  mode: z.enum(['hourly', 'daily', 'weekly']),
+  sources: z.array(z.string().min(1)).min(2),
+});
+
 export const CatalogDefinitionSchema = z.object({
   instanceId: z.string().min(1),
   provider: z.string().min(1),
@@ -40,6 +61,8 @@ export const CatalogDefinitionSchema = z.object({
   tags: z.array(z.string()).default([]),
   /** Optional studio grouping label (not a separate order list). */
   group: z.string().min(1).optional(),
+  merge: MergeDefinitionSchema.optional(),
+  rotation: RotationDefinitionSchema.optional(),
 });
 
 /** ADR 0006 — public Stremio ids default to IMDb when available. */
@@ -68,6 +91,8 @@ export const MetaLayerConfigSchema = z.object({
 
 export type LocalizationPreferences = z.infer<typeof LocalizationPreferencesSchema>;
 export type IdentityPreferences = z.infer<typeof IdentityPreferencesSchema>;
+export type MergeDefinition = z.infer<typeof MergeDefinitionSchema>;
+export type RotationDefinition = z.infer<typeof RotationDefinitionSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
 

@@ -3,12 +3,16 @@ export {
   MetaLayerConfigSchema,
   LocalizationPreferencesSchema,
   IdentityPreferencesSchema,
+  MergeDefinitionSchema,
+  RotationDefinitionSchema,
   CatalogDefinitionSchema,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
   type MetaLayerConfig,
   type LocalizationPreferences,
   type IdentityPreferences,
+  type MergeDefinition,
+  type RotationDefinition,
   type CatalogDefinition,
 } from './schema.js';
 
