@@ -1,0 +1,27 @@
+{
+  "name": "@metalayer/core",
+  "version": "1.0.0-alpha.1",
+  "description": "MetaLayer shared core barrel — foundation packages for apps and adapters",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@metalayer/api-errors": "workspace:*",
+    "@metalayer/catalogs": "workspace:*",
+    "@metalayer/config": "workspace:*",
+    "@metalayer/identity": "workspace:*",
+    "@metalayer/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
+}
