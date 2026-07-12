@@ -108,6 +108,23 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     }),
   },
   {
+    id: 'imdb',
+    name: 'IMDb',
+    categories: ['ratings'],
+    connectionState: 'not_configured',
+    requiresCredential: false,
+    requiresOAuth: false,
+    capabilities: metadataBase({
+      metadataFields: ['rating', 'externalIds'],
+      catalogFeatures: [],
+      supportsSearch: false,
+      supportsPagination: false,
+      supportsRegion: false,
+      supportsLanguage: false,
+      supportsAgeRating: false,
+    }),
+  },
+  {
     id: 'anilist',
     name: 'AniList',
     categories: ['metadata', 'catalog', 'tracking'],

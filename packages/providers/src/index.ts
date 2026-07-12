@@ -65,7 +65,12 @@ export type {
   ArtworkKind,
   ProviderFetch,
 } from './artwork/types.js';
-export { ImdbRatingsStubAdapter } from './ratings/stubs.js';
+export { ImdbRatingsAdapter, ImdbRatingsStubAdapter } from './ratings/imdb.js';
+export type {
+  ImdbMediaType,
+  ImdbRating,
+  ImdbRatingsAdapterOptions,
+} from './ratings/imdb.js';
 
 export {
   createProviderAdapter,

@@ -4,7 +4,7 @@ import type { TmdbFetch } from './tmdb/adapter.js';
 import { TmdbProviderAdapter } from './tmdb/adapter.js';
 import { FanartArtworkAdapter } from './artwork/fanart.js';
 import { RpdbArtworkAdapter } from './artwork/rpdb.js';
-import { ImdbRatingsStubAdapter } from './ratings/stubs.js';
+import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { getProvider } from './registry.js';
 
 export interface CreateProviderAdapterOptions {
@@ -50,7 +50,12 @@ export function createProviderAdapter(
         policy: options.policy,
       });
     case 'imdb':
-      return new ImdbRatingsStubAdapter(options.policy);
+      return new ImdbRatingsAdapter({
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        cache: options.cache,
+        cacheTtlMs: options.cacheTtlMs,
+      });
     default:
       return null;
   }
