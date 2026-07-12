@@ -13,6 +13,7 @@ import { SearchAiPage } from '@/pages/SearchAiPage';
 import { AppearancePage } from '@/pages/AppearancePage';
 import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
 import { SaveInstallPage } from '@/pages/SaveInstallPage';
+import { ProfilesPage } from '@/pages/ProfilesPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 import { AppQueryProvider } from '@/providers/AppQueryProvider';
@@ -31,7 +32,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/search-ai' &&
     item.path !== '/appearance' &&
     item.path !== '/language-region' &&
-    item.path !== '/save-install',
+    item.path !== '/save-install' &&
+    item.path !== '/profiles',
 );
 
 function ThemedApp() {
@@ -57,6 +59,7 @@ function ThemedApp() {
               <Route path="appearance" element={<AppearancePage />} />
               <Route path="language-region" element={<LanguageRegionPage />} />
               <Route path="save-install" element={<SaveInstallPage />} />
+              <Route path="profiles" element={<ProfilesPage />} />
               {PLACEHOLDER_ROUTES.map((item) => (
                 <Route
                   key={item.id}

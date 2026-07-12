@@ -167,12 +167,27 @@ export const FieldProvidersSchema = z
   .record(z.array(z.string().min(1)).min(1))
   .default(DEFAULT_FIELD_PROVIDERS);
 
+/** Profile under one MetaLayer configuration (AGENTS.md §21). */
+export const ProfileDefinitionSchema = z.object({
+  profileId: z.string().min(1),
+  name: z.string().min(1),
+  enabled: z.boolean().default(true),
+  /** Partial localization overrides merged onto the base config. */
+  localization: LocalizationPreferencesSchema.partial().optional(),
+  /**
+   * When set, only these catalog instance IDs appear in the profile manifest,
+   * in this order. Missing IDs are skipped.
+   */
+  catalogInstanceIds: z.array(z.string().min(1)).optional(),
+});
+
 export const MetaLayerConfigSchema = z.object({
   configVersion: z.literal(METALAYER_CONFIG_VERSION),
   name: z.string().min(1),
   localization: LocalizationPreferencesSchema,
   identity: IdentityPreferencesSchema.default({ stremioPublicId: 'imdb' }),
   catalogs: z.array(CatalogDefinitionSchema).default([]),
+  profiles: z.array(ProfileDefinitionSchema).default([]),
   globalRules: RuleSetSchema.default({}),
   globalSorting: SortingPlanSchema.optional(),
   fieldProviders: FieldProvidersSchema,
@@ -213,6 +228,7 @@ export type SortingCriterion = z.infer<typeof SortingCriterionSchema>;
 export type SortingPlan = z.infer<typeof SortingPlanSchema>;
 export type ResolvableField = z.infer<typeof ResolvableFieldSchema>;
 export type FieldProviders = z.infer<typeof FieldProvidersSchema>;
+export type ProfileDefinition = z.infer<typeof ProfileDefinitionSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
 
@@ -236,6 +252,7 @@ export function createDefaultMetaLayerConfig(
       stremioPublicId: 'imdb',
     },
     catalogs: [],
+    profiles: [],
     globalRules: {},
     fieldProviders: DEFAULT_FIELD_PROVIDERS,
     featureFlags: {},
@@ -247,4 +264,56 @@ export function createDefaultMetaLayerConfig(
 
 export function parseMetaLayerConfig(input: unknown): MetaLayerConfig {
   return MetaLayerConfigSchema.parse(input);
+}
+
+export function findProfile(
+  profiles: ProfileDefinition[],
+  profileId: string,
+): ProfileDefinition | undefined {
+  return profiles.find((profile) => profile.profileId === profileId);
+}
+
+export function mergeLocalization(
+  base: LocalizationPreferences,
+  override?: Partial<LocalizationPreferences>,
+): LocalizationPreferences {
+  if (!override) return base;
+  return LocalizationPreferencesSchema.parse({
+    ...base,
+    ...override,
+    metadataFallbackLocales:
+      override.metadataFallbackLocales ?? base.metadataFallbackLocales,
+  });
+}
+
+export function filterCatalogsForProfile(
+  catalogs: CatalogDefinition[],
+  catalogInstanceIds?: string[],
+): CatalogDefinition[] {
+  if (!catalogInstanceIds || catalogInstanceIds.length === 0) {
+    return catalogs;
+  }
+  const byId = new Map(catalogs.map((catalog) => [catalog.instanceId, catalog]));
+  const ordered: CatalogDefinition[] = [];
+  for (const instanceId of catalogInstanceIds) {
+    const catalog = byId.get(instanceId);
+    if (catalog) ordered.push(catalog);
+  }
+  return ordered.map((catalog, index) => ({ ...catalog, position: index }));
+}
+
+/** Apply a profile's overrides onto a config snapshot for manifest/serving. */
+export function applyProfileToConfig(
+  config: MetaLayerConfig,
+  profile: ProfileDefinition,
+): MetaLayerConfig {
+  return {
+    ...config,
+    name: `${config.name} · ${profile.name}`,
+    localization: mergeLocalization(config.localization, profile.localization),
+    catalogs: filterCatalogsForProfile(
+      config.catalogs,
+      profile.catalogInstanceIds,
+    ),
+  };
 }

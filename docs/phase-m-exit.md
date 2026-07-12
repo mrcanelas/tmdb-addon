@@ -20,7 +20,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Item | Target |
 |---|---|
-| Profiles UI + `/c/.../p/:profileId/manifest.json` | beta.N / post-beta |
+| Profiles UI + `/c/.../p/:profileId/manifest.json` | **Done** (MVP: CRUD + manifest; profile-scoped catalog/meta follow-up) |
 | Series (and anime) live meta gather on native route | **Done** (TMDB series + AniList anime; episode videos still open) |
 | Advanced configure module | beta.N |
 | Tracking OAuth browser flows + live list sync | beta.N |

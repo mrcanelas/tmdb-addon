@@ -14,8 +14,13 @@ export {
   FieldProvidersSchema,
   DEFAULT_FIELD_PROVIDERS,
   CatalogDefinitionSchema,
+  ProfileDefinitionSchema,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
+  findProfile,
+  mergeLocalization,
+  filterCatalogsForProfile,
+  applyProfileToConfig,
   type MetaLayerConfig,
   type LocalizationPreferences,
   type IdentityPreferences,
@@ -29,6 +34,7 @@ export {
   type ResolvableField,
   type FieldProviders,
   type CatalogDefinition,
+  type ProfileDefinition,
 } from './schema.js';
 
 export {

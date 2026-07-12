@@ -40,6 +40,9 @@ import esESLanguageRegion from '@metalayer/i18n/locales/es-ES/languageRegion.jso
 import enUSSaveInstall from '@metalayer/i18n/locales/en-US/saveInstall.json';
 import ptBRSaveInstall from '@metalayer/i18n/locales/pt-BR/saveInstall.json';
 import esESSaveInstall from '@metalayer/i18n/locales/es-ES/saveInstall.json';
+import enUSProfiles from '@metalayer/i18n/locales/en-US/profiles.json';
+import ptBRProfiles from '@metalayer/i18n/locales/pt-BR/profiles.json';
+import esESProfiles from '@metalayer/i18n/locales/es-ES/profiles.json';
 
 const resources = {
   'en-US': {
@@ -55,6 +58,7 @@ const resources = {
     resolution: enUSResolution,
     languageRegion: enUSLanguageRegion,
     saveInstall: enUSSaveInstall,
+    profiles: enUSProfiles,
   },
   'pt-BR': {
     common: ptBRCommon,
@@ -69,6 +73,7 @@ const resources = {
     resolution: ptBRResolution,
     languageRegion: ptBRLanguageRegion,
     saveInstall: ptBRSaveInstall,
+    profiles: ptBRProfiles,
   },
   'es-ES': {
     common: esESCommon,
@@ -83,6 +88,7 @@ const resources = {
     resolution: esESResolution,
     languageRegion: esESLanguageRegion,
     saveInstall: esESSaveInstall,
+    profiles: esESProfiles,
   },
 };
 
@@ -107,6 +113,7 @@ void i18n.use(initReactI18next).init({
     'resolution',
     'languageRegion',
     'saveInstall',
+    'profiles',
   ],
   interpolation: {
     escapeValue: false,

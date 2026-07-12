@@ -3668,11 +3668,11 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **Profiles UI + profile manifest route**
-2. **Tracking OAuth browser flows** and live list sync
-3. **Postgres + Redis** Server end-to-end
-4. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
-5. **Episode videos / seasons** on native series meta
+1. **Tracking OAuth browser flows** and live list sync
+2. **Postgres + Redis** Server end-to-end
+3. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+4. **Episode videos / seasons** on native series meta
+5. **Profile-scoped catalog/meta** routes (`/c/.../p/.../catalog|meta`)
 6. **Encryption key rotation tooling** (Phase B carry-over)
 
 ---
@@ -4329,7 +4329,7 @@ Progress note (2026-07-12): Phase **M** (`1.0.0-beta.1`) is in progress. Phases 
 - [x] Correction Hub supports local and community corrections.
 - [x] Anime is first-class (foundations).
 - [x] Tracking integrations are isolated and recoverable (OAuth browser flows / live sync still follow-up).
-- [ ] Profiles are supported end-to-end (UI + profile manifest route incomplete).
+- [x] Profiles are supported end-to-end (MVP UI + profile manifest; catalog/meta under profile path follow-up).
 - [x] Revision history and rollback work.
 - [x] Simple and Advanced modes exist (configure shell).
 - [x] Dashboard supports operators (token-gated API + UI).

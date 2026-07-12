@@ -1,0 +1,19 @@
+{
+  "profiles.title": "Perfiles",
+  "profiles.intro": "Crea experiencias de metadatos alternativas bajo una configuración. Cada perfil tiene su propia URL de manifiesto instalable.",
+  "profiles.loading": "Cargando perfiles…",
+  "profiles.loadError": "No se pudieron cargar los perfiles.",
+  "profiles.create": "Crear perfil",
+  "profiles.list": "Perfiles",
+  "profiles.name": "Nombre",
+  "profiles.namePlaceholder": "Familia, Niños, Anime…",
+  "profiles.defaultName": "Nuevo perfil",
+  "profiles.add": "Añadir perfil",
+  "profiles.delete": "Eliminar",
+  "profiles.empty": "Aún no hay perfiles.",
+  "profiles.copyManifest": "Copiar URL del manifiesto del perfil",
+  "profiles.copyOk": "URL del manifiesto del perfil copiada.",
+  "profiles.copyError": "No se pudo copiar la URL.",
+  "profiles.saveOk": "Perfiles guardados.",
+  "profiles.saveError": "No se pudieron guardar los perfiles."
+}

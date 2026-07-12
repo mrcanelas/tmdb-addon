@@ -1,0 +1,19 @@
+{
+  "profiles.title": "PrøfîlésPrø",
+  "profiles.intro": "Çréåté åltérñåté métådåtå éxpérîéñçés ûñdér øñé çøñfîgûråtîøñ. Éåçh prøfîlé hås îts øwñ îñstållåblé måñîfést ÛRL.Çréåté åltérñåté métådåtå éxpérîéñ",
+  "profiles.loading": "Løådîñg prøfîlés…Løådîñ",
+  "profiles.loadError": "Çøûld ñøt løåd prøfîlés.Çøûld ñø",
+  "profiles.create": "Çréåté prøfîléÇréåt",
+  "profiles.list": "PrøfîlésPrø",
+  "profiles.name": "ÑåméÑå",
+  "profiles.namePlaceholder": "Fåmîly, Kîds, Åñîmé…Fåmîly",
+  "profiles.defaultName": "Ñéw prøfîléÑéw ",
+  "profiles.add": "Ådd prøfîléÅdd ",
+  "profiles.delete": "DélétéDé",
+  "profiles.empty": "Ñø prøfîlés yét.Ñø pr",
+  "profiles.copyManifest": "Çøpy prøfîlé måñîfést ÛRLÇøpy prø",
+  "profiles.copyOk": "Prøfîlé måñîfést ÛRL çøpîéd.Prøfîlé m",
+  "profiles.copyError": "Çøûld ñøt çøpy thé ÛRL.Çøûld ñ",
+  "profiles.saveOk": "Prøfîlés såvéd.Prøfî",
+  "profiles.saveError": "Çøûld ñøt såvé prøfîlés.Çøûld ñø"
+}

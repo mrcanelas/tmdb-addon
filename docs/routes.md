@@ -35,7 +35,7 @@ Implemented by `apps/server` (port `1338` by default):
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/c/:configId/manifest.json` | Native manifest (no secrets in URL) |
+| GET | `/c/:configId/p/:profileId/manifest.json` | Profile-scoped native manifest |
 | GET | `/c/:configId/catalog/:type/:id.json` | Native catalog (empty `{ metas: [] }` when unknown) |
 | GET | `/c/:configId/catalog/:type/:id/:extra.json` | Native catalog with `skip=` pagination |
 | GET | `/c/:configId/meta/:type/:id.json` | Native meta (movie/series via TMDB; anime via AniList) |
@@ -57,10 +57,11 @@ Implemented by `apps/server` (port `1338` by default):
 Still planned:
 
 ```text
-/c/:configId/p/:profileId/manifest.json
+/c/:configId/p/:profileId/catalog/...
+/c/:configId/p/:profileId/meta/...
 ```
 
-Profiles UI remains a beta follow-up (`docs/phase-m-exit.md`).
+Profile manifest MVP: `GET /c/:configId/p/:profileId/manifest.json` (`docs/profiles.md`).
 
 ## Compatibility rules
 

@@ -782,3 +782,24 @@ export async function saveLocalization(
     body: JSON.stringify({ localization }),
   });
 }
+
+export async function fetchProfiles(
+  configId: string,
+  editCredential: string,
+): Promise<{ profiles: import('@metalayer/config').ProfileDefinition[] }> {
+  return apiFetch(`/api/v1/configurations/${configId}/profiles`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function saveProfiles(
+  configId: string,
+  editCredential: string,
+  profiles: import('@metalayer/config').ProfileDefinition[],
+): Promise<{ profiles: import('@metalayer/config').ProfileDefinition[] }> {
+  return apiFetch(`/api/v1/configurations/${configId}/profiles`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ profiles }),
+  });
+}

@@ -1,0 +1,19 @@
+{
+  "profiles.title": "‏Profiles‎",
+  "profiles.intro": "‏Create alternate metadata experiences under one configuration. Each profile has its own installable manifest URL.‎",
+  "profiles.loading": "‏Loading profiles…‎",
+  "profiles.loadError": "‏Could not load profiles.‎",
+  "profiles.create": "‏Create profile‎",
+  "profiles.list": "‏Profiles‎",
+  "profiles.name": "‏Name‎",
+  "profiles.namePlaceholder": "‏Family, Kids, Anime…‎",
+  "profiles.defaultName": "‏New profile‎",
+  "profiles.add": "‏Add profile‎",
+  "profiles.delete": "‏Delete‎",
+  "profiles.empty": "‏No profiles yet.‎",
+  "profiles.copyManifest": "‏Copy profile manifest URL‎",
+  "profiles.copyOk": "‏Profile manifest URL copied.‎",
+  "profiles.copyError": "‏Could not copy the URL.‎",
+  "profiles.saveOk": "‏Profiles saved.‎",
+  "profiles.saveError": "‏Could not save profiles.‎"
+}
