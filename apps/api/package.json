@@ -16,6 +16,7 @@
   "dependencies": {
     "@metalayer/api-errors": "*",
     "@metalayer/cache": "*",
+    "@metalayer/catalogs": "*",
     "@metalayer/config": "*",
     "@metalayer/identity": "*",
     "@metalayer/persistence": "*",
