@@ -7,6 +7,8 @@
   "inspector.loadError": "Could not load inspector from the API.",
   "inspector.bootstrapping": "Preparing draft configuration…",
   "inspector.identity": "Identity",
+  "inspector.graph": "Identity Graph",
+  "inspector.edges": "Edges",
   "inspector.fields": "Resolved fields",
   "inspector.provider": "Provider",
   "inspector.locale": "Locale",

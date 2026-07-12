@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ensureStudioSession,
   inspectMetadata,
+  type IdentityDiagnosticsView,
   type MetaInspectorReport,
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ export function InspectorPage() {
   const { t } = useTranslation('inspector');
   const [publicId, setPublicId] = useState('tt0137523');
   const [report, setReport] = useState<MetaInspectorReport | null>(null);
+  const [identity, setIdentity] = useState<IdentityDiagnosticsView | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
@@ -86,6 +88,7 @@ export function InspectorPage() {
         },
       );
       setReport(result.report);
+      setIdentity(result.identity?.diagnostics ?? null);
       setStatus('ready');
     } catch {
       setStatus('error');
@@ -104,6 +107,7 @@ export function InspectorPage() {
         },
       );
       setReport(result.report);
+      setIdentity(result.identity?.diagnostics ?? null);
       setStatus('ready');
     } catch {
       setStatus('error');
@@ -159,6 +163,31 @@ export function InspectorPage() {
               {t('inspector.timing', { ms: report.timingMs })}
             </p>
           </div>
+
+          {identity ? (
+            <div className="space-y-2">
+              <h2 className="text-lg font-medium">{t('inspector.graph')}</h2>
+              <p className="font-mono text-sm">{identity.canonicalId}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('inspector.edges')}: {identity.edgeCount}
+              </p>
+              <ul className="space-y-1 text-sm">
+                {identity.edges.slice(0, 8).map((edge) => (
+                  <li key={`${edge.from}->${edge.to}`} className="font-mono">
+                    {edge.from} → {edge.to} · {edge.method} ·{' '}
+                    {Math.round(edge.confidence * 100)}%
+                  </li>
+                ))}
+              </ul>
+              {identity.warnings.length > 0 ? (
+                <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                  {identity.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             <h2 className="text-lg font-medium">{t('inspector.fields')}</h2>

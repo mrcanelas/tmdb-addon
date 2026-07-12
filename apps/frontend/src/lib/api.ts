@@ -512,6 +512,23 @@ export interface MetaInspectorReport {
   timingMs: number;
 }
 
+export interface IdentityDiagnosticsView {
+  canonicalId: string;
+  entityKind: string;
+  matches: Array<{ provider: string; id: string }>;
+  edgeCount: number;
+  edges: Array<{
+    from: string;
+    to: string;
+    confidence: number;
+    method: string;
+    verified: boolean;
+    evidence: string[];
+  }>;
+  unresolvedProviders: string[];
+  warnings: string[];
+}
+
 export async function inspectMetadata(
   configId: string,
   editCredential: string,
@@ -521,7 +538,10 @@ export async function inspectMetadata(
     contributions?: Record<string, Array<Record<string, unknown>>>;
     apiKey?: string;
   },
-): Promise<{ report: MetaInspectorReport }> {
+): Promise<{
+  report: MetaInspectorReport;
+  identity?: { diagnostics: IdentityDiagnosticsView };
+}> {
   return apiFetch(`/api/v1/configurations/${configId}/inspect`, {
     method: 'POST',
     headers: { 'x-metalayer-edit-credential': editCredential },

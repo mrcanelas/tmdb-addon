@@ -7,6 +7,8 @@
   "inspector.loadError": "Não foi possível carregar o inspector da API.",
   "inspector.bootstrapping": "Preparando configuração rascunho…",
   "inspector.identity": "Identidade",
+  "inspector.graph": "Grafo de identidade",
+  "inspector.edges": "Arestas",
   "inspector.fields": "Campos resolvidos",
   "inspector.provider": "Provedor",
   "inspector.locale": "Locale",
