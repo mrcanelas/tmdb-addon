@@ -119,4 +119,82 @@ describe('@metalayer/server tracking', () => {
     expect(JSON.stringify(lookup.json())).not.toContain('refresh-secret-value');
     expect(lookup.json().connectionState).toBe('connected');
   });
+
+  it('builds Trakt auth URL, exchanges code into vault, and disconnects', async () => {
+    const previousId = process.env.TRAKT_CLIENT_ID;
+    const previousSecret = process.env.TRAKT_CLIENT_SECRET;
+    process.env.TRAKT_CLIENT_ID = 'trakt-client';
+    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 38).toString('base64'));
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (url, init) => {
+        expect(String(url)).toContain('oauth/token');
+        expect(init?.method).toBe('POST');
+        return new Response(
+          JSON.stringify({
+            access_token: 'live-access',
+            refresh_token: 'live-refresh',
+            expires_in: 3600,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'trakt-oauth-edit',
+        config: createDefaultMetaLayerConfig({ name: 'TraktOAuth' }),
+      },
+    });
+    const { configId } = created.json();
+    const headers = { 'x-metalayer-edit-credential': 'trakt-oauth-edit' };
+    const redirectUri = 'http://localhost:1338/configure/oauth/trakt/callback';
+
+    const authUrl = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/trakt/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+      headers,
+    });
+    expect(authUrl.statusCode).toBe(200);
+    expect(authUrl.json().authUrl).toContain('trakt.tv/oauth/authorize');
+    expect(authUrl.json().authUrl).toContain('trakt-client');
+
+    const callback = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/trakt/callback`,
+      headers,
+      payload: { code: 'auth-code', redirectUri },
+    });
+    expect(callback.statusCode).toBe(200);
+    expect(callback.json().connected).toBe(true);
+    expect(JSON.stringify(callback.json())).not.toContain('live-access');
+
+    const status = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/status`,
+      headers,
+    });
+    const trakt = status
+      .json()
+      .providers.find((item: { provider: string }) => item.provider === 'trakt');
+    expect(trakt.state).toBe('connected');
+
+    const disconnected = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/configurations/${configId}/tracking/trakt`,
+      headers,
+    });
+    expect(disconnected.statusCode).toBe(200);
+    expect(disconnected.json().state).toBe('not_configured');
+
+    await app.close();
+    process.env.TRAKT_CLIENT_ID = previousId;
+    process.env.TRAKT_CLIENT_SECRET = previousSecret;
+  });
 });

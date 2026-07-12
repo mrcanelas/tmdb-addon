@@ -1,12 +1,12 @@
 {
   "tracking.title": "Tracking",
-  "tracking.intro": "Conecta cuentas de seguimiento. Los fallos degradan de forma observable y nunca rompen los metadatos.",
+  "tracking.intro": "Conecta cuentas de seguimiento de visionado. Los fallos degradan de forma observable y nunca rompen los metadatos.",
   "tracking.loadError": "No se pudo cargar el estado de tracking de la API.",
   "tracking.bootstrapping": "Preparando configuración borrador…",
   "tracking.providers": "Proveedores de tracking",
   "tracking.state.not_configured": "No configurado",
   "tracking.state.connected": "Conectado",
-  "tracking.state.expired": "Expirado",
+  "tracking.state.expired": "Caducado",
   "tracking.state.invalid": "Inválido",
   "tracking.state.reconnect_required": "Reconexión necesaria",
   "tracking.state.degraded": "Degradado",
@@ -14,8 +14,16 @@
   "tracking.adapterMissing": "Adapter no disponible",
   "tracking.preview": "Vista previa de ocultar vistos",
   "tracking.previewRunning": "Ejecutando vista previa…",
-  "tracking.previewOk": "Vista previa completada (degradado: {{degraded}}).",
+  "tracking.previewOk": "Vista previa de ocultar vistos completada (degradado: {{degraded}}).",
+  "tracking.previewNeedsConnection": "Conecta Trakt para previsualizar hide-watched con el historial en vivo.",
   "tracking.included": "Incluidos",
   "tracking.excluded": "Excluidos",
-  "tracking.emptyTitle": "No hay proveedores de tracking listados"
+  "tracking.emptyTitle": "No hay proveedores de tracking listados",
+  "tracking.actions.connect": "Conectar",
+  "tracking.actions.disconnect": "Desconectar",
+  "tracking.oauth.title": "Conexión Trakt",
+  "tracking.oauth.intro": "Completando el handshake OAuth de Trakt para esta configuración.",
+  "tracking.oauth.connecting": "Conectando Trakt…",
+  "tracking.oauth.success": "Trakt conectado. Puedes cerrar esta ventana.",
+  "tracking.oauth.error": "No se pudo completar la conexión OAuth de Trakt."
 }

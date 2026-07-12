@@ -3,6 +3,8 @@ import { Button, StatusBadge } from '@metalayer/shared-ui';
 import {
   useHideWatchedPreviewMutation,
   useTrackingStatusQuery,
+  useTraktConnectMutation,
+  useTraktDisconnectMutation,
 } from '@/api/hooks/use-tracking';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { PageHeader } from '@/components/metalayer/PageHeader';
@@ -33,10 +35,14 @@ export function TrackingPage() {
   const sessionQuery = useStudioSessionQuery();
   const statusQuery = useTrackingStatusQuery();
   const previewMutation = useHideWatchedPreviewMutation();
+  const connectMutation = useTraktConnectMutation();
+  const disconnectMutation = useTraktDisconnectMutation();
 
   const providers = statusQuery.data?.providers ?? [];
   const bootstrapping = sessionQuery.isLoading || statusQuery.isLoading;
   const loadError = sessionQuery.isError || statusQuery.isError;
+  const trakt = providers.find((provider) => provider.provider === 'trakt');
+  const traktConnected = trakt?.state === 'connected';
 
   return (
     <section className="space-y-6">
@@ -83,11 +89,44 @@ export function TrackingPage() {
                         ? t('tracking.adapterReady')
                         : t('tracking.adapterMissing')}
                     </span>
+                    {provider.provider === 'trakt' ? (
+                      provider.state === 'connected' ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onPress={() => {
+                            void disconnectMutation.mutateAsync().then(() => {
+                              void statusQuery.refetch();
+                            });
+                          }}
+                          isDisabled={disconnectMutation.isPending}
+                        >
+                          {t('tracking.actions.disconnect')}
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onPress={() => {
+                            void connectMutation.mutateAsync();
+                          }}
+                          isDisabled={connectMutation.isPending}
+                        >
+                          {t('tracking.actions.connect')}
+                        </Button>
+                      )
+                    ) : null}
                   </div>
                 </li>
               ))}
             </ul>
           )}
+          {connectMutation.isError ? (
+            <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
+              {t('tracking.oauth.error')}
+            </p>
+          ) : null}
         </SectionCard>
       ) : null}
 
@@ -97,12 +136,22 @@ export function TrackingPage() {
           onPress={() => {
             void previewMutation.mutateAsync();
           }}
-          isDisabled={bootstrapping || loadError || previewMutation.isPending}
+          isDisabled={
+            bootstrapping ||
+            loadError ||
+            previewMutation.isPending ||
+            !traktConnected
+          }
         >
           {previewMutation.isPending
             ? t('tracking.previewRunning')
             : t('tracking.preview')}
         </Button>
+        {!traktConnected ? (
+          <p className="mt-3 text-sm ml-text-muted">
+            {t('tracking.previewNeedsConnection')}
+          </p>
+        ) : null}
         {previewMutation.isError ? (
           <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
             {t('tracking.loadError')}

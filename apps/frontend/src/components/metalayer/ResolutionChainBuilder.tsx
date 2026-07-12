@@ -12,7 +12,7 @@ export interface ResolutionChainBuilderProps {
   allowLocales?: boolean;
 }
 
-function localeLabel(locale: LocalePreference, t: (key: string, opts?: object) => string): string {
+function localeLabel(locale: LocalePreference, t: (key: string) => string): string {
   switch (locale.type) {
     case 'locale':
       return locale.value;

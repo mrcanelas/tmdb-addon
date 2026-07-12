@@ -1,6 +1,6 @@
 {
   "tracking.title": "Tracking",
-  "tracking.intro": "Conecte contas de acompanhamento. Falhas degradam de forma observável e nunca quebram metadados.",
+  "tracking.intro": "Conecte contas de acompanhamento de visualização. Falhas degradam de forma observável e nunca quebram os metadados.",
   "tracking.loadError": "Não foi possível carregar o status de tracking da API.",
   "tracking.bootstrapping": "Preparando configuração rascunho…",
   "tracking.providers": "Provedores de tracking",
@@ -14,8 +14,16 @@
   "tracking.adapterMissing": "Adapter indisponível",
   "tracking.preview": "Prévia de ocultar assistidos",
   "tracking.previewRunning": "Executando prévia…",
-  "tracking.previewOk": "Prévia concluída (degradado: {{degraded}}).",
+  "tracking.previewOk": "Prévia de ocultar assistidos concluída (degradado: {{degraded}}).",
+  "tracking.previewNeedsConnection": "Conecte o Trakt para pré-visualizar hide-watched com o histórico ao vivo.",
   "tracking.included": "Incluídos",
   "tracking.excluded": "Excluídos",
-  "tracking.emptyTitle": "Nenhum provedor de tracking listado"
+  "tracking.emptyTitle": "Nenhum provedor de tracking listado",
+  "tracking.actions.connect": "Conectar",
+  "tracking.actions.disconnect": "Desconectar",
+  "tracking.oauth.title": "Conexão Trakt",
+  "tracking.oauth.intro": "Concluindo o handshake OAuth do Trakt para esta configuração.",
+  "tracking.oauth.connecting": "Conectando Trakt…",
+  "tracking.oauth.success": "Trakt conectado. Você pode fechar esta janela.",
+  "tracking.oauth.error": "Não foi possível concluir a conexão OAuth do Trakt."
 }

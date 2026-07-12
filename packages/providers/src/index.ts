@@ -87,8 +87,12 @@ export { MalJikanProviderAdapter } from './mal/adapter.js';
 export type { JikanAdapterOptions } from './mal/adapter.js';
 export { KitsuProviderAdapter } from './kitsu/adapter.js';
 export type { KitsuAdapterOptions } from './kitsu/adapter.js';
-export { TraktTrackingAdapter } from './trakt/adapter.js';
-export type { TraktAdapterOptions, TraktWatchStateFixture } from './trakt/adapter.js';
+export { TraktTrackingAdapter, buildTraktAuthorizeUrl, exchangeTraktAuthorizationCode } from './trakt/adapter.js';
+export type {
+  TraktAdapterOptions,
+  TraktWatchStateFixture,
+  TraktOAuthTokens,
+} from './trakt/adapter.js';
 export { SimklTrackingAdapter } from './simkl/adapter.js';
 export type { SimklAdapterOptions, SimklWatchStateFixture } from './simkl/adapter.js';
 

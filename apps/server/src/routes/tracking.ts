@@ -12,9 +12,12 @@ import {
 import {
   SimklTrackingAdapter,
   TraktTrackingAdapter,
+  buildTraktAuthorizeUrl,
   createProviderAdapter,
+  exchangeTraktAuthorizationCode,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
+import { randomBytes } from 'node:crypto';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
@@ -153,7 +156,9 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         adapter instanceof TraktTrackingAdapter ||
         adapter instanceof SimklTrackingAdapter
       ) {
-        return adapter.getWatchStates();
+        return adapter.getWatchStates({
+          correlationId: request.correlationId,
+        });
       }
 
       return [];
@@ -186,15 +191,42 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
     const provider = request.body?.provider ?? 'trakt';
     const items = request.body?.items ?? [];
+    const vaultToken =
+      app.configStore.getSecretPlaintext(
+        request.params.configId,
+        provider,
+        'oauth_access',
+      ) ||
+      app.configStore.getSecretPlaintext(
+        request.params.configId,
+        provider,
+        'api_key',
+      );
 
     const loaded = await safeLoadWatchStates(provider, async () => {
       if (request.body?.failTracking) {
         throw new Error('tracking failed');
       }
-      return (request.body?.fixtures ?? []).map((item) => ({
-        ...item,
-        provider,
-      }));
+      if (request.body?.fixtures) {
+        return (request.body.fixtures ?? []).map((item) => ({
+          ...item,
+          provider,
+        }));
+      }
+
+      const adapter = createProviderAdapter(provider, {
+        accessToken: vaultToken || undefined,
+        fetchImpl: app.providerFetch,
+      });
+      if (
+        adapter instanceof TraktTrackingAdapter ||
+        adapter instanceof SimklTrackingAdapter
+      ) {
+        return adapter.getWatchStates({
+          correlationId: request.correlationId,
+        });
+      }
+      return [];
     });
 
     const annotated = annotateWatchedCandidates(
@@ -222,4 +254,161 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       correlationId: request.correlationId,
     };
   });
+
+  app.get<{
+    Params: { configId: string };
+    Querystring: { redirectUri?: string };
+  }>('/configurations/:configId/tracking/trakt/auth-url', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.TRAKT_CLIENT_ID;
+    if (!clientId) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'TRAKT_CLIENT_ID is not configured on this instance',
+          correlationId: request.correlationId,
+          params: { source: 'Trakt' },
+        }),
+      );
+    }
+
+    const redirectUri =
+      request.query.redirectUri ||
+      process.env.TRAKT_REDIRECT_URI ||
+      '';
+    if (!redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'redirectUri is required',
+          correlationId: request.correlationId,
+          params: { field: 'redirectUri' },
+        }),
+      );
+    }
+
+    const state = Buffer.from(
+      JSON.stringify({
+        configId: request.params.configId,
+        nonce: randomBytes(8).toString('hex'),
+      }),
+    ).toString('base64url');
+
+    return {
+      authUrl: buildTraktAuthorizeUrl({
+        clientId,
+        redirectUri,
+        state,
+      }),
+      state,
+      redirectUri,
+      correlationId: request.correlationId,
+    };
+  });
+
+  app.post<{
+    Params: { configId: string };
+    Body: { code?: string; redirectUri?: string };
+  }>('/configurations/:configId/tracking/trakt/callback', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.TRAKT_CLIENT_ID;
+    const clientSecret = process.env.TRAKT_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'TRAKT_CLIENT_ID/TRAKT_CLIENT_SECRET are not configured',
+          correlationId: request.correlationId,
+          params: { source: 'Trakt' },
+        }),
+      );
+    }
+
+    const code = request.body?.code;
+    const redirectUri =
+      request.body?.redirectUri || process.env.TRAKT_REDIRECT_URI || '';
+    if (!code || !redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'code and redirectUri are required',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    try {
+      const tokens = await exchangeTraktAuthorizationCode({
+        code,
+        redirectUri,
+        clientId,
+        clientSecret,
+        fetchImpl: app.providerFetch,
+      });
+      app.configStore.upsertVaultSecret(
+        request.params.configId,
+        'trakt',
+        'oauth_access',
+        tokens.accessToken,
+      );
+      if (tokens.refreshToken) {
+        app.configStore.upsertVaultSecret(
+          request.params.configId,
+          'trakt',
+          'oauth_refresh',
+          tokens.refreshToken,
+        );
+      }
+      return {
+        connected: true,
+        state: 'connected' as const,
+        correlationId: request.correlationId,
+      };
+    } catch (error) {
+      return reply.status(502).send(
+        createApiError({
+          code: 'PROVIDER_UNAVAILABLE',
+          message:
+            error instanceof Error ? error.message : 'Trakt OAuth callback failed',
+          correlationId: request.correlationId,
+          params: { source: 'Trakt' },
+        }),
+      );
+    }
+  });
+
+  app.delete<{ Params: { configId: string } }>(
+    '/configurations/:configId/tracking/trakt',
+    async (request, reply) => {
+      const access = requireEdit(app, request, request.params.configId);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'trakt',
+        'oauth_access',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'trakt',
+        'oauth_refresh',
+      );
+      // Legacy create-path may have stored trakt under api_key kind.
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'trakt',
+        'api_key',
+      );
+
+      return {
+        connected: false,
+        state: 'not_configured' as const,
+        correlationId: request.correlationId,
+      };
+    },
+  );
 };

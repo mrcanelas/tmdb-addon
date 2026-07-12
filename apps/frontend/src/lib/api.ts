@@ -599,6 +599,41 @@ export async function previewHideWatched(
   );
 }
 
+export async function fetchTraktAuthUrl(
+  configId: string,
+  editCredential: string,
+  redirectUri: string,
+): Promise<{ authUrl: string; state: string }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/tracking/trakt/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+    {
+      headers: { 'x-metalayer-edit-credential': editCredential },
+    },
+  );
+}
+
+export async function completeTraktOAuth(
+  configId: string,
+  editCredential: string,
+  body: { code: string; redirectUri: string },
+): Promise<{ connected: boolean; state: string }> {
+  return apiFetch(`/api/v1/configurations/${configId}/tracking/trakt/callback`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function disconnectTrakt(
+  configId: string,
+  editCredential: string,
+): Promise<{ connected: boolean; state: string }> {
+  return apiFetch(`/api/v1/configurations/${configId}/tracking/trakt`, {
+    method: 'DELETE',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
 export interface CorrectionItem {
   id: string;
   type: string;

@@ -86,6 +86,7 @@ export function createProviderAdapter(
     case 'trakt':
       return new TraktTrackingAdapter({
         accessToken: options.accessToken ?? options.apiKey,
+        clientId: process.env.TRAKT_CLIENT_ID,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
       });

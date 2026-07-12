@@ -15,7 +15,15 @@
   "tracking.preview": "Prévîéw hîdé wåtçhédPrévîé",
   "tracking.previewRunning": "Rûññîñg prévîéw…Rûññî",
   "tracking.previewOk": "Hîdé-wåtçhéd prévîéw çømplétéd (dégrådéd: Hîdé-wåtçhéd {{degraded}}).)",
+  "tracking.previewNeedsConnection": "Çøññéçt Tråkt tø prévîéw hîdé-wåtçhéd wîth lîvé wåtçh hîstøry.Çøññéçt Tråkt tø pr",
   "tracking.included": "ÎñçlûdédÎñç",
   "tracking.excluded": "ÉxçlûdédÉxç",
-  "tracking.emptyTitle": "Ñø tråçkîñg prøvîdérs lîstédÑø tråçkî"
+  "tracking.emptyTitle": "Ñø tråçkîñg prøvîdérs lîstédÑø tråçkî",
+  "tracking.actions.connect": "ÇøññéçtÇøñ",
+  "tracking.actions.disconnect": "DîsçøññéçtDîs",
+  "tracking.oauth.title": "Tråkt çøññéçtîøñTråkt",
+  "tracking.oauth.intro": "Çømplétîñg thé Tråkt ØÅûth håñdshåké før thîs çøñfîgûråtîøñ.Çømplétîñg thé Trå",
+  "tracking.oauth.connecting": "Çøññéçtîñg Tråkt…Çøññéç",
+  "tracking.oauth.success": "Tråkt çøññéçtéd. Yøû çåñ çløsé thîs wîñdøw.Tråkt çøññéçt",
+  "tracking.oauth.error": "Çøûld ñøt çømplété thé Tråkt ØÅûth çøññéçtîøñ.Çøûld ñøt çømp"
 }

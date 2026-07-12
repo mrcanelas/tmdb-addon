@@ -86,6 +86,11 @@ export interface ConfigurationStore {
     kind: SecretKind,
     plaintext: string,
   ): boolean;
+  deleteVaultSecret(
+    configId: string,
+    provider: string,
+    kind: SecretKind,
+  ): boolean;
   listSecretStates(configId: string): Record<string, SecretCredentialState>;
   listRevisions(configId: string): ConfigurationRevisionSummary[];
   getRevision(configId: string, revisionId: string): ConfigurationRevision | null;
@@ -371,6 +376,19 @@ export class SqliteConfigurationStore implements ConfigurationStore {
         now,
       );
     return true;
+  }
+
+  deleteVaultSecret(
+    configId: string,
+    provider: string,
+    kind: SecretKind,
+  ): boolean {
+    const result = this.db
+      .prepare(
+        `DELETE FROM vault_secrets WHERE config_id = ? AND provider = ? AND kind = ?`,
+      )
+      .run(configId, provider, kind);
+    return Number(result.changes ?? 0) > 0;
   }
 
   listSecretStates(configId: string): Record<string, SecretCredentialState> {
