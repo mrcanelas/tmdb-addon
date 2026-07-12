@@ -1,0 +1,15 @@
+{
+  "saveInstall.title": "Salvar e instalar",
+  "saveInstall.intro": "Instale esta configuração do MetaLayer no Stremio. A URL do manifesto nunca inclui segredos.",
+  "saveInstall.loading": "Preparando instalação…",
+  "saveInstall.loadError": "Não foi possível preparar uma configuração instalável.",
+  "saveInstall.section.manifest": "URL do manifesto",
+  "saveInstall.manifestHint": "Adicione esta URL no Stremio ou abra com o link do protocolo Stremio.",
+  "saveInstall.copyUrl": "Copiar URL do manifesto",
+  "saveInstall.openStremio": "Abrir no Stremio",
+  "saveInstall.copyOk": "URL do manifesto copiada.",
+  "saveInstall.copyError": "Não foi possível copiar a URL. Copie manualmente do campo acima.",
+  "saveInstall.section.config": "Configuração",
+  "saveInstall.configId": "ID da configuração",
+  "saveInstall.editHint": "Mantenha a credencial de edição em privado. Ela fica só nesta sessão do navegador e nunca faz parte da URL de instalação."
+}

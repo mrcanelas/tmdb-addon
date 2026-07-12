@@ -29,13 +29,16 @@ Base URL example: `http://localhost:1337`
 
 Documented in `docs/api.md`, including TMDB session helpers and Trakt OAuth callbacks.
 
-## Native MetaLayer routes (Phase B — partial)
+## Native MetaLayer routes (Phase B+ / beta)
 
 Implemented by `apps/server` (port `1338` by default):
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/c/:configId/manifest.json` | Native manifest (no secrets in URL) |
+| GET | `/c/:configId/catalog/:type/:id.json` | Native catalog (empty `{ metas: [] }` when unknown) |
+| GET | `/c/:configId/catalog/:type/:id/:extra.json` | Native catalog with `skip=` pagination |
+| GET | `/c/:configId/meta/:type/:id.json` | Native meta (movie via TMDB; series follow-up) |
 | POST | `/api/v1/configurations` | Create persistent configuration |
 | POST | `/api/v1/configurations/import-legacy` | Import TMDB Addon config (`dryRun` supported) |
 | GET | `/api/v1/configurations/:configId` | Read config (edit credential header) |
@@ -54,10 +57,10 @@ Implemented by `apps/server` (port `1338` by default):
 Still planned:
 
 ```text
-/c/:configId/catalog/:type/:id/:extra?.json
-/c/:configId/meta/:type/:id.json
 /c/:configId/p/:profileId/manifest.json
 ```
+
+Series meta live gather and Profiles UI remain beta follow-ups (`docs/phase-m-exit.md`).
 
 ## Compatibility rules
 

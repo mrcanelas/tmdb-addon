@@ -37,6 +37,9 @@ import esESResolution from '@metalayer/i18n/locales/es-ES/resolution.json';
 import enUSLanguageRegion from '@metalayer/i18n/locales/en-US/languageRegion.json';
 import ptBRLanguageRegion from '@metalayer/i18n/locales/pt-BR/languageRegion.json';
 import esESLanguageRegion from '@metalayer/i18n/locales/es-ES/languageRegion.json';
+import enUSSaveInstall from '@metalayer/i18n/locales/en-US/saveInstall.json';
+import ptBRSaveInstall from '@metalayer/i18n/locales/pt-BR/saveInstall.json';
+import esESSaveInstall from '@metalayer/i18n/locales/es-ES/saveInstall.json';
 
 const resources = {
   'en-US': {
@@ -51,6 +54,7 @@ const resources = {
     searchAi: enUSSearchAi,
     resolution: enUSResolution,
     languageRegion: enUSLanguageRegion,
+    saveInstall: enUSSaveInstall,
   },
   'pt-BR': {
     common: ptBRCommon,
@@ -64,6 +68,7 @@ const resources = {
     searchAi: ptBRSearchAi,
     resolution: ptBRResolution,
     languageRegion: ptBRLanguageRegion,
+    saveInstall: ptBRSaveInstall,
   },
   'es-ES': {
     common: esESCommon,
@@ -77,6 +82,7 @@ const resources = {
     searchAi: esESSearchAi,
     resolution: esESResolution,
     languageRegion: esESLanguageRegion,
+    saveInstall: esESSaveInstall,
   },
 };
 
@@ -100,6 +106,7 @@ void i18n.use(initReactI18next).init({
     'searchAi',
     'resolution',
     'languageRegion',
+    'saveInstall',
   ],
   interpolation: {
     escapeValue: false,

@@ -12,6 +12,7 @@ import { CorrectionsPage } from '@/pages/CorrectionsPage';
 import { SearchAiPage } from '@/pages/SearchAiPage';
 import { AppearancePage } from '@/pages/AppearancePage';
 import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
+import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 import { AppQueryProvider } from '@/providers/AppQueryProvider';
@@ -29,7 +30,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/corrections' &&
     item.path !== '/search-ai' &&
     item.path !== '/appearance' &&
-    item.path !== '/language-region',
+    item.path !== '/language-region' &&
+    item.path !== '/save-install',
 );
 
 function ThemedApp() {
@@ -54,6 +56,7 @@ function ThemedApp() {
               <Route path="search-ai" element={<SearchAiPage />} />
               <Route path="appearance" element={<AppearancePage />} />
               <Route path="language-region" element={<LanguageRegionPage />} />
+              <Route path="save-install" element={<SaveInstallPage />} />
               {PLACEHOLDER_ROUTES.map((item) => (
                 <Route
                   key={item.id}

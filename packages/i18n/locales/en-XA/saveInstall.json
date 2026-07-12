@@ -1,0 +1,15 @@
+{
+  "saveInstall.title": "Såvé & ÎñstållSåvé ",
+  "saveInstall.intro": "Îñståll thîs MétåLåyér çøñfîgûråtîøñ îñ Strémîø. Thé måñîfést ÛRL ñévér îñçlûdés séçréts.Îñståll thîs MétåLåyér çøñf",
+  "saveInstall.loading": "Prépårîñg îñstållåtîøñ…Prépårî",
+  "saveInstall.loadError": "Çøûld ñøt prépåré åñ îñstållåblé çøñfîgûråtîøñ.Çøûld ñøt prépå",
+  "saveInstall.section.manifest": "Måñîfést ÛRLMåñî",
+  "saveInstall.manifestHint": "Ådd thîs ÛRL îñ Strémîø, ør øpéñ ît wîth thé Strémîø prøtøçøl lîñk.Ådd thîs ÛRL îñ Strém",
+  "saveInstall.copyUrl": "Çøpy måñîfést ÛRLÇøpy m",
+  "saveInstall.openStremio": "Øpéñ îñ StrémîøØpéñ ",
+  "saveInstall.copyOk": "Måñîfést ÛRL çøpîéd.Måñîfé",
+  "saveInstall.copyError": "Çøûld ñøt çøpy thé ÛRL. Çøpy ît måñûålly frøm thé fîéld åbøvé.Çøûld ñøt çøpy thé ",
+  "saveInstall.section.config": "ÇøñfîgûråtîøñÇøñf",
+  "saveInstall.configId": "Çøñfîgûråtîøñ ÎDÇøñfî",
+  "saveInstall.editHint": "Kéép yøûr édît çrédéñtîål prîvåté. Ît îs støréd øñly îñ thîs brøwsér séssîøñ åñd îs ñévér pårt øf thé îñståll ÛRL.Kéép yøûr édît çrédéñtîål prîvåté. "
+}

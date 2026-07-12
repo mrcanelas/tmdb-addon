@@ -1,6 +1,6 @@
 {
   "name": "@metalayer/core",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-beta.1",
   "description": "MetaLayer shared core barrel — foundation packages for apps and adapters",
   "license": "Apache-2.0",
   "type": "module",

@@ -17,11 +17,11 @@ const LEGACY = {
 
 /** @type {const} */
 const METALAYER = {
-  /** Draft native ID — finalize before beta (ADR-0001). */
+  /** Native MetaLayer manifest identity — finalized for beta (ADR-0001). */
   manifestId: 'community.metalayer',
   manifestName: 'MetaLayer',
   /** MetaLayer SemVer line — independent from the legacy 3.x package. */
-  version: '1.0.0-alpha.1',
+  version: '1.0.0-beta.1',
   tagline: 'Your metadata. Your catalogs. Your way.',
 };
 

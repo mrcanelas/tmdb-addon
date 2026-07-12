@@ -11,7 +11,7 @@ describe('@metalayer/identity', () => {
     expect(LEGACY.manifestId).toBe('tmdb-addon');
     expect(LEGACY.manifestName).toBe('The Movie Database Addon');
     expect(METALAYER.manifestId).not.toBe(LEGACY.manifestId);
-    expect(METALAYER.version).toMatch(/^1\.0\.0-alpha\./);
+    expect(METALAYER.version).toMatch(/^1\.0\.0-(alpha|beta|rc)\./);
   });
 
   it('defaults to legacy compatibility identity', () => {

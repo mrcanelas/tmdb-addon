@@ -3648,11 +3648,11 @@ The version remains in the `1.0.0` prerelease line until stable.
 | J | Correction Hub | **Complete** | `docs/phase-j-exit.md` |
 | K | Search and AI | **Complete** | `docs/phase-k-exit.md` |
 | L | Dashboard and deployment | **Complete** | `docs/phase-l-exit.md` |
-| M | Beta stabilization | **Not started** | — |
+| M | Beta stabilization | **In progress** (`1.0.0-beta.1`) | `docs/phase-m-exit.md` |
 | N | Release candidate | **Not started** | — |
 | O | Stable launch `1.0.0` | **Not started** | — |
 
-**Current prerelease posture:** still in `1.0.0-alpha.*`. Phases A–L have landed enough to enter product hardening; Phase M does **not** begin until remaining 1.0 feature gaps below are closed or explicitly deferred with maintainer approval.
+**Current prerelease posture:** `1.0.0-beta.1` (Phase M). Remaining gaps are tracked as explicit beta deferrals in `docs/phase-m-exit.md`.
 
 ### Cross-cutting work already landed after Phase L (frontend track)
 
@@ -3661,20 +3661,19 @@ The version remains in the `1.0.0` prerelease line until stable.
 - configure shell: Simple/Advanced, theme, command palette (`Ctrl+K`);
 - TanStack Query + RHF + Zod pattern (Sources model; Tracking/Corrections migrated);
 - Layered Minimalism page primitives (`PageHeader`, `SectionCard`, empty/error/loading);
-- Language & Region configure UI + `GET/PUT .../localization` (`docs/language-region.md`).
+- Language & Region configure UI + `GET/PUT .../localization` (`docs/language-region.md`);
+- Save & Install configure UI + native `/c/:configId/catalog|meta` routes.
 
-### Highest-priority gaps before Phase M (beta)
+### Highest-priority gaps during Phase M (beta)
 
-1. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
-2. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
-3. **Save & Install / Onboarding** — still scaffold or partial (Appearance and Language & Region ship).
-4. **Field Resolution Chains UX depth** — profile/catalog/title inheritance UI, explicit step editor, episode-order wiring (core F2 shipped; see `docs/phase-f-exit.md`).
-5. **Tracking OAuth browser flows** and live list sync (Trakt/SIMKL/AniList/MAL).
-6. **Encryption key rotation tooling** (Phase B deferred).
-7. **Postgres + Redis end-to-end** for Server mode (Lite SQLite path works).
-8. **UX depth** — migrate remaining configure pages to Query/form patterns; polish Catalog Studio / Rules / Sorting / Inspector to Layered Minimalism; admin Recharts overview.
-9. **i18n completeness** — no hard-coded strings on primary pages; full en-US / pt-BR / es-ES; plural/date formatting; pseudo/RTL layout tests.
-10. **Release hardening** — security review, migration review, performance objectives measured, stable release gates.
+See `docs/phase-m-exit.md` for the full deferred list. Near-term:
+
+1. **Profiles UI + profile manifest route**
+2. **Series/anime native meta**
+3. **Tracking OAuth browser flows** and live list sync
+4. **Postgres + Redis** Server end-to-end
+5. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+6. **Encryption key rotation tooling** (Phase B carry-over)
 
 ---
 
@@ -3946,7 +3945,7 @@ Version:
 1.0.0-beta.N
 ```
 
-**Status: not started.** Enter only after the highest-priority gaps in §37.0 are closed or explicitly deferred.
+**Status (2026-07-12): in progress** — entered at `1.0.0-beta.1`. See `docs/phase-m-exit.md`.
 
 Tasks:
 
@@ -3965,7 +3964,7 @@ Tasks:
 
 Exit:
 
-- all 1.0 feature categories are implemented.
+- all 1.0 feature categories are implemented (or explicitly deferred with release notes).
 
 ## Phase N — Release candidate
 
@@ -4305,10 +4304,10 @@ No.
 
 MetaLayer migration and reconstruction are complete when every item below is checked.
 
-Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0), including Field Resolution Chains (F2) and Language & Region configure UI. Items still open are primarily remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
+Progress note (2026-07-12): Phase **M** (`1.0.0-beta.1`) is in progress. Phases A–L landed; remaining work is tracked as beta deferrals and Phase M hardening in `docs/phase-m-exit.md`.
 
 - [x] MetaLayer is the primary brand for greenfield apps (`apps/frontend`, `apps/dashboard`, `apps/server`).
-- [ ] The stable version is `1.0.0` (still on `1.0.0-alpha.*`).
+- [ ] The stable version is `1.0.0` (still on `1.0.0-beta.*`).
 - [x] Legacy TMDB Addon configurations can be imported (`import-legacy` API).
 - [x] Legacy routes remain supported for the documented window.
 - [x] Native configurations do not expose secrets in URLs.

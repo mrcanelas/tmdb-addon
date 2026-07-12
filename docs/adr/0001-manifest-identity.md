@@ -1,7 +1,8 @@
 # ADR 0001: Manifest identity independence
 
-- Status: Accepted (draft ID pending beta finalization)
+- Status: Accepted
 - Date: 2026-07-11
+- Updated: 2026-07-12 (beta finalization)
 - Deciders: MetaLayer maintainers
 
 ## Context
@@ -21,10 +22,10 @@ MetaLayer also needs a dual-identity migration strategy (`AGENTS.md` §6.2):
    - id: `tmdb-addon`
    - name: `The Movie Database Addon`
    - version: `3.1.7` (legacy published line)
-3. Draft native MetaLayer identity (finalize before beta):
+3. Native MetaLayer identity (finalized for beta):
    - id: `community.metalayer`
    - name: `MetaLayer`
-   - version: MetaLayer SemVer line starting at `1.0.0-alpha.1`
+   - version: MetaLayer SemVer line (`1.0.0-beta.N` during Phase M; independent of the root npm package still named `tmdb-addon`)
 4. Changing the native manifest ID after beta requires a major release and migration notes.
 
 ## Consequences

@@ -23,6 +23,7 @@ import { corsPlugin } from './plugins/cors.js';
 import { spaStaticPlugin } from './plugins/spa-static.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
+import { nativeStremioRoutes } from './routes/native-stremio.js';
 
 export interface BuildAppOptions {
   logger?: boolean;
@@ -137,6 +138,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   await app.register(correlationPlugin);
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
+  await app.register(nativeStremioRoutes);
   await app.register(spaStaticPlugin, {
     configureRoot: options.configureDist,
     adminRoot: options.adminDist,

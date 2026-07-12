@@ -1,6 +1,6 @@
 {
   "name": "@metalayer/config",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-beta.1",
   "description": "Versioned MetaLayer configuration schema and legacy migration helpers",
   "license": "Apache-2.0",
   "type": "module",

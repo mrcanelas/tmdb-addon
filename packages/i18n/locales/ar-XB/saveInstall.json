@@ -1,0 +1,15 @@
+{
+  "saveInstall.title": "‏Save & Install‎",
+  "saveInstall.intro": "‏Install this MetaLayer configuration in Stremio. The manifest URL never includes secrets.‎",
+  "saveInstall.loading": "‏Preparing installation…‎",
+  "saveInstall.loadError": "‏Could not prepare an installable configuration.‎",
+  "saveInstall.section.manifest": "‏Manifest URL‎",
+  "saveInstall.manifestHint": "‏Add this URL in Stremio, or open it with the Stremio protocol link.‎",
+  "saveInstall.copyUrl": "‏Copy manifest URL‎",
+  "saveInstall.openStremio": "‏Open in Stremio‎",
+  "saveInstall.copyOk": "‏Manifest URL copied.‎",
+  "saveInstall.copyError": "‏Could not copy the URL. Copy it manually from the field above.‎",
+  "saveInstall.section.config": "‏Configuration‎",
+  "saveInstall.configId": "‏Configuration ID‎",
+  "saveInstall.editHint": "‏Keep your edit credential private. It is stored only in this browser session and is never part of the install URL.‎"
+}
