@@ -1,46 +1,41 @@
-# Etapa de construção do frontend
+# Legacy TMDB Addon image (production)
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copia os arquivos de configuração primeiro
-COPY package*.json ./
+RUN corepack enable
 
-# Instala as dependências
-RUN npm install
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps ./apps
+COPY packages ./packages
 
-# Copia o restante do código fonte
+RUN pnpm install --frozen-lockfile
+
 COPY . .
 
-# Build da aplicação React
-RUN npm run build
+RUN pnpm build
 
-# Etapa de produção
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Copia apenas os arquivos necessários
-COPY package*.json ./
+RUN corepack enable
 
-# Instala apenas dependências de produção
-RUN npm install --production
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps ./apps
+COPY packages ./packages
 
-# Copia os arquivos do servidor
+RUN pnpm install --frozen-lockfile --prod
+
 COPY --from=builder /app/addon ./addon
-
-# Copia os arquivos buildados do React
 COPY --from=builder /app/dist ./dist
-
-# Copia a pasta public com as imagens
 COPY --from=builder /app/public ./public
 
 # Secrets e configuração de runtime NÃO devem ser embutidos aqui.
 # Use docker-compose env_file, -e, ou o secret store do orquestrador.
 # Ver SECURITY.md e .env.example.
 
-# Exposição da porta
 EXPOSE 1337
 
-# Comando para iniciar o servidor
 ENTRYPOINT ["node", "addon/server.js"]

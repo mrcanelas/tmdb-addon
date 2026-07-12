@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/config": "*",
-    "@metalayer/security": "*"
+    "@metalayer/config": "workspace:*",
+    "@metalayer/security": "workspace:*"
   },
   "engines": {
     "node": ">=22.5.0"

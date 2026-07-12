@@ -14,6 +14,6 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/providers": "*"
+    "@metalayer/providers": "workspace:*"
   }
 }

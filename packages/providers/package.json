@@ -14,6 +14,6 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/identity": "*"
+    "@metalayer/identity": "workspace:*"
   }
 }
