@@ -22,6 +22,8 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 | `packages/api-errors` | Stable management API error codes. |
 | `packages/security` | Secret Vault crypto + edit-credential hashing (ADR 0005). |
 | `packages/persistence` | SQLite configuration + vault storage for Lite. |
+| `packages/rules` | Rule evaluation, inheritance, provider limitation warnings. |
+| `packages/sorting` | Multi-step sorting plans and stable randomization. |
 | `packages/catalogs` | Catalog Studio ordering and mutations. |
 | `packages/providers` / `packages/cache` | Provider framework and locale-sensitive cache. |
 | `packages/database` | Future schema/migrations (scaffold only). |
