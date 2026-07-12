@@ -86,6 +86,9 @@ describe('@metalayer/server Meta Inspector', () => {
       'fanart',
       'tmdb',
     ]);
+    expect(inspect.json().identity.diagnostics.canonicalId).toMatch(
+      /^metalayer:movie:/,
+    );
   });
 
   it('updates field provider chains', async () => {

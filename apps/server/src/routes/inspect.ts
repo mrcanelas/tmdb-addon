@@ -12,6 +12,11 @@ import {
   type ProviderFieldBag,
 } from '@metalayer/metadata-resolver';
 import {
+  buildIdentityDiagnostics,
+  precedenceScore,
+  resolveIdentityMapping,
+} from '@metalayer/identity-graph';
+import {
   ProviderError,
   TmdbProviderAdapter,
   ImdbRatingsAdapter,
@@ -393,8 +398,21 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
         timingMs: Date.now() - started,
       });
 
+      const matches = report.identity.matches;
+      const identityMapping = resolveIdentityMapping({
+        ids: {
+          tmdb: matches.tmdb,
+          imdb: typeof matches.imdb === 'string' ? matches.imdb : undefined,
+        },
+        entityKind: mediaType === 'movie' ? 'movie' : 'series',
+      });
+
       return {
         report,
+        identity: {
+          mapping: identityMapping,
+          diagnostics: buildIdentityDiagnostics(identityMapping, precedenceScore),
+        },
         correlationId: request.correlationId,
       };
     } catch (error) {
