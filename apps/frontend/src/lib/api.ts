@@ -103,6 +103,15 @@ export interface CatalogListItem {
   showInHome: boolean;
   position: number;
   tags: string[];
+  group?: string;
+  merge?: {
+    mode: string;
+    sources: Array<{ instanceId: string; weight?: number }>;
+  };
+  rotation?: {
+    mode: string;
+    sources: string[];
+  };
 }
 
 export interface ManifestCatalogEntry {
@@ -113,6 +122,16 @@ export interface ManifestCatalogEntry {
   showInHome: boolean;
 }
 
+export interface CatalogMetaPreview {
+  id: string;
+  type: 'movie' | 'series' | 'anime';
+  name: string;
+  poster?: string;
+  releaseInfo?: string;
+  provider?: string;
+  sourceInstanceId?: string;
+}
+
 export type StudioCatalogAction =
   | 'rename'
   | 'duplicate'
@@ -120,7 +139,10 @@ export type StudioCatalogAction =
   | 'enable'
   | 'disable'
   | 'showInHome'
-  | 'hideInHome';
+  | 'hideInHome'
+  | 'delete'
+  | 'setTags'
+  | 'setGroup';
 
 export interface CatalogSession {
   configId: string;
@@ -251,6 +273,8 @@ export async function mutateCatalog(
     action: StudioCatalogAction;
     customName?: string;
     toIndex?: number;
+    tags?: string[];
+    group?: string | null;
   },
 ): Promise<{
   configId: string;
@@ -264,4 +288,84 @@ export async function mutateCatalog(
     },
     body: JSON.stringify(body),
   });
+}
+
+export async function createStudioCatalog(
+  configId: string,
+  editCredential: string,
+  body: {
+    action: 'createMerged' | 'createRotated';
+    name: string;
+    mediaType: 'movie' | 'series' | 'anime';
+    mergeMode?: string;
+    rotationMode?: string;
+    sourceInstanceIds: string[];
+  },
+): Promise<{
+  configId: string;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/catalogs`, {
+    method: 'POST',
+    headers: {
+      'x-metalayer-edit-credential': editCredential,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function exportStudioCatalogs(
+  configId: string,
+  editCredential: string,
+): Promise<{ catalogs: CatalogListItem[] }> {
+  return apiFetch(`/api/v1/configurations/${configId}/catalogs/export`, {
+    headers: {
+      'x-metalayer-edit-credential': editCredential,
+    },
+  });
+}
+
+export async function importStudioCatalogs(
+  configId: string,
+  editCredential: string,
+  catalogs: unknown,
+  mode: 'replace' | 'append' = 'append',
+): Promise<{
+  configId: string;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/catalogs`, {
+    method: 'POST',
+    headers: {
+      'x-metalayer-edit-credential': editCredential,
+    },
+    body: JSON.stringify({ catalogs, mode }),
+  });
+}
+
+export async function previewCatalogResults(
+  configId: string,
+  editCredential: string,
+  instanceId: string,
+  options: { locale?: string; apiKey?: string } = {},
+): Promise<{
+  metas: CatalogMetaPreview[];
+  warnings: string[];
+  mode?: string;
+  activeSourceId?: string;
+  timingMs?: number;
+}> {
+  const query = options.locale ? `?locale=${encodeURIComponent(options.locale)}` : '';
+  return apiFetch(
+    `/api/v1/configurations/${configId}/catalogs/${instanceId}/preview${query}`,
+    {
+      method: 'POST',
+      headers: {
+        'x-metalayer-edit-credential': editCredential,
+      },
+      body: JSON.stringify({ apiKey: options.apiKey }),
+    },
+  );
 }
