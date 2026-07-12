@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@metalayer/shared-ui';
 import { CONFIGURE_NAV } from '@/navigation';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -9,15 +9,18 @@ export function AppShell() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-6 px-4 py-6 md:flex-row md:gap-10 md:px-8 md:py-10">
-      <aside className="md:w-60 md:shrink-0">
+      <aside className="ml-glass md:w-[260px] md:shrink-0 rounded-[var(--ml-radius)] p-4">
         <div className="mb-6">
-          <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
+          <p className="text-2xl font-semibold tracking-tight text-[var(--ml-text)]">
             {t('common.appName')}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{t('common.tagline')}</p>
+          <p className="mt-1 text-sm ml-text-muted">{t('common.tagline')}</p>
         </div>
 
-        <nav aria-label={t('nav.aria')} className="flex flex-row gap-2 overflow-x-auto md:flex-col md:overflow-visible">
+        <nav
+          aria-label={t('nav.aria')}
+          className="flex flex-row gap-2 overflow-x-auto md:flex-col md:overflow-visible"
+        >
           {CONFIGURE_NAV.map((item) => (
             <NavLink
               key={item.id}
@@ -27,8 +30,8 @@ export function AppShell() {
                 cn(
                   'whitespace-nowrap rounded-md px-3 py-2 text-sm transition-colors',
                   isActive
-                    ? 'bg-accent font-medium text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                    ? 'bg-[var(--ml-elevated)] font-medium text-[var(--ml-text)]'
+                    : 'ml-text-muted hover:bg-[var(--ml-elevated)] hover:text-[var(--ml-text)]',
                 )
               }
             >
@@ -43,8 +46,8 @@ export function AppShell() {
               key={locale}
               type="button"
               size="sm"
-              variant={i18n.language === locale ? 'default' : 'outline'}
-              onClick={() => {
+              variant={i18n.language === locale ? 'primary' : 'outline'}
+              onPress={() => {
                 void i18n.changeLanguage(locale);
                 document.documentElement.lang = locale;
               }}

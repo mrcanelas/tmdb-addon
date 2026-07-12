@@ -25,6 +25,7 @@ export default defineConfig({
   },
   server: {
     port: 5175,
+    base: '/admin',
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:1338',
@@ -36,6 +37,6 @@ export default defineConfig({
     distPath: {
       root: 'dist',
     },
-    assetPrefix: process.env.METALAYER_DASHBOARD_BASE || '/',
+    assetPrefix: process.env.METALAYER_DASHBOARD_BASE || '/admin/',
   },
 });

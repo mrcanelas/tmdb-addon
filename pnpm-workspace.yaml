@@ -4,6 +4,10 @@ packages:
 
 linkWorkspacePackages: true
 
+overrides:
+  '@types/react': '^19.0.0'
+  '@types/react-dom': '^19.0.0'
+
 allowBuilds:
   '@swc/core': true
   core-js: true

@@ -25,6 +25,7 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    base: '/configure',
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:1338',
@@ -40,7 +41,6 @@ export default defineConfig({
     distPath: {
       root: 'dist',
     },
-    // Served under /configure when behind the addon/API in Lite deployments.
-    assetPrefix: process.env.METALAYER_CONFIGURE_BASE || '/',
+    assetPrefix: process.env.METALAYER_CONFIGURE_BASE || '/configure/',
   },
 });

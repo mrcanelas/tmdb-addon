@@ -1,0 +1,46 @@
+@import "./tokens.css";
+
+@layer base {
+  html {
+    font-family: var(--ml-font-sans);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--ml-text);
+    background-color: var(--ml-bg);
+    background-image:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--ml-accent) 18%, transparent), transparent 42%),
+      linear-gradient(180deg, var(--ml-bg), color-mix(in srgb, var(--ml-bg) 92%, #000));
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .ml-surface {
+    background: var(--ml-surface);
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius);
+  }
+
+  .ml-elevated {
+    background: var(--ml-elevated);
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius);
+  }
+
+  .ml-glass {
+    background: var(--ml-glass-bg);
+    border: 1px solid var(--ml-glass-border);
+    backdrop-filter: blur(var(--ml-glass-blur));
+    -webkit-backdrop-filter: blur(var(--ml-glass-blur));
+  }
+
+  .ml-text-muted {
+    color: var(--ml-muted);
+  }
+}

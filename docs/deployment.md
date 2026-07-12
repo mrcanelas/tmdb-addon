@@ -34,8 +34,18 @@ docker compose -f docker/docker-compose.lite.yml up -d --build
 3. Open:
 
 - API health: `http://localhost:1338/api/v1/health`
-- Configure UI (dev): `pnpm -F @metalayer/frontend dev`
-- Dashboard (dev): `pnpm -F @metalayer/dashboard dev`
+- Configure UI: `http://localhost:1338/configure/`
+- Admin UI: `http://localhost:1338/admin/`
+
+For hot-reload UI development:
+
+```bash
+pnpm -F @metalayer/frontend build   # once, if you want API to serve /configure
+pnpm -F @metalayer/frontend dev     # http://localhost:5174/configure
+pnpm -F @metalayer/dashboard dev    # http://localhost:5175/admin
+```
+
+The API serves built SPAs from `apps/frontend/dist` and `apps/dashboard/dist` (override with `METALAYER_CONFIGURE_DIST` / `METALAYER_ADMIN_DIST`).
 
 ## MetaLayer Server (public / multi-user)
 

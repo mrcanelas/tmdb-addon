@@ -18,19 +18,21 @@ export function UpdatesPage() {
   }, []);
 
   return (
-    <section className="panel">
-      <h1>{t('dashboard.updatesTitle')}</h1>
-      <p className="muted">{t('dashboard.updatesIntro')}</p>
-      {error ? <p>{t('dashboard.loadError')}</p> : null}
+    <section className="ml-surface p-6">
+      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+        {t('dashboard.updatesTitle')}
+      </h1>
+      <p className="ml-text-muted mt-2 text-sm">{t('dashboard.updatesIntro')}</p>
+      {error ? <p className="mt-4">{t('dashboard.loadError')}</p> : null}
       {data ? (
-        <div style={{ marginTop: '1rem' }}>
+        <div className="mt-4 space-y-2">
           <p>
             {t('dashboard.currentVersion')}: <strong>{data.currentVersion}</strong>
           </p>
-          <p className="muted">
+          <p className="ml-text-muted text-sm">
             {t('dashboard.upgradeCommand')}: <code>{data.upgradeCommand}</code>
           </p>
-          <ul>
+          <ul className="list-disc pl-5">
             {data.notes.map((note) => (
               <li key={note}>{note}</li>
             ))}

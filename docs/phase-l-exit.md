@@ -27,5 +27,8 @@ Satisfied by `docs/deployment.md` and MetaLayer sections in `docs/self-hosting.m
 
 - Full Postgres persistence for Server mode
 - Redis-backed shared cache wiring end-to-end
-- Serving configure/dashboard static assets from the API process in one Lite image
 - Hosted SaaS control plane
+
+## Follow-ups completed after exit
+
+- Serving configure/dashboard static assets from the API process (`@fastify/static` under `/configure` and `/admin`)

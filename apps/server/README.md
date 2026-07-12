@@ -42,6 +42,11 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb rating preview |
 | GET | `/api/v1/cache/stats` | Provider cache stats |
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
+| GET | `/configure/` | End-user configure SPA (from `apps/frontend/dist`) |
+| GET | `/admin/` | Operator dashboard SPA (from `apps/dashboard/dist`) |
+| GET | `/` | Redirects to `/configure/` |
+
+SPA roots default to the monorepo dist folders. Override with `METALAYER_CONFIGURE_DIST` / `METALAYER_ADMIN_DIST`. If a dist is missing, those routes return a short HTML 503 with build instructions.
 
 Secrets are stored encrypted (AES-256-GCM) and returned only as states (`connected`).
 

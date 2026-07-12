@@ -23,11 +23,15 @@ The legacy TMDB Addon UI lives under `configure/` (Vite + React). Maintainers ju
    - **Rsbuild** (Rspack) as the application build tool
    - React Router (library mode) for client routing
    - TypeScript
-3. **UI kit:** formal **shadcn/ui** on top of Radix primitives + Tailwind CSS.
+3. **UI kit:** ~~formal **shadcn/ui** on top of Radix primitives + Tailwind CSS.~~ **Superseded by [ADR 0007](./0007-heroui-v3.md):** HeroUI v3 + React 19 + Tailwind CSS v4 via `@metalayer/shared-ui`.
 4. **i18n toolkit** as in `AGENTS.md` §9.6: `i18next` + `react-i18next`.
 5. **Legacy `configure/`:** keep working for TMDB Addon compatibility mode until MetaLayer UI replaces it; no investment in Vite→Rsbuild migration of that tree.
 6. **Tests:** Vitest for packages and UI unit/contract tests (independent of Rsbuild).
 7. **Out of scope:** Next.js / Remix for these apps. Marketing/docs site may get a separate ADR later.
+
+## Update (2026-07-12)
+
+UI kit and styling stack moved to ADR 0007. Rsbuild, two apps, TypeScript, and i18n decisions above remain in force. Route prefixes are `/configure` and `/admin`.
 
 ## Consequences
 

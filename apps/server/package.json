@@ -14,6 +14,7 @@
     "test": "vitest run --config ../../vitest.config.ts"
   },
   "dependencies": {
+    "@fastify/static": "^10.1.0",
     "@metalayer/api-errors": "workspace:*",
     "@metalayer/cache": "workspace:*",
     "@metalayer/catalogs": "workspace:*",
@@ -21,10 +22,10 @@
     "@metalayer/corrections": "workspace:*",
     "@metalayer/identity": "workspace:*",
     "@metalayer/identity-graph": "workspace:*",
-    "@metalayer/persistence": "workspace:*",
-    "@metalayer/providers": "workspace:*",
     "@metalayer/metadata-resolver": "workspace:*",
     "@metalayer/observability": "workspace:*",
+    "@metalayer/persistence": "workspace:*",
+    "@metalayer/providers": "workspace:*",
     "@metalayer/rules": "workspace:*",
     "@metalayer/search-ai": "workspace:*",
     "@metalayer/security": "workspace:*",

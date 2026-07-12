@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { MetaLayerThemeProvider } from '@metalayer/shared-ui';
 import { AppShell } from '@/components/layout/AppShell';
 import { OverviewPage } from '@/pages/OverviewPage';
 import { SourcesPage } from '@/pages/SourcesPage';
@@ -27,28 +28,32 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route index element={<OverviewPage />} />
-          <Route path="sources" element={<SourcesPage />} />
-          <Route path="catalog-studio" element={<CatalogStudioPage />} />
-          <Route path="rules" element={<RulesPage />} />
-          <Route path="sorting" element={<SortingPage />} />
-          <Route path="inspector" element={<InspectorPage />} />
-          <Route path="tracking" element={<TrackingPage />} />
-          <Route path="corrections" element={<CorrectionsPage />} />
-          <Route path="search-ai" element={<SearchAiPage />} />
-          {PLACEHOLDER_ROUTES.map((item) => (
-            <Route
-              key={item.id}
-              path={item.path.slice(1)}
-              element={<PlaceholderPage titleKey={item.labelKey} />}
-            />
-          ))}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <MetaLayerThemeProvider theme="dark">
+      <BrowserRouter basename="/configure">
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route index element={<OverviewPage />} />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="sources" element={<SourcesPage />} />
+            <Route path="catalog-studio" element={<CatalogStudioPage />} />
+            <Route path="catalogs" element={<CatalogStudioPage />} />
+            <Route path="rules" element={<RulesPage />} />
+            <Route path="sorting" element={<SortingPage />} />
+            <Route path="inspector" element={<InspectorPage />} />
+            <Route path="tracking" element={<TrackingPage />} />
+            <Route path="corrections" element={<CorrectionsPage />} />
+            <Route path="search-ai" element={<SearchAiPage />} />
+            {PLACEHOLDER_ROUTES.map((item) => (
+              <Route
+                key={item.id}
+                path={item.path.slice(1)}
+                element={<PlaceholderPage titleKey={item.labelKey} />}
+              />
+            ))}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </MetaLayerThemeProvider>
   );
 }

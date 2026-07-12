@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button, Input } from '@metalayer/shared-ui';
 import { getDashboardToken, setDashboardToken } from '@/lib/api';
 
 export function LoginGate({ children }: { children: ReactNode }) {
@@ -9,30 +10,31 @@ export function LoginGate({ children }: { children: ReactNode }) {
 
   if (!token) {
     return (
-      <div className="shell" style={{ maxWidth: '32rem' }}>
-        <section className="panel">
-          <h1>{t('dashboard.loginTitle')}</h1>
-          <p className="muted">{t('dashboard.loginIntro')}</p>
-          <label className="muted" style={{ display: 'block', marginTop: '1rem' }}>
+      <div className="mx-auto max-w-md px-4 py-16">
+        <section className="ml-surface p-6">
+          <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+            {t('dashboard.loginTitle')}
+          </h1>
+          <p className="ml-text-muted mt-2 text-sm">{t('dashboard.loginIntro')}</p>
+          <label className="ml-text-muted mt-4 block text-sm">
             {t('dashboard.tokenLabel')}
-            <input
+            <Input
               type="password"
+              className="mt-2"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              style={{ display: 'block', marginTop: '0.35rem' }}
             />
           </label>
-          <button
-            type="button"
-            className="primary"
-            style={{ marginTop: '1rem' }}
-            onClick={() => {
+          <Button
+            className="mt-4"
+            variant="primary"
+            onPress={() => {
               setDashboardToken(draft.trim());
               setToken(draft.trim());
             }}
           >
             {t('dashboard.loginAction')}
-          </button>
+          </Button>
         </section>
       </div>
     );

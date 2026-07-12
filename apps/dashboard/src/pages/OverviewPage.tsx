@@ -26,33 +26,31 @@ export function OverviewPage() {
   }, []);
 
   return (
-    <section className="panel">
-      <h1>{t('dashboard.overviewTitle')}</h1>
-      <p className="muted">{t('dashboard.overviewIntro')}</p>
-      {status === 'loading' ? <p className="muted">{t('dashboard.loading')}</p> : null}
-      {status === 'error' ? <p>{t('dashboard.loadError')}</p> : null}
+    <section className="ml-surface p-6">
+      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+        {t('dashboard.overviewTitle')}
+      </h1>
+      <p className="ml-text-muted mt-2 text-sm">{t('dashboard.overviewIntro')}</p>
+      {status === 'loading' ? (
+        <p className="ml-text-muted mt-4 text-sm">{t('dashboard.loading')}</p>
+      ) : null}
+      {status === 'error' ? <p className="mt-4">{t('dashboard.loadError')}</p> : null}
       {data ? (
-        <div className="grid" style={{ marginTop: '1rem' }}>
-          <div className="metric">
-            <span className="muted">{t('dashboard.metric.status')}</span>
-            <strong>{data.health.status}</strong>
-          </div>
-          <div className="metric">
-            <span className="muted">{t('dashboard.metric.mode')}</span>
-            <strong>{data.health.mode}</strong>
-          </div>
-          <div className="metric">
-            <span className="muted">{t('dashboard.metric.version')}</span>
-            <strong>{data.health.version}</strong>
-          </div>
-          <div className="metric">
-            <span className="muted">{t('dashboard.metric.configs')}</span>
-            <strong>{data.health.activeConfigurations ?? 0}</strong>
-          </div>
-          <div className="metric">
-            <span className="muted">{t('dashboard.metric.uptime')}</span>
-            <strong>{data.health.uptimeSeconds}s</strong>
-          </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {(
+            [
+              ['dashboard.metric.status', data.health.status],
+              ['dashboard.metric.mode', data.health.mode],
+              ['dashboard.metric.version', data.health.version],
+              ['dashboard.metric.configs', String(data.health.activeConfigurations ?? 0)],
+              ['dashboard.metric.uptime', `${data.health.uptimeSeconds}s`],
+            ] as const
+          ).map(([labelKey, value]) => (
+            <div key={labelKey} className="ml-elevated p-3">
+              <span className="ml-text-muted text-sm">{t(labelKey)}</span>
+              <strong className="mt-1 block text-lg text-[var(--ml-text)]">{value}</strong>
+            </div>
+          ))}
         </div>
       ) : null}
     </section>

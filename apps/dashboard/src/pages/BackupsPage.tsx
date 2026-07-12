@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@metalayer/shared-ui';
 import { createBackup } from '@/lib/api';
 
 export function BackupsPage() {
@@ -27,14 +28,20 @@ export function BackupsPage() {
   }
 
   return (
-    <section className="panel">
-      <h1>{t('dashboard.backupsTitle')}</h1>
-      <p className="muted">{t('dashboard.backupsIntro')}</p>
-      <button type="button" className="primary" style={{ marginTop: '1rem' }} onClick={() => void onBackup()}>
+    <section className="ml-surface p-6">
+      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+        {t('dashboard.backupsTitle')}
+      </h1>
+      <p className="ml-text-muted mt-2 text-sm">{t('dashboard.backupsIntro')}</p>
+      <Button className="mt-4" variant="primary" onPress={() => void onBackup()}>
         {t('dashboard.backupsAction')}
-      </button>
-      {error ? <p>{t('dashboard.loadError')}</p> : null}
-      {result ? <pre style={{ marginTop: '1rem' }}>{result}</pre> : null}
+      </Button>
+      {error ? <p className="mt-4">{t('dashboard.loadError')}</p> : null}
+      {result ? (
+        <pre className="mt-4 overflow-auto rounded bg-[#0f1a17] p-3 text-sm text-[#d7ece4]">
+          {result}
+        </pre>
+      ) : null}
     </section>
   );
 }

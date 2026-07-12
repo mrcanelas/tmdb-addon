@@ -1,0 +1,62 @@
+/**
+ * MetaLayer Layered Minimalism tokens (FRONTEND.md / ADR 0007).
+ * Dark-first; light overrides under [data-theme="light"].
+ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ml-bg: #09090b;
+  --ml-surface: #111114;
+  --ml-elevated: #18181b;
+  --ml-border: #27272a;
+  --ml-text: #fafafa;
+  --ml-muted: #a1a1aa;
+  --ml-accent: #7c5cfc;
+  --ml-accent-fg: #fafafa;
+  --ml-success: #22c55e;
+  --ml-warning: #f59e0b;
+  --ml-error: #ef4444;
+  --ml-info: #3b82f6;
+
+  --ml-glass-bg: rgba(17, 17, 20, 0.78);
+  --ml-glass-border: rgba(255, 255, 255, 0.08);
+  --ml-glass-blur: 18px;
+
+  --ml-radius: 0.5rem;
+  --ml-font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Map into common semantic aliases used by apps */
+  --background: var(--ml-bg);
+  --foreground: var(--ml-text);
+  --card: var(--ml-surface);
+  --card-foreground: var(--ml-text);
+  --primary: var(--ml-accent);
+  --primary-foreground: var(--ml-accent-fg);
+  --secondary: var(--ml-elevated);
+  --secondary-foreground: var(--ml-text);
+  --muted: var(--ml-elevated);
+  --muted-foreground: var(--ml-muted);
+  --accent: var(--ml-accent);
+  --accent-foreground: var(--ml-accent-fg);
+  --border: var(--ml-border);
+  --input: var(--ml-border);
+  --ring: var(--ml-accent);
+  --radius: var(--ml-radius);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --ml-bg: #fafafa;
+  --ml-surface: #ffffff;
+  --ml-elevated: #f4f4f5;
+  --ml-border: #e4e4e7;
+  --ml-text: #09090b;
+  --ml-muted: #71717a;
+  --ml-accent: #6d28d9;
+  --ml-accent-fg: #fafafa;
+
+  --ml-glass-bg: rgba(255, 255, 255, 0.82);
+  --ml-glass-border: rgba(9, 9, 11, 0.08);
+}

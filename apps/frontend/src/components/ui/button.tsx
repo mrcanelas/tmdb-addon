@@ -1,45 +1,76 @@
-import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+/**
+ * Compatibility re-export — prefer `@metalayer/shared-ui` for new code.
+ * Maps legacy shadcn-style variants onto MetaLayer HeroUI wrappers.
+ */
+import {
+  Button as MetaButton,
+  type ButtonProps as MetaButtonProps,
+  type MetaLayerButtonVariant,
+} from '@metalayer/shared-ui';
+import type { ReactNode } from 'react';
 
-const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
-  {
-    variants: {
-      variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-      },
-      size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  },
-);
+type LegacyVariant = 'default' | 'secondary' | 'outline' | 'ghost' | MetaLayerButtonVariant;
+type LegacySize = 'default' | 'sm' | 'lg' | 'md';
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+export interface ButtonProps {
+  variant?: LegacyVariant;
+  size?: LegacySize;
+  children?: ReactNode;
+  className?: string;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  isDisabled?: boolean;
+  onClick?: () => void;
+  onPress?: MetaButtonProps['onPress'];
+  /** Ignored — use Link + Button separately; kept for compile compatibility. */
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : 'button';
-    return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-    );
-  },
-);
-Button.displayName = 'Button';
+function mapVariant(variant: LegacyVariant | undefined): MetaLayerButtonVariant {
+  switch (variant) {
+    case 'default':
+    case undefined:
+      return 'primary';
+    case 'ghost':
+      return 'quiet';
+    case 'secondary':
+    case 'outline':
+    case 'primary':
+    case 'destructive':
+    case 'quiet':
+      return variant;
+    default:
+      return 'primary';
+  }
+}
 
-export { Button, buttonVariants };
+function mapSize(size: LegacySize | undefined): MetaButtonProps['size'] {
+  if (size === 'sm') return 'sm';
+  if (size === 'lg') return 'lg';
+  return 'md';
+}
+
+export function Button({
+  variant,
+  size,
+  children,
+  onClick,
+  onPress,
+  disabled,
+  isDisabled,
+  asChild: _asChild,
+  ...rest
+}: ButtonProps) {
+  void _asChild;
+  return (
+    <MetaButton
+      variant={mapVariant(variant)}
+      size={mapSize(size)}
+      isDisabled={isDisabled ?? disabled}
+      onPress={onPress ?? (onClick ? () => onClick() : undefined)}
+      {...rest}
+    >
+      {children}
+    </MetaButton>
+  );
+}

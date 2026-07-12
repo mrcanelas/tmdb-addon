@@ -6,9 +6,9 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 
 | Path | Responsibility | Notes |
 |---|---|---|
-| `apps/frontend` | End-user MetaLayer configuration UI | Greenfield Rsbuild + React + shadcn (ADR 0002). Package `@metalayer/frontend`. Not a port of `configure/`. |
+| `apps/frontend` | End-user MetaLayer configuration UI | Greenfield Rsbuild + React 19 + HeroUI v3 (ADR 0002 / 0007). Package `@metalayer/frontend`. Served under `/configure`. Not a port of `configure/`. |
 | `apps/server` | MetaLayer HTTP API | Fastify + TypeScript (ADR 0004). Package `@metalayer/server`. Thin transport over `@metalayer/*`. |
-| `apps/dashboard` | Operator dashboard | Greenfield Rsbuild + React (`@metalayer/dashboard`). |
+| `apps/dashboard` | Operator dashboard | Greenfield Rsbuild + React 19 + HeroUI v3 (`@metalayer/dashboard`). Served under `/admin`. |
 | `apps/worker` | Background jobs | Reserved; not started. |
 
 ## Packages
@@ -27,6 +27,7 @@ This document defines package/app ownership for Phase A onward (`AGENTS.md` §26
 | `packages/catalogs` | Catalog Studio ordering and mutations. |
 | `packages/providers` / `packages/cache` | Provider framework and locale-sensitive cache. |
 | `packages/observability` | Metrics, bounded logs, health snapshots, safe backups. |
+| `packages/shared-ui` | HeroUI v3 wrappers, Layered Minimalism tokens, shared configure/admin primitives (ADR 0007). |
 | `packages/database` | Future schema/migrations (scaffold only). |
 | `packages/types` / `packages/utils` | Reserved shared packages — avoid catch-all growth. |
 

@@ -20,6 +20,7 @@ import { MemoryCache } from '@metalayer/cache';
 import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { corsPlugin } from './plugins/cors.js';
+import { spaStaticPlugin } from './plugins/spa-static.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
 
@@ -36,6 +37,10 @@ export interface BuildAppOptions {
   logBuffer?: BoundedLogBuffer;
   /** Override for dashboard auth tests. */
   env?: NodeJS.ProcessEnv;
+  /** Absolute path to configure SPA dist (tests / Docker). */
+  configureDist?: string;
+  /** Absolute path to admin SPA dist (tests / Docker). */
+  adminDist?: string;
 }
 
 declare module 'fastify' {
@@ -132,6 +137,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
   await app.register(correlationPlugin);
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
+  await app.register(spaStaticPlugin, {
+    configureRoot: options.configureDist,
+    adminRoot: options.adminDist,
+  });
 
   app.setNotFoundHandler((request, reply) => {
     const error = createApiError({

@@ -21,19 +21,21 @@ export function LogsPage() {
   }, []);
 
   return (
-    <section className="panel">
-      <h1>{t('dashboard.logsTitle')}</h1>
-      <p className="muted">{t('dashboard.logsIntro')}</p>
-      {error ? <p>{t('dashboard.loadError')}</p> : null}
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+    <section className="ml-surface p-6">
+      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">{t('dashboard.logsTitle')}</h1>
+      <p className="ml-text-muted mt-2 text-sm">{t('dashboard.logsIntro')}</p>
+      {error ? <p className="mt-4">{t('dashboard.loadError')}</p> : null}
+      <ul className="mt-4 list-none space-y-2 p-0">
         {logs.map((log) => (
-          <li key={log.id} style={{ borderBottom: '1px solid var(--border)', padding: '0.5rem 0' }}>
-            <strong>{log.level}</strong> · <span className="muted">{log.at}</span>
+          <li key={log.id} className="border-b border-[var(--ml-border)] pb-2">
+            <strong>{log.level}</strong> · <span className="ml-text-muted text-sm">{log.at}</span>
             <div>{log.message}</div>
           </li>
         ))}
       </ul>
-      {logs.length === 0 && !error ? <p className="muted">{t('dashboard.logsEmpty')}</p> : null}
+      {logs.length === 0 && !error ? (
+        <p className="ml-text-muted mt-4 text-sm">{t('dashboard.logsEmpty')}</p>
+      ) : null}
     </section>
   );
 }

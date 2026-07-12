@@ -7,17 +7,19 @@ export function OverviewPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">
+      <h1 className="text-3xl font-semibold tracking-tight text-[var(--ml-text)]">
         {t('nav.overview')}
       </h1>
-      <p className="max-w-2xl text-muted-foreground">{t('overview.body')}</p>
+      <p className="ml-text-muted max-w-2xl">{t('overview.body')}</p>
       <div className="flex flex-wrap gap-3 pt-2">
-        <Button type="button" asChild>
-          <Link to="/sources">{t('overview.ctaSources')}</Link>
-        </Button>
-        <Button type="button" variant="outline" asChild>
-          <Link to="/catalog-studio">{t('overview.ctaCatalogStudio')}</Link>
-        </Button>
+        <Link to="/sources">
+          <Button type="button">{t('overview.ctaSources')}</Button>
+        </Link>
+        <Link to="/catalog-studio">
+          <Button type="button" variant="outline">
+            {t('overview.ctaCatalogStudio')}
+          </Button>
+        </Link>
         <Button type="button" variant="outline" disabled>
           {t('overview.ctaImport')}
         </Button>

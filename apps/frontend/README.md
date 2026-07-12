@@ -1,33 +1,26 @@
-# MetaLayer Frontend (greenfield)
+# MetaLayer Frontend (configure)
 
-End-user configuration UI for MetaLayer.
+End-user configuration UI for MetaLayer. Served under **`/configure`**.
 
-Package name: `@metalayer/frontend` (pnpm filter: `frontend`).
+Package: `@metalayer/frontend`
 
-Stack (ADR 0002):
+Stack (ADR 0002 + ADR 0007):
 
-- React + TypeScript
+- React 19 + TypeScript
 - Rsbuild
-- React Router (library mode)
-- shadcn/ui + Tailwind
+- React Router (`basename=/configure`)
+- HeroUI v3 + Tailwind CSS v4 via `@metalayer/shared-ui`
 - i18next / react-i18next via `@metalayer/i18n`
 
-This app is **not** a port of the legacy `configure/` Vite UI.
+This app is **not** a port of the legacy `configure/` Vite UI. Product UX: `FRONTEND.md`.
 
 ## Scripts
 
 ```bash
-pnpm dev
-pnpm -F frontend dev
-pnpm build:frontend
+pnpm -F @metalayer/frontend dev
+pnpm -F @metalayer/frontend build
 ```
 
-From the repo root, `pnpm dev` runs `core`, `server`, and `frontend` in parallel.
+Dev server: http://localhost:5174/configure — proxies `/api` and `/c` to the MetaLayer API (`http://127.0.0.1:1338`).
 
-Dev server defaults to http://localhost:5174 and proxies `/api` and `/c` to the MetaLayer API on `http://127.0.0.1:1338`.
-
-Optional: `PUBLIC_METALAYER_API_BASE` for a remote API (otherwise same-origin / proxy).
-
-Sources page loads `/api/v1/sources` and can run live provider tests via `/api/v1/sources/:id/test` (API key is sent only for that request and is not persisted in the UI).
-
-Catalog Studio (`/catalog-studio`) creates a session draft configuration (edit credential in `sessionStorage`) and keeps studio order aligned with the projected manifest order via `/api/v1/configurations/:configId/catalogs`.
+Optional: `PUBLIC_METALAYER_API_BASE` for a remote API.

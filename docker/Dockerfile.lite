@@ -1,4 +1,4 @@
-# MetaLayer Lite — single container (API + SQLite + memory cache)
+# MetaLayer Lite — single container (API + SQLite + configure/admin SPAs)
 # Build from repo root:
 #   docker build -f docker/Dockerfile.lite -t metalayer-lite .
 
@@ -7,14 +7,19 @@ WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/server/package.json apps/server/
+COPY apps/frontend/package.json apps/frontend/
+COPY apps/dashboard/package.json apps/dashboard/
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
 COPY apps/server ./apps/server
+COPY apps/frontend ./apps/frontend
+COPY apps/dashboard ./apps/dashboard
 COPY tsconfig.base.json ./
-# Workspace packages are TypeScript sources consumed directly via tsx/tsc path.
-RUN pnpm -F @metalayer/server build
+RUN pnpm -F @metalayer/server build \
+  && pnpm -F @metalayer/frontend build \
+  && pnpm -F @metalayer/dashboard build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
@@ -26,12 +31,16 @@ ENV NODE_ENV=production \
     METALAYER_API_HOST=0.0.0.0 \
     METALAYER_API_PORT=1338 \
     METALAYER_SQLITE_PATH=/data/metalayer.sqlite \
-    METALAYER_TELEMETRY_ENABLED=false
+    METALAYER_TELEMETRY_ENABLED=false \
+    METALAYER_CONFIGURE_DIST=/app/apps/frontend/dist \
+    METALAYER_ADMIN_DIST=/app/apps/dashboard/dist
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/server/package.json apps/server/
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=build /app/apps/frontend/dist ./apps/frontend/dist
+COPY --from=build /app/apps/dashboard/dist ./apps/dashboard/dist
 COPY apps/server/package.json ./apps/server/
 RUN mkdir -p /data && chown -R metalayer:metalayer /data /app
 USER metalayer
