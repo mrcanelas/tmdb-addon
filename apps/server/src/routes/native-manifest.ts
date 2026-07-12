@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { createRequire } from 'node:module';
 import { createApiError } from '@metalayer/api-errors';
+import { toManifestCatalogEntries } from '@metalayer/catalogs';
 import type { ConfigurationStore } from '@metalayer/persistence';
 
 const require = createRequire(import.meta.url);
@@ -33,15 +34,27 @@ export const nativeManifestRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
+      const catalogs = toManifestCatalogEntries(
+        view.config.catalogs,
+        view.config.localization.metadataLocale,
+      ).map(({ id, type, name }) => ({
+        id,
+        type,
+        name,
+        extra: [{ name: 'skip', isRequired: false }],
+      }));
+
+      const types = [...new Set(catalogs.map((catalog) => catalog.type))];
+
       return {
         id: METALAYER.manifestId,
         version: METALAYER.version,
         name: METALAYER.manifestName,
         description: `MetaLayer configuration "${view.config.name}". Secrets are stored server-side.`,
-        resources: ['catalog', 'meta'],
-        types: ['movie', 'series'],
-        idPrefixes: ['tmdb:'],
-        catalogs: [],
+        resources: catalogs.length > 0 ? ['catalog', 'meta'] : ['meta'],
+        types: types.length > 0 ? types : ['movie', 'series'],
+        idPrefixes: ['tt', 'tmdb:'],
+        catalogs,
         behaviorHints: {
           configurable: true,
           configurationRequired: false,
