@@ -5,6 +5,11 @@ export {
   IdentityPreferencesSchema,
   MergeDefinitionSchema,
   RotationDefinitionSchema,
+  RuleContextSchema,
+  RuleSetSchema,
+  SortingFieldSchema,
+  SortingCriterionSchema,
+  SortingPlanSchema,
   CatalogDefinitionSchema,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
@@ -13,6 +18,11 @@ export {
   type IdentityPreferences,
   type MergeDefinition,
   type RotationDefinition,
+  type RuleContext,
+  type RuleSet,
+  type SortingField,
+  type SortingCriterion,
+  type SortingPlan,
   type CatalogDefinition,
 } from './schema.js';
 
