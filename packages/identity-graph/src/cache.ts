@@ -19,20 +19,20 @@ export class IdentityMappingCache {
     private readonly ttlMs = 60 * 60_000,
   ) {}
 
-  get(
+  async get(
     provider: IdentityProvider,
     id: string,
     entityKind = 'movie',
-  ): ResolvedIdentityMapping | null {
+  ): Promise<ResolvedIdentityMapping | null> {
     const key = buildIdentityCacheKey(provider, id, entityKind);
-    const hit = this.store.get<ResolvedIdentityMapping>(key);
+    const hit = await this.store.get<ResolvedIdentityMapping>(key);
     return hit?.entry.value ?? null;
   }
 
-  set(mapping: ResolvedIdentityMapping, entityKind = 'movie'): void {
+  async set(mapping: ResolvedIdentityMapping, entityKind = 'movie'): Promise<void> {
     for (const match of mapping.matches) {
       const key = buildIdentityCacheKey(match.provider, match.id, entityKind);
-      this.store.set(key, mapping, {
+      await this.store.set(key, mapping, {
         ttlMs: this.ttlMs,
         source: 'identity-graph',
         degraded: mapping.lowConfidence.length > 0,

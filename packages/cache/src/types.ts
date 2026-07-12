@@ -31,9 +31,13 @@ export interface CacheGetResult<T> {
 }
 
 export interface CacheStore {
-  get<T>(key: string): CacheGetResult<T> | null;
-  set<T>(key: string, value: T, options: CacheSetOptions): CacheEntry<T>;
-  delete(key: string): boolean;
-  clear(): void;
-  size(): number;
+  get<T>(key: string): Promise<CacheGetResult<T> | null>;
+  set<T>(
+    key: string,
+    value: T,
+    options: CacheSetOptions,
+  ): Promise<CacheEntry<T>>;
+  delete(key: string): Promise<boolean>;
+  clear(): Promise<void>;
+  size(): Promise<number>;
 }

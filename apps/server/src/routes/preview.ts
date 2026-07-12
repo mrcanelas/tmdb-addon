@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { createApiError } from '@metalayer/api-errors';
-import { MemoryCache } from '@metalayer/cache';
+import { MemoryCache, RedisCache, type CacheStore } from '@metalayer/cache';
 import {
   ProviderError,
   TmdbProviderAdapter,
@@ -15,6 +15,13 @@ type PreviewQuery = {
   /** Override ADR 0006 default (`imdb`). */
   publicIdMode?: 'imdb' | 'tmdb';
 };
+
+function providerCacheStats(cache: CacheStore) {
+  if (cache instanceof MemoryCache || cache instanceof RedisCache) {
+    return cache.stats();
+  }
+  return { size: -1, hits: 0, misses: 0, stales: 0 };
+}
 
 export const previewRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { id: string }; Querystring: PreviewQuery }>(
@@ -56,7 +63,7 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
         return {
           movie,
           cacheStatus: adapter.lastCacheStatus,
-          cache: app.providerCache.stats(),
+          cache: providerCacheStats(app.providerCache),
           correlationId: request.correlationId,
         };
       } catch (error) {
@@ -121,7 +128,7 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
       return {
         rating,
         cacheStatus: adapter.lastCacheStatus,
-        cache: app.providerCache.stats(),
+        cache: providerCacheStats(app.providerCache),
         correlationId: request.correlationId,
       };
     } catch (error) {
@@ -152,10 +159,11 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
 
   app.get('/cache/stats', async (request) => {
     return {
-      cache: app.providerCache.stats(),
+      cache: providerCacheStats(app.providerCache),
       correlationId: request.correlationId,
     };
   });
 };
 
-export type { MemoryCache };
+export type { CacheStore };
+export { MemoryCache };

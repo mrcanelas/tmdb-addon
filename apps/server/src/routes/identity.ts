@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { createApiError } from '@metalayer/api-errors';
-import { MemoryCache } from '@metalayer/cache';
+import type { CacheStore } from '@metalayer/cache';
 import {
   buildIdentityDiagnostics,
   IdentityMappingCache,
@@ -56,7 +56,7 @@ async function requireEdit(
 
 const identityCaches = new WeakMap<object, IdentityMappingCache>();
 
-function getIdentityCache(providerCache: MemoryCache): IdentityMappingCache {
+function getIdentityCache(providerCache: CacheStore): IdentityMappingCache {
   let cache = identityCaches.get(providerCache);
   if (!cache) {
     cache = new IdentityMappingCache(providerCache);
@@ -69,7 +69,7 @@ async function gatherIdsFromPublicId(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
-    providerCache: MemoryCache;
+    providerCache: CacheStore;
   },
   configId: string,
   publicId: string,
@@ -141,8 +141,8 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
       if (body.publicId && !body.ids?.tmdb && !body.ids?.imdb) {
         const cache = getIdentityCache(app.providerCache);
         const cached =
-          cache.get('imdb', body.publicId, entityKind) ||
-          cache.get('tmdb', body.publicId, entityKind);
+          (await cache.get('imdb', body.publicId, entityKind)) ||
+          (await cache.get('tmdb', body.publicId, entityKind));
         if (cached) {
           return {
             mapping: cached,
@@ -172,7 +172,7 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const mapping = resolveIdentityMapping({ ids, entityKind });
-      getIdentityCache(app.providerCache).set(mapping, entityKind);
+      await getIdentityCache(app.providerCache).set(mapping, entityKind);
 
       return {
         mapping,

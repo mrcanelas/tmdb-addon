@@ -3668,12 +3668,11 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **Redis shared cache** (sidecar already in Server compose)
-2. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
-3. **Encryption key rotation tooling** (Phase B carry-over)
-4. **Advanced configure module**
-5. **Series specials / alternative episode orders** (corrections layer)
-6. **Proactive token refresh jobs** (optional; on-demand refresh covers Trakt/MAL)
+1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+2. **Encryption key rotation tooling** (Phase B carry-over)
+3. **Advanced configure module**
+4. **Series specials / alternative episode orders** (corrections layer)
+5. **Proactive token refresh jobs** (optional; on-demand refresh covers Trakt/MAL)
 
 ---
 

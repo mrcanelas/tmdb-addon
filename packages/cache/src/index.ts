@@ -8,6 +8,7 @@ export type {
 } from './types.js';
 
 export { MemoryCache, type MemoryCacheOptions } from './memory.js';
+export { RedisCache, type RedisCacheOptions } from './redis.js';
 export {
   cachedLoad,
   buildProviderCacheKey,

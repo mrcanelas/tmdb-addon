@@ -28,7 +28,7 @@ export class MemoryCache implements CacheStore {
     this.now = options.now ?? (() => Date.now());
   }
 
-  get<T>(key: string): CacheGetResult<T> | null {
+  async get<T>(key: string): Promise<CacheGetResult<T> | null> {
     const entry = this.entries.get(key) as CacheEntry<T> | undefined;
     if (!entry) {
       this.misses += 1;
@@ -51,7 +51,11 @@ export class MemoryCache implements CacheStore {
     return null;
   }
 
-  set<T>(key: string, value: T, options: CacheSetOptions): CacheEntry<T> {
+  async set<T>(
+    key: string,
+    value: T,
+    options: CacheSetOptions,
+  ): Promise<CacheEntry<T>> {
     // Do not store degraded payloads in long-lived slots.
     const ttlMs =
       options.degraded && !options.staleEligible
@@ -73,21 +77,21 @@ export class MemoryCache implements CacheStore {
     return entry;
   }
 
-  delete(key: string): boolean {
+  async delete(key: string): Promise<boolean> {
     return this.entries.delete(key);
   }
 
-  clear(): void {
+  async clear(): Promise<void> {
     this.entries.clear();
   }
 
-  size(): number {
+  async size(): Promise<number> {
     return this.entries.size;
   }
 
   stats() {
     return {
-      size: this.size(),
+      size: this.entries.size,
       hits: this.hits,
       misses: this.misses,
       stales: this.stales,

@@ -21,13 +21,13 @@ import {
   createProviderAdapter,
   type TmdbFetch,
 } from '@metalayer/providers';
-import type { MemoryCache } from '@metalayer/cache';
+import type { CacheStore } from '@metalayer/cache';
 
 declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
-    providerCache: MemoryCache;
+    providerCache: CacheStore;
   }
 }
 
@@ -109,7 +109,7 @@ async function loadCatalogMetas(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
-    providerCache: MemoryCache;
+    providerCache: CacheStore;
   },
   configId: string,
   config: MetaLayerConfig,

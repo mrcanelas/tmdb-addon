@@ -8,7 +8,7 @@ export interface ProviderCacheGetResult<T> {
 }
 
 export interface ProviderCacheStore {
-  get<T>(key: string): ProviderCacheGetResult<T> | null;
+  get<T>(key: string): Promise<ProviderCacheGetResult<T> | null>;
   set<T>(
     key: string,
     value: T,
@@ -18,5 +18,5 @@ export interface ProviderCacheStore {
       degraded?: boolean;
       staleEligible?: boolean;
     },
-  ): unknown;
+  ): Promise<unknown>;
 }

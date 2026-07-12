@@ -26,7 +26,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Tracking OAuth browser flows + live list sync | **Done (MVP)** — Trakt + SIMKL + AniList + MAL; shared Trakt/MAL refresh-on-401 + reconnect status |
 
 | Encryption key rotation tooling | post-beta (Phase B carry-over) |
-| Postgres + Redis Server end-to-end | **Partial** — Postgres ConfigurationStore + compose; Redis sidecar up, shared cache still memory |
+| Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
 | Full i18n/RTL layout hardening | Phase M tasks |
 | Performance measurement against §34 objectives | Phase M tasks |

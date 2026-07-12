@@ -25,7 +25,7 @@ import {
   createProviderAdapter,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
-import type { MemoryCache } from '@metalayer/cache';
+import type { CacheStore } from '@metalayer/cache';
 import type { TmdbFetch } from '@metalayer/providers';
 
 declare module 'fastify' {
@@ -96,7 +96,7 @@ async function gatherLiveBag(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
-    providerCache: MemoryCache;
+    providerCache: CacheStore;
   },
   configId: string,
   config: MetaLayerConfig,

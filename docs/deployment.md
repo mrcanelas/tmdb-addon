@@ -63,7 +63,7 @@ docker compose -f docker/docker-compose.server.yml up -d --build
 
 Set `POSTGRES_URL` (Compose sets it automatically) and `METALAYER_ENCRYPTION_KEY`. When `POSTGRES_URL` is present, the API uses `PostgresConfigurationStore` instead of SQLite. Lite remains SQLite via `METALAYER_SQLITE_PATH`.
 
-Redis is started for the Server profile; request/provider cache still defaults to in-process memory until `RedisCache` lands.
+When `REDIS_URL` is set, provider/identity caches use `RedisCache` (shared across instances). Without it, the API keeps an in-process `MemoryCache` (Lite default).
 
 ## GHCR images
 

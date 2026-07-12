@@ -1,7 +1,7 @@
 {
   "name": "@metalayer/cache",
   "version": "1.0.0-beta.1",
-  "description": "Locale-sensitive in-process cache for MetaLayer provider and resolved responses",
+  "description": "Locale-sensitive cache for MetaLayer (memory Lite + Redis Server)",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/providers": "workspace:*"
+    "@metalayer/providers": "workspace:*",
+    "ioredis": "^5.11.1"
   }
 }

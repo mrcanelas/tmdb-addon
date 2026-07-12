@@ -43,12 +43,12 @@ describe('@metalayer/providers imdb ratings', () => {
   it('caches ratings without embedding secrets', async () => {
     const store = new Map<string, { value: unknown }>();
     const cache = {
-      get<T>(key: string) {
+      async get<T>(key: string) {
         const entry = store.get(key);
         if (!entry) return null;
         return { status: 'hit' as const, entry: { value: entry.value as T } };
       },
-      set<T>(key: string, value: T) {
+      async set<T>(key: string, value: T) {
         store.set(key, { value });
       },
     };

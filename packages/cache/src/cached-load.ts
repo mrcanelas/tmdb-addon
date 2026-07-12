@@ -45,7 +45,7 @@ export async function cachedLoad<T>(options: {
     };
   }
 
-  const existing = options.cache.get<T>(key);
+  const existing = await options.cache.get<T>(key);
   if (existing) {
     return {
       value: existing.entry.value,
@@ -56,7 +56,7 @@ export async function cachedLoad<T>(options: {
 
   const value = await options.load();
   const degraded = options.isDegraded?.(value) ?? false;
-  options.cache.set(key, value, {
+  await options.cache.set(key, value, {
     ttlMs: options.ttlMs ?? 15 * 60_000,
     source: options.providerId,
     degraded,

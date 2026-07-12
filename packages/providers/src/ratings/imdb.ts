@@ -101,7 +101,7 @@ export class ImdbRatingsAdapter implements ProviderAdapter {
     });
 
     if (this.cache) {
-      const existing = this.cache.get<ImdbRating>(key);
+      const existing = await this.cache.get<ImdbRating>(key);
       if (existing) {
         this.lastCacheStatus = existing.status;
         return existing.entry.value;
@@ -150,7 +150,7 @@ export class ImdbRatingsAdapter implements ProviderAdapter {
       },
     });
 
-    this.cache?.set(key, value, {
+    await this.cache?.set(key, value, {
       ttlMs: this.cacheTtlMs,
       source: this.id,
       degraded: value.rating === undefined,

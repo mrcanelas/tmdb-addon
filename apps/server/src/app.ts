@@ -17,7 +17,11 @@ import {
   type ConfigurationStore,
 } from '@metalayer/persistence';
 import type { TmdbFetch } from '@metalayer/providers';
-import { MemoryCache } from '@metalayer/cache';
+import {
+  MemoryCache,
+  RedisCache,
+  type CacheStore,
+} from '@metalayer/cache';
 import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { corsPlugin } from './plugins/cors.js';
@@ -33,7 +37,7 @@ export interface BuildAppOptions {
   sqlitePath?: string;
   /** Injectable HTTP for provider adapters (tests / offline). */
   providerFetch?: TmdbFetch;
-  providerCache?: MemoryCache;
+  providerCache?: CacheStore;
   correctionRegistry?: CorrectionRegistry;
   metrics?: MetricsRegistry;
   logBuffer?: BoundedLogBuffer;
@@ -49,7 +53,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
-    providerCache: MemoryCache;
+    providerCache: CacheStore;
     correctionRegistry: CorrectionRegistry;
     metrics: MetricsRegistry;
     logBuffer: BoundedLogBuffer;
@@ -101,6 +105,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   const store = await resolveStore(options);
+  const providerCache =
+    options.providerCache ??
+    (process.env.REDIS_URL
+      ? new RedisCache({ url: process.env.REDIS_URL })
+      : new MemoryCache());
   const correctionRegistry =
     options.correctionRegistry ??
     (() => {
@@ -113,7 +122,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
-  app.decorate('providerCache', options.providerCache ?? new MemoryCache());
+  app.decorate('providerCache', providerCache);
   app.decorate('correctionRegistry', correctionRegistry);
   app.decorate('metrics', metrics);
   app.decorate('logBuffer', logBuffer);
@@ -141,6 +150,9 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   app.addHook('onClose', async () => {
     await store.close();
+    if (providerCache instanceof RedisCache) {
+      await providerCache.close();
+    }
   });
 
   await app.register(corsPlugin);

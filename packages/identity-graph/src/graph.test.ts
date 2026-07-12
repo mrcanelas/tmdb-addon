@@ -113,14 +113,14 @@ describe('@metalayer/identity-graph', () => {
     expect(mapping.selectedByProvider.imdb?.method).toBe('provider');
   });
 
-  it('caches resolved mappings by provider id', () => {
+  it('caches resolved mappings by provider id', async () => {
     const store = new MemoryCache();
     const cache = new IdentityMappingCache(store);
     const mapping = resolveIdentityMapping({
       ids: { tmdb: 550, imdb: 'tt0137523' },
     });
-    cache.set(mapping);
-    const hit = cache.get('imdb', 'tt0137523');
+    await cache.set(mapping);
+    const hit = await cache.get('imdb', 'tt0137523');
     expect(hit?.canonical.id).toBe(mapping.canonical.id);
     expect(hit?.matches).toHaveLength(2);
   });

@@ -56,24 +56,24 @@ describe('@metalayer/cache', () => {
     expect(cache.stats().hits).toBe(1);
   });
 
-  it('shortens TTL for degraded payloads and can serve stale eligible entries', () => {
+  it('shortens TTL for degraded payloads and can serve stale eligible entries', async () => {
     const now = vi.fn(() => 1_000);
     const cache = new MemoryCache({ now });
 
-    cache.set('degraded', { ok: false }, {
+    await cache.set('degraded', { ok: false }, {
       ttlMs: 60_000,
       degraded: true,
       source: 'tmdb',
     });
-    expect(cache.get('degraded')?.entry.expiresAt).toBe(1_000 + 30_000);
+    expect((await cache.get('degraded'))?.entry.expiresAt).toBe(1_000 + 30_000);
 
-    cache.set('stale-ok', { title: 'x' }, {
+    await cache.set('stale-ok', { title: 'x' }, {
       ttlMs: 10,
       staleEligible: true,
       source: 'tmdb',
     });
     now.mockReturnValue(1_050);
-    expect(cache.get('stale-ok')?.status).toBe('stale');
+    expect((await cache.get('stale-ok'))?.status).toBe('stale');
   });
 
   it('never requires secrets in cache keys', async () => {

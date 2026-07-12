@@ -382,14 +382,14 @@ export class TmdbProviderAdapter implements ProviderAdapter {
       return load();
     }
 
-    const existing = this.cache.get<T>(key);
+    const existing = await this.cache.get<T>(key);
     if (existing) {
       this.lastCacheStatus = existing.status;
       return existing.entry.value;
     }
 
     const value = await load();
-    this.cache.set(key, value, {
+    await this.cache.set(key, value, {
       ttlMs: this.cacheTtlMs,
       source: this.id,
       degraded: false,
