@@ -277,6 +277,9 @@ importers:
       '@metalayer/identity':
         specifier: workspace:*
         version: link:../../packages/identity
+      '@metalayer/identity-graph':
+        specifier: workspace:*
+        version: link:../../packages/identity-graph
       '@metalayer/metadata-resolver':
         specifier: workspace:*
         version: link:../../packages/metadata-resolver
@@ -369,6 +372,12 @@ importers:
   packages/i18n: {}
 
   packages/identity: {}
+
+  packages/identity-graph:
+    dependencies:
+      '@metalayer/cache':
+        specifier: workspace:*
+        version: link:../cache
 
   packages/metadata-resolver:
     dependencies:

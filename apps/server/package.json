@@ -19,6 +19,7 @@
     "@metalayer/catalogs": "workspace:*",
     "@metalayer/config": "workspace:*",
     "@metalayer/identity": "workspace:*",
+    "@metalayer/identity-graph": "workspace:*",
     "@metalayer/persistence": "workspace:*",
     "@metalayer/providers": "workspace:*",
     "@metalayer/metadata-resolver": "workspace:*",
