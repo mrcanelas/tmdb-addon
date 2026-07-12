@@ -124,4 +124,18 @@ describe('@metalayer/identity-graph', () => {
     expect(hit?.canonical.id).toBe(mapping.canonical.id);
     expect(hit?.matches).toHaveLength(2);
   });
+
+  it('builds anime work mappings from MAL/AniList/Kitsu ids', () => {
+    const mapping = resolveIdentityMapping({
+      ids: { mal: 5114, anilist: 5114, kitsu: 1555 },
+      entityKind: 'work',
+    });
+    expect(mapping.canonical.id.startsWith('metalayer:work:')).toBe(true);
+    expect(mapping.matches.map((item) => item.provider).sort()).toEqual([
+      'anilist',
+      'kitsu',
+      'mal',
+    ]);
+    expect(mapping.edges.length).toBeGreaterThan(0);
+  });
 });

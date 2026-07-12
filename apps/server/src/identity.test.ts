@@ -61,4 +61,34 @@ describe('@metalayer/server identity graph', () => {
       body.mapping.canonical.id,
     );
   });
+
+  it('resolves anime MAL/AniList mappings as work entities', async () => {
+    const app = await appPromise;
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'anime-id-edit',
+        config: createDefaultMetaLayerConfig({ name: 'Anime Identity' }),
+      },
+    });
+    const { configId } = created.json();
+    const resolved = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/identity/resolve`,
+      headers: { 'x-metalayer-edit-credential': 'anime-id-edit' },
+      payload: {
+        mediaType: 'anime',
+        ids: { mal: 5114, anilist: 5114 },
+      },
+    });
+    expect(resolved.statusCode).toBe(200);
+    expect(resolved.json().mapping.canonical.id).toMatch(/^metalayer:work:/);
+    expect(resolved.json().diagnostics.matches).toEqual(
+      expect.arrayContaining([
+        { provider: 'mal', id: '5114' },
+        { provider: 'anilist', id: '5114' },
+      ]),
+    );
+  });
 });

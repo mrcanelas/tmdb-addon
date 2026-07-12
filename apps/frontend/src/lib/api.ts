@@ -205,14 +205,14 @@ function sampleCatalogs() {
     },
     {
       instanceId: id(),
-      provider: 'tmdb',
-      providerCatalogId: 'top_rated',
+      provider: 'anilist',
+      providerCatalogId: 'trending',
       mediaType: 'anime' as const,
-      originalName: 'Top Anime',
+      originalName: 'Trending Anime',
       enabled: true,
-      showInHome: false,
+      showInHome: true,
       position: 2,
-      tags: [],
+      tags: ['anime'],
     },
   ];
 }

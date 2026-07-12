@@ -23,6 +23,9 @@ import type { ConfigurationStore } from '@metalayer/persistence';
 import {
   ProviderError,
   TmdbProviderAdapter,
+  AnilistProviderAdapter,
+  MalJikanProviderAdapter,
+  KitsuProviderAdapter,
   createProviderAdapter,
 } from '@metalayer/providers';
 
@@ -343,57 +346,82 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       process.env.METALAYER_TMDB_API_KEY ||
       process.env.TMDB_API;
 
-    const adapter = createProviderAdapter('tmdb', {
-      apiKey,
-      fetchImpl: app.providerFetch,
-      cache: app.providerCache,
-      stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
-    });
-
-    if (!(adapter instanceof TmdbProviderAdapter)) {
-      return reply.status(500).send(
-        createApiError({
-          code: 'INTERNAL_ERROR',
-          message: 'TMDB adapter unavailable',
-          correlationId: request.correlationId,
-        }),
-      );
-    }
-
     const started = Date.now();
     try {
       const resolved = await resolveCatalogResults(
         view.config.catalogs,
         request.params.instanceId,
         async (catalog) => {
-          if (catalog.provider !== 'tmdb') {
-            throw new Error(`Provider ${catalog.provider} catalog preview is not available yet`);
-          }
-          const items = await adapter.getCatalogPage(
-            {
-              correlationId: request.correlationId,
-              locale,
-              region,
+          const ctx = {
+            correlationId: request.correlationId,
+            locale,
+            region,
+            apiKey,
+          };
+
+          if (catalog.provider === 'tmdb') {
+            const adapter = createProviderAdapter('tmdb', {
               apiKey,
-            },
-            {
+              fetchImpl: app.providerFetch,
+              cache: app.providerCache,
+              stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
+            });
+            if (!(adapter instanceof TmdbProviderAdapter)) {
+              throw new Error('TMDB adapter unavailable');
+            }
+            const items = await adapter.getCatalogPage(ctx, {
               providerCatalogId: catalog.providerCatalogId,
               mediaType: catalog.mediaType,
               page: request.body?.page ?? 1,
-            },
-          );
-          return items.map(
-            (item): CatalogMetaPreview => ({
-              id: item.publicId,
-              type: item.mediaType,
-              name: item.name,
-              poster: item.posterPath
-                ? `https://image.tmdb.org/t/p/w342${item.posterPath}`
-                : undefined,
-              releaseInfo: item.releaseDate,
-              provider: 'tmdb',
-            }),
-          );
+            });
+            return items.map(
+              (item): CatalogMetaPreview => ({
+                id: item.publicId,
+                type: item.mediaType,
+                name: item.name,
+                poster: item.posterPath
+                  ? `https://image.tmdb.org/t/p/w342${item.posterPath}`
+                  : undefined,
+                releaseInfo: item.releaseDate,
+                provider: 'tmdb',
+              }),
+            );
+          }
+
+          if (
+            catalog.provider === 'anilist' ||
+            catalog.provider === 'mal' ||
+            catalog.provider === 'kitsu'
+          ) {
+            const adapter = createProviderAdapter(catalog.provider, {
+              fetchImpl: app.providerFetch,
+              cache: app.providerCache,
+              jikanBaseUrl: process.env.METALAYER_JIKAN_URL,
+            });
+            if (
+              !(adapter instanceof AnilistProviderAdapter) &&
+              !(adapter instanceof MalJikanProviderAdapter) &&
+              !(adapter instanceof KitsuProviderAdapter)
+            ) {
+              throw new Error(`${catalog.provider} anime adapter unavailable`);
+            }
+            const items = await adapter.getCatalogPage(ctx, {
+              providerCatalogId: catalog.providerCatalogId,
+              mediaType: 'anime',
+              page: request.body?.page ?? 1,
+            });
+            return items.map(
+              (item): CatalogMetaPreview => ({
+                id: item.publicId,
+                type: 'anime',
+                name: item.name,
+                poster: item.posterUrl ?? undefined,
+                provider: catalog.provider,
+              }),
+            );
+          }
+
+          throw new Error(`Provider ${catalog.provider} catalog preview is not available yet`);
         },
       );
 

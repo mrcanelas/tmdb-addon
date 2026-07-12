@@ -130,9 +130,11 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
 
     const body = request.body ?? {};
     const entityKind =
-      body.mediaType === 'series' || body.mediaType === 'anime'
-        ? 'series'
-        : 'movie';
+      body.mediaType === 'anime'
+        ? 'work'
+        : body.mediaType === 'series'
+          ? 'series'
+          : 'movie';
 
     try {
       let ids = body.ids ?? {};
@@ -158,7 +160,7 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
-      if (!ids.tmdb && !ids.imdb && !ids.tvdb) {
+      if (!ids.tmdb && !ids.imdb && !ids.tvdb && !ids.mal && !ids.anilist && !ids.kitsu) {
         return reply.status(400).send(
           createApiError({
             code: 'VALIDATION_FAILED',
@@ -219,7 +221,7 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const ids = request.body?.ids;
-    if (!ids || (!ids.tmdb && !ids.imdb && !ids.tvdb)) {
+    if (!ids || (!ids.tmdb && !ids.imdb && !ids.tvdb && !ids.mal && !ids.anilist && !ids.kitsu)) {
       return reply.status(400).send(
         createApiError({
           code: 'VALIDATION_FAILED',
@@ -231,9 +233,11 @@ export const identityRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const entityKind =
-      request.body?.mediaType === 'series' || request.body?.mediaType === 'anime'
-        ? 'series'
-        : 'movie';
+      request.body?.mediaType === 'anime'
+        ? 'work'
+        : request.body?.mediaType === 'series'
+          ? 'series'
+          : 'movie';
 
     const mapping = resolveIdentityMapping({ ids, entityKind });
     return {
