@@ -1,0 +1,18 @@
+{
+  "rules.title": "Regras",
+  "rules.intro": "Filtros globais valem para os catálogos, salvo override no próprio catálogo. Camadas posteriores vencem.",
+  "rules.inheritance": "Herança: Global → Perfil → Catálogo → Contexto",
+  "rules.excludeAdult": "Excluir conteúdo adulto",
+  "rules.digitallyReleasedOnly": "Somente lançamento digital",
+  "rules.releasedOnly": "Somente lançados",
+  "rules.minimumRating": "Nota mínima",
+  "rules.minimumVotes": "Votos mínimos",
+  "rules.save": "Salvar regras globais",
+  "rules.preview": "Prévia com amostra",
+  "rules.loadError": "Não foi possível carregar as regras da API.",
+  "rules.saved": "Regras globais salvas.",
+  "rules.included": "Incluídos",
+  "rules.excluded": "Excluídos",
+  "rules.warnings": "Limitações do provedor",
+  "rules.bootstrapping": "Preparando configuração rascunho…"
+}

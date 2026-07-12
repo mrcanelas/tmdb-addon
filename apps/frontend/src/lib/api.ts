@@ -369,3 +369,94 @@ export async function previewCatalogResults(
     },
   );
 }
+
+export interface RuleSetDraft {
+  excludeAdult?: boolean;
+  digitallyReleasedOnly?: boolean;
+  releasedOnly?: boolean;
+  minimumRating?: number;
+  minimumVotes?: number;
+}
+
+export async function ensureStudioSession(): Promise<CatalogSession> {
+  const existing = readCatalogSession();
+  if (existing) return existing;
+  const draft = await bootstrapCatalogDraft();
+  const session = readCatalogSession();
+  if (!session) {
+    throw new Error(`Draft created (${draft.configId}) but session missing`);
+  }
+  return session;
+}
+
+export async function fetchEffectiveRules(
+  configId: string,
+  editCredential: string,
+  provider = 'tmdb',
+): Promise<{
+  effective: RuleSetDraft;
+  warnings: Array<{ rule: string; reason: string; fallback?: string }>;
+}> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/rules/effective?provider=${encodeURIComponent(provider)}`,
+    {
+      headers: { 'x-metalayer-edit-credential': editCredential },
+    },
+  );
+}
+
+export async function saveGlobalRules(
+  configId: string,
+  editCredential: string,
+  globalRules: RuleSetDraft,
+): Promise<{ globalRules: RuleSetDraft }> {
+  return apiFetch(`/api/v1/configurations/${configId}/rules`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ globalRules }),
+  });
+}
+
+export async function previewRules(
+  configId: string,
+  editCredential: string,
+  items: Array<Record<string, unknown>>,
+  rules?: RuleSetDraft,
+): Promise<{ included: string[]; excluded: string[]; warnings: Array<{ rule: string; reason: string }> }> {
+  return apiFetch(`/api/v1/configurations/${configId}/rules/preview`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ items, rules, provider: 'tmdb' }),
+  });
+}
+
+export interface SortingPlanDraft {
+  criteria: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  stable: boolean;
+  randomSeedWindow?: 'request' | 'hour' | 'day' | 'week';
+}
+
+export async function saveGlobalSorting(
+  configId: string,
+  editCredential: string,
+  globalSorting: SortingPlanDraft,
+): Promise<{ globalSorting: SortingPlanDraft | null }> {
+  return apiFetch(`/api/v1/configurations/${configId}/sorting`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ globalSorting }),
+  });
+}
+
+export async function previewSorting(
+  configId: string,
+  editCredential: string,
+  items: Array<Record<string, unknown>>,
+  plan: SortingPlanDraft,
+): Promise<{ order: string[]; seedWindow: string }> {
+  return apiFetch(`/api/v1/configurations/${configId}/sorting/preview`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ items, plan }),
+  });
+}

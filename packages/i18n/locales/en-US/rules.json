@@ -1,0 +1,18 @@
+{
+  "rules.title": "Rules",
+  "rules.intro": "Global filters apply to catalogs unless a catalog overrides them. Later layers win.",
+  "rules.inheritance": "Inheritance: Global → Profile → Catalog → Context",
+  "rules.excludeAdult": "Exclude adult content",
+  "rules.digitallyReleasedOnly": "Digitally released only",
+  "rules.releasedOnly": "Released only",
+  "rules.minimumRating": "Minimum rating",
+  "rules.minimumVotes": "Minimum votes",
+  "rules.save": "Save global rules",
+  "rules.preview": "Preview sample",
+  "rules.loadError": "Could not load rules from the API.",
+  "rules.saved": "Global rules saved.",
+  "rules.included": "Included",
+  "rules.excluded": "Excluded",
+  "rules.warnings": "Provider limitations",
+  "rules.bootstrapping": "Preparing draft configuration…"
+}

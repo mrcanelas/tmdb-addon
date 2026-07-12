@@ -1,0 +1,18 @@
+{
+  "rules.title": "Reglas",
+  "rules.intro": "Los filtros globales aplican a los catálogos salvo override en el catálogo. Las capas posteriores ganan.",
+  "rules.inheritance": "Herencia: Global → Perfil → Catálogo → Contexto",
+  "rules.excludeAdult": "Excluir contenido adulto",
+  "rules.digitallyReleasedOnly": "Solo estreno digital",
+  "rules.releasedOnly": "Solo estrenados",
+  "rules.minimumRating": "Nota mínima",
+  "rules.minimumVotes": "Votos mínimos",
+  "rules.save": "Guardar reglas globales",
+  "rules.preview": "Vista previa de muestra",
+  "rules.loadError": "No se pudieron cargar las reglas de la API.",
+  "rules.saved": "Reglas globales guardadas.",
+  "rules.included": "Incluidos",
+  "rules.excluded": "Excluidos",
+  "rules.warnings": "Limitaciones del proveedor",
+  "rules.bootstrapping": "Preparando configuración borrador…"
+}

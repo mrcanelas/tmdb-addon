@@ -1,0 +1,18 @@
+{
+  "rules.title": "RûlésRû",
+  "rules.intro": "Gløbål fîltérs åpply tø çåtåløgs ûñléss å çåtåløg øvérrîdés thém. Låtér låyérs wîñ.Gløbål fîltérs åpply tø ç",
+  "rules.inheritance": "Îñhérîtåñçé: Gløbål → Prøfîlé → Çåtåløg → ÇøñtéxtÎñhérîtåñçé: Gl",
+  "rules.excludeAdult": "Éxçlûdé ådûlt çøñtéñtÉxçlûdé",
+  "rules.digitallyReleasedOnly": "Dîgîtålly réléåséd øñlyDîgîtål",
+  "rules.releasedOnly": "Réléåséd øñlyRélé",
+  "rules.minimumRating": "Mîñîmûm råtîñgMîñîm",
+  "rules.minimumVotes": "Mîñîmûm vøtésMîñî",
+  "rules.save": "Såvé gløbål rûlésSåvé g",
+  "rules.preview": "Prévîéw såmpléPrévî",
+  "rules.loadError": "Çøûld ñøt løåd rûlés frøm thé ÅPÎ.Çøûld ñøt l",
+  "rules.saved": "Gløbål rûlés såvéd.Gløbål",
+  "rules.included": "ÎñçlûdédÎñç",
+  "rules.excluded": "ÉxçlûdédÉxç",
+  "rules.warnings": "Prøvîdér lîmîtåtîøñsPrøvîd",
+  "rules.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg"
+}
