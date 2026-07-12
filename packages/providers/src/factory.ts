@@ -5,6 +5,9 @@ import { TmdbProviderAdapter } from './tmdb/adapter.js';
 import { FanartArtworkAdapter } from './artwork/fanart.js';
 import { RpdbArtworkAdapter } from './artwork/rpdb.js';
 import { ImdbRatingsAdapter } from './ratings/imdb.js';
+import { AnilistProviderAdapter } from './anilist/adapter.js';
+import { MalJikanProviderAdapter } from './mal/adapter.js';
+import { KitsuProviderAdapter } from './kitsu/adapter.js';
 import { getProvider } from './registry.js';
 
 export { listAdapterProviderIds } from './adapter-ids.js';
@@ -16,6 +19,8 @@ export interface CreateProviderAdapterOptions {
   cache?: ProviderCacheStore;
   cacheTtlMs?: number;
   stremioPublicId?: 'imdb' | 'tmdb';
+  /** Self-hosted or alternate Jikan base URL. */
+  jikanBaseUrl?: string;
 }
 
 /**
@@ -57,6 +62,22 @@ export function createProviderAdapter(
         policy: options.policy,
         cache: options.cache,
         cacheTtlMs: options.cacheTtlMs,
+      });
+    case 'anilist':
+      return new AnilistProviderAdapter({
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
+    case 'mal':
+      return new MalJikanProviderAdapter({
+        baseUrl: options.jikanBaseUrl,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+      });
+    case 'kitsu':
+      return new KitsuProviderAdapter({
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
       });
     default:
       return null;

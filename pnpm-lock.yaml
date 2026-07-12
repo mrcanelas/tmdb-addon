@@ -318,6 +318,8 @@ importers:
         specifier: ^5.5.3
         version: 5.9.3
 
+  packages/anime: {}
+
   packages/api-errors: {}
 
   packages/cache:
@@ -396,6 +398,9 @@ importers:
 
   packages/providers:
     dependencies:
+      '@metalayer/anime':
+        specifier: workspace:*
+        version: link:../anime
       '@metalayer/identity':
         specifier: workspace:*
         version: link:../identity

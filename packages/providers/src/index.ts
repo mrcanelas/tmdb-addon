@@ -73,6 +73,18 @@ export type {
   ImdbRatingsAdapterOptions,
 } from './ratings/imdb.js';
 
+export type {
+  AnimeCatalogItem,
+  AnimeMetadataSummary,
+  AnimeProviderFetch,
+} from './anime/types.js';
+export { AnilistProviderAdapter } from './anilist/adapter.js';
+export type { AnilistAdapterOptions } from './anilist/adapter.js';
+export { MalJikanProviderAdapter } from './mal/adapter.js';
+export type { JikanAdapterOptions } from './mal/adapter.js';
+export { KitsuProviderAdapter } from './kitsu/adapter.js';
+export type { KitsuAdapterOptions } from './kitsu/adapter.js';
+
 export {
   createProviderAdapter,
   listAdapterProviderIds,
