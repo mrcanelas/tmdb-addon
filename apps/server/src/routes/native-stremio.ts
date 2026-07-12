@@ -63,6 +63,14 @@ function stremioType(
   return mediaType === 'movie' ? 'movie' : 'series';
 }
 
+/** Accept `anilist:5114` or bare numeric AniList ids. */
+function parseAnimePublicId(publicId: string): number | null {
+  const match = /^(?:anilist:)?(\d+)$/i.exec(publicId.trim());
+  if (!match) return null;
+  const id = Number(match[1]);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
 async function loadCatalogMetas(
   app: {
     configStore: ConfigurationStore;
@@ -252,13 +260,56 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const type = request.params.type;
-    if (type !== 'movie' && type !== 'series') {
+    if (type !== 'movie' && type !== 'series' && type !== 'anime') {
       return reply.status(404).send({ meta: null });
     }
 
-    // Series live gather lands next; beta serves movie meta via TMDB.
-    if (type === 'series') {
-      return reply.status(404).send({ meta: null });
+    const ctx = {
+      correlationId: request.correlationId,
+      locale: view.config.localization.metadataLocale || 'en-US',
+      region:
+        view.config.localization.availabilityRegion ||
+        view.config.localization.contentRegion,
+    };
+
+    if (type === 'anime') {
+      try {
+        const anilistId = parseAnimePublicId(request.params.id);
+        if (anilistId === null) {
+          return reply.status(404).send({ meta: null });
+        }
+        const adapter = createProviderAdapter('anilist', {
+          fetchImpl: app.providerFetch,
+        });
+        if (!(adapter instanceof AnilistProviderAdapter)) {
+          return reply.status(502).send({ meta: null });
+        }
+        const anime = await adapter.getAnime(ctx, anilistId);
+        const name =
+          anime.titles.localized ||
+          anime.titles.english ||
+          anime.titles.romaji ||
+          anime.titles.native ||
+          anime.publicId;
+        return {
+          meta: {
+            id: anime.publicId,
+            type: anime.format === 'movie' ? ('movie' as const) : ('series' as const),
+            name,
+            poster: anime.posterUrl ?? undefined,
+            description: anime.description,
+            imdbRating:
+              anime.averageScore !== undefined
+                ? anime.averageScore.toFixed(1)
+                : undefined,
+          },
+        };
+      } catch (error) {
+        if (error instanceof ProviderError && error.code === 'not_found') {
+          return reply.status(404).send({ meta: null });
+        }
+        return reply.status(502).send({ meta: null });
+      }
     }
 
     const apiKey =
@@ -278,15 +329,30 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     }
 
     try {
+      if (type === 'series') {
+        const series = await adapter.getSeriesByPublicId(
+          { ...ctx, apiKey },
+          request.params.id,
+        );
+        return {
+          meta: {
+            id: series.publicId,
+            type: 'series' as const,
+            name: series.title,
+            poster: tmdbImageUrl(series.posterPath, 'w500'),
+            background: tmdbImageUrl(series.backdropPath, 'w1280'),
+            description: series.overview,
+            releaseInfo: series.firstAirDate,
+            imdbRating:
+              series.voteAverage !== undefined
+                ? series.voteAverage.toFixed(1)
+                : undefined,
+          },
+        };
+      }
+
       const movie = await adapter.getMovieByPublicId(
-        {
-          correlationId: request.correlationId,
-          locale: view.config.localization.metadataLocale || 'en-US',
-          region:
-            view.config.localization.availabilityRegion ||
-            view.config.localization.contentRegion,
-          apiKey,
-        },
+        { ...ctx, apiKey },
         request.params.id,
       );
 

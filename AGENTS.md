@@ -3669,10 +3669,10 @@ The version remains in the `1.0.0` prerelease line until stable.
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
 1. **Profiles UI + profile manifest route**
-2. **Series/anime native meta**
-3. **Tracking OAuth browser flows** and live list sync
-4. **Postgres + Redis** Server end-to-end
-5. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+2. **Tracking OAuth browser flows** and live list sync
+3. **Postgres + Redis** Server end-to-end
+4. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+5. **Episode videos / seasons** on native series meta
 6. **Encryption key rotation tooling** (Phase B carry-over)
 
 ---

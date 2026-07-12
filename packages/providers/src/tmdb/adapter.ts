@@ -36,6 +36,21 @@ export interface TmdbMovieSummary {
   publicId: string;
 }
 
+export interface TmdbSeriesSummary {
+  id: number;
+  title: string;
+  originalTitle?: string;
+  overview?: string;
+  firstAirDate?: string;
+  posterPath?: string | null;
+  backdropPath?: string | null;
+  voteAverage?: number;
+  originalLanguage?: string;
+  imdbId?: string;
+  /** Public Stremio id — IMDb by default when known (ADR 0006). */
+  publicId: string;
+}
+
 export interface TmdbCatalogItem {
   id: number;
   name: string;
@@ -130,6 +145,43 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     }
     if (parsed.kind === 'tmdb' && parsed.tmdbId) {
       return this.getMovie(ctx, Number(parsed.tmdbId));
+    }
+    throw new ProviderError({
+      code: 'validation',
+      providerId: this.id,
+      message: `Unsupported public id: ${publicId}`,
+      retryable: false,
+    });
+  }
+
+  async getSeries(
+    ctx: ProviderContext,
+    seriesId: number,
+  ): Promise<TmdbSeriesSummary> {
+    return this.withCache(ctx, 'tv', String(seriesId), async () => {
+      const raw = await this.requestJson<Record<string, unknown>>(
+        ctx,
+        `/tv/${seriesId}`,
+        { append_to_response: 'external_ids' },
+      );
+      return mapSeries(raw, this.stremioPublicId);
+    });
+  }
+
+  /**
+   * Resolve a series by public Stremio id (`tt…`, `tmdb:123`, or bare TMDB id).
+   */
+  async getSeriesByPublicId(
+    ctx: ProviderContext,
+    publicId: string,
+  ): Promise<TmdbSeriesSummary> {
+    const parsed = parsePublicId(publicId);
+    if (parsed.kind === 'imdb' && parsed.imdbId) {
+      const tmdbId = await this.findTmdbIdByImdb(ctx, parsed.imdbId, 'series');
+      return this.getSeries(ctx, tmdbId);
+    }
+    if (parsed.kind === 'tmdb' && parsed.tmdbId) {
+      return this.getSeries(ctx, Number(parsed.tmdbId));
     }
     throw new ProviderError({
       code: 'validation',
@@ -346,6 +398,51 @@ function mapMovie(
     overview: typeof raw.overview === 'string' ? raw.overview : undefined,
     releaseDate:
       typeof raw.release_date === 'string' ? raw.release_date : undefined,
+    posterPath:
+      typeof raw.poster_path === 'string' || raw.poster_path === null
+        ? (raw.poster_path as string | null)
+        : undefined,
+    backdropPath:
+      typeof raw.backdrop_path === 'string' || raw.backdrop_path === null
+        ? (raw.backdrop_path as string | null)
+        : undefined,
+    voteAverage:
+      typeof raw.vote_average === 'number' ? raw.vote_average : undefined,
+    originalLanguage:
+      typeof raw.original_language === 'string'
+        ? raw.original_language
+        : undefined,
+    imdbId: imdbId ?? undefined,
+    publicId:
+      selectStremioPublicId({
+        imdbId,
+        tmdbId,
+        preference,
+      }) ?? `tmdb:${tmdbId}`,
+  };
+}
+
+function mapSeries(
+  raw: Record<string, unknown>,
+  preference: StremioPublicIdPreference = 'imdb',
+): TmdbSeriesSummary {
+  const externalIds =
+    raw.external_ids && typeof raw.external_ids === 'object'
+      ? (raw.external_ids as Record<string, unknown>)
+      : undefined;
+  const imdbId = normalizeImdbId(
+    typeof externalIds?.imdb_id === 'string' ? externalIds.imdb_id : undefined,
+  );
+  const tmdbId = Number(raw.id);
+
+  return {
+    id: tmdbId,
+    title: String(raw.name ?? ''),
+    originalTitle:
+      typeof raw.original_name === 'string' ? raw.original_name : undefined,
+    overview: typeof raw.overview === 'string' ? raw.overview : undefined,
+    firstAirDate:
+      typeof raw.first_air_date === 'string' ? raw.first_air_date : undefined,
     posterPath:
       typeof raw.poster_path === 'string' || raw.poster_path === null
         ? (raw.poster_path as string | null)

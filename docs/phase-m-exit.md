@@ -10,7 +10,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Item | Notes |
 |---|---|
-| Native Stremio catalog + meta | `/c/:configId/catalog/...` and `/c/:configId/meta/movie/...` |
+| Native Stremio catalog + meta | `/c/:configId/catalog/...` and `/c/:configId/meta/{movie,series,anime}/...` |
 | Save & Install UI | Manifest URL + Stremio open/copy |
 | Manifest identity finalized | `community.metalayer` @ `1.0.0-beta.1` (ADR 0001) |
 | Language & Region UI | Shipped before entry |
@@ -21,7 +21,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Item | Target |
 |---|---|
 | Profiles UI + `/c/.../p/:profileId/manifest.json` | beta.N / post-beta |
-| Series (and anime) live meta gather on native route | beta.N |
+| Series (and anime) live meta gather on native route | **Done** (TMDB series + AniList anime; episode videos still open) |
 | Advanced configure module | beta.N |
 | Tracking OAuth browser flows + live list sync | beta.N |
 | Encryption key rotation tooling | post-beta (Phase B carry-over) |

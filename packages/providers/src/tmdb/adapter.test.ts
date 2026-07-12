@@ -81,6 +81,43 @@ describe('@metalayer/providers tmdb adapter', () => {
     expect(movie.id).toBe(550);
   });
 
+  it('resolves series by IMDb public id via TMDB find + tv details', async () => {
+    const adapter = new TmdbProviderAdapter({
+      apiKey: 'test-key',
+      fetchImpl: async (url) => {
+        if (String(url).includes('/find/')) {
+          return new Response(JSON.stringify({ tv_results: [{ id: 1396 }] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        expect(String(url)).toContain('/tv/1396');
+        return new Response(
+          JSON.stringify({
+            id: 1396,
+            name: 'Breaking Bad',
+            original_name: 'Breaking Bad',
+            overview: 'A chemistry teacher…',
+            first_air_date: '2008-01-20',
+            poster_path: '/bb.jpg',
+            vote_average: 8.9,
+            external_ids: { imdb_id: 'tt0903747' },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const series = await adapter.getSeriesByPublicId(
+      { correlationId: 'series-1', locale: 'en-US' },
+      'tt0903747',
+    );
+    expect(series.publicId).toBe('tt0903747');
+    expect(series.id).toBe(1396);
+    expect(series.title).toBe('Breaking Bad');
+    expect(series.firstAirDate).toBe('2008-01-20');
+  });
+
   it('caches movie responses per locale without putting secrets in keys', async () => {
     const store = new Map<string, { value: unknown }>();
     const cache = {

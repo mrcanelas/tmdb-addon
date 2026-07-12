@@ -53,6 +53,7 @@ export type {
   TmdbAdapterOptions,
   TmdbFetch,
   TmdbMovieSummary,
+  TmdbSeriesSummary,
   TmdbCatalogItem,
 } from './tmdb/adapter.js';
 
