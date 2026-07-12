@@ -37,6 +37,7 @@ Default listen: `http://0.0.0.0:1338`
 | GET | `/api/v1/sources/:providerId` | Provider details + locale example |
 | POST | `/api/v1/sources/:providerId/test` | Ping provider (apiKey, env, or vault) |
 | GET | `/api/v1/preview/movie/:id` | Cached movie preview (`tt…` / `tmdb:` / bare id) |
+| GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb rating preview |
 | GET | `/api/v1/cache/stats` | Provider cache stats |
 | GET | `/c/:configId/manifest.json` | Native MetaLayer manifest (no secrets in URL) |
 

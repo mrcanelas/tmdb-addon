@@ -3288,7 +3288,7 @@ Exit:
 
 - core is provider-neutral.
 
-**Status (2026-07-11): partial.** See `docs/phase-c-exit.md`.
+**Status (2026-07-12): core complete (Redis shared cache deferred).** See `docs/phase-c-exit.md`.
 
 ## Phase D — Catalog Studio
 

@@ -1,7 +1,7 @@
 # Phase C exit checklist (Provider framework)
 
-Status: **partial** — shared provider contracts, locale-sensitive memory cache, TMDB/Fanart/RPDB adapters, ratings stub, and API diagnostics/preview exist.
-IMDb rating fetchers and Redis shared cache remain.
+Status: **core complete** — provider framework core is in place (adapters, locale, cache, diagnostics).
+Redis shared cache remains deferred for MetaLayer Server.
 
 ## Checklist
 
@@ -11,13 +11,14 @@ IMDb rating fetchers and Redis shared cache remain.
 | Capability registry | Done | existing `PROVIDER_REGISTRY` |
 | Provider locale adapters | Done | TMDB, language-only, unsupported |
 | Localized capability declarations | Done | registry + locale adapters |
-| Locale-sensitive cache strategy | Done | `@metalayer/cache` + TMDB adapter cache keys |
+| Locale-sensitive cache strategy | Done | `@metalayer/cache` + TMDB/IMDb adapter cache keys |
 | Provider health | Done | tracker + circuit breaker |
 | Timeout and retry policies | Done | `withTimeout` / `withRetry` |
-| TMDB adapter | Done | ping, getMovie, searchMovies (injectable fetch + cache) |
+| TMDB adapter | Done | ping, getMovie, searchMovies, public id resolution |
 | Artwork adapters | Done | Fanart movie artwork + RPDB poster URL builder/ping |
-| Rating adapters | Stub | IMDb unsupported stub |
-| Provider diagnostics | Done | `/api/v1/sources`, `/preview/movie/:id`, `/cache/stats` |
+| Rating adapters | Done | IMDb via Cinemeta (`getRating`) |
+| Provider diagnostics | Done | `/sources`, `/preview/movie/:id`, `/preview/rating/:id`, `/cache/stats` |
+| Redis shared cache | Deferred | Lite uses in-process `MemoryCache` |
 
 ## Exit criterion (AGENTS.md §37 Phase C)
 

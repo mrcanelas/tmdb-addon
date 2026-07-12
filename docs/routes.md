@@ -47,7 +47,8 @@ Implemented by `apps/api` (port `1338` by default):
 | GET | `/api/v1/sources` | Provider capability registry |
 | GET | `/api/v1/sources/:providerId` | Provider details + locale example |
 | POST | `/api/v1/sources/:providerId/test` | Ping provider (body apiKey, env, or vault) |
-| GET | `/api/v1/preview/movie/:id` | Cached TMDB movie preview (`tt…`, `tmdb:`, or bare TMDB id) |
+| GET | `/api/v1/preview/movie/:id` | Cached movie preview (`tt…`, `tmdb:`, or bare TMDB id) |
+| GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb rating preview via Cinemeta |
 | GET | `/api/v1/cache/stats` | In-process provider cache stats |
 
 Still planned:

@@ -67,4 +67,34 @@ describe('@metalayer/api preview cache', () => {
     const stats = await app.inject({ method: 'GET', url: '/api/v1/cache/stats' });
     expect(stats.json().cache.hits).toBeGreaterThanOrEqual(1);
   });
+
+  it('previews IMDb ratings by tt id', async () => {
+    const app = await buildApp({
+      logger: false,
+      encryptionKey: TEST_KEY,
+      sqlitePath: ':memory:',
+      providerFetch: async (url) => {
+        expect(String(url)).toContain('/meta/movie/tt0137523.json');
+        return new Response(JSON.stringify({ meta: { imdbRating: '8.8' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+    });
+
+    try {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/preview/rating/tt0137523?type=movie',
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json().rating).toMatchObject({
+        imdbId: 'tt0137523',
+        rating: 8.8,
+        source: 'cinemeta',
+      });
+    } finally {
+      await app.close();
+    }
+  });
 });

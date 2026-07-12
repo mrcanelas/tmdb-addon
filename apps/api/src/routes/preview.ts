@@ -4,6 +4,7 @@ import { MemoryCache } from '@metalayer/cache';
 import {
   ProviderError,
   TmdbProviderAdapter,
+  ImdbRatingsAdapter,
   createProviderAdapter,
 } from '@metalayer/providers';
 
@@ -91,6 +92,63 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
       }
     },
   );
+
+  app.get<{
+    Params: { imdbId: string };
+    Querystring: PreviewQuery & { type?: 'movie' | 'series' };
+  }>('/preview/rating/:imdbId', async (request, reply) => {
+    const adapter = createProviderAdapter('imdb', {
+      fetchImpl: app.providerFetch,
+      cache: app.providerCache,
+    });
+
+    if (!(adapter instanceof ImdbRatingsAdapter)) {
+      return reply.status(500).send(
+        createApiError({
+          code: 'INTERNAL_ERROR',
+          message: 'IMDb ratings adapter unavailable',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    try {
+      const rating = await adapter.getRating(
+        { correlationId: request.correlationId },
+        request.params.imdbId,
+        request.query.type || 'movie',
+      );
+      return {
+        rating,
+        cacheStatus: adapter.lastCacheStatus,
+        cache: app.providerCache.stats(),
+        correlationId: request.correlationId,
+      };
+    } catch (error) {
+      const providerError =
+        error instanceof ProviderError
+          ? error
+          : new ProviderError({
+              code: 'upstream',
+              providerId: 'imdb',
+              message: 'IMDb rating preview failed',
+              cause: error,
+            });
+      const status =
+        providerError.code === 'validation' || providerError.code === 'not_found'
+          ? 404
+          : 502;
+      return reply.status(status).send({
+        ok: false,
+        error: {
+          code: 'PROVIDER_UNAVAILABLE',
+          providerCode: providerError.code,
+          message: providerError.message,
+        },
+        correlationId: request.correlationId,
+      });
+    }
+  });
 
   app.get('/cache/stats', async (request) => {
     return {
