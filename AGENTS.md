@@ -1345,7 +1345,7 @@ Before `1.0.0`:
 
 ---
 
-# 10. Metadata Resolver
+# 10. Metadata Resolver and Field Resolution Chains
 
 ## 10.1 Purpose
 
@@ -1353,86 +1353,454 @@ The Metadata Resolver combines fields from multiple providers.
 
 It must not simply choose one provider for the whole title unless the user requests that behavior.
 
-## 10.2 Field-level resolution
+**Field Resolution Chains** are the configuration model for that behavior: users build the final metadata object field by field, with independent provider and locale priorities per field, media type, profile, and catalog.
+
+This is a core MetaLayer differentiator.
+
+The product must not merely ask “which provider do you want?”.
+
+It must allow the user to define how a specific field is resolved for a media type, language, region, provider set, and fallback chain.
+
+The selected value must always be explainable through Meta Inspector.
+
+## 10.2 Goals
+
+The Field Resolution system must:
+
+- allow provider priority per metadata field;
+- allow locale priority per metadata field;
+- combine provider and locale priorities deterministically;
+- support language-first, provider-first, and explicit ordering;
+- support different rules for movies, series, and anime;
+- support image assets with language and no-language variants;
+- support episode-order providers and order types;
+- support profile and catalog overrides;
+- respect provider capabilities;
+- skip unavailable combinations;
+- preserve provenance;
+- expose fallback behavior;
+- integrate with corrections;
+- generate stable cache keys;
+- remain backward compatible with simpler provider settings.
+
+## 10.3 Non-goals
+
+This feature does not:
+
+- merge arbitrary text fragments from multiple providers into one description;
+- use AI to rewrite metadata automatically;
+- guarantee that every provider supports every locale;
+- guarantee that two providers model seasons and episodes identically;
+- bypass provider terms, API limits, or attribution requirements;
+- expose provider credentials to clients;
+- replace Identity Graph or Correction Hub.
+
+AI-based metadata composition may be designed separately later.
+
+## 10.4 Configurable fields
 
 Supported configurable fields should include:
 
-- title;
-- original title;
-- aliases;
-- description;
-- release date;
-- digital release date;
-- runtime;
-- status;
-- genres;
-- keywords;
-- cast;
-- directors;
-- writers;
-- studios;
-- networks;
-- countries;
-- languages;
-- certification;
-- rating;
-- vote count;
-- poster;
-- background;
-- logo;
-- trailers;
-- episodes;
-- season data;
-- external IDs.
-
-## 10.3 Resolution chain
-
-Each field has an ordered provider chain.
-
-Example:
-
-```text
-Poster:
-1. RPDB
-2. Fanart.tv
-3. TVDB
-4. TMDB
-5. Cinemeta
+```ts
+export type MetadataField =
+  | 'title'
+  | 'originalTitle'
+  | 'aliases'
+  | 'overview'
+  | 'tagline'
+  | 'poster'
+  | 'background'
+  | 'logo'
+  | 'rating'
+  | 'voteCount'
+  | 'certification'
+  | 'releaseDate'
+  | 'digitalReleaseDate'
+  | 'runtime'
+  | 'status'
+  | 'genres'
+  | 'keywords'
+  | 'cast'
+  | 'directors'
+  | 'writers'
+  | 'studios'
+  | 'networks'
+  | 'countries'
+  | 'languages'
+  | 'trailers'
+  | 'episodes'
+  | 'episodeOrder'
+  | 'seasonOrder'
+  | 'externalIds';
 ```
 
-## 10.4 Resolution result
+Field categories for resolution behavior:
+
+- **Localized text** — title, overview, tagline, episode/season titles;
+- **Artwork** — poster, background, logo, episode thumbnail;
+- **Numeric / factual** — runtime, rating, vote count, release date, status;
+- **Credits** — cast, directors, writers, studios, networks;
+- **Identity** — external IDs (Identity Graph + corrections);
+- **Episode structure** — episodes, episode order, season order.
+
+## 10.5 Core concepts
+
+| Concept | Meaning |
+|---|---|
+| Field | One final metadata property |
+| Resolution plan | Configuration describing how a field is resolved |
+| Resolution attempt | One concrete provider + context combination |
+| Resolution result | Selected value plus provenance, attempts, warnings, confidence |
+| Locale selector | Explicit locale, original language, no language, any language, or provider default |
+| Resolution strategy | How provider and locale lists expand into attempts |
+
+Locale preferences use BCP 47. Region preferences use ISO 3166-1 alpha-2.
 
 ```ts
-export interface FieldResolution<T> {
-  value: T | null;
-  selectedProvider: string | null;
-  attemptedProviders: string[];
-  confidence: number;
+export type LocalePreference =
+  | { type: 'locale'; value: string }
+  | { type: 'original-language' }
+  | { type: 'no-language' }
+  | { type: 'any-language' }
+  | { type: 'provider-default' };
+
+export type RegionPreference =
+  | { type: 'region'; value: string }
+  | { type: 'configuration-region' }
+  | { type: 'profile-region' }
+  | { type: 'provider-default' };
+
+export type ResolutionStrategy =
+  | 'locale-first'
+  | 'provider-first'
+  | 'explicit';
+```
+
+## 10.6 Resolution strategies
+
+### Locale-first
+
+Try every provider for the first locale before moving to the next locale.
+
+Recommended for title, overview, tagline, and localized episode/season names.
+
+Example effective order with providers TMDB → TVDB → IMDb and locales pt-BR → en-US → original:
+
+```text
+TMDB pt-BR → TVDB pt-BR → IMDb pt-BR →
+TMDB en-US → TVDB en-US → IMDb en-US →
+TMDB original → TVDB original → IMDb original
+```
+
+### Provider-first
+
+Try every locale on the first provider before moving to the next provider.
+
+Recommended when provider consistency or editorial quality outweighs language priority.
+
+### Explicit
+
+The user defines every attempt manually.
+
+Recommended for advanced users, artwork, anime, mixed regional metadata, and exact reproducibility.
+
+## 10.7 Configuration model
+
+```ts
+export interface ResolutionStep {
+  id: string;
+  provider: string;
+  locale?: LocalePreference;
+  region?: RegionPreference;
+  orderType?: EpisodeOrderType;
+  imageType?: ArtworkType;
+  minimumConfidence?: number;
+  required?: boolean;
+  enabled?: boolean;
+}
+
+export interface FieldResolutionPlan {
+  version: 1;
+  strategy: ResolutionStrategy;
+  providers?: string[];
+  locales?: LocalePreference[];
+  regions?: RegionPreference[];
+  steps?: ResolutionStep[];
+  skipEmpty: boolean;
+  skipInvalid: boolean;
+  minimumConfidence?: number;
+  useGlobalFallback?: boolean;
+  useProviderDefaultFallback?: boolean;
+  stopAfterFirstValid: boolean;
+}
+
+export type MediaType = 'movie' | 'series' | 'anime';
+
+export interface MediaResolutionConfig {
+  fields: Partial<Record<MetadataField, FieldResolutionPlan>>;
+}
+
+export interface ResolutionConfig {
+  version: 1;
+  defaults: MediaResolutionConfig;
+  mediaTypes: Partial<Record<MediaType, MediaResolutionConfig>>;
+}
+```
+
+Plans must be schema-validated (Zod) and versioned. Store no secrets in resolution configuration.
+
+## 10.8 Example plans
+
+Title (locale-first):
+
+```text
+Providers: TMDB → TVDB → IMDb
+Locales: pt-BR → en-US → original-language
+```
+
+Overview (explicit):
+
+```text
+TMDB pt-BR → TVDB pt-BR → TMDB en-US → TVDB en-US → TMDB original
+```
+
+Logo (locale-first, including no-language artwork):
+
+```text
+Providers: RPDB → Fanart.tv → TMDB → TVDB
+Locales: pt-BR → no-language → en-US → original-language
+```
+
+Series episode order (explicit):
+
+```text
+TVDB aired → TVDB absolute → TMDB provider-default → IMDb provider-default
+```
+
+Anime episode order (explicit):
+
+```text
+Kitsu absolute → TMDB provider-default → TVDB aired → MAL provider-default
+```
+
+## 10.9 Configuration hierarchy
+
+```text
+System defaults
+      ↓
+Configuration defaults
+      ↓
+Media-type override
+      ↓
+Field override
+      ↓
+Profile override
+      ↓
+Catalog override
+      ↓
+Title-specific local override
+      ↓
+Verified correction
+```
+
+Later levels override earlier levels.
+
+The system must compile inheritance into one **effective plan** before provider calls:
+
+1. load system defaults;
+2. merge configuration defaults;
+3. apply media-type, field, profile, catalog, and title overrides;
+4. validate provider capabilities;
+5. expand strategy into steps;
+6. remove duplicate attempts;
+7. return effective plan with warnings.
+
+## 10.10 Artwork resolution
+
+```ts
+export type ArtworkType =
+  | 'poster'
+  | 'background'
+  | 'logo'
+  | 'episode-thumbnail';
+```
+
+`no-language` is a first-class locale preference for artwork (textless posters, logos without translated text, universal backgrounds). It must not be treated as missing metadata.
+
+When a step returns multiple candidates, rank by:
+
+1. exact requested locale;
+2. requested no-language preference;
+3. language fallback;
+4. configured provider score;
+5. image resolution;
+6. aspect-ratio compatibility;
+7. provider popularity or votes;
+8. stable provider ordering.
+
+If an artwork provider does not contain an asset, continue through the configured fallback chain. A missing asset must not create a blank poster when a valid fallback exists.
+
+## 10.11 Episode and season ordering
+
+```ts
+export type EpisodeOrderType =
+  | 'aired'
+  | 'absolute'
+  | 'dvd'
+  | 'production'
+  | 'provider-default'
+  | 'community-corrected';
+```
+
+Order resolution selects a complete episode structure (seasons, episodes, numbering, identities, specials, mappings), not only a label.
+
+Episode corrections precedence:
+
+```text
+Title-specific local override
+Verified community correction
+Configured provider and order type
+Provider fallback
+Unresolved
+```
+
+Anime may use a different plan than series and must support absolute numbering, split cours, OVA/ONA/specials, and provider-specific season models.
+
+## 10.12 Provider capabilities and adapters
+
+Each provider adapter must declare field-resolution capabilities (field, media types, localization, regions, original/no-language support, order types, artwork types).
+
+The compiler must skip impossible combinations. Skipped attempts remain visible in diagnostics.
+
+```ts
+export interface FieldProviderAdapter {
+  id: string;
+  capabilities: ProviderCapabilities;
+  resolveField<T>(
+    request: FieldResolutionRequest,
+  ): Promise<ProviderFieldResult<T>>;
+}
+```
+
+Provider results use statuses such as `found`, `empty`, `unsupported`, `not-found`, `invalid`, and `error`.
+
+## 10.13 Resolution algorithm
+
+Default behavior: sequential attempts until the first valid result (`stopAfterFirstValid`).
+
+For each generated step:
+
+1. check capability — skip with reason if unsupported;
+2. call the provider;
+3. skip empty or invalid values when configured;
+4. skip below minimum confidence when configured;
+5. select the first valid result, or return unresolved with full attempt history.
+
+`original-language` resolves from the canonical work identity (Identity Graph / primary metadata). Do not silently treat original language as English.
+
+`fallbackUsed` is true when the selected attempt is not the first valid configured preference. Distinguish locale, provider, region, order-type, and correction overrides.
+
+Provider errors must not terminate the chain unless the step is required, a global security failure occurs, configuration is invalid, or the request is cancelled.
+
+Required steps (`required: true`) block later fallbacks when they cannot resolve. Use sparingly.
+
+## 10.14 Resolution result
+
+```ts
+export interface FieldResolutionResult<T> {
+  status: 'resolved' | 'unresolved' | 'error';
+  field: MetadataField;
+  mediaType: MediaType;
+  value?: T;
+  selectedProvider?: string;
+  selectedLocale?: string;
+  selectedRegion?: string;
   fallbackUsed: boolean;
+  confidence?: number;
+  attempts: FieldResolutionAttempt[];
   warnings: ResolutionWarning[];
+  corrections: AppliedCorrection[];
+  effectivePlanHash: string;
   resolvedAt: string;
 }
 ```
 
-## 10.5 Resolution policy
+Confidence may come from provider trust, Identity Graph mapping, exact locale match, verified correction, heuristic match, or artwork score. Normalize to `0.0–1.0`. Do not present confidence as scientific certainty.
 
-The resolver must support:
+Legacy `FieldResolution<T>` shapes remain conceptually compatible: value, selected provider, attempts, confidence, fallback, warnings, timestamp.
 
-- first valid value;
-- highest confidence;
-- preferred language;
-- preferred region;
-- highest image resolution;
-- verified provider priority;
-- most recent update;
-- majority agreement;
-- custom expression in Advanced mode.
+## 10.15 Cache and invalidation
 
-## 10.6 No empty artwork failure
+Resolved-field cache keys must include every response-affecting value:
 
-If an artwork provider does not contain an asset, the resolver must continue through the configured fallback chain.
+- canonical identity;
+- field;
+- media type;
+- effective plan hash;
+- profile and catalog IDs when applicable;
+- correction version;
+- provider adapter versions.
 
-A missing asset must not create a blank poster when a valid fallback exists.
+Never include API keys, OAuth tokens, or edit credentials.
+
+Invalidate only affected fields when priorities, locales, regions, plans, overrides, adapters, corrections, or Identity Graph mappings change.
+
+## 10.16 Management API
+
+```text
+GET  /api/v1/configurations/:configId/resolution
+PUT  /api/v1/configurations/:configId/resolution
+POST /api/v1/resolution/compile
+POST /api/v1/resolution/test
+```
+
+Compile returns the effective plan for a field/media type/profile/catalog context. Test runs resolution against a sample identity and returns attempts plus the selected result.
+
+## 10.17 Frontend: Resolution Chain Builder
+
+Provide a reusable `ResolutionChainBuilder` used from Appearance, Language & Region, Advanced provider priorities, Anime settings, Episode Order, catalog/profile overrides, and Meta Inspector — not duplicated one-off controls.
+
+Simple mode: strategy (language first / provider first), reorderable languages, reorderable providers, read-only effective-order preview.
+
+Advanced mode: explicit custom attempt lists, capability warnings, test-with-title action.
+
+Warnings must not block save unless the complete plan is invalid.
+
+## 10.18 Legacy migration
+
+Legacy `language`, `provider`, and `artProvider` settings migrate into Field Resolution Plans:
+
+- language → locale chain with sensible English/original fallbacks;
+- provider → provider-first chain with system fallbacks;
+- artProvider → artwork provider chain with system artwork fallbacks.
+
+Preserve old behavior as closely as possible.
+
+## 10.19 Implementation phases
+
+1. Schema and compiler (inheritance, expansion, validation, tests);
+2. Text fields (title, original title, overview, tagline) + Meta Inspector attempts;
+3. Artwork (poster, background, logo, no-language ranking);
+4. Episode ordering (series + anime) + corrections / Identity Graph;
+5. Frontend Resolution Chain Builder;
+6. Profile / catalog / title overrides + revision history;
+7. Cache, metrics, provider-health integration.
+
+## 10.20 Acceptance criteria
+
+- [ ] Provider and locale priority configurable per field;
+- [ ] Locale-first, provider-first, and explicit strategies work;
+- [ ] Movies, series, and anime can use different plans;
+- [ ] Artwork supports no-language preference;
+- [ ] Episode/anime order supports provider and order type;
+- [ ] Provider capabilities remove invalid attempts;
+- [ ] Effective order is visible before saving;
+- [ ] Meta Inspector shows every attempt and fallback explanation;
+- [ ] Corrections and profile/catalog overrides behave as documented;
+- [ ] Legacy provider settings migrate;
+- [ ] Cache keys include effective-plan hash;
+- [ ] Secrets never appear in plans or diagnostics;
+- [ ] Unit, integration, contract, and UI tests pass.
 
 ---
 
@@ -1448,12 +1816,51 @@ For any title, it must show:
 - matched provider IDs;
 - selected value for each field;
 - provider provenance;
-- fallback attempts;
+- **full Field Resolution Chain attempts** (provider, locale, region, order type, status, reason);
+- fallback attempts and whether fallback was used;
 - applied rules;
 - applied corrections;
 - warnings;
 - timing;
-- cache status.
+- cache status;
+- effective plan hash when available.
+
+Suggested inspector tabs:
+
+```text
+Overview
+Attempts
+Provider data
+Language
+Identity
+Corrections
+Timing
+Raw
+```
+
+Attempt examples must look like:
+
+```text
+Overview
+Requested: pt-BR
+1. TMDB · pt-BR — Empty
+2. TVDB · pt-BR — Empty
+3. TMDB · en-US — Selected
+Fallback used: Yes
+```
+
+```text
+Logo
+1. RPDB · pt-BR — Unsupported locale
+2. Fanart.tv · No language — Selected
+```
+
+```text
+Episode order
+1. TVDB · Aired — Unavailable
+2. TVDB · Absolute — Selected
+Correction: Verified community mapping #428
+```
 
 ## 11.2 Example
 
@@ -1883,18 +2290,21 @@ Live preview
 
 ## 15.3 Artwork behavior
 
-Support:
+Artwork resolution uses Field Resolution Chains (§10), including:
 
 - provider priority;
 - language priority;
+- no-language preference;
 - region priority;
 - fallback chain;
-- image quality;
+- image quality / resolution ranking;
 - aspect ratio;
 - proxying;
 - local cache;
 - per-content-type settings;
 - per-catalog overrides.
+
+UI editing for these chains must reuse `ResolutionChainBuilder` (§10.17).
 
 ## 15.4 Metadata display
 
@@ -3193,6 +3603,7 @@ docs/
   rules.md
   sorting.md
   appearance.md
+  field-resolution-chains.md
   search-ai.md
   tracking.md
   anime.md
@@ -3209,6 +3620,8 @@ docs/
 
 Documentation must reflect runtime behavior.
 
+Canonical Field Resolution Chains requirements live in `AGENTS.md` §10. `docs/field-resolution-chains.md` is the short index for that subsystem.
+
 Do not claim that a dependency or subsystem was removed while executable support remains.
 
 ---
@@ -3218,6 +3631,52 @@ Do not claim that a dependency or subsystem was removed while executable support
 Phases are product milestones, not separate major versions.
 
 The version remains in the `1.0.0` prerelease line until stable.
+
+## 37.0 Progress snapshot (2026-07-12)
+
+| Phase | Name | Status | Exit doc |
+|---|---|---|---|
+| A | Repository baseline | **Complete** | `docs/phase-a-exit.md` |
+| B | Security and persistence | **Core complete** (key rotation tooling deferred) | `docs/phase-b-exit.md` |
+| C | Provider framework | **Core complete** (Redis shared cache deferred) | `docs/phase-c-exit.md` |
+| D | Catalog Studio | **Complete** (native Stremio catalog route follow-up) | `docs/phase-d-exit.md` |
+| E | Rule and Sorting Studios | **Complete** | `docs/phase-e-exit.md` |
+| F | Metadata Resolver and Meta Inspector | **Baseline complete**; Field Resolution Chains (§10) **not implemented yet** | `docs/phase-f-exit.md` |
+| G | Identity Graph | **Complete** | `docs/phase-g-exit.md` |
+| H | Anime | **Complete** (foundations; richer UX later) | `docs/phase-h-exit.md` |
+| I | Tracking | **Complete** (OAuth browser flows / live sync follow-up) | `docs/phase-i-exit.md` |
+| J | Correction Hub | **Complete** | `docs/phase-j-exit.md` |
+| K | Search and AI | **Complete** | `docs/phase-k-exit.md` |
+| L | Dashboard and deployment | **Complete** | `docs/phase-l-exit.md` |
+| M | Beta stabilization | **Not started** | — |
+| N | Release candidate | **Not started** | — |
+| O | Stable launch `1.0.0` | **Not started** | — |
+
+**Current prerelease posture:** still in `1.0.0-alpha.*`. Phases A–L have landed enough to enter product hardening; Phase M does **not** begin until remaining 1.0 feature gaps below are closed or explicitly deferred with maintainer approval.
+
+### Cross-cutting work already landed after Phase L (frontend track)
+
+- HeroUI v3 + React 19 + Tailwind v4 + `@metalayer/shared-ui` (ADR 0007);
+- configure `/configure` and admin `/admin` basenames; API serves SPA dist;
+- configure shell: Simple/Advanced, theme, command palette (`Ctrl+K`);
+- TanStack Query + RHF + Zod pattern (Sources model; Tracking/Corrections migrated);
+- Layered Minimalism page primitives (`PageHeader`, `SectionCard`, empty/error/loading).
+
+### Highest-priority gaps before Phase M (beta)
+
+1. **Field Resolution Chains** — implement §10 (schema, compiler, strategies, builder UI, Inspector attempts). Baseline resolver in Phase F is **not** the full Chains model.
+2. **Language & Region UI** — independent interface locale, metadata locale, and region controls (schema/i18n exist; configure page still placeholder).
+3. **Native Stremio routes** — live `/c/:configId/catalog/...` and `/c/:configId/meta/...` serving (preview/inspect exist).
+4. **Profiles UI + profile manifest route** — persistence foundations may exist; product UX incomplete.
+5. **Appearance / Save & Install / Onboarding** — still scaffold or partial.
+6. **Tracking OAuth browser flows** and live list sync (Trakt/SIMKL/AniList/MAL).
+7. **Encryption key rotation tooling** (Phase B deferred).
+8. **Postgres + Redis end-to-end** for Server mode (Lite SQLite path works).
+9. **UX depth** — migrate remaining configure pages to Query/form patterns; polish Catalog Studio / Rules / Sorting / Inspector to Layered Minimalism; admin Recharts overview.
+10. **i18n completeness** — no hard-coded strings on primary pages; full en-US / pt-BR / es-ES; plural/date formatting; pseudo/RTL layout tests.
+11. **Release hardening** — security review, migration review, performance objectives measured, stable release gates.
+
+---
 
 ## Phase A — Repository baseline
 
@@ -3266,7 +3725,7 @@ Exit:
 
 - new configurations contain no secrets in URLs.
 
-**Status (2026-07-11): core complete (rotation tooling deferred).** See `docs/phase-b-exit.md`.
+**Status (2026-07-11): core complete.** Key rotation / progressive re-encryption tooling deferred. See `docs/phase-b-exit.md`.
 
 ## Phase C — Provider framework
 
@@ -3288,7 +3747,7 @@ Exit:
 
 - core is provider-neutral.
 
-**Status (2026-07-12): core complete (Redis shared cache deferred).** See `docs/phase-c-exit.md`.
+**Status (2026-07-12): core complete.** Redis shared cache deferred for Server mode. See `docs/phase-c-exit.md`.
 
 ## Phase D — Catalog Studio
 
@@ -3309,6 +3768,8 @@ Exit:
 
 - catalog UI order equals manifest order.
 
+**Status (2026-07-12): complete.** Native Stremio catalog *result* route remains a follow-up (manifest lists studio catalogs; Studio preview serves pages). See `docs/phase-d-exit.md`.
+
 ## Phase E — Rule and Sorting Studios
 
 Tasks:
@@ -3325,21 +3786,44 @@ Exit:
 
 - rules and sorting are independently testable.
 
+**Status (2026-07-12): complete.** See `docs/phase-e-exit.md`.
+
 ## Phase F — Metadata Resolver and Meta Inspector
 
-Tasks:
+### F1 — Baseline (landed)
 
-- field-level provider selection;
-- locale-aware fallback chains;
-- original and localized title modes;
-- provenance;
-- confidence;
-- exclusion reasons;
-- live inspection.
+Tasks completed:
 
-Exit:
+- field-level provider selection with provenance;
+- locale-aware fallbacks and title/description modes;
+- confidence and exclusion reasons;
+- inspect API + minimal Meta Inspector UI.
+
+Exit (baseline):
 
 - every resolved field can explain its source.
+
+**Status (2026-07-12): baseline complete.** See `docs/phase-f-exit.md`.
+
+### F2 — Field Resolution Chains (remaining)
+
+Canonical design: §10.
+
+Still required before calling Phase F *product-complete*:
+
+- versioned `FieldResolutionPlan` / `ResolutionConfig` schemas + Zod validation;
+- plan inheritance compiler (system → config → media type → field → profile → catalog → title);
+- `locale-first`, `provider-first`, and `explicit` strategy expansion;
+- provider capability filtering and skipped-attempt diagnostics;
+- artwork no-language ranking;
+- episode/anime order types integrated with corrections;
+- management APIs (`/resolution`, compile, test);
+- `ResolutionChainBuilder` (Simple + Advanced) in the configure UI;
+- Meta Inspector tabs showing full attempt chains (provider · locale · status · reason);
+- legacy `language` / `provider` / `artProvider` migration into plans;
+- cache keys with `effectivePlanHash`.
+
+Until F2 lands, treat Field Resolution Chains as **designed but not shipped**.
 
 ## Phase G — Identity Graph
 
@@ -3355,6 +3839,8 @@ Tasks:
 Exit:
 
 - cross-provider mappings are observable and testable.
+
+**Status (2026-07-12): complete.** See `docs/phase-g-exit.md`.
 
 ## Phase H — Anime
 
@@ -3373,6 +3859,8 @@ Tasks:
 Exit:
 
 - anime is a first-class supported type.
+
+**Status (2026-07-12): complete** (foundations). Richer anime-only Appearance/order UI waits on Field Resolution Chains F2. See `docs/phase-h-exit.md`.
 
 ## Phase I — Tracking
 
@@ -3393,6 +3881,8 @@ Exit:
 
 - tracking failures do not break metadata.
 
+**Status (2026-07-12): complete** for failure isolation + adapters/foundation. Full OAuth browser flows and live watchlist/history sync remain follow-ups. See `docs/phase-i-exit.md`.
+
 ## Phase J — Correction Hub
 
 Tasks:
@@ -3409,6 +3899,8 @@ Exit:
 
 - corrections are independent of provider code.
 
+**Status (2026-07-12): complete.** See `docs/phase-j-exit.md`.
+
 ## Phase K — Search and AI
 
 Tasks:
@@ -3424,6 +3916,8 @@ Tasks:
 Exit:
 
 - AI never bypasses the rules and schema layers.
+
+**Status (2026-07-12): complete.** See `docs/phase-k-exit.md`.
 
 ## Phase L — Dashboard and deployment
 
@@ -3444,6 +3938,8 @@ Exit:
 
 - personal and public deployment paths are documented.
 
+**Status (2026-07-12): complete.** SPA static serving under `/configure` and `/admin` added after exit. Postgres Server persistence and Redis cache wiring remain follow-ups. See `docs/phase-l-exit.md`.
+
 ## Phase M — Beta stabilization
 
 Version:
@@ -3451,6 +3947,8 @@ Version:
 ```text
 1.0.0-beta.N
 ```
+
+**Status: not started.** Enter only after F2 Field Resolution Chains and the highest-priority gaps in §37.0 are closed or explicitly deferred.
 
 Tasks:
 
@@ -3464,7 +3962,7 @@ Tasks:
 - translation review;
 - complete en-US, pt-BR, and es-ES catalogs;
 - pseudo-locale and RTL layout review;
-- metadata fallback review;
+- metadata fallback / Field Resolution Chains review;
 - documentation.
 
 Exit:
@@ -3478,6 +3976,8 @@ Version:
 ```text
 1.0.0-rc.N
 ```
+
+**Status: not started.**
 
 Tasks:
 
@@ -3502,7 +4002,9 @@ Version:
 1.0.0
 ```
 
-Stable launch requires every release gate below.
+**Status: not started.**
+
+Stable launch requires every release gate below (§38) and Definition of done (§42).
 
 ---
 
@@ -3621,6 +4123,7 @@ feat: add provider capability registry
 feat: add unified catalog model
 feat: add rule engine
 feat: add sorting plans
+feat: add field resolution chains
 feat: add metadata provenance
 feat: add identity graph
 feat: add correction registry
@@ -3726,6 +4229,10 @@ Then verify:
 
 Only after the provider framework and capability model support it.
 
+## Should MetaLayer choose one provider for an entire title?
+
+Only when the user configures that behavior. Default model is Field Resolution Chains per field (§10).
+
 ## Should unsupported rules be ignored?
 
 No.
@@ -3798,39 +4305,42 @@ No.
 
 # 42. Definition of done
 
-MetaLayer migration and reconstruction are complete when:
+MetaLayer migration and reconstruction are complete when every item below is checked.
 
-- [ ] MetaLayer is the primary brand.
-- [ ] The stable version is `1.0.0`.
-- [ ] Legacy TMDB Addon configurations can be imported.
-- [ ] Legacy routes remain supported for the documented window.
-- [ ] Native configurations do not expose secrets in URLs.
-- [ ] Secrets are encrypted at rest.
-- [ ] Interface localization is complete for en-US, pt-BR, and es-ES.
-- [ ] Interface, metadata language, and regional settings are independent.
-- [ ] Metadata fallback chains are configurable and explainable.
-- [ ] Catalog names support localization.
-- [ ] API errors use stable codes.
-- [ ] Dates, numbers, durations, and plurals are localized.
-- [ ] RTL foundations and pseudo-locales are tested.
-- [ ] Catalog order is unified.
-- [ ] Rules are hierarchical and contextual.
-- [ ] Sorting supports multiple criteria.
-- [ ] Metadata fields have provider provenance.
-- [ ] Meta Inspector explains results.
-- [ ] Identity Graph supports provider mappings.
-- [ ] Correction Hub supports local and community corrections.
-- [ ] Anime is first-class.
-- [ ] Tracking integrations are isolated and recoverable.
-- [ ] Profiles are supported.
-- [ ] Revision history and rollback work.
-- [ ] Simple and Advanced modes exist.
-- [ ] Dashboard supports operators.
-- [ ] Lite and Server deployments are documented.
-- [ ] CI enforces lint, types, tests, and build.
+Progress note (2026-07-12): Phases **A–L** are largely landed (see §37.0). Items still open are primarily Field Resolution Chains (F2), remaining configure modules/UX, native Stremio catalog/meta routes, full tracking OAuth, Server Postgres/Redis, and beta/RC release gates.
+
+- [x] MetaLayer is the primary brand for greenfield apps (`apps/frontend`, `apps/dashboard`, `apps/server`).
+- [ ] The stable version is `1.0.0` (still on `1.0.0-alpha.*`).
+- [x] Legacy TMDB Addon configurations can be imported (`import-legacy` API).
+- [x] Legacy routes remain supported for the documented window.
+- [x] Native configurations do not expose secrets in URLs.
+- [x] Secrets are encrypted at rest (Secret Vault AES-256-GCM).
+- [ ] Interface localization is complete for en-US, pt-BR, and es-ES (catalogs exist; primary UI still incomplete).
+- [ ] Interface, metadata language, and regional settings are independent in the configure UI (Language & Region page still scaffold).
+- [ ] Metadata fallback chains are fully configurable and explainable via Field Resolution Chains (§10 F2).
+- [ ] Catalog names support localization end-to-end in UI.
+- [x] API errors use stable codes.
+- [ ] Dates, numbers, durations, and plurals are localized across the UI.
+- [ ] RTL foundations and pseudo-locales are tested in layout.
+- [x] Catalog order is unified (Studio ↔ manifest).
+- [x] Rules are hierarchical and contextual.
+- [x] Sorting supports multiple criteria.
+- [x] Metadata fields have provider provenance (baseline resolver).
+- [ ] Field Resolution Chains support locale-first, provider-first, and explicit strategies (designed in §10; not shipped).
+- [ ] Meta Inspector explains results and every resolution attempt (minimal inspect UI exists; full attempt chain UI pending F2).
+- [x] Identity Graph supports provider mappings.
+- [x] Correction Hub supports local and community corrections.
+- [x] Anime is first-class (foundations).
+- [x] Tracking integrations are isolated and recoverable (OAuth browser flows / live sync still follow-up).
+- [ ] Profiles are supported end-to-end (UI + profile manifest route incomplete).
+- [x] Revision history and rollback work.
+- [x] Simple and Advanced modes exist (configure shell).
+- [x] Dashboard supports operators (token-gated API + UI).
+- [x] Lite and Server deployments are documented (Postgres/Redis wiring still follow-up).
+- [x] CI enforces lint, types, tests, and build.
 - [ ] Security review passes.
 - [ ] Migration review passes.
-- [ ] Stable release gates pass.
+- [ ] Stable release gates pass (§38).
 
 ---
 
