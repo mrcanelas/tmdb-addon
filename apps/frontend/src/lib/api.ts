@@ -622,7 +622,7 @@ export async function disconnectTrakt(
   return disconnectTracking(configId, editCredential, 'trakt');
 }
 
-export type TrackingOAuthProvider = 'trakt' | 'simkl';
+export type TrackingOAuthProvider = 'trakt' | 'simkl' | 'anilist';
 
 export async function fetchTrackingAuthUrl(
   configId: string,

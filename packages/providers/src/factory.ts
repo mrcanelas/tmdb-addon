@@ -6,6 +6,7 @@ import { FanartArtworkAdapter } from './artwork/fanart.js';
 import { RpdbArtworkAdapter } from './artwork/rpdb.js';
 import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { AnilistProviderAdapter } from './anilist/adapter.js';
+import { AnilistTrackingAdapter } from './anilist/tracking.js';
 import { MalJikanProviderAdapter } from './mal/adapter.js';
 import { KitsuProviderAdapter } from './kitsu/adapter.js';
 import { TraktTrackingAdapter } from './trakt/adapter.js';
@@ -68,6 +69,13 @@ export function createProviderAdapter(
         cacheTtlMs: options.cacheTtlMs,
       });
     case 'anilist':
+      if (options.accessToken) {
+        return new AnilistTrackingAdapter({
+          accessToken: options.accessToken,
+          fetchImpl: options.fetchImpl,
+          policy: options.policy,
+        });
+      }
       return new AnilistProviderAdapter({
         fetchImpl: options.fetchImpl,
         policy: options.policy,

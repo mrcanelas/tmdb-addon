@@ -15,7 +15,7 @@
   "tracking.preview": "Prévia de ocultar assistidos",
   "tracking.previewRunning": "Executando prévia…",
   "tracking.previewOk": "Prévia de ocultar assistidos concluída (degradado: {{degraded}}).",
-  "tracking.previewNeedsConnection": "Conecte o Trakt ou o SIMKL para pré-visualizar hide-watched com o histórico ao vivo.",
+  "tracking.previewNeedsConnection": "Conecte o Trakt, o SIMKL ou o AniList para pré-visualizar hide-watched com o histórico ao vivo.",
   "tracking.included": "Incluídos",
   "tracking.excluded": "Excluídos",
   "tracking.emptyTitle": "Nenhum provedor de tracking listado",

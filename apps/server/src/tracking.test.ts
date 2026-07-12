@@ -274,4 +274,82 @@ describe('@metalayer/server tracking', () => {
     process.env.SIMKL_CLIENT_ID = previousId;
     process.env.SIMKL_CLIENT_SECRET = previousSecret;
   });
+
+  it('builds AniList auth URL, exchanges code into vault, and disconnects', async () => {
+    const previousId = process.env.ANILIST_CLIENT_ID;
+    const previousSecret = process.env.ANILIST_CLIENT_SECRET;
+    process.env.ANILIST_CLIENT_ID = 'anilist-client';
+    process.env.ANILIST_CLIENT_SECRET = 'anilist-secret';
+
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 40).toString('base64'));
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (url, init) => {
+        expect(String(url)).toContain('anilist.co/api/v2/oauth/token');
+        expect(init?.method).toBe('POST');
+        return new Response(
+          JSON.stringify({
+            access_token: 'anilist-live-access',
+            token_type: 'Bearer',
+            expires_in: 31536000,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'anilist-oauth-edit',
+        config: createDefaultMetaLayerConfig({ name: 'AniListOAuth' }),
+      },
+    });
+    const { configId } = created.json();
+    const headers = { 'x-metalayer-edit-credential': 'anilist-oauth-edit' };
+    const redirectUri = 'http://localhost:1338/configure/oauth/anilist/callback';
+
+    const authUrl = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/anilist/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+      headers,
+    });
+    expect(authUrl.statusCode).toBe(200);
+    expect(authUrl.json().authUrl).toContain('anilist.co/api/v2/oauth/authorize');
+    expect(authUrl.json().authUrl).toContain('anilist-client');
+
+    const callback = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/anilist/callback`,
+      headers,
+      payload: { code: 'auth-code', redirectUri },
+    });
+    expect(callback.statusCode).toBe(200);
+    expect(callback.json().connected).toBe(true);
+    expect(JSON.stringify(callback.json())).not.toContain('anilist-live-access');
+
+    const status = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/tracking/status`,
+      headers,
+    });
+    const anilist = status
+      .json()
+      .providers.find((item: { provider: string }) => item.provider === 'anilist');
+    expect(anilist.state).toBe('connected');
+
+    const disconnected = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/configurations/${configId}/tracking/anilist`,
+      headers,
+    });
+    expect(disconnected.statusCode).toBe(200);
+    expect(disconnected.json().state).toBe('not_configured');
+
+    await app.close();
+    process.env.ANILIST_CLIENT_ID = previousId;
+    process.env.ANILIST_CLIENT_SECRET = previousSecret;
+  });
 });

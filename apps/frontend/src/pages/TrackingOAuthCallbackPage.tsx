@@ -7,10 +7,21 @@ import { PageHeader } from '@/components/metalayer/PageHeader';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
-const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>(['trakt', 'simkl']);
+const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>([
+  'trakt',
+  'simkl',
+  'anilist',
+]);
 
 function brandLabel(provider: TrackingOAuthProvider): string {
-  return provider === 'simkl' ? 'SIMKL' : 'Trakt';
+  switch (provider) {
+    case 'simkl':
+      return 'SIMKL';
+    case 'anilist':
+      return 'AniList';
+    default:
+      return 'Trakt';
+  }
 }
 
 export function TrackingOAuthCallbackPage() {

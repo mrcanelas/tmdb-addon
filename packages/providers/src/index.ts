@@ -83,6 +83,16 @@ export type {
 } from './anime/types.js';
 export { AnilistProviderAdapter } from './anilist/adapter.js';
 export type { AnilistAdapterOptions } from './anilist/adapter.js';
+export {
+  AnilistTrackingAdapter,
+  buildAnilistAuthorizeUrl,
+  exchangeAnilistAuthorizationCode,
+} from './anilist/tracking.js';
+export type {
+  AnilistOAuthTokens,
+  AnilistTrackingAdapterOptions,
+  AnilistWatchStateFixture,
+} from './anilist/tracking.js';
 export { MalJikanProviderAdapter } from './mal/adapter.js';
 export type { JikanAdapterOptions } from './mal/adapter.js';
 export { KitsuProviderAdapter } from './kitsu/adapter.js';

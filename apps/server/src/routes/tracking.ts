@@ -10,11 +10,14 @@ import {
   type WatchStateEntry,
 } from '@metalayer/tracking';
 import {
+  AnilistTrackingAdapter,
   SimklTrackingAdapter,
   TraktTrackingAdapter,
+  buildAnilistAuthorizeUrl,
   buildSimklAuthorizeUrl,
   buildTraktAuthorizeUrl,
   createProviderAdapter,
+  exchangeAnilistAuthorizationCode,
   exchangeSimklAuthorizationCode,
   exchangeTraktAuthorizationCode,
 } from '@metalayer/providers';
@@ -156,7 +159,8 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
       if (
         adapter instanceof TraktTrackingAdapter ||
-        adapter instanceof SimklTrackingAdapter
+        adapter instanceof SimklTrackingAdapter ||
+        adapter instanceof AnilistTrackingAdapter
       ) {
         return adapter.getWatchStates({
           correlationId: request.correlationId,
@@ -222,7 +226,8 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       });
       if (
         adapter instanceof TraktTrackingAdapter ||
-        adapter instanceof SimklTrackingAdapter
+        adapter instanceof SimklTrackingAdapter ||
+        adapter instanceof AnilistTrackingAdapter
       ) {
         return adapter.getWatchStates({
           correlationId: request.correlationId,
@@ -557,6 +562,162 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       app.configStore.deleteVaultSecret(
         request.params.configId,
         'simkl',
+        'api_key',
+      );
+
+      return {
+        connected: false,
+        state: 'not_configured' as const,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.get<{
+    Params: { configId: string };
+    Querystring: { redirectUri?: string };
+  }>('/configurations/:configId/tracking/anilist/auth-url', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.ANILIST_CLIENT_ID;
+    if (!clientId) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'ANILIST_CLIENT_ID is not configured on this instance',
+          correlationId: request.correlationId,
+          params: { source: 'AniList' },
+        }),
+      );
+    }
+
+    const redirectUri =
+      request.query.redirectUri || process.env.ANILIST_REDIRECT_URI || '';
+    if (!redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'redirectUri is required',
+          correlationId: request.correlationId,
+          params: { field: 'redirectUri' },
+        }),
+      );
+    }
+
+    const state = Buffer.from(
+      JSON.stringify({
+        configId: request.params.configId,
+        nonce: randomBytes(8).toString('hex'),
+      }),
+    ).toString('base64url');
+
+    return {
+      authUrl: buildAnilistAuthorizeUrl({
+        clientId,
+        redirectUri,
+        state,
+      }),
+      state,
+      redirectUri,
+      correlationId: request.correlationId,
+    };
+  });
+
+  app.post<{
+    Params: { configId: string };
+    Body: { code?: string; redirectUri?: string };
+  }>('/configurations/:configId/tracking/anilist/callback', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const clientId = process.env.ANILIST_CLIENT_ID;
+    const clientSecret = process.env.ANILIST_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'SOURCE_CREDENTIAL_MISSING',
+          message: 'ANILIST_CLIENT_ID/ANILIST_CLIENT_SECRET are not configured',
+          correlationId: request.correlationId,
+          params: { source: 'AniList' },
+        }),
+      );
+    }
+
+    const code = request.body?.code;
+    const redirectUri =
+      request.body?.redirectUri || process.env.ANILIST_REDIRECT_URI || '';
+    if (!code || !redirectUri) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'code and redirectUri are required',
+          correlationId: request.correlationId,
+        }),
+      );
+    }
+
+    try {
+      const tokens = await exchangeAnilistAuthorizationCode({
+        code,
+        redirectUri,
+        clientId,
+        clientSecret,
+        fetchImpl: app.providerFetch,
+      });
+      app.configStore.upsertVaultSecret(
+        request.params.configId,
+        'anilist',
+        'oauth_access',
+        tokens.accessToken,
+      );
+      if (tokens.refreshToken) {
+        app.configStore.upsertVaultSecret(
+          request.params.configId,
+          'anilist',
+          'oauth_refresh',
+          tokens.refreshToken,
+        );
+      }
+      return {
+        connected: true,
+        state: 'connected' as const,
+        correlationId: request.correlationId,
+      };
+    } catch (error) {
+      return reply.status(502).send(
+        createApiError({
+          code: 'PROVIDER_UNAVAILABLE',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'AniList OAuth callback failed',
+          correlationId: request.correlationId,
+          params: { source: 'AniList' },
+        }),
+      );
+    }
+  });
+
+  app.delete<{ Params: { configId: string } }>(
+    '/configurations/:configId/tracking/anilist',
+    async (request, reply) => {
+      const access = requireEdit(app, request, request.params.configId);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'anilist',
+        'oauth_access',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'anilist',
+        'oauth_refresh',
+      );
+      app.configStore.deleteVaultSecret(
+        request.params.configId,
+        'anilist',
         'api_key',
       );
 

@@ -14,7 +14,11 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 
-const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>(['trakt', 'simkl']);
+const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>([
+  'trakt',
+  'simkl',
+  'anilist',
+]);
 
 function trackingTone(
   state: string,
@@ -33,38 +37,75 @@ function trackingTone(
   }
 }
 
+function brandLabel(provider: TrackingOAuthProvider): string {
+  switch (provider) {
+    case 'simkl':
+      return 'SIMKL';
+    case 'anilist':
+      return 'AniList';
+    default:
+      return 'Trakt';
+  }
+}
+
+function pickPreviewProvider(
+  connected: Partial<Record<TrackingOAuthProvider, boolean>>,
+): TrackingOAuthProvider {
+  if (connected.trakt) return 'trakt';
+  if (connected.simkl) return 'simkl';
+  return 'anilist';
+}
+
 export function TrackingPage() {
   const { t } = useTranslation(['tracking', 'common']);
   const sessionQuery = useStudioSessionQuery();
   const statusQuery = useTrackingStatusQuery();
   const providers = statusQuery.data?.providers ?? [];
-  const traktConnected =
-    providers.find((provider) => provider.provider === 'trakt')?.state ===
-    'connected';
-  const simklConnected =
-    providers.find((provider) => provider.provider === 'simkl')?.state ===
-    'connected';
-  const previewProvider: TrackingOAuthProvider = traktConnected
-    ? 'trakt'
-    : 'simkl';
+  const connected: Partial<Record<TrackingOAuthProvider, boolean>> = {
+    trakt:
+      providers.find((provider) => provider.provider === 'trakt')?.state ===
+      'connected',
+    simkl:
+      providers.find((provider) => provider.provider === 'simkl')?.state ===
+      'connected',
+    anilist:
+      providers.find((provider) => provider.provider === 'anilist')?.state ===
+      'connected',
+  };
+  const previewProvider = pickPreviewProvider(connected);
   const previewMutation = useHideWatchedPreviewMutation(previewProvider);
   const traktConnect = useTrackingConnectMutation('trakt');
   const traktDisconnect = useTrackingDisconnectMutation('trakt');
   const simklConnect = useTrackingConnectMutation('simkl');
   const simklDisconnect = useTrackingDisconnectMutation('simkl');
+  const anilistConnect = useTrackingConnectMutation('anilist');
+  const anilistDisconnect = useTrackingDisconnectMutation('anilist');
 
   const bootstrapping = sessionQuery.isLoading || statusQuery.isLoading;
   const loadError = sessionQuery.isError || statusQuery.isError;
-  const anyTrackingConnected = traktConnected || simklConnected;
-  const connectPending = traktConnect.isPending || simklConnect.isPending;
-  const connectError = traktConnect.isError || simklConnect.isError;
+  const anyTrackingConnected = Boolean(
+    connected.trakt || connected.simkl || connected.anilist,
+  );
+  const connectPending =
+    traktConnect.isPending || simklConnect.isPending || anilistConnect.isPending;
+  const connectError =
+    traktConnect.isError || simklConnect.isError || anilistConnect.isError;
+  const failedConnectBrand = traktConnect.isError
+    ? 'Trakt'
+    : simklConnect.isError
+      ? 'SIMKL'
+      : 'AniList';
 
   function connectMutation(provider: TrackingOAuthProvider) {
-    return provider === 'simkl' ? simklConnect : traktConnect;
+    if (provider === 'simkl') return simklConnect;
+    if (provider === 'anilist') return anilistConnect;
+    return traktConnect;
   }
 
   function disconnectMutation(provider: TrackingOAuthProvider) {
-    return provider === 'simkl' ? simklDisconnect : traktDisconnect;
+    if (provider === 'simkl') return simklDisconnect;
+    if (provider === 'anilist') return anilistDisconnect;
+    return traktDisconnect;
   }
 
   return (
@@ -104,7 +145,9 @@ export function TrackingPage() {
                     className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
                   >
                     <span className="font-medium text-[var(--ml-text)]">
-                      {provider.provider}
+                      {supportsOauth
+                        ? brandLabel(oauthProvider)
+                        : provider.provider}
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge tone={trackingTone(provider.state)}>
@@ -155,9 +198,7 @@ export function TrackingPage() {
           )}
           {connectError ? (
             <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
-              {t('tracking.oauth.error', {
-                provider: traktConnect.isError ? 'Trakt' : 'SIMKL',
-              })}
+              {t('tracking.oauth.error', { provider: failedConnectBrand })}
             </p>
           ) : null}
         </SectionCard>

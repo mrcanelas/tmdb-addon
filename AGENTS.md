@@ -3668,7 +3668,7 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **AniList / MAL OAuth** and richer Trakt/SIMKL refresh/reconnect
+1. **MAL OAuth** and richer Trakt/SIMKL/AniList refresh/reconnect
 2. **Postgres + Redis** Server end-to-end
 3. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
 4. **Encryption key rotation tooling** (Phase B carry-over)
