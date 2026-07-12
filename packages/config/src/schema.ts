@@ -38,6 +38,8 @@ export const CatalogDefinitionSchema = z.object({
   showInHome: z.boolean().default(true),
   position: z.number().int().nonnegative(),
   tags: z.array(z.string()).default([]),
+  /** Optional studio grouping label (not a separate order list). */
+  group: z.string().min(1).optional(),
 });
 
 /** ADR 0006 — public Stremio ids default to IMDb when available. */
