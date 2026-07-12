@@ -101,6 +101,59 @@ export async function exchangeTraktAuthorizationCode(input: {
   };
 }
 
+export async function refreshTraktAccessToken(input: {
+  refreshToken: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri?: string;
+  fetchImpl?: ProviderFetch;
+}): Promise<TraktOAuthTokens> {
+  const fetchImpl = input.fetchImpl ?? fetch;
+  const response = await fetchImpl('https://api.trakt.tv/oauth/token', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      refresh_token: input.refreshToken,
+      client_id: input.clientId,
+      client_secret: input.clientSecret,
+      redirect_uri:
+        input.redirectUri ||
+        process.env.TRAKT_REDIRECT_URI ||
+        'urn:ietf:wg:oauth:2.0:oob',
+      grant_type: 'refresh_token',
+    }),
+  });
+  if (!response.ok) {
+    throw new ProviderError({
+      code: response.status === 401 ? 'auth' : 'upstream',
+      providerId: 'trakt',
+      message: `Trakt token refresh failed (${response.status})`,
+      retryable: response.status >= 500,
+    });
+  }
+  const body = (await response.json()) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+  if (!body.access_token) {
+    throw new ProviderError({
+      code: 'upstream',
+      providerId: 'trakt',
+      message: 'Trakt token refresh returned no access_token',
+      retryable: false,
+    });
+  }
+  return {
+    accessToken: body.access_token,
+    refreshToken: body.refresh_token,
+    expiresIn: body.expires_in,
+  };
+}
+
 /**
  * Trakt tracking adapter (independent MetaLayer implementation).
  * Supports fixture mode for CI and live watched sync when an access token is set.

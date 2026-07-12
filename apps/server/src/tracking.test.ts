@@ -440,4 +440,139 @@ describe('@metalayer/server tracking', () => {
     process.env.MAL_CLIENT_ID = previousId;
     process.env.MAL_CLIENT_SECRET = previousSecret;
   });
+
+  it('refreshes Trakt access token on 401 and marks expired when refresh fails', async () => {
+    const previousId = process.env.TRAKT_CLIENT_ID;
+    const previousSecret = process.env.TRAKT_CLIENT_SECRET;
+    process.env.TRAKT_CLIENT_ID = 'trakt-client';
+    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+
+    const store = createMemoryConfigurationStore(Buffer.alloc(32, 42).toString('base64'));
+    let watchedCalls = 0;
+    const app = await buildApp({
+      logger: false,
+      store,
+      providerFetch: async (url, init) => {
+        const href = String(url);
+        if (href.includes('/oauth/token')) {
+          const body = JSON.parse(String(init?.body ?? '{}')) as {
+            grant_type?: string;
+            refresh_token?: string;
+          };
+          if (body.grant_type === 'refresh_token') {
+            expect(body.refresh_token).toBe('refresh-alive');
+            return new Response(
+              JSON.stringify({
+                access_token: 'refreshed-access',
+                refresh_token: 'refresh-rotated',
+                expires_in: 3600,
+              }),
+              { status: 200, headers: { 'Content-Type': 'application/json' } },
+            );
+          }
+        }
+        if (href.includes('/sync/watched/')) {
+          watchedCalls += 1;
+          if (watchedCalls <= 2) {
+            return new Response('unauthorized', { status: 401 });
+          }
+          return new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('not found', { status: 404 });
+      },
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'trakt-refresh-edit',
+        config: createDefaultMetaLayerConfig({ name: 'TraktRefresh' }),
+      },
+    });
+    const { configId } = created.json();
+    const headers = { 'x-metalayer-edit-credential': 'trakt-refresh-edit' };
+
+    await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/lookup`,
+      headers,
+      payload: {
+        provider: 'trakt',
+        accessToken: 'stale-access',
+        refreshToken: 'refresh-alive',
+        fixtures: [],
+      },
+    });
+
+    // Force live path: lookup without fixtures uses vault + live sync.
+    const live = await app.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${configId}/tracking/lookup`,
+      headers,
+      payload: { provider: 'trakt' },
+    });
+    expect(live.statusCode).toBe(200);
+    expect(live.json().degraded).toBe(false);
+    expect(live.json().connectionState).toBe('connected');
+    expect(watchedCalls).toBeGreaterThan(2);
+
+    // Explicit refresh endpoint with broken refresh token.
+    const brokenStore = createMemoryConfigurationStore(
+      Buffer.alloc(32, 43).toString('base64'),
+    );
+    const brokenApp = await buildApp({
+      logger: false,
+      store: brokenStore,
+      providerFetch: async () =>
+        new Response(JSON.stringify({ error: 'invalid' }), { status: 401 }),
+    });
+    const brokenCreated = await brokenApp.inject({
+      method: 'POST',
+      url: '/api/v1/configurations',
+      payload: {
+        editCredential: 'trakt-refresh-fail',
+        config: createDefaultMetaLayerConfig({ name: 'TraktRefreshFail' }),
+      },
+    });
+    const brokenId = brokenCreated.json().configId;
+    const brokenHeaders = { 'x-metalayer-edit-credential': 'trakt-refresh-fail' };
+    await brokenApp.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${brokenId}/tracking/lookup`,
+      headers: brokenHeaders,
+      payload: {
+        provider: 'trakt',
+        accessToken: 'x',
+        refreshToken: 'dead-refresh',
+        fixtures: [],
+      },
+    });
+    const refreshFail = await brokenApp.inject({
+      method: 'POST',
+      url: `/api/v1/configurations/${brokenId}/tracking/trakt/refresh`,
+      headers: brokenHeaders,
+    });
+    expect(refreshFail.statusCode).toBe(200);
+    expect(refreshFail.json().refreshed).toBe(false);
+    expect(refreshFail.json().state).toBe('expired');
+
+    const status = await brokenApp.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${brokenId}/tracking/status`,
+      headers: brokenHeaders,
+    });
+    const trakt = status
+      .json()
+      .providers.find((item: { provider: string }) => item.provider === 'trakt');
+    expect(trakt.state).toBe('expired');
+
+    await app.close();
+    await brokenApp.close();
+    process.env.TRAKT_CLIENT_ID = previousId;
+    process.env.TRAKT_CLIENT_SECRET = previousSecret;
+  });
 });

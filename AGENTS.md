@@ -3668,12 +3668,12 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **Shared tracking token refresh/reconnect** (Trakt/SIMKL/AniList/MAL)
-2. **Postgres + Redis** Server end-to-end
-3. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
-4. **Encryption key rotation tooling** (Phase B carry-over)
-5. **Advanced configure module**
-6. **Series specials / alternative episode orders** (corrections layer)
+1. **Postgres + Redis** Server end-to-end
+2. **UX / a11y / i18n / performance / security** hardening (Phase M checklist)
+3. **Encryption key rotation tooling** (Phase B carry-over)
+4. **Advanced configure module**
+5. **Series specials / alternative episode orders** (corrections layer)
+6. **Proactive token refresh jobs** (optional; on-demand refresh covers Trakt/MAL)
 
 ---
 

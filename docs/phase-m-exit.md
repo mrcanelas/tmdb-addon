@@ -23,7 +23,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Profiles UI + `/c/.../p/:profileId/manifest.json` | **Done** (CRUD + manifest + profile-scoped catalog/meta) |
 | Series (and anime) live meta gather on native route | **Done** (TMDB series + AniList anime + series episode videos; specials/order corrections follow-up) |
 | Advanced configure module | beta.N |
-| Tracking OAuth browser flows + live list sync | **Done (MVP)** — Trakt + SIMKL + AniList + MAL (PKCE + refresh on 401); richer shared refresh/reconnect follow-up |
+| Tracking OAuth browser flows + live list sync | **Done (MVP)** — Trakt + SIMKL + AniList + MAL; shared Trakt/MAL refresh-on-401 + reconnect status |
+
 | Encryption key rotation tooling | post-beta (Phase B carry-over) |
 | Postgres + Redis Server end-to-end | beta.N |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |

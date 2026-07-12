@@ -109,7 +109,7 @@ export type {
 } from './mal/tracking.js';
 export { KitsuProviderAdapter } from './kitsu/adapter.js';
 export type { KitsuAdapterOptions } from './kitsu/adapter.js';
-export { TraktTrackingAdapter, buildTraktAuthorizeUrl, exchangeTraktAuthorizationCode } from './trakt/adapter.js';
+export { TraktTrackingAdapter, buildTraktAuthorizeUrl, exchangeTraktAuthorizationCode, refreshTraktAccessToken } from './trakt/adapter.js';
 export type {
   TraktAdapterOptions,
   TraktWatchStateFixture,

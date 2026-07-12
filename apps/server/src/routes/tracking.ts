@@ -26,8 +26,10 @@ import {
   exchangeTraktAuthorizationCode,
   generateMalPkceVerifier,
   refreshMalAccessToken,
+  refreshTraktAccessToken,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
+import type { TmdbFetch } from '@metalayer/providers';
 import { randomBytes } from 'node:crypto';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
@@ -84,8 +86,108 @@ function resolveConnectionState(
   const access =
     app.configStore.getSecretPlaintext(configId, provider, 'oauth_access') ||
     app.configStore.getSecretPlaintext(configId, provider, 'api_key');
-  if (!access) return 'not_configured';
+  if (!access) {
+    // Refresh token without access means a prior refresh failed — prompt reconnect.
+    const refresh = app.configStore.getSecretPlaintext(
+      configId,
+      provider,
+      'oauth_refresh',
+    );
+    return refresh
+      ? transitionTokenState('connected', { type: 'refresh_failed' })
+      : 'not_configured';
+  }
   return transitionTokenState('not_configured', { type: 'auth_success' });
+}
+
+function clearTrackingAccessTokens(
+  app: { configStore: ConfigurationStore },
+  configId: string,
+  provider: TrackingProviderId,
+  options?: { keepRefresh?: boolean },
+) {
+  app.configStore.deleteVaultSecret(configId, provider, 'oauth_access');
+  app.configStore.deleteVaultSecret(configId, provider, 'api_key');
+  if (!options?.keepRefresh) {
+    app.configStore.deleteVaultSecret(configId, provider, 'oauth_refresh');
+  }
+}
+
+const REFRESHABLE_PROVIDERS = new Set<TrackingProviderId>(['trakt', 'mal']);
+
+async function tryRefreshTrackingToken(input: {
+  app: {
+    configStore: ConfigurationStore;
+    providerFetch?: TmdbFetch;
+  };
+  configId: string;
+  provider: TrackingProviderId;
+}): Promise<{ accessToken: string } | null> {
+  if (!REFRESHABLE_PROVIDERS.has(input.provider)) return null;
+
+  const fetchImpl = input.app.providerFetch ?? fetch;
+  const refreshToken = input.app.configStore.getSecretPlaintext(
+    input.configId,
+    input.provider,
+    'oauth_refresh',
+  );
+  if (!refreshToken) return null;
+
+  if (input.provider === 'trakt') {
+    const clientId = process.env.TRAKT_CLIENT_ID;
+    const clientSecret = process.env.TRAKT_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return null;
+    const tokens = await refreshTraktAccessToken({
+      refreshToken,
+      clientId,
+      clientSecret,
+      fetchImpl,
+    });
+    input.app.configStore.upsertVaultSecret(
+      input.configId,
+      'trakt',
+      'oauth_access',
+      tokens.accessToken,
+    );
+    if (tokens.refreshToken) {
+      input.app.configStore.upsertVaultSecret(
+        input.configId,
+        'trakt',
+        'oauth_refresh',
+        tokens.refreshToken,
+      );
+    }
+    return { accessToken: tokens.accessToken };
+  }
+
+  if (input.provider === 'mal') {
+    const clientId = process.env.MAL_CLIENT_ID;
+    const clientSecret = process.env.MAL_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return null;
+    const tokens = await refreshMalAccessToken({
+      refreshToken,
+      clientId,
+      clientSecret,
+      fetchImpl,
+    });
+    input.app.configStore.upsertVaultSecret(
+      input.configId,
+      'mal',
+      'oauth_access',
+      tokens.accessToken,
+    );
+    if (tokens.refreshToken) {
+      input.app.configStore.upsertVaultSecret(
+        input.configId,
+        'mal',
+        'oauth_refresh',
+        tokens.refreshToken,
+      );
+    }
+    return { accessToken: tokens.accessToken };
+  }
+
+  return null;
 }
 
 function isTrackingAdapter(
@@ -106,17 +208,18 @@ function isTrackingAdapter(
 async function loadLiveWatchStates(input: {
   app: {
     configStore: ConfigurationStore;
-    providerFetch: typeof fetch;
+    providerFetch?: TmdbFetch;
   };
   configId: string;
   provider: TrackingProviderId;
   accessToken?: string;
   correlationId: string;
 }): Promise<WatchStateEntry[]> {
+  const fetchImpl = input.app.providerFetch ?? fetch;
   const run = async (token: string | undefined) => {
     const adapter = createProviderAdapter(input.provider, {
       accessToken: token,
-      fetchImpl: input.app.providerFetch,
+      fetchImpl,
     });
     if (!isTrackingAdapter(adapter)) return [] as WatchStateEntry[];
     return adapter.getWatchStates({
@@ -127,43 +230,29 @@ async function loadLiveWatchStates(input: {
   try {
     return await run(input.accessToken);
   } catch (error) {
-    if (
-      input.provider !== 'mal' ||
-      !(error instanceof ProviderError) ||
-      error.code !== 'auth'
-    ) {
+    if (!(error instanceof ProviderError) || error.code !== 'auth') {
       throw error;
     }
-    const refreshToken = input.app.configStore.getSecretPlaintext(
-      input.configId,
-      'mal',
-      'oauth_refresh',
-    );
-    const clientId = process.env.MAL_CLIENT_ID;
-    const clientSecret = process.env.MAL_CLIENT_SECRET;
-    if (!refreshToken || !clientId || !clientSecret) throw error;
 
-    const tokens = await refreshMalAccessToken({
-      refreshToken,
-      clientId,
-      clientSecret,
-      fetchImpl: input.app.providerFetch,
-    });
-    input.app.configStore.upsertVaultSecret(
-      input.configId,
-      'mal',
-      'oauth_access',
-      tokens.accessToken,
-    );
-    if (tokens.refreshToken) {
-      input.app.configStore.upsertVaultSecret(
-        input.configId,
-        'mal',
-        'oauth_refresh',
-        tokens.refreshToken,
-      );
+    try {
+      const refreshed = await tryRefreshTrackingToken({
+        app: input.app,
+        configId: input.configId,
+        provider: input.provider,
+      });
+      if (refreshed) {
+        return await run(refreshed.accessToken);
+      }
+    } catch {
+      // Refresh failed — fall through to clear access and rethrow.
     }
-    return run(tokens.accessToken);
+
+    // SIMKL/AniList have no refresh grant; Trakt/MAL refresh missing/failed.
+    // Keep refresh token (if any) so status can surface `expired` + Connect.
+    clearTrackingAccessTokens(input.app, input.configId, input.provider, {
+      keepRefresh: REFRESHABLE_PROVIDERS.has(input.provider),
+    });
+    throw error;
   }
 }
 
@@ -186,6 +275,59 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       };
     },
   );
+
+  app.post<{
+    Params: { configId: string; provider: string };
+  }>('/configurations/:configId/tracking/:provider/refresh', async (request, reply) => {
+    const access = requireEdit(app, request, request.params.configId);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+
+    const provider = request.params.provider as TrackingProviderId;
+    if (!REFRESHABLE_PROVIDERS.has(provider)) {
+      return reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: `Provider ${provider} does not support token refresh`,
+          correlationId: request.correlationId,
+          params: { field: 'provider' },
+        }),
+      );
+    }
+
+    try {
+      const refreshed = await tryRefreshTrackingToken({
+        app,
+        configId: request.params.configId,
+        provider,
+      });
+      if (!refreshed) {
+        clearTrackingAccessTokens(app, request.params.configId, provider, {
+          keepRefresh: true,
+        });
+        return {
+          refreshed: false,
+          state: transitionTokenState('connected', {
+            type: 'refresh_failed',
+          }),
+          correlationId: request.correlationId,
+        };
+      }
+      return {
+        refreshed: true,
+        state: 'connected' as const,
+        correlationId: request.correlationId,
+      };
+    } catch {
+      clearTrackingAccessTokens(app, request.params.configId, provider, {
+        keepRefresh: true,
+      });
+      return {
+        refreshed: false,
+        state: transitionTokenState('connected', { type: 'refresh_failed' }),
+        correlationId: request.correlationId,
+      };
+    }
+  });
 
   app.post<{
     Params: { configId: string };
@@ -251,9 +393,19 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       entries: result.entries,
       degraded: result.index.degraded,
       failure: result.failure,
-      connectionState: result.failure
-        ? transitionTokenState('connected', { type: 'upstream_error' })
-        : resolveConnectionState(app, request.params.configId, provider),
+      connectionState: (() => {
+        const resolved = resolveConnectionState(
+          app,
+          request.params.configId,
+          provider,
+        );
+        if (!result.failure) return resolved;
+        if (resolved === 'expired') return 'expired';
+        if (resolved === 'not_configured') {
+          return transitionTokenState('connected', { type: 'unauthorized' });
+        }
+        return transitionTokenState('connected', { type: 'upstream_error' });
+      })(),
       correlationId: request.correlationId,
     };
   });
