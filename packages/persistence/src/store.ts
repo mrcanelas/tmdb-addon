@@ -73,6 +73,7 @@ export interface ConfigurationStore {
   create(input: CreateConfigurationInput): PublicConfigurationView;
   update(configId: string, input: UpdateConfigurationInput): PublicConfigurationView | null;
   getPublic(configId: string): PublicConfigurationView | null;
+  listConfigIds(): string[];
   verifyEditAccess(configId: string, editCredential: string): boolean;
   getSecretPlaintext(
     configId: string,
@@ -296,6 +297,13 @@ export class SqliteConfigurationStore implements ConfigurationStore {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
+  }
+
+  listConfigIds(): string[] {
+    const rows = this.db
+      .prepare(`SELECT config_id FROM configurations ORDER BY created_at ASC`)
+      .all() as Array<{ config_id: string }>;
+    return rows.map((row) => row.config_id);
   }
 
   verifyEditAccess(configId: string, editCredential: string): boolean {
