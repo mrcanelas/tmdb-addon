@@ -5,7 +5,12 @@ import {
   sortCatalogsByPosition,
   type CatalogMetaPreview,
 } from '@metalayer/catalogs';
-import type { CatalogDefinition, MetaLayerConfig } from '@metalayer/config';
+import {
+  applyProfileToConfig,
+  findProfile,
+  type CatalogDefinition,
+  type MetaLayerConfig,
+} from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import {
   AnilistProviderAdapter,
@@ -27,6 +32,10 @@ declare module 'fastify' {
 }
 
 const PAGE_SIZE = 100;
+
+type ReplyLike = {
+  status: (code: number) => { send: (body: unknown) => unknown };
+};
 
 function tmdbImageUrl(
   path: string | null | undefined,
@@ -69,6 +78,31 @@ function parseAnimePublicId(publicId: string): number | null {
   if (!match) return null;
   const id = Number(match[1]);
   return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+function resolveEffectiveConfig(
+  config: MetaLayerConfig,
+  profileId: string | undefined,
+  reply: ReplyLike,
+  correlationId: string,
+  configId: string,
+): MetaLayerConfig | { error: unknown } {
+  if (!profileId) return config;
+
+  const profile = findProfile(config.profiles ?? [], profileId);
+  if (!profile || profile.enabled === false) {
+    return {
+      error: reply.status(404).send(
+        createApiError({
+          code: 'CONFIGURATION_NOT_FOUND',
+          message: `Profile ${profileId} was not found`,
+          correlationId,
+          params: { configId, profileId },
+        }),
+      ),
+    };
+  }
+  return applyProfileToConfig(config, profile);
 }
 
 async function loadCatalogMetas(
@@ -172,15 +206,22 @@ async function loadCatalogMetas(
 
 /**
  * Public Stremio catalog/meta routes for native MetaLayer configs.
+ * Profile installs use `/c/:configId/p/:profileId/...` so Stremio keeps the same base.
  * No secrets in the URL — credentials come from vault/env.
  */
 export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
   async function handleCatalog(
     request: {
-      params: { configId: string; type: string; id: string; extra?: string };
+      params: {
+        configId: string;
+        type: string;
+        id: string;
+        extra?: string;
+        profileId?: string;
+      };
       correlationId: string;
     },
-    reply: { status: (code: number) => { send: (body: unknown) => unknown } },
+    reply: ReplyLike,
   ) {
     const view = app.configStore.getPublic(request.params.configId);
     if (!view) {
@@ -194,8 +235,17 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
+    const effective = resolveEffectiveConfig(
+      view.config,
+      request.params.profileId,
+      reply,
+      request.correlationId,
+      view.configId,
+    );
+    if ('error' in effective) return effective.error;
+
     const catalog = findCatalogByManifestId(
-      view.config.catalogs,
+      effective.catalogs,
       request.params.type,
       request.params.id,
     );
@@ -210,7 +260,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       const metas = await loadCatalogMetas(
         app,
         view.configId,
-        view.config,
+        effective,
         catalog,
         page,
         request.correlationId,
@@ -232,21 +282,18 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     }
   }
 
-  app.get<{
-    Params: { configId: string; type: string; id: string };
-  }>('/c/:configId/catalog/:type/:id.json', async (request, reply) =>
-    handleCatalog({ ...request, params: { ...request.params } }, reply),
-  );
-
-  app.get<{
-    Params: { configId: string; type: string; id: string; extra: string };
-  }>('/c/:configId/catalog/:type/:id/:extra.json', async (request, reply) =>
-    handleCatalog(request, reply),
-  );
-
-  app.get<{
-    Params: { configId: string; type: string; id: string };
-  }>('/c/:configId/meta/:type/:id.json', async (request, reply) => {
+  async function handleMeta(
+    request: {
+      params: {
+        configId: string;
+        type: string;
+        id: string;
+        profileId?: string;
+      };
+      correlationId: string;
+    },
+    reply: ReplyLike,
+  ) {
     const view = app.configStore.getPublic(request.params.configId);
     if (!view) {
       return reply.status(404).send(
@@ -259,6 +306,15 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
+    const effective = resolveEffectiveConfig(
+      view.config,
+      request.params.profileId,
+      reply,
+      request.correlationId,
+      view.configId,
+    );
+    if ('error' in effective) return effective.error;
+
     const type = request.params.type;
     if (type !== 'movie' && type !== 'series' && type !== 'anime') {
       return reply.status(404).send({ meta: null });
@@ -266,10 +322,10 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
 
     const ctx = {
       correlationId: request.correlationId,
-      locale: view.config.localization.metadataLocale || 'en-US',
+      locale: effective.localization.metadataLocale || 'en-US',
       region:
-        view.config.localization.availabilityRegion ||
-        view.config.localization.contentRegion,
+        effective.localization.availabilityRegion ||
+        effective.localization.contentRegion,
     };
 
     if (type === 'anime') {
@@ -294,7 +350,8 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
         return {
           meta: {
             id: anime.publicId,
-            type: anime.format === 'movie' ? ('movie' as const) : ('series' as const),
+            type:
+              anime.format === 'movie' ? ('movie' as const) : ('series' as const),
             name,
             poster: anime.posterUrl ?? undefined,
             description: anime.description,
@@ -321,7 +378,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       apiKey,
       fetchImpl: app.providerFetch,
       cache: app.providerCache,
-      stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
+      stremioPublicId: effective.identity?.stremioPublicId || 'imdb',
     });
 
     if (!(adapter instanceof TmdbProviderAdapter)) {
@@ -377,5 +434,49 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       }
       return reply.status(502).send({ meta: null });
     }
-  });
+  }
+
+  app.get<{
+    Params: { configId: string; type: string; id: string };
+  }>('/c/:configId/catalog/:type/:id.json', async (request, reply) =>
+    handleCatalog({ ...request, params: { ...request.params } }, reply),
+  );
+
+  app.get<{
+    Params: { configId: string; type: string; id: string; extra: string };
+  }>('/c/:configId/catalog/:type/:id/:extra.json', async (request, reply) =>
+    handleCatalog(request, reply),
+  );
+
+  app.get<{
+    Params: { configId: string; profileId: string; type: string; id: string };
+  }>(
+    '/c/:configId/p/:profileId/catalog/:type/:id.json',
+    async (request, reply) => handleCatalog(request, reply),
+  );
+
+  app.get<{
+    Params: {
+      configId: string;
+      profileId: string;
+      type: string;
+      id: string;
+      extra: string;
+    };
+  }>(
+    '/c/:configId/p/:profileId/catalog/:type/:id/:extra.json',
+    async (request, reply) => handleCatalog(request, reply),
+  );
+
+  app.get<{
+    Params: { configId: string; type: string; id: string };
+  }>('/c/:configId/meta/:type/:id.json', async (request, reply) =>
+    handleMeta(request, reply),
+  );
+
+  app.get<{
+    Params: { configId: string; profileId: string; type: string; id: string };
+  }>('/c/:configId/p/:profileId/meta/:type/:id.json', async (request, reply) =>
+    handleMeta(request, reply),
+  );
 };
