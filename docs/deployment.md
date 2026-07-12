@@ -98,9 +98,29 @@ pnpm metalayer:upgrade-check
 Always:
 
 1. Create a dashboard backup (secrets excluded).
-2. Preserve `METALAYER_ENCRYPTION_KEY`.
+2. Preserve `METALAYER_ENCRYPTION_KEY` (or keep previous keys in `METALAYER_ENCRYPTION_PREVIOUS_KEYS` during a planned rotation).
 3. Rebuild/restart containers.
 4. Verify `/api/v1/health` and dashboard overview.
+
+### Encryption key rotation
+
+```bash
+# 1. Generate a new 32-byte key
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+
+# 2. Set env (example: bumping 1 → 2)
+# METALAYER_ENCRYPTION_KEY=<new>
+# METALAYER_ENCRYPTION_KEY_VERSION=2
+# METALAYER_ENCRYPTION_PREVIOUS_KEYS=1:<old>
+
+# 3. Restart API, then dry-run and apply
+pnpm metalayer:vault-reencrypt --dry-run
+pnpm metalayer:vault-reencrypt
+
+# 4. After zero failures, remove PREVIOUS_KEYS and restart again
+```
+
+Uses SQLite (`METALAYER_SQLITE_PATH`) or Postgres (`POSTGRES_URL`) automatically.
 
 ## Security notes
 

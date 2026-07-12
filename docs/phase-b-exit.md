@@ -1,7 +1,6 @@
 # Phase B exit checklist (Security and persistence)
 
-Status: **partial** — core vault/persistence/import/revisions/export/logs are in place.
-Key rotation automation remains deferred (designed in ADR 0005).
+Status: **complete** — vault/persistence/import/revisions/export/logs and encryption-key rotation tooling are in place.
 
 ## Checklist
 
@@ -15,7 +14,7 @@ Key rotation automation remains deferred (designed in ADR 0005).
 | Safe exports | Done | `GET .../export`, `includesSecrets: false` |
 | Legacy TMDB Addon import | Done | `planLegacyImport` + `import-legacy` |
 | Revision history / restore | Done | create/update snapshots + restore |
-| Key rotation tooling | Deferred | Envelope has `keyVersion`; operator tooling TBD |
+| Key rotation tooling | Done | Key ring + `pnpm metalayer:vault-reencrypt` |
 
 ## Exit criteria (AGENTS.md §37 Phase B)
 
@@ -23,8 +22,8 @@ Key rotation automation remains deferred (designed in ADR 0005).
 
 Satisfied for native MetaLayer configurations created through `/api/v1/configurations` and legacy import into vaulted storage.
 
-## Remaining before calling Phase B complete
+## Remaining optional follow-ups
 
-1. Operator tooling for encryption-key rotation / progressive re-encryption.
-2. Optional: encrypted backup export that *includes* secrets (explicit opt-in; not the default safe export).
-3. Broader log audit across future worker/dashboard processes when they land.
+1. Optional: encrypted backup export that *includes* secrets (explicit opt-in; not the default safe export).
+2. Broader log audit across future worker/dashboard processes when they land.
+3. Dashboard operator view of pending vault reencrypt counts (CLI covers Lite/Server today).

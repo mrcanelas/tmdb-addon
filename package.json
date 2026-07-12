@@ -27,7 +27,8 @@
     "typecheck": "pnpm -F \"./packages/**\" -F \"./apps/**\" -r --if-present typecheck",
     "i18n:check": "pnpm -F @metalayer/i18n i18n:check",
     "i18n:pseudo": "pnpm -F @metalayer/i18n i18n:pseudo",
-    "metalayer:upgrade-check": "node ./scripts/metalayer-upgrade-check.mjs"
+    "metalayer:upgrade-check": "node ./scripts/metalayer-upgrade-check.mjs",
+    "metalayer:vault-reencrypt": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-vault-reencrypt.ts"
   },
   "repository": {
     "type": "git",

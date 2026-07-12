@@ -25,7 +25,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Advanced configure module | **Partial (MVP)** — identity preference + cache diagnostics + feature-flag readout |
 | Tracking OAuth browser flows + live list sync | **Done (MVP)** — Trakt + SIMKL + AniList + MAL; shared Trakt/MAL refresh-on-401 + reconnect status |
 
-| Encryption key rotation tooling | post-beta (Phase B carry-over) |
+| Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
 | Full i18n/RTL layout hardening | **Partial** — `applyDocumentLocale` (lang+dir), shell/palette a11y, Inspector/Catalog i18n strings; deeper layout audit remains |

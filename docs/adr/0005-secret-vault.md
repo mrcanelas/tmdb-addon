@@ -25,12 +25,17 @@ v1:<keyVersion>:<ivBase64Url>:<tagBase64Url>:<ciphertextBase64Url>
 6. Edit credentials are stored as **scrypt** password hashes only (never reversible encryption).
 7. Configuration JSON stores secret **references** (vault entry IDs), never plaintext secrets.
 8. Default Lite persistence is **SQLite** via Node.js built-in `node:sqlite` (`METALAYER_SQLITE_PATH`), avoiding native addon compilation on developer machines. Postgres remains a Server-mode follow-up.
+9. Operators rotate keys with a multi-version **key ring**:
+   - `METALAYER_ENCRYPTION_KEY` — active key
+   - `METALAYER_ENCRYPTION_KEY_VERSION` — active version (default `1`)
+   - `METALAYER_ENCRYPTION_PREVIOUS_KEYS` — `version:key,...` for decrypt-only during migration
+   - `pnpm metalayer:vault-reencrypt` — progressive re-encryption (supports `--dry-run`)
 
 ## Consequences
 
 - New native configs can omit secrets from manifest URLs.
 - Key loss makes vault contents unrecoverable — operators must back up `METALAYER_ENCRYPTION_KEY`.
-- Rotation tooling is required before production multi-key operation (designed for, not fully automated in the first slice).
+- Runtime can decrypt older envelopes while previous keys remain in the ring; after reencrypt, previous keys may be removed.
 
 ## Alternatives considered
 

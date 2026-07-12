@@ -1,6 +1,11 @@
 export {
   VaultKeyError,
+  DEFAULT_KEY_VERSION,
   parseEncryptionKey,
+  createEncryptionKeyRing,
+  resolveEncryptionKeyRing,
+  parseEncryptionKeyRingFromEnv,
+  parseSecretEnvelope,
   encryptSecret,
   decryptSecret,
   hashEditCredential,
@@ -8,6 +13,8 @@ export {
   generateConfigId,
   generateVaultEntryId,
   generateRevisionId,
+  type EncryptionKeyRing,
+  type ParsedSecretEnvelope,
 } from './vault.js';
 
 export {

@@ -22,7 +22,13 @@ import {
   RedisCache,
   type CacheStore,
 } from '@metalayer/cache';
-import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from '@metalayer/security';
+import {
+  FASTIFY_LOG_REDACT_PATHS,
+  parseEncryptionKeyRingFromEnv,
+  redactSensitive,
+  resolveEncryptionKeyRing,
+  type EncryptionKeyRing,
+} from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { corsPlugin } from './plugins/cors.js';
 import { spaStaticPlugin } from './plugins/spa-static.js';
@@ -34,6 +40,8 @@ export interface BuildAppOptions {
   logger?: boolean;
   store?: ConfigurationStore;
   encryptionKey?: string;
+  /** Multi-version key ring; wins over encryptionKey / env when set. */
+  encryptionKeyRing?: EncryptionKeyRing;
   sqlitePath?: string;
   /** Injectable HTTP for provider adapters (tests / offline). */
   providerFetch?: TmdbFetch;
@@ -64,28 +72,37 @@ declare module 'fastify' {
 async function resolveStore(options: BuildAppOptions): Promise<ConfigurationStore> {
   if (options.store) return options.store;
 
-  const encryptionKey =
-    options.encryptionKey ?? process.env.METALAYER_ENCRYPTION_KEY ?? '';
-  const sqlitePath = options.sqlitePath ?? process.env.METALAYER_SQLITE_PATH ?? '';
-  const postgresUrl = process.env.POSTGRES_URL ?? '';
+  const env = options.env ?? process.env;
+  const encryptionKeyRing =
+    options.encryptionKeyRing ??
+    (options.encryptionKey
+      ? resolveEncryptionKeyRing(options.encryptionKey)
+      : env.METALAYER_ENCRYPTION_KEY
+        ? parseEncryptionKeyRingFromEnv(env)
+        : null);
+  const sqlitePath = options.sqlitePath ?? env.METALAYER_SQLITE_PATH ?? '';
+  const postgresUrl = env.POSTGRES_URL ?? '';
 
-  if (!encryptionKey) {
+  if (!encryptionKeyRing) {
     throw new Error('METALAYER_ENCRYPTION_KEY is required to start MetaLayer API');
   }
 
   if (postgresUrl) {
     return PostgresConfigurationStore.connect({
       connectionString: postgresUrl,
-      encryptionKey,
+      encryptionKey: encryptionKeyRing,
     });
   }
 
   if (!sqlitePath || sqlitePath === ':memory:') {
-    return createMemoryConfigurationStore(encryptionKey);
+    return createMemoryConfigurationStore(encryptionKeyRing);
   }
 
   mkdirSync(dirname(sqlitePath), { recursive: true });
-  return new SqliteConfigurationStore({ sqlitePath, encryptionKey });
+  return new SqliteConfigurationStore({
+    sqlitePath,
+    encryptionKey: encryptionKeyRing,
+  });
 }
 
 function buildLoggerOption(enabled: boolean) {

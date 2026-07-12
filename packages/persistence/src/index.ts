@@ -11,5 +11,7 @@ export {
   type SecretCredentialState,
   type SecretKind,
   type StoredConfiguration,
+  type VaultSecretRow,
+  type VaultReencryptResult,
 } from './store.js';
 export { PostgresConfigurationStore } from './postgres-store.js';

@@ -7,8 +7,9 @@ import {
   generateRevisionId,
   generateVaultEntryId,
   hashEditCredential,
-  parseEncryptionKey,
+  resolveEncryptionKeyRing,
   verifyEditCredential,
+  type EncryptionKeyRing,
 } from '@metalayer/security';
 
 export type SecretKind = 'api_key' | 'oauth_access' | 'oauth_refresh' | 'session';
@@ -69,6 +70,24 @@ export interface UpdateConfigurationInput {
   secrets?: Record<string, string>;
 }
 
+export interface VaultSecretRow {
+  id: string;
+  configId: string;
+  provider: string;
+  kind: SecretKind;
+  ciphertext: string;
+  keyVersion: number;
+}
+
+export interface VaultReencryptResult {
+  total: number;
+  reencrypted: number;
+  alreadyCurrent: number;
+  failed: Array<{ id: string; error: string }>;
+  activeVersion: number;
+  dryRun: boolean;
+}
+
 export interface ConfigurationStore {
   create(input: CreateConfigurationInput): Promise<PublicConfigurationView>;
   update(
@@ -95,6 +114,10 @@ export interface ConfigurationStore {
     kind: SecretKind,
   ): Promise<boolean>;
   listSecretStates(configId: string): Promise<Record<string, SecretCredentialState>>;
+  listVaultSecretRows(): Promise<VaultSecretRow[]>;
+  reencryptVaultSecrets(options?: {
+    dryRun?: boolean;
+  }): Promise<VaultReencryptResult>;
   listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]>;
   getRevision(
     configId: string,
@@ -151,10 +174,13 @@ function ensureSchema(db: DatabaseSync): void {
  */
 export class SqliteConfigurationStore implements ConfigurationStore {
   private readonly db: DatabaseSync;
-  private readonly key: Buffer;
+  private readonly keyRing: EncryptionKeyRing;
 
-  constructor(options: { sqlitePath: string; encryptionKey: string }) {
-    this.key = parseEncryptionKey(options.encryptionKey);
+  constructor(options: {
+    sqlitePath: string;
+    encryptionKey: string | EncryptionKeyRing;
+  }) {
+    this.keyRing = resolveEncryptionKeyRing(options.encryptionKey);
     this.db = new DatabaseSync(options.sqlitePath);
     this.db.exec('PRAGMA foreign_keys = ON;');
     ensureSchema(this.db);
@@ -210,14 +236,14 @@ export class SqliteConfigurationStore implements ConfigurationStore {
 
     for (const [provider, plaintext] of Object.entries(secrets)) {
       if (!plaintext) continue;
-      const envelope = encryptSecret(plaintext, this.key);
+      const envelope = encryptSecret(plaintext, this.keyRing);
       insertSecret.run(
         generateVaultEntryId(),
         configId,
         provider,
         'api_key',
         envelope,
-        1,
+        this.keyRing.activeVersion,
         now,
         now,
       );
@@ -349,7 +375,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
       }
       return null;
     }
-    return decryptSecret(row.ciphertext, this.key);
+    return decryptSecret(row.ciphertext, this.keyRing);
   }
 
   async upsertVaultSecret(
@@ -362,7 +388,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     const existing = await this.getPublic(configId);
     if (!existing) return false;
     const now = new Date().toISOString();
-    const envelope = encryptSecret(plaintext, this.key);
+    const envelope = encryptSecret(plaintext, this.keyRing);
     this.db
       .prepare(
         `
@@ -380,7 +406,7 @@ export class SqliteConfigurationStore implements ConfigurationStore {
         provider,
         kind,
         envelope,
-        1,
+        this.keyRing.activeVersion,
         now,
         now,
       );
@@ -411,6 +437,79 @@ export class SqliteConfigurationStore implements ConfigurationStore {
       states[row.provider] = 'connected';
     }
     return states;
+  }
+
+  async listVaultSecretRows(): Promise<VaultSecretRow[]> {
+    const rows = this.db
+      .prepare(
+        `SELECT id, config_id, provider, kind, ciphertext, key_version
+         FROM vault_secrets
+         ORDER BY config_id, provider, kind`,
+      )
+      .all() as Array<{
+      id: string;
+      config_id: string;
+      provider: string;
+      kind: string;
+      ciphertext: string;
+      key_version: number;
+    }>;
+    return rows.map((row) => ({
+      id: row.id,
+      configId: row.config_id,
+      provider: row.provider,
+      kind: row.kind as SecretKind,
+      ciphertext: row.ciphertext,
+      keyVersion: Number(row.key_version),
+    }));
+  }
+
+  async reencryptVaultSecrets(options: {
+    dryRun?: boolean;
+  } = {}): Promise<VaultReencryptResult> {
+    const dryRun = options.dryRun === true;
+    const rows = await this.listVaultSecretRows();
+    const result: VaultReencryptResult = {
+      total: rows.length,
+      reencrypted: 0,
+      alreadyCurrent: 0,
+      failed: [],
+      activeVersion: this.keyRing.activeVersion,
+      dryRun,
+    };
+
+    const update = this.db.prepare(
+      `UPDATE vault_secrets
+       SET ciphertext = ?, key_version = ?, updated_at = ?
+       WHERE id = ?`,
+    );
+
+    for (const row of rows) {
+      if (row.keyVersion === this.keyRing.activeVersion) {
+        result.alreadyCurrent += 1;
+        continue;
+      }
+      try {
+        const plaintext = decryptSecret(row.ciphertext, this.keyRing);
+        const envelope = encryptSecret(plaintext, this.keyRing);
+        if (!dryRun) {
+          update.run(
+            envelope,
+            this.keyRing.activeVersion,
+            new Date().toISOString(),
+            row.id,
+          );
+        }
+        result.reencrypted += 1;
+      } catch (error) {
+        result.failed.push({
+          id: row.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return result;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {
@@ -499,7 +598,9 @@ export class SqliteConfigurationStore implements ConfigurationStore {
 }
 
 /** In-memory SQLite for tests. */
-export function createMemoryConfigurationStore(encryptionKey: string): SqliteConfigurationStore {
+export function createMemoryConfigurationStore(
+  encryptionKey: string | EncryptionKeyRing,
+): SqliteConfigurationStore {
   return new SqliteConfigurationStore({
     sqlitePath: ':memory:',
     encryptionKey,

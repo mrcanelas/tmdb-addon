@@ -7,8 +7,9 @@ import {
   generateRevisionId,
   generateVaultEntryId,
   hashEditCredential,
-  parseEncryptionKey,
+  resolveEncryptionKeyRing,
   verifyEditCredential,
+  type EncryptionKeyRing,
 } from '@metalayer/security';
 import type {
   ConfigurationRevision,
@@ -20,6 +21,8 @@ import type {
   SecretCredentialState,
   SecretKind,
   UpdateConfigurationInput,
+  VaultReencryptResult,
+  VaultSecretRow,
 } from './store.js';
 
 const { Pool } = pg;
@@ -61,16 +64,16 @@ CREATE TABLE IF NOT EXISTS configuration_revisions (
  */
 export class PostgresConfigurationStore implements ConfigurationStore {
   private readonly pool: pg.Pool;
-  private readonly key: Buffer;
+  private readonly keyRing: EncryptionKeyRing;
 
-  private constructor(pool: pg.Pool, encryptionKey: string) {
+  private constructor(pool: pg.Pool, encryptionKey: string | EncryptionKeyRing) {
     this.pool = pool;
-    this.key = parseEncryptionKey(encryptionKey);
+    this.keyRing = resolveEncryptionKeyRing(encryptionKey);
   }
 
   static async connect(options: {
     connectionString: string;
-    encryptionKey: string;
+    encryptionKey: string | EncryptionKeyRing;
   }): Promise<PostgresConfigurationStore> {
     const pool = new Pool({ connectionString: options.connectionString });
     const store = new PostgresConfigurationStore(pool, options.encryptionKey);
@@ -126,7 +129,7 @@ export class PostgresConfigurationStore implements ConfigurationStore {
     if (!secrets) return;
     for (const [provider, plaintext] of Object.entries(secrets)) {
       if (!plaintext) continue;
-      const envelope = encryptSecret(plaintext, this.key);
+      const envelope = encryptSecret(plaintext, this.keyRing);
       await client.query(
         `INSERT INTO vault_secrets
          (id, config_id, provider, kind, ciphertext, key_version, created_at, updated_at)
@@ -141,7 +144,7 @@ export class PostgresConfigurationStore implements ConfigurationStore {
           provider,
           'api_key',
           envelope,
-          1,
+          this.keyRing.activeVersion,
           now,
           now,
         ],
@@ -285,7 +288,7 @@ export class PostgresConfigurationStore implements ConfigurationStore {
       }
       return null;
     }
-    return decryptSecret(row.ciphertext, this.key);
+    return decryptSecret(row.ciphertext, this.keyRing);
   }
 
   async upsertVaultSecret(
@@ -298,7 +301,7 @@ export class PostgresConfigurationStore implements ConfigurationStore {
     const existing = await this.getPublic(configId);
     if (!existing) return false;
     const now = new Date().toISOString();
-    const envelope = encryptSecret(plaintext, this.key);
+    const envelope = encryptSecret(plaintext, this.keyRing);
     await this.pool.query(
       `INSERT INTO vault_secrets
        (id, config_id, provider, kind, ciphertext, key_version, created_at, updated_at)
@@ -313,7 +316,7 @@ export class PostgresConfigurationStore implements ConfigurationStore {
         provider,
         kind,
         envelope,
-        1,
+        this.keyRing.activeVersion,
         now,
         now,
       ],
@@ -345,6 +348,76 @@ export class PostgresConfigurationStore implements ConfigurationStore {
       states[row.provider] = 'connected';
     }
     return states;
+  }
+
+  async listVaultSecretRows(): Promise<VaultSecretRow[]> {
+    const result = await this.pool.query<{
+      id: string;
+      config_id: string;
+      provider: string;
+      kind: string;
+      ciphertext: string;
+      key_version: number;
+    }>(
+      `SELECT id, config_id, provider, kind, ciphertext, key_version
+       FROM vault_secrets
+       ORDER BY config_id, provider, kind`,
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      configId: row.config_id,
+      provider: row.provider,
+      kind: row.kind as SecretKind,
+      ciphertext: row.ciphertext,
+      keyVersion: Number(row.key_version),
+    }));
+  }
+
+  async reencryptVaultSecrets(options: {
+    dryRun?: boolean;
+  } = {}): Promise<VaultReencryptResult> {
+    const dryRun = options.dryRun === true;
+    const rows = await this.listVaultSecretRows();
+    const result: VaultReencryptResult = {
+      total: rows.length,
+      reencrypted: 0,
+      alreadyCurrent: 0,
+      failed: [],
+      activeVersion: this.keyRing.activeVersion,
+      dryRun,
+    };
+
+    for (const row of rows) {
+      if (row.keyVersion === this.keyRing.activeVersion) {
+        result.alreadyCurrent += 1;
+        continue;
+      }
+      try {
+        const plaintext = decryptSecret(row.ciphertext, this.keyRing);
+        const envelope = encryptSecret(plaintext, this.keyRing);
+        if (!dryRun) {
+          await this.pool.query(
+            `UPDATE vault_secrets
+             SET ciphertext = $1, key_version = $2, updated_at = $3
+             WHERE id = $4`,
+            [
+              envelope,
+              this.keyRing.activeVersion,
+              new Date().toISOString(),
+              row.id,
+            ],
+          );
+        }
+        result.reencrypted += 1;
+      } catch (error) {
+        result.failed.push({
+          id: row.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return result;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {
