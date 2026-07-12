@@ -5,6 +5,7 @@ export type ConfigureModuleId =
   | 'catalog-studio'
   | 'rules'
   | 'sorting'
+  | 'inspector'
   | 'appearance'
   | 'search-ai'
   | 'tracking'
@@ -38,6 +39,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
   },
   { id: 'rules', path: '/rules', labelKey: 'nav.rules', simpleMode: true },
   { id: 'sorting', path: '/sorting', labelKey: 'nav.sorting', simpleMode: false },
+  { id: 'inspector', path: '/inspector', labelKey: 'nav.inspector', simpleMode: false },
   { id: 'appearance', path: '/appearance', labelKey: 'nav.appearance', simpleMode: true },
   { id: 'search-ai', path: '/search-ai', labelKey: 'nav.searchAi', simpleMode: false },
   { id: 'tracking', path: '/tracking', labelKey: 'nav.tracking', simpleMode: false },

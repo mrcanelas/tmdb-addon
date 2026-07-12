@@ -460,3 +460,62 @@ export async function previewSorting(
     body: JSON.stringify({ items, plan }),
   });
 }
+
+export interface FieldResolutionView {
+  value: unknown;
+  selectedProvider: string | null;
+  attemptedProviders: string[];
+  confidence: number;
+  fallbackUsed: boolean;
+  warnings: Array<{ code: string; message: string }>;
+  resolvedAt: string;
+  requestedLocale?: string;
+  selectedLocale?: string;
+  exclusionReason?: string;
+}
+
+export interface MetaInspectorReport {
+  identity: {
+    publicId?: string;
+    mediaType?: string;
+    matches: Record<string, string | number | undefined>;
+  };
+  localization: {
+    metadataLocale: string;
+    metadataFallbackLocales: string[];
+    titleMode: string;
+    descriptionMode: string;
+  };
+  fields: {
+    title: FieldResolutionView;
+    originalTitle: FieldResolutionView;
+    description: FieldResolutionView;
+    poster: FieldResolutionView;
+    background: FieldResolutionView;
+    rating: FieldResolutionView;
+    voteCount: FieldResolutionView;
+    releaseDate: FieldResolutionView;
+    externalIds: FieldResolutionView;
+    displayTitle: string | null;
+    displayDescription: string | null;
+  };
+  fieldProviders: Record<string, string[]>;
+  timingMs: number;
+}
+
+export async function inspectMetadata(
+  configId: string,
+  editCredential: string,
+  body: {
+    id?: string;
+    mediaType?: 'movie' | 'series' | 'anime';
+    contributions?: Record<string, Array<Record<string, unknown>>>;
+    apiKey?: string;
+  },
+): Promise<{ report: MetaInspectorReport }> {
+  return apiFetch(`/api/v1/configurations/${configId}/inspect`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}

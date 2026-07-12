@@ -5,6 +5,7 @@ import { SourcesPage } from '@/pages/SourcesPage';
 import { CatalogStudioPage } from '@/pages/CatalogStudioPage';
 import { RulesPage } from '@/pages/RulesPage';
 import { SortingPage } from '@/pages/SortingPage';
+import { InspectorPage } from '@/pages/InspectorPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 
@@ -14,7 +15,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/sources' &&
     item.path !== '/catalog-studio' &&
     item.path !== '/rules' &&
-    item.path !== '/sorting',
+    item.path !== '/sorting' &&
+    item.path !== '/inspector',
 );
 
 export function App() {
@@ -27,6 +29,7 @@ export function App() {
           <Route path="catalog-studio" element={<CatalogStudioPage />} />
           <Route path="rules" element={<RulesPage />} />
           <Route path="sorting" element={<SortingPage />} />
+          <Route path="inspector" element={<InspectorPage />} />
           {PLACEHOLDER_ROUTES.map((item) => (
             <Route
               key={item.id}
