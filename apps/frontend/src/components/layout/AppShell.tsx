@@ -1,11 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import { Button } from '@metalayer/shared-ui';
 import { CONFIGURE_NAV } from '@/navigation';
 import { cn } from '@/lib/utils';
+import { useConfigureUiStore } from '@/stores/ui-store';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { CommandPalette } from '@/components/layout/CommandPalette';
 
 export function AppShell() {
   const { t, i18n } = useTranslation();
+  const mode = useConfigureUiStore((s) => s.mode);
+
+  const navItems = useMemo(
+    () => CONFIGURE_NAV.filter((item) => mode === 'advanced' || item.simpleMode),
+    [mode],
+  );
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-6 px-4 py-6 md:flex-row md:gap-10 md:px-8 md:py-10">
@@ -21,7 +31,7 @@ export function AppShell() {
           aria-label={t('nav.aria')}
           className="flex flex-row gap-2 overflow-x-auto md:flex-col md:overflow-visible"
         >
-          {CONFIGURE_NAV.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.id}
               to={item.path}
@@ -58,9 +68,14 @@ export function AppShell() {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">
-        <Outlet />
-      </main>
+      <div className="min-w-0 flex-1">
+        <AppHeader />
+        <main>
+          <Outlet />
+        </main>
+      </div>
+
+      <CommandPalette />
     </div>
   );
 }

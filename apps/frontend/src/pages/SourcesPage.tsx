@@ -1,48 +1,27 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SourceCard } from '@/components/sources/SourceCard';
-import { fetchSources, type PublicSource } from '@/lib/api';
+import { useSourcesQuery } from '@/api/hooks/use-sources';
+import { Spinner } from '@metalayer/shared-ui';
 
 export function SourcesPage() {
   const { t } = useTranslation('sources');
-  const [sources, setSources] = useState<PublicSource[]>([]);
-  const [loadError, setLoadError] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const remote = await fetchSources();
-        if (!cancelled) {
-          setSources(remote);
-          setLoadError(false);
-        }
-      } catch {
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: sources = [], isLoading, isError } = useSourcesQuery();
 
   return (
     <section className="space-y-6">
       <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--ml-text)]">
           {t('sources.title')}
         </h1>
-        <p className="max-w-2xl text-muted-foreground">{t('sources.intro')}</p>
-        {loading ? (
-          <p className="text-sm text-muted-foreground">{t('sources.loading')}</p>
+        <p className="max-w-2xl ml-text-muted">{t('sources.intro')}</p>
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-sm ml-text-muted">
+            <Spinner size="sm" />
+            <span>{t('sources.loading')}</span>
+          </div>
         ) : null}
-        {loadError ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">
-            {t('sources.loadError')}
-          </p>
+        {isError ? (
+          <p className="text-sm text-amber-400">{t('sources.loadError')}</p>
         ) : null}
       </header>
 
