@@ -1,0 +1,23 @@
+{
+  "searchAi.title": "Búsqueda e IA",
+  "searchAi.intro": "Búsqueda combinada, Smart Discovery y Ranked Lists. Las propuestas de IA siempre muestran un diff y requieren confirmación antes de cambiar la configuración.",
+  "searchAi.loadError": "No se pudo ejecutar la búsqueda o la IA contra la API.",
+  "searchAi.bootstrapping": "Preparando configuración borrador…",
+  "searchAi.combined": "Búsqueda combinada",
+  "searchAi.combinedQuery": "Consulta",
+  "searchAi.combinedRun": "Buscar",
+  "searchAi.discovery": "Smart Discovery",
+  "searchAi.discoveryPrompt": "Prompt en lenguaje natural",
+  "searchAi.discoveryRun": "Interpretar prompt",
+  "searchAi.ranked": "Ranked List",
+  "searchAi.rankedPrompt": "Prompt de lista subjetiva",
+  "searchAi.rankedRun": "Generar ranked list",
+  "searchAi.confirmApply": "Confirmar y aplicar propuesta",
+  "searchAi.requiresConfirm": "Propuesta lista — se requiere confirmación antes de guardar.",
+  "searchAi.applied": "Propuesta aplicada.",
+  "searchAi.hits": "Resultados",
+  "searchAi.plan": "Plan interpretado",
+  "searchAi.unresolved": "Sin resolver",
+  "searchAi.duplicates": "Duplicados",
+  "searchAi.explanation": "Explicación"
+}

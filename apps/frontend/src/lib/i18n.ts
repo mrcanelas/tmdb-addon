@@ -28,6 +28,9 @@ import esESTracking from '@metalayer/i18n/locales/es-ES/tracking.json';
 import enUSCorrections from '@metalayer/i18n/locales/en-US/corrections.json';
 import ptBRCorrections from '@metalayer/i18n/locales/pt-BR/corrections.json';
 import esESCorrections from '@metalayer/i18n/locales/es-ES/corrections.json';
+import enUSSearchAi from '@metalayer/i18n/locales/en-US/searchAi.json';
+import ptBRSearchAi from '@metalayer/i18n/locales/pt-BR/searchAi.json';
+import esESSearchAi from '@metalayer/i18n/locales/es-ES/searchAi.json';
 
 const resources = {
   'en-US': {
@@ -39,6 +42,7 @@ const resources = {
     inspector: enUSInspector,
     tracking: enUSTracking,
     corrections: enUSCorrections,
+    searchAi: enUSSearchAi,
   },
   'pt-BR': {
     common: ptBRCommon,
@@ -49,6 +53,7 @@ const resources = {
     inspector: ptBRInspector,
     tracking: ptBRTracking,
     corrections: ptBRCorrections,
+    searchAi: ptBRSearchAi,
   },
   'es-ES': {
     common: esESCommon,
@@ -59,6 +64,7 @@ const resources = {
     inspector: esESInspector,
     tracking: esESTracking,
     corrections: esESCorrections,
+    searchAi: esESSearchAi,
   },
 };
 
@@ -79,6 +85,7 @@ void i18n.use(initReactI18next).init({
     'inspector',
     'tracking',
     'corrections',
+    'searchAi',
   ],
   interpolation: {
     escapeValue: false,

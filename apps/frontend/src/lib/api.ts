@@ -667,3 +667,67 @@ export async function previewCorrections(
     body: JSON.stringify(body),
   });
 }
+
+export async function runCombinedSearch(
+  configId: string,
+  editCredential: string,
+  query: string,
+): Promise<{ hits: Array<{ title: string; provider: string }> }> {
+  return apiFetch(`/api/v1/configurations/${configId}/search/combined`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ query }),
+  });
+}
+
+export async function runSmartDiscovery(
+  configId: string,
+  editCredential: string,
+  prompt: string,
+): Promise<{
+  plan: {
+    mediaType: string;
+    includeGenres?: string[];
+    excludeGenres?: string[];
+    runtimeMax?: number;
+  };
+  proposal: {
+    id: string;
+    explanation: { interpretedIntent: string };
+  };
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/search/smart-discovery`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ prompt }),
+  });
+}
+
+export async function runRankedList(
+  configId: string,
+  editCredential: string,
+  prompt: string,
+): Promise<{
+  unresolved: Array<{ title: string }>;
+  duplicates: unknown[];
+  explanation: { interpretedIntent: string };
+  proposal: { id: string };
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/search/ranked-list`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ prompt }),
+  });
+}
+
+export async function applyAiProposal(
+  configId: string,
+  editCredential: string,
+  body: { proposalId: string; confirm: boolean; name?: string },
+): Promise<{ applied: string }> {
+  return apiFetch(`/api/v1/configurations/${configId}/ai/apply-proposal`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}

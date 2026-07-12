@@ -1,0 +1,23 @@
+{
+  "searchAi.title": "‏Search & AI‎",
+  "searchAi.intro": "‏Combined search, Smart Discovery, and Ranked Lists. AI proposals always show a diff and require confirmation before changing configuration.‎",
+  "searchAi.loadError": "‏Could not run search or AI against the API.‎",
+  "searchAi.bootstrapping": "‏Preparing draft configuration…‎",
+  "searchAi.combined": "‏Combined search‎",
+  "searchAi.combinedQuery": "‏Query‎",
+  "searchAi.combinedRun": "‏Search‎",
+  "searchAi.discovery": "‏Smart Discovery‎",
+  "searchAi.discoveryPrompt": "‏Natural language prompt‎",
+  "searchAi.discoveryRun": "‏Interpret prompt‎",
+  "searchAi.ranked": "‏Ranked List‎",
+  "searchAi.rankedPrompt": "‏Subjective list prompt‎",
+  "searchAi.rankedRun": "‏Generate ranked list‎",
+  "searchAi.confirmApply": "‏Confirm and apply proposal‎",
+  "searchAi.requiresConfirm": "‏Proposal ready — confirmation required before save.‎",
+  "searchAi.applied": "‏Proposal applied.‎",
+  "searchAi.hits": "‏Hits‎",
+  "searchAi.plan": "‏Interpreted plan‎",
+  "searchAi.unresolved": "‏Unresolved‎",
+  "searchAi.duplicates": "‏Duplicates‎",
+  "searchAi.explanation": "‏Explanation‎"
+}

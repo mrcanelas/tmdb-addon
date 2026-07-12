@@ -1,0 +1,23 @@
+{
+  "searchAi.title": "Séårçh & ÅÎSéår",
+  "searchAi.intro": "Çømbîñéd séårçh, Smårt Dîsçøvéry, åñd Råñkéd Lîsts. ÅÎ prøpøsåls ålwåys shøw å dîff åñd réqûîré çøñfîrmåtîøñ béføré çhåñgîñg çøñfîgûråtîøñ.Çømbîñéd séårçh, Smårt Dîsçøvéry, åñd Råñk",
+  "searchAi.loadError": "Çøûld ñøt rûñ séårçh ør ÅÎ ågåîñst thé ÅPÎ.Çøûld ñøt rûñ",
+  "searchAi.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg",
+  "searchAi.combined": "Çømbîñéd séårçhÇømbî",
+  "searchAi.combinedQuery": "QûéryQû",
+  "searchAi.combinedRun": "SéårçhSé",
+  "searchAi.discovery": "Smårt DîsçøvérySmårt",
+  "searchAi.discoveryPrompt": "Ñåtûrål låñgûågé prømptÑåtûrål",
+  "searchAi.discoveryRun": "Îñtérprét prømptÎñtér",
+  "searchAi.ranked": "Råñkéd LîstRåñk",
+  "searchAi.rankedPrompt": "Sûbjéçtîvé lîst prømptSûbjéçt",
+  "searchAi.rankedRun": "Géñéråté råñkéd lîstGéñérå",
+  "searchAi.confirmApply": "Çøñfîrm åñd åpply prøpøsålÇøñfîrm ",
+  "searchAi.requiresConfirm": "Prøpøsål réådy — çøñfîrmåtîøñ réqûîréd béføré såvé.Prøpøsål réådy —",
+  "searchAi.applied": "Prøpøsål åpplîéd.Prøpøs",
+  "searchAi.hits": "HîtsHî",
+  "searchAi.plan": "Îñtérprétéd plåñÎñtér",
+  "searchAi.unresolved": "ÛñrésølvédÛñr",
+  "searchAi.duplicates": "DûplîçåtésDûp",
+  "searchAi.explanation": "ÉxplåñåtîøñÉxpl"
+}

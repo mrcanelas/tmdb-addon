@@ -8,6 +8,7 @@ import { SortingPage } from '@/pages/SortingPage';
 import { InspectorPage } from '@/pages/InspectorPage';
 import { TrackingPage } from '@/pages/TrackingPage';
 import { CorrectionsPage } from '@/pages/CorrectionsPage';
+import { SearchAiPage } from '@/pages/SearchAiPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
 
@@ -20,7 +21,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/sorting' &&
     item.path !== '/inspector' &&
     item.path !== '/tracking' &&
-    item.path !== '/corrections',
+    item.path !== '/corrections' &&
+    item.path !== '/search-ai',
 );
 
 export function App() {
@@ -36,6 +38,7 @@ export function App() {
           <Route path="inspector" element={<InspectorPage />} />
           <Route path="tracking" element={<TrackingPage />} />
           <Route path="corrections" element={<CorrectionsPage />} />
+          <Route path="search-ai" element={<SearchAiPage />} />
           {PLACEHOLDER_ROUTES.map((item) => (
             <Route
               key={item.id}
