@@ -849,6 +849,36 @@ export async function saveLocalization(
   });
 }
 
+export async function fetchIdentityPreferences(
+  configId: string,
+  editCredential: string,
+): Promise<{
+  identity: import('@metalayer/config').IdentityPreferences;
+  featureFlags: Record<string, boolean>;
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/identity`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function saveIdentityPreferences(
+  configId: string,
+  editCredential: string,
+  identity: import('@metalayer/config').IdentityPreferences,
+): Promise<{ identity: import('@metalayer/config').IdentityPreferences }> {
+  return apiFetch(`/api/v1/configurations/${configId}/identity`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ identity }),
+  });
+}
+
+export async function fetchCacheStats(): Promise<{
+  cache: { hits: number; misses: number; size: number; stales: number };
+}> {
+  return apiFetch('/api/v1/cache/stats');
+}
+
 export async function fetchProfiles(
   configId: string,
   editCredential: string,

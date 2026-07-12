@@ -14,6 +14,7 @@ import { AppearancePage } from '@/pages/AppearancePage';
 import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
 import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { ProfilesPage } from '@/pages/ProfilesPage';
+import { AdvancedPage } from '@/pages/AdvancedPage';
 import { TrackingOAuthCallbackPage } from '@/pages/TrackingOAuthCallbackPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { CONFIGURE_NAV } from '@/navigation';
@@ -34,7 +35,8 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/appearance' &&
     item.path !== '/language-region' &&
     item.path !== '/save-install' &&
-    item.path !== '/profiles',
+    item.path !== '/profiles' &&
+    item.path !== '/advanced',
 );
 
 function ThemedApp() {
@@ -61,6 +63,7 @@ function ThemedApp() {
               <Route path="language-region" element={<LanguageRegionPage />} />
               <Route path="save-install" element={<SaveInstallPage />} />
               <Route path="profiles" element={<ProfilesPage />} />
+              <Route path="advanced" element={<AdvancedPage />} />
               <Route
                 path="oauth/:provider/callback"
                 element={<TrackingOAuthCallbackPage />}

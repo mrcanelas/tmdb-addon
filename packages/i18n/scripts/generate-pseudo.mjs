@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'locales');
-const namespaces = ['common', 'sources', 'catalogs', 'rules', 'sorting', 'inspector', 'tracking', 'corrections', 'searchAi', 'dashboard', 'resolution', 'languageRegion', 'saveInstall', 'profiles'];
+const namespaces = ['common', 'sources', 'catalogs', 'rules', 'sorting', 'inspector', 'tracking', 'corrections', 'searchAi', 'dashboard', 'resolution', 'languageRegion', 'saveInstall', 'profiles', 'advanced'];
 
 
 const ACCENT_MAP = {

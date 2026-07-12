@@ -57,6 +57,10 @@ Implemented by `apps/server` (port `1338` by default):
 | GET | `/api/v1/preview/movie/:id` | Cached movie preview (`tt…`, `tmdb:`, or bare TMDB id) |
 | GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb rating preview via Cinemeta |
 | GET | `/api/v1/cache/stats` | In-process provider cache stats |
+| GET | `/api/v1/configurations/:configId/localization` | Read localization preferences (edit credential) |
+| PUT | `/api/v1/configurations/:configId/localization` | Update localization preferences |
+| GET | `/api/v1/configurations/:configId/identity` | Read identity preferences + feature flags |
+| PUT | `/api/v1/configurations/:configId/identity` | Update `stremioPublicId` preference (ADR 0006) |
 
 Profile Stremio paths are documented in `docs/profiles.md`.
 

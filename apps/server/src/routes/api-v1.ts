@@ -14,6 +14,7 @@ import { searchAiRoutes } from './search-ai.js';
 import { dashboardRoutes } from './dashboard.js';
 import { resolutionRoutes } from './resolution.js';
 import { localizationRoutes } from './localization.js';
+import { identityPreferencesRoutes } from './identity-preferences.js';
 import { profilesRoutes } from './profiles.js';
 
 /**
@@ -28,6 +29,7 @@ export const apiV1Routes: FastifyPluginAsync = async (app) => {
   await app.register(inspectRoutes);
   await app.register(resolutionRoutes);
   await app.register(localizationRoutes);
+  await app.register(identityPreferencesRoutes);
   await app.register(profilesRoutes);
   await app.register(identityRoutes);
   await app.register(trackingRoutes);
