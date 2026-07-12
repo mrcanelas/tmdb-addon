@@ -1,0 +1,17 @@
+{
+  "corrections.title": "Correction Hub",
+  "corrections.intro": "Local overrides and community corrections fix identity and metadata without changing provider adapters.",
+  "corrections.loadError": "Could not load corrections from the API.",
+  "corrections.bootstrapping": "Preparing draft configuration…",
+  "corrections.community": "Community corrections",
+  "corrections.local": "Local overrides",
+  "corrections.resolved": "Active (local wins)",
+  "corrections.empty": "No corrections yet.",
+  "corrections.addLocal": "Add local title override",
+  "corrections.preview": "Preview Fight Club overlay",
+  "corrections.rollback": "Rollback",
+  "corrections.status": "Status",
+  "corrections.scope": "Scope",
+  "corrections.previewResult": "Applied title: {{title}}",
+  "corrections.overlays": "Overlays"
+}

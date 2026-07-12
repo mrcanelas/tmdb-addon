@@ -589,3 +589,81 @@ export async function previewHideWatched(
     },
   );
 }
+
+export interface CorrectionItem {
+  id: string;
+  type: string;
+  target: { provider: string; id: string; entityKind?: string };
+  reason: string;
+  status: string;
+  scope: string;
+  payload: unknown;
+  sources: Array<{ kind: string; label: string }>;
+}
+
+export async function fetchCorrections(
+  configId: string,
+  editCredential: string,
+): Promise<{
+  local: CorrectionItem[];
+  community: CorrectionItem[];
+  resolved: CorrectionItem[];
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/corrections`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function createLocalCorrection(
+  configId: string,
+  editCredential: string,
+  body: {
+    target: CorrectionItem['target'];
+    type: string;
+    payload: unknown;
+    reason: string;
+    sources?: CorrectionItem['sources'];
+  },
+): Promise<{ correction: CorrectionItem }> {
+  return apiFetch(`/api/v1/configurations/${configId}/corrections`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteLocalCorrection(
+  configId: string,
+  editCredential: string,
+  correctionId: string,
+): Promise<{ ok: boolean; rolledBack: string }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/corrections/${correctionId}`,
+    {
+      method: 'DELETE',
+      headers: { 'x-metalayer-edit-credential': editCredential },
+    },
+  );
+}
+
+export async function previewCorrections(
+  configId: string,
+  editCredential: string,
+  body: {
+    provider?: string;
+    id?: string;
+    base?: Record<string, unknown>;
+    season?: number;
+    episode?: number;
+  },
+): Promise<{
+  applied: Record<string, unknown>;
+  overlays: Array<Record<string, unknown>>;
+  hidden: boolean;
+}> {
+  return apiFetch(`/api/v1/configurations/${configId}/corrections/preview`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}

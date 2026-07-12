@@ -1,0 +1,17 @@
+{
+  "corrections.title": "Correction Hub",
+  "corrections.intro": "Los overrides locales y las correcciones de la comunidad ajustan identidad y metadatos sin cambiar adaptadores de proveedores.",
+  "corrections.loadError": "No se pudieron cargar las correcciones desde la API.",
+  "corrections.bootstrapping": "Preparando configuración borrador…",
+  "corrections.community": "Correcciones de la comunidad",
+  "corrections.local": "Overrides locales",
+  "corrections.resolved": "Activas (local gana)",
+  "corrections.empty": "Aún no hay correcciones.",
+  "corrections.addLocal": "Añadir override local de título",
+  "corrections.preview": "Vista previa del overlay de Fight Club",
+  "corrections.rollback": "Revertir",
+  "corrections.status": "Estado",
+  "corrections.scope": "Ámbito",
+  "corrections.previewResult": "Título aplicado: {{title}}",
+  "corrections.overlays": "Overlays"
+}
