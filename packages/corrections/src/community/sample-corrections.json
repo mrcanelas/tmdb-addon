@@ -1,0 +1,44 @@
+[
+  {
+    "id": "community-fight-club-title",
+    "schemaVersion": 1,
+    "target": { "provider": "imdb", "id": "tt0137523", "entityKind": "movie" },
+    "type": "title_correction",
+    "payload": { "title": "Fight Club (Community Canonical)" },
+    "reason": "Normalize display title for catalog demos",
+    "sources": [
+      {
+        "kind": "community-file",
+        "label": "MetaLayer sample community corrections",
+        "observedAt": "2026-07-12T00:00:00.000Z"
+      }
+    ],
+    "author": "metalayer-samples",
+    "status": "verified",
+    "scope": "community",
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z"
+  },
+  {
+    "id": "community-lost-s1e1-remap",
+    "schemaVersion": 1,
+    "target": { "provider": "tvdb", "id": "73739", "entityKind": "series" },
+    "type": "episode_reassignment",
+    "payload": {
+      "from": { "season": 1, "episode": 0 },
+      "to": { "season": 0, "episode": 1 }
+    },
+    "reason": "Pilot listed as S01E00 by some providers; map to specials",
+    "sources": [
+      {
+        "kind": "test-fixture",
+        "label": "Episode mapping fixture",
+        "observedAt": "2026-07-12T00:00:00.000Z"
+      }
+    ],
+    "status": "verified",
+    "scope": "community",
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z"
+  }
+]
