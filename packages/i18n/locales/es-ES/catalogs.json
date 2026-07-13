@@ -55,6 +55,7 @@
   "catalogs.rotatedDefaultName": "Rotación diaria",
   "catalogs.syncHint": "Las posiciones del Studio y las entradas del manifiesto se mantienen sincronizadas para catálogos activos.",
   "catalogs.configId": "Config {{id}}",
+  "catalogs.copySuffix": "copia",
   "catalogs.warning.INSTANCE_NOT_FOUND": "Instancia de catálogo {{instanceId}} no encontrada.",
   "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Fuente de rotación {{sourceId}} no encontrada.",
   "catalogs.warning.ROTATION_ACTIVE": "Rotación ({{mode}}): usando {{sourceId}}.",

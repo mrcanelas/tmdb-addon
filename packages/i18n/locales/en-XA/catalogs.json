@@ -55,6 +55,7 @@
   "catalogs.rotatedDefaultName": "Dåîly røtåtîøñDåîly",
   "catalogs.syncHint": "Stûdîø pøsîtîøñs åñd måñîfést éñtrîés ståy îñ løçkstép før éñåbléd çåtåløgs.Stûdîø pøsîtîøñs åñd må",
   "catalogs.configId": "Çøñfîg Çøñ{{id}}",
+  "catalogs.copySuffix": "çøpyçø",
   "catalogs.warning.INSTANCE_NOT_FOUND": "Çåtåløg îñståñçé Çåtålø{{instanceId}} wås ñøt føûñd. wås ",
   "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Røtåtîøñ søûrçé Røtåt{{sourceId}} wås ñøt føûñd. wås ",
   "catalogs.warning.ROTATION_ACTIVE": "Røtåtîøñ (Røt{{mode}}): ûsîñg ): {{sourceId}}..",

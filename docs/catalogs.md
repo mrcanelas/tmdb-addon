@@ -18,6 +18,7 @@ Canonical model, merge modes, and rotation: `AGENTS.md` §12. Phase D exit: `doc
 
 1. Open `/configure/catalogs` with a persistent configuration and edit credential.
 2. Reorder, rename, enable/disable, show/hide on Home, tag, duplicate, or delete instances.
+   Duplicate accepts a localized `copySuffix` (configure sends `catalogs.copySuffix`) and optional `locale` for the base display name.
 3. Create **merged** or **rotated** catalogs from existing instance IDs when needed.
 4. Use **Preview** on an instance to inspect provider pages, rules/sorting effects, and warnings.
    Preview warnings use **stable codes** (`INSTANCE_NOT_FOUND`, `ROTATION_ACTIVE`, `MERGE_SOURCE_NOT_FOUND`, …). The configure UI translates them via `catalogs.warning.*`.

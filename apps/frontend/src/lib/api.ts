@@ -357,6 +357,8 @@ export async function mutateCatalog(
     toIndex?: number;
     tags?: string[];
     group?: string | null;
+    copySuffix?: string;
+    locale?: string;
   },
 ): Promise<{
   configId: string;

@@ -95,18 +95,22 @@ export function renameCatalog(
 export function duplicateCatalog(
   catalogs: CatalogDefinition[],
   instanceId: string,
+  options: { copySuffix?: string; locale?: string } = {},
 ): CatalogDefinition[] {
   const ordered = sortCatalogsByPosition(catalogs);
   const source = ordered.find((catalog) => catalog.instanceId === instanceId);
   if (!source) return ordered;
 
+  const suffix = options.copySuffix?.trim() || 'copy';
+  const baseName = resolveCatalogDisplayName(source, options.locale);
+  const copyName = `${baseName} (${suffix})`;
   const insertAt = source.position + 1;
   const copy: CatalogDefinition = {
     ...source,
     instanceId: newCatalogInstanceId(),
-    customName: `${resolveCatalogDisplayName(source)} (copy)`,
+    customName: copyName,
     name: {
-      default: `${resolveCatalogDisplayName(source)} (copy)`,
+      default: copyName,
     },
     position: insertAt,
   };

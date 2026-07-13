@@ -225,6 +225,8 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       toIndex?: number;
       tags?: string[];
       group?: string | null;
+      copySuffix?: string;
+      locale?: string;
       note?: string;
     };
   }>('/configurations/:configId/catalogs/:instanceId', async (request, reply) => {
@@ -262,7 +264,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
         catalogs = renameCatalog(catalogs, instanceId, body.customName.trim());
         break;
       case 'duplicate':
-        catalogs = duplicateCatalog(catalogs, instanceId);
+        catalogs = duplicateCatalog(catalogs, instanceId, {
+          copySuffix: body.copySuffix,
+          locale: body.locale,
+        });
         break;
       case 'move':
         if (typeof body.toIndex !== 'number') {

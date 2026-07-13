@@ -111,7 +111,14 @@ export function CatalogStudioPage() {
   async function runAction(
     instanceId: string,
     action: StudioCatalogAction,
-    extra?: { customName?: string; toIndex?: number; tags?: string[]; group?: string | null },
+    extra?: {
+      customName?: string;
+      toIndex?: number;
+      tags?: string[];
+      group?: string | null;
+      copySuffix?: string;
+      locale?: string;
+    },
   ) {
     const session = readCatalogSession();
     if (!session) return;
@@ -516,7 +523,12 @@ export function CatalogStudioPage() {
                         size="sm"
                         variant="quiet"
                         isDisabled={busy}
-                        onPress={() => void runAction(catalog.instanceId, 'duplicate')}
+                        onPress={() =>
+                          void runAction(catalog.instanceId, 'duplicate', {
+                            copySuffix: t('catalogs.copySuffix'),
+                            locale: i18n.language,
+                          })
+                        }
                       >
                         {t('catalogs.actions.duplicate')}
                       </Button>

@@ -78,9 +78,12 @@ describe('@metalayer/catalogs studio', () => {
     catalogs = renameCatalog(catalogs, catalogs[0].instanceId, 'Em alta');
     expect(catalogs[0].customName).toBe('Em alta');
 
-    catalogs = duplicateCatalog(catalogs, catalogs[0].instanceId);
+    catalogs = duplicateCatalog(catalogs, catalogs[0].instanceId, {
+      copySuffix: 'cópia',
+    });
     expect(catalogs).toHaveLength(3);
     expect(catalogs.map((item) => item.position)).toEqual([0, 1, 2]);
+    expect(catalogs[1]?.customName).toBe('Em alta (cópia)');
 
     const movedId = catalogs[2].instanceId;
     catalogs = moveCatalog(catalogs, movedId, 0);

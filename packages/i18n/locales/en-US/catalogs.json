@@ -55,6 +55,7 @@
   "catalogs.rotatedDefaultName": "Daily rotation",
   "catalogs.syncHint": "Studio positions and manifest entries stay in lockstep for enabled catalogs.",
   "catalogs.configId": "Config {{id}}",
+  "catalogs.copySuffix": "copy",
   "catalogs.warning.INSTANCE_NOT_FOUND": "Catalog instance {{instanceId}} was not found.",
   "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Rotation source {{sourceId}} was not found.",
   "catalogs.warning.ROTATION_ACTIVE": "Rotation ({{mode}}): using {{sourceId}}.",
