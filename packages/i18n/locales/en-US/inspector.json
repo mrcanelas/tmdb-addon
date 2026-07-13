@@ -45,5 +45,8 @@
   "inspector.reason.EMPTY": "Empty value",
   "inspector.reason.EMPTY_SKIPPED": "Empty value skipped",
   "inspector.reason.BELOW_CONFIDENCE": "Confidence {{confidence}} is below {{minimum}}",
-  "inspector.reason.UNRESOLVED": "No provider returned a usable value"
+  "inspector.reason.UNRESOLVED": "No provider returned a usable value",
+  "inspector.identityWarning.INCOMPLETE_GRAPH": "Identity graph is incomplete (fewer than two provider matches).",
+  "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "Low-confidence edge {{from}} → {{to}} ({{confidence}}).",
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Unresolved providers: {{providers}}"
 }

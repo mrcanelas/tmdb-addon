@@ -40,6 +40,8 @@ All routes require `X-MetaLayer-Edit-Credential`. Base path: `/api/v1`.
 | POST | `/configurations/:configId/rules/preview` | Include/exclude sample items |
 | PUT | `/configurations/:configId/rules` | Persist `globalRules` |
 
+Provider capability gaps return structured warnings with **stable codes** (not English sentences). The configure UI translates `reason` / `fallback` via the `rules` namespace (`DIGITAL_RELEASE_UNSUPPORTED`, `POST_FILTER`, …). See `@metalayer/rules` `checkProviderRuleSupport`.
+
 ## Still follow-up
 
 - Full RuleSet field editors and prefer/boost/penalize UX

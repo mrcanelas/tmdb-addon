@@ -45,5 +45,8 @@
   "inspector.reason.EMPTY": "Valor vazio",
   "inspector.reason.EMPTY_SKIPPED": "Valor vazio ignorado",
   "inspector.reason.BELOW_CONFIDENCE": "Confiança {{confidence}} abaixo de {{minimum}}",
-  "inspector.reason.UNRESOLVED": "Nenhum provedor retornou um valor utilizável"
+  "inspector.reason.UNRESOLVED": "Nenhum provedor retornou um valor utilizável",
+  "inspector.identityWarning.INCOMPLETE_GRAPH": "O grafo de identidade está incompleto (menos de duas correspondências de provedor).",
+  "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "Aresta de baixa confiança {{from}} → {{to}} ({{confidence}}).",
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Provedores não resolvidos: {{providers}}"
 }

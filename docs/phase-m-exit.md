@@ -39,7 +39,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 |---|---|
 | Feature freeze for new major modules | **Done** — no new major product modules until Phase N; beta work limited to hardening, i18n/a11y, docs, and maintainer-approved deferral closure |
 | UX review of configure primary pages | Partial — Overview legacy import; **studio session query sync on import + Catalog Studio reset**; Sorting loads saved plan; residual polish Open |
-| Accessibility pass | Partial — Catalog Studio / Search & AI / Rules / Sorting / **Meta Inspector inspect errors** keep the page; live regions on primary mutation feedback; broader pass Open |
+| Accessibility pass | Partial — live regions on primary mutation feedback; **warning/success colors use MetaLayer tokens** (--ml-warning/success/error); broader pass Open |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |

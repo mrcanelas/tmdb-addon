@@ -1,6 +1,21 @@
 import type { ResolvedIdentityMapping } from './resolve.js';
 import type { IdentityEdge } from './types.js';
 
+export type IdentityWarningCode =
+  | 'INCOMPLETE_GRAPH'
+  | 'LOW_CONFIDENCE_EDGE'
+  | 'UNRESOLVED_PROVIDERS';
+
+export interface IdentityDiagnosticWarning {
+  code: IdentityWarningCode;
+  params?: {
+    from?: string;
+    to?: string;
+    confidence?: number;
+    providers?: string;
+  };
+}
+
 export interface IdentityDiagnostics {
   canonicalId: string;
   entityKind: string;
@@ -21,7 +36,7 @@ export interface IdentityDiagnostics {
   >;
   unresolvedProviders: string[];
   lowConfidenceCount: number;
-  warnings: string[];
+  warnings: IdentityDiagnosticWarning[];
 }
 
 function edgeLabel(edge: IdentityEdge): { from: string; to: string } {
@@ -36,20 +51,27 @@ export function buildIdentityDiagnostics(
   mapping: ResolvedIdentityMapping,
   precedenceScore: (edge: IdentityEdge) => number,
 ): IdentityDiagnostics {
-  const warnings: string[] = [];
+  const warnings: IdentityDiagnosticWarning[] = [];
 
   if (mapping.matches.length < 2) {
-    warnings.push('Fewer than two provider identities — graph is incomplete');
+    warnings.push({ code: 'INCOMPLETE_GRAPH' });
   }
   for (const edge of mapping.lowConfidence) {
-    warnings.push(
-      `Low-confidence edge ${edge.source.provider}:${edge.source.id} → ${edge.target.provider}:${edge.target.id} (${edge.confidence})`,
-    );
+    const label = edgeLabel(edge);
+    warnings.push({
+      code: 'LOW_CONFIDENCE_EDGE',
+      params: {
+        from: label.from,
+        to: label.to,
+        confidence: edge.confidence,
+      },
+    });
   }
   if (mapping.unresolvedProviders.length > 0) {
-    warnings.push(
-      `Unresolved providers: ${mapping.unresolvedProviders.join(', ')}`,
-    );
+    warnings.push({
+      code: 'UNRESOLVED_PROVIDERS',
+      params: { providers: mapping.unresolvedProviders.join(', ') },
+    });
   }
 
   return {

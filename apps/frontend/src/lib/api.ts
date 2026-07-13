@@ -601,7 +601,15 @@ export interface IdentityDiagnosticsView {
     evidence: string[];
   }>;
   unresolvedProviders: string[];
-  warnings: string[];
+  warnings: Array<{
+    code: string;
+    params?: {
+      from?: string;
+      to?: string;
+      confidence?: number;
+      providers?: string;
+    };
+  }>;
 }
 
 export async function inspectMetadata(

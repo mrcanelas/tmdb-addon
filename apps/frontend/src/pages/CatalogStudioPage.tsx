@@ -576,7 +576,7 @@ export function CatalogStudioPage() {
             >
               {previewWarnings.length > 0 ? (
                 <ul
-                  className="mb-3 space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                  className="mb-3 space-y-1 text-sm text-[var(--ml-warning)]"
                   role="status"
                 >
                   {previewWarnings.map((warning) => (

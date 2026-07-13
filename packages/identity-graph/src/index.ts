@@ -36,4 +36,6 @@ export { IdentityMappingCache, buildIdentityCacheKey } from './cache.js';
 export {
   buildIdentityDiagnostics,
   type IdentityDiagnostics,
+  type IdentityDiagnosticWarning,
+  type IdentityWarningCode,
 } from './diagnostics.js';

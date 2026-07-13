@@ -18,6 +18,8 @@ Canonical entities, edges, and precedence: `AGENTS.md` §18. Corrections that ov
 
 Low-confidence edges must not silently override verified mappings. Diagnostics expose confidence and method.
 
+Diagnostic `warnings` use **stable codes** (`INCOMPLETE_GRAPH`, `LOW_CONFIDENCE_EDGE`, `UNRESOLVED_PROVIDERS`) plus optional `params`. Meta Inspector translates them via `inspector.identityWarning.*`.
+
 ## Operator flow
 
 1. Set Stremio public-ID preference under `/configure/advanced` (`GET/PUT .../identity`).

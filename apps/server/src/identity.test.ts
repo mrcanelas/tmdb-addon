@@ -46,9 +46,11 @@ describe('@metalayer/server identity graph', () => {
       ]),
     );
     expect(body.diagnostics.edgeCount).toBeGreaterThan(0);
-    expect(body.diagnostics.warnings.some((w: string) => w.includes('tvdb'))).toBe(
-      true,
-    );
+    expect(body.diagnostics.warnings.some(
+      (w: { code: string; params?: { providers?: string } }) =>
+        w.code === 'UNRESOLVED_PROVIDERS' &&
+        Boolean(w.params?.providers?.includes('tvdb')),
+    )).toBe(true);
 
     const diagnostics = await app.inject({
       method: 'POST',

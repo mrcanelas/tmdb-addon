@@ -264,11 +264,16 @@ export function InspectorPage() {
                   </ul>
                   {identity.warnings.length > 0 ? (
                     <ul
-                      className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                      className="mt-2 space-y-1 text-sm text-[var(--ml-warning)]"
                       role="status"
                     >
                       {identity.warnings.map((warning) => (
-                        <li key={warning}>{warning}</li>
+                        <li key={`${warning.code}-${warning.params?.from ?? ''}-${warning.params?.providers ?? ''}`}>
+                          {t(`inspector.identityWarning.${warning.code}`, {
+                            ...warning.params,
+                            defaultValue: warning.code,
+                          })}
+                        </li>
                       ))}
                     </ul>
                   ) : null}
@@ -354,7 +359,7 @@ export function InspectorPage() {
                             </div>
                           ) : null}
                           {field.exclusionReason ? (
-                            <div className="sm:col-span-2 text-amber-700 dark:text-amber-400">
+                            <div className="sm:col-span-2 text-[var(--ml-warning)]">
                               {t('inspector.exclusionLine', {
                                 reason:
                                   translateReasonCode(field.exclusionReason, t) ??

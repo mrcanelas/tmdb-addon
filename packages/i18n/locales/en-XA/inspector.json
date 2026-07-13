@@ -45,5 +45,8 @@
   "inspector.reason.EMPTY": "Émpty vålûéÉmpt",
   "inspector.reason.EMPTY_SKIPPED": "Émpty vålûé skîppédÉmpty ",
   "inspector.reason.BELOW_CONFIDENCE": "Çøñfîdéñçé Çøñf{{confidence}} îs béløw  îs{{minimum}}",
-  "inspector.reason.UNRESOLVED": "Ñø prøvîdér rétûrñéd å ûsåblé vålûéÑø prøvîdér"
+  "inspector.reason.UNRESOLVED": "Ñø prøvîdér rétûrñéd å ûsåblé vålûéÑø prøvîdér",
+  "inspector.identityWarning.INCOMPLETE_GRAPH": "Îdéñtîty gråph îs îñçømplété (féwér thåñ twø prøvîdér måtçhés).Îdéñtîty gråph îs î",
+  "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "Løw-çøñfîdéñçé édgé Løw-çø{{from}} →  {{to}} ( {{confidence}}).)",
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Ûñrésølvéd prøvîdérs: Ûñrésøl{{providers}}"
 }

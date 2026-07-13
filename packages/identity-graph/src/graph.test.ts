@@ -53,6 +53,9 @@ describe('@metalayer/identity-graph', () => {
     );
     expect(diagnostics.edgeCount).toBe(mapping.edges.length);
     expect(diagnostics.unresolvedProviders).toContain('tvdb');
+    expect(diagnostics.warnings.some((w) => w.code === 'UNRESOLVED_PROVIDERS')).toBe(
+      true,
+    );
   });
 
   it('lets verified manual corrections outrank provider edges', () => {
