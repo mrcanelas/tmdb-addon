@@ -24,6 +24,7 @@ describe('@metalayer/security redact', () => {
       headers: {
         authorization: 'Bearer abc',
         'x-metalayer-edit-credential': 'edit-token',
+        'x-metalayer-dashboard-token': 'operator-token',
         'x-correlation-id': 'ok',
       },
       ciphertext: envelope,
@@ -34,6 +35,7 @@ describe('@metalayer/security redact', () => {
       headers: {
         authorization: '[REDACTED]',
         'x-metalayer-edit-credential': '[REDACTED]',
+        'x-metalayer-dashboard-token': '[REDACTED]',
         'x-correlation-id': 'ok',
       },
       ciphertext: '[REDACTED]',
@@ -45,5 +47,6 @@ describe('@metalayer/security redact', () => {
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('editCredential');
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('secrets');
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('x-metalayer-edit-credential');
+    expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('x-metalayer-dashboard-token');
   });
 });

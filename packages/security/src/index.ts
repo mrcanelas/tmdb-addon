@@ -23,3 +23,9 @@ export {
   isSensitiveHeader,
   FASTIFY_LOG_REDACT_PATHS,
 } from './redact.js';
+
+export {
+  isAllowedOAuthRedirectUri,
+  type OAuthTrackingProvider,
+  type OAuthRedirectAllowOptions,
+} from './oauth-redirect.js';

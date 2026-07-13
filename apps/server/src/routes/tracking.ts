@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { createApiError } from '@metalayer/api-errors';
 import { evaluateRules, type RuleCandidate } from '@metalayer/rules';
 import {
@@ -28,6 +28,10 @@ import {
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
+import {
+  isAllowedOAuthRedirectUri,
+  type OAuthTrackingProvider,
+} from '@metalayer/security';
 import { randomBytes } from 'node:crypto';
 import {
   REFRESHABLE_TRACKING_PROVIDERS,
@@ -40,6 +44,64 @@ import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
   return Array.isArray(header) ? header[0] : header;
+}
+
+function envOAuthRedirectUri(provider: OAuthTrackingProvider): string | undefined {
+  switch (provider) {
+    case 'trakt':
+      return process.env.TRAKT_REDIRECT_URI;
+    case 'simkl':
+      return process.env.SIMKL_REDIRECT_URI;
+    case 'anilist':
+      return process.env.ANILIST_REDIRECT_URI;
+    case 'mal':
+      return process.env.MAL_REDIRECT_URI;
+  }
+}
+
+/**
+ * Resolve and allowlist an OAuth redirect URI for tracking providers.
+ * Returns `'failed'` after sending a 400 response when validation fails.
+ */
+function resolveOAuthRedirectUri(input: {
+  request: FastifyRequest;
+  reply: FastifyReply;
+  provider: OAuthTrackingProvider;
+  candidate: string;
+}): string | 'failed' {
+  const redirectUri = input.candidate.trim();
+  if (!redirectUri) {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'redirectUri is required',
+        correlationId: input.request.correlationId,
+        params: { field: 'redirectUri' },
+      }),
+    );
+    return 'failed';
+  }
+
+  if (
+    !isAllowedOAuthRedirectUri(redirectUri, {
+      provider: input.provider,
+      envRedirectUri: envOAuthRedirectUri(input.provider),
+      publicBaseUrl: process.env.METALAYER_PUBLIC_BASE_URL,
+      extraAllowlist: process.env.METALAYER_OAUTH_REDIRECT_URIS,
+    })
+  ) {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'redirectUri is not allowed for this instance',
+        correlationId: input.request.correlationId,
+        params: { field: 'redirectUri' },
+      }),
+    );
+    return 'failed';
+  }
+
+  return redirectUri;
 }
 
 async function requireEdit(
@@ -422,20 +484,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const redirectUri =
-      request.query.redirectUri ||
-      process.env.TRAKT_REDIRECT_URI ||
-      '';
-    if (!redirectUri) {
-      return reply.status(400).send(
-        createApiError({
-          code: 'VALIDATION_FAILED',
-          message: 'redirectUri is required',
-          correlationId: request.correlationId,
-          params: { field: 'redirectUri' },
-        }),
-      );
-    }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'trakt',
+      candidate:
+        request.query.redirectUri || process.env.TRAKT_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     const state = Buffer.from(
       JSON.stringify({
@@ -477,9 +533,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const code = request.body?.code;
-    const redirectUri =
-      request.body?.redirectUri || process.env.TRAKT_REDIRECT_URI || '';
-    if (!code || !redirectUri) {
+    if (!code) {
       return reply.status(400).send(
         createApiError({
           code: 'VALIDATION_FAILED',
@@ -488,6 +542,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'trakt',
+      candidate:
+        request.body?.redirectUri || process.env.TRAKT_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     try {
       const tokens = await exchangeTraktAuthorizationCode({
@@ -585,18 +647,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const redirectUri =
-      request.query.redirectUri || process.env.SIMKL_REDIRECT_URI || '';
-    if (!redirectUri) {
-      return reply.status(400).send(
-        createApiError({
-          code: 'VALIDATION_FAILED',
-          message: 'redirectUri is required',
-          correlationId: request.correlationId,
-          params: { field: 'redirectUri' },
-        }),
-      );
-    }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'simkl',
+      candidate:
+        request.query.redirectUri || process.env.SIMKL_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     const state = Buffer.from(
       JSON.stringify({
@@ -638,9 +696,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const code = request.body?.code;
-    const redirectUri =
-      request.body?.redirectUri || process.env.SIMKL_REDIRECT_URI || '';
-    if (!code || !redirectUri) {
+    if (!code) {
       return reply.status(400).send(
         createApiError({
           code: 'VALIDATION_FAILED',
@@ -649,6 +705,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'simkl',
+      candidate:
+        request.body?.redirectUri || process.env.SIMKL_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     try {
       const tokens = await exchangeSimklAuthorizationCode({
@@ -739,18 +803,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const redirectUri =
-      request.query.redirectUri || process.env.ANILIST_REDIRECT_URI || '';
-    if (!redirectUri) {
-      return reply.status(400).send(
-        createApiError({
-          code: 'VALIDATION_FAILED',
-          message: 'redirectUri is required',
-          correlationId: request.correlationId,
-          params: { field: 'redirectUri' },
-        }),
-      );
-    }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'anilist',
+      candidate:
+        request.query.redirectUri || process.env.ANILIST_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     const state = Buffer.from(
       JSON.stringify({
@@ -792,9 +852,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const code = request.body?.code;
-    const redirectUri =
-      request.body?.redirectUri || process.env.ANILIST_REDIRECT_URI || '';
-    if (!code || !redirectUri) {
+    if (!code) {
       return reply.status(400).send(
         createApiError({
           code: 'VALIDATION_FAILED',
@@ -803,6 +861,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'anilist',
+      candidate:
+        request.body?.redirectUri || process.env.ANILIST_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     try {
       const tokens = await exchangeAnilistAuthorizationCode({
@@ -895,18 +961,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const redirectUri =
-      request.query.redirectUri || process.env.MAL_REDIRECT_URI || '';
-    if (!redirectUri) {
-      return reply.status(400).send(
-        createApiError({
-          code: 'VALIDATION_FAILED',
-          message: 'redirectUri is required',
-          correlationId: request.correlationId,
-          params: { field: 'redirectUri' },
-        }),
-      );
-    }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'mal',
+      candidate:
+        request.query.redirectUri || process.env.MAL_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     const nonce = randomBytes(8).toString('hex');
     const codeVerifier = generateMalPkceVerifier();
@@ -959,9 +1021,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const code = request.body?.code;
-    const redirectUri =
-      request.body?.redirectUri || process.env.MAL_REDIRECT_URI || '';
-    if (!code || !redirectUri) {
+    if (!code) {
       return reply.status(400).send(
         createApiError({
           code: 'VALIDATION_FAILED',
@@ -970,6 +1030,14 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const redirectUri = resolveOAuthRedirectUri({
+      request,
+      reply,
+      provider: 'mal',
+      candidate:
+        request.body?.redirectUri || process.env.MAL_REDIRECT_URI || '',
+    });
+    if (redirectUri === 'failed') return;
 
     const sessionRaw = await app.configStore.getSecretPlaintext(
       request.params.configId,

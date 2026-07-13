@@ -198,6 +198,56 @@ describe('@metalayer/server tracking', () => {
     process.env.TRAKT_CLIENT_SECRET = previousSecret;
   });
 
+  it('rejects OAuth redirectUri outside the instance allowlist', async () => {
+    const previousId = process.env.TRAKT_CLIENT_ID;
+    const previousSecret = process.env.TRAKT_CLIENT_SECRET;
+    process.env.TRAKT_CLIENT_ID = 'trakt-client';
+    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+
+    const app = await buildApp({
+      logger: false,
+      store: createMemoryConfigurationStore(Buffer.alloc(32, 38).toString('base64')),
+    });
+
+    try {
+      const created = await app.inject({
+        method: 'POST',
+        url: '/api/v1/configurations',
+        payload: {
+          editCredential: 'oauth-allow-edit',
+          config: createDefaultMetaLayerConfig({ name: 'OAuthAllow' }),
+        },
+      });
+      const { configId } = created.json();
+      const headers = { 'x-metalayer-edit-credential': 'oauth-allow-edit' };
+      const evil = 'https://evil.example/configure/oauth/trakt/callback';
+
+      const authUrl = await app.inject({
+        method: 'GET',
+        url: `/api/v1/configurations/${configId}/tracking/trakt/auth-url?redirectUri=${encodeURIComponent(evil)}`,
+        headers,
+      });
+      expect(authUrl.statusCode).toBe(400);
+      expect(authUrl.json().code).toBe('VALIDATION_FAILED');
+      expect(authUrl.json().message).toContain('not allowed');
+
+      const callback = await app.inject({
+        method: 'POST',
+        url: `/api/v1/configurations/${configId}/tracking/trakt/callback`,
+        headers,
+        payload: { code: 'auth-code', redirectUri: evil },
+      });
+      expect(callback.statusCode).toBe(400);
+      expect(callback.json().code).toBe('VALIDATION_FAILED');
+    } finally {
+      await app.close();
+      if (previousId === undefined) delete process.env.TRAKT_CLIENT_ID;
+      else process.env.TRAKT_CLIENT_ID = previousId;
+      if (previousSecret === undefined) delete process.env.TRAKT_CLIENT_SECRET;
+      else process.env.TRAKT_CLIENT_SECRET = previousSecret;
+    }
+  });
+
   it('builds SIMKL auth URL, exchanges code into vault, and disconnects', async () => {
     const previousId = process.env.SIMKL_CLIENT_ID;
     const previousSecret = process.env.SIMKL_CLIENT_SECRET;

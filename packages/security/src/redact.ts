@@ -4,7 +4,7 @@ const SENSITIVE_KEY =
   /^(editCredential|edit_credential|password|passwd|secret|secrets|apiKey|api_key|accessToken|access_token|refreshToken|refresh_token|token|authorization|ciphertext|encryptionKey|encryption_key|plaintext|client_secret|clientSecret)$/i;
 
 const SENSITIVE_HEADER =
-  /^(authorization|cookie|set-cookie|x-metalayer-edit-credential)$/i;
+  /^(authorization|cookie|set-cookie|x-metalayer-edit-credential|x-metalayer-dashboard-token)$/i;
 
 /** Vault envelope or long opaque credential-looking strings. */
 const VAULT_ENVELOPE = /^v1:\d+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+$/;
@@ -85,6 +85,7 @@ export const FASTIFY_LOG_REDACT_PATHS = [
   'req.headers.authorization',
   'req.headers.cookie',
   'req.headers["x-metalayer-edit-credential"]',
+  'req.headers["x-metalayer-dashboard-token"]',
   'req.body.editCredential',
   'req.body.secrets',
   'req.body.secrets.*',

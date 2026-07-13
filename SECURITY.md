@@ -28,6 +28,7 @@ MetaLayer will store API keys and OAuth tokens in an encrypted Secret Vault.
 Secrets must not appear in Stremio manifest URLs or configuration exports by default.
 
 See `AGENTS.md` sections 23 and 30.
+Operational details (log redaction, OAuth redirect allowlist): `docs/security.md`.
 
 ## Reporting
 
