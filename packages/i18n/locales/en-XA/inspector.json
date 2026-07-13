@@ -6,6 +6,8 @@
   "inspector.inspect": "ÎñspéçtÎñs",
   "inspector.dryRun": "Dry-rûñ såmpléDry-r",
   "inspector.loadError": "Çøûld ñøt løåd îñspéçtør frøm thé ÅPÎ.Çøûld ñøt lø",
+  "inspector.sessionError": "Çøûld ñøt prépåré å dråft çøñfîgûråtîøñ før Métå Îñspéçtør.Çøûld ñøt prépåré ",
+  "inspector.inspectError": "Îñspéçt réqûést fåîléd. Çhéçk thé îd, çrédéñtîåls, åñd try ågåîñ.Îñspéçt réqûést fåîl",
   "inspector.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg",
   "inspector.identity": "ÎdéñtîtyÎdé",
   "inspector.graph": "Îdéñtîty GråphÎdéñt",

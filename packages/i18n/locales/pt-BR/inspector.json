@@ -6,6 +6,8 @@
   "inspector.inspect": "Inspecionar",
   "inspector.dryRun": "Amostra offline",
   "inspector.loadError": "Não foi possível carregar o inspector da API.",
+  "inspector.sessionError": "Não foi possível preparar uma configuração rascunho para o Meta Inspector.",
+  "inspector.inspectError": "A inspeção falhou. Verifique o id, as credenciais e tente de novo.",
   "inspector.bootstrapping": "Preparando configuração rascunho…",
   "inspector.identity": "Identidade",
   "inspector.graph": "Grafo de identidade",

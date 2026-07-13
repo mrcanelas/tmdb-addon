@@ -6,6 +6,8 @@
   "inspector.inspect": "Inspect",
   "inspector.dryRun": "Dry-run sample",
   "inspector.loadError": "Could not load inspector from the API.",
+  "inspector.sessionError": "Could not prepare a draft configuration for Meta Inspector.",
+  "inspector.inspectError": "Inspect request failed. Check the id, credentials, and try again.",
   "inspector.bootstrapping": "Preparing draft configuration…",
   "inspector.identity": "Identity",
   "inspector.graph": "Identity Graph",

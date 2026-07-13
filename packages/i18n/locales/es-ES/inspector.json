@@ -6,6 +6,8 @@
   "inspector.inspect": "Inspeccionar",
   "inspector.dryRun": "Muestra sin red",
   "inspector.loadError": "No se pudo cargar el inspector de la API.",
+  "inspector.sessionError": "No se pudo preparar una configuración borrador para Meta Inspector.",
+  "inspector.inspectError": "La inspección falló. Revisa el id, las credenciales e inténtalo de nuevo.",
   "inspector.bootstrapping": "Preparando configuración borrador…",
   "inspector.identity": "Identidad",
   "inspector.graph": "Grafo de identidad",

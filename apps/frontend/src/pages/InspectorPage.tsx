@@ -90,6 +90,7 @@ export function InspectorPage() {
   const [identity, setIdentity] = useState<IdentityDiagnosticsView | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const empty = t('common.emptyValue', { ns: 'common' });
 
@@ -101,6 +102,7 @@ export function InspectorPage() {
 
   async function load() {
     setStatus('loading');
+    setActionError(null);
     try {
       await ensureStudioSession();
       setStatus('ready');
@@ -115,6 +117,7 @@ export function InspectorPage() {
 
   async function onDryRun() {
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       const result = await inspectMetadata(
@@ -128,9 +131,8 @@ export function InspectorPage() {
       );
       setReport(result.report);
       setIdentity(result.identity?.diagnostics ?? null);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('inspector.inspectError'));
     } finally {
       setBusy(false);
     }
@@ -138,6 +140,7 @@ export function InspectorPage() {
 
   async function onInspectLive() {
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       const result = await inspectMetadata(
@@ -150,9 +153,8 @@ export function InspectorPage() {
       );
       setReport(result.report);
       setIdentity(result.identity?.diagnostics ?? null);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('inspector.inspectError'));
     } finally {
       setBusy(false);
     }
@@ -171,7 +173,7 @@ export function InspectorPage() {
 
       {status === 'error' ? (
         <ErrorState
-          message={t('inspector.loadError')}
+          message={t('inspector.sessionError')}
           retryLabel={t('state.retry', { ns: 'common' })}
           onRetry={() => {
             void load();
@@ -181,6 +183,12 @@ export function InspectorPage() {
 
       {status === 'ready' ? (
         <>
+          {actionError ? (
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
+              {actionError}
+            </p>
+          ) : null}
+
           <SectionCard title={t('inspector.queryTitle')}>
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-sm text-[var(--ml-text)]">
