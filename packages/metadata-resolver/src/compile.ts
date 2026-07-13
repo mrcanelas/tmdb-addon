@@ -11,12 +11,13 @@ import {
   resolutionConfigFromFieldProviders,
   type FieldProviders,
 } from '@metalayer/config';
+import type { ResolutionWarning } from './field.js';
 
 export interface EffectiveResolutionPlan extends FieldResolutionPlan {
   field: string;
   mediaType?: 'movie' | 'series' | 'anime';
   generatedSteps: ResolutionStep[];
-  warnings: Array<{ code: string; message: string }>;
+  warnings: ResolutionWarning[];
   effectivePlanHash: string;
   source: 'resolution-config' | 'field-providers';
 }
@@ -120,7 +121,7 @@ export function compileResolutionPlan(input: {
   metadataLocale?: string;
   fallbackLocales?: string[];
 }): EffectiveResolutionPlan {
-  const warnings: Array<{ code: string; message: string }> = [];
+  const warnings: ResolutionWarning[] = [];
   let plan: FieldResolutionPlan | undefined;
   let source: EffectiveResolutionPlan['source'] = 'resolution-config';
 
@@ -138,7 +139,6 @@ export function compileResolutionPlan(input: {
     plan = getPlanForField(derived, input.field, input.mediaType);
     warnings.push({
       code: 'DERIVED_FROM_FIELD_PROVIDERS',
-      message: 'Plan derived from legacy fieldProviders',
     });
   }
 

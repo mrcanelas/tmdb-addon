@@ -368,6 +368,23 @@ export function InspectorPage() {
                               })}
                             </div>
                           ) : null}
+                          {field.warnings.length > 0 ? (
+                            <ul
+                              className="sm:col-span-2 space-y-1 text-[var(--ml-warning)]"
+                              role="status"
+                            >
+                              {field.warnings.map((warning) => (
+                                <li
+                                  key={`${warning.code}-${warning.params?.requested ?? ''}-${warning.params?.index ?? ''}`}
+                                >
+                                  {t(`inspector.resolutionWarning.${warning.code}`, {
+                                    ...warning.params,
+                                    defaultValue: warning.code,
+                                  })}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
                         </dl>
                       </li>
                     );

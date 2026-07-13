@@ -541,7 +541,10 @@ export interface FieldResolutionView {
   attemptedProviders: string[];
   confidence: number;
   fallbackUsed: boolean;
-  warnings: Array<{ code: string; message: string }>;
+  warnings: Array<{
+    code: string;
+    params?: Record<string, string | number | undefined>;
+  }>;
   resolvedAt: string;
   requestedLocale?: string;
   selectedLocale?: string;

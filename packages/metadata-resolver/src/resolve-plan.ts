@@ -174,7 +174,7 @@ export function resolveFieldFromPlan<T>(
   if (fallbackUsed) {
     warnings.push({
       code: 'RESOLUTION_FALLBACK',
-      message: `Selected step index ${selectedIndex} after earlier misses`,
+      params: { index: selectedIndex },
     });
   }
 

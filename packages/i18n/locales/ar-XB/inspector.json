@@ -48,5 +48,8 @@
   "inspector.reason.UNRESOLVED": "‏No provider returned a usable value‎",
   "inspector.identityWarning.INCOMPLETE_GRAPH": "‏Identity graph is incomplete (fewer than two provider matches).‎",
   "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "‏Low-confidence edge ‎{{from}}‏ → ‎{{to}}‏ (‎{{confidence}}‏).‎",
-  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "‏Unresolved providers: ‎{{providers}}‏‎"
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "‏Unresolved providers: ‎{{providers}}‏‎",
+  "inspector.resolutionWarning.LOCALE_FALLBACK": "‏Requested ‎{{requested}}‏, selected ‎{{selected}}‏.‎",
+  "inspector.resolutionWarning.RESOLUTION_FALLBACK": "‏Selected step ‎{{index}}‏ after earlier misses.‎",
+  "inspector.resolutionWarning.DERIVED_FROM_FIELD_PROVIDERS": "‏Plan derived from legacy fieldProviders.‎"
 }

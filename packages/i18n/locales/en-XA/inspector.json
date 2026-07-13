@@ -48,5 +48,8 @@
   "inspector.reason.UNRESOLVED": "Ñø prøvîdér rétûrñéd å ûsåblé vålûéÑø prøvîdér",
   "inspector.identityWarning.INCOMPLETE_GRAPH": "Îdéñtîty gråph îs îñçømplété (féwér thåñ twø prøvîdér måtçhés).Îdéñtîty gråph îs î",
   "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "Løw-çøñfîdéñçé édgé Løw-çø{{from}} →  {{to}} ( {{confidence}}).)",
-  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Ûñrésølvéd prøvîdérs: Ûñrésøl{{providers}}"
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Ûñrésølvéd prøvîdérs: Ûñrésøl{{providers}}",
+  "inspector.resolutionWarning.LOCALE_FALLBACK": "Réqûéstéd Réq{{requested}}, séléçtéd , sé{{selected}}..",
+  "inspector.resolutionWarning.RESOLUTION_FALLBACK": "Séléçtéd stép Séléç{{index}} åftér éårlîér mîssés. åftér ",
+  "inspector.resolutionWarning.DERIVED_FROM_FIELD_PROVIDERS": "Plåñ dérîvéd frøm légåçy fîéldPrøvîdérs.Plåñ dérîvéd"
 }

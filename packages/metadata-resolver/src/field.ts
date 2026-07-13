@@ -1,6 +1,6 @@
 export interface ResolutionWarning {
   code: string;
-  message: string;
+  params?: Record<string, string | number | undefined>;
 }
 
 export interface FieldContribution<T> {
@@ -141,7 +141,10 @@ export function resolveField<T>(
   if (fallbackUsed) {
     warnings.push({
       code: 'LOCALE_FALLBACK',
-      message: `Requested ${preferredLocale}, selected ${selected.locale}`,
+      params: {
+        requested: preferredLocale,
+        selected: selected.locale,
+      },
     });
   }
 

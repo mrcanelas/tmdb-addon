@@ -48,5 +48,8 @@
   "inspector.reason.UNRESOLVED": "Nenhum provedor retornou um valor utilizável",
   "inspector.identityWarning.INCOMPLETE_GRAPH": "O grafo de identidade está incompleto (menos de duas correspondências de provedor).",
   "inspector.identityWarning.LOW_CONFIDENCE_EDGE": "Aresta de baixa confiança {{from}} → {{to}} ({{confidence}}).",
-  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Provedores não resolvidos: {{providers}}"
+  "inspector.identityWarning.UNRESOLVED_PROVIDERS": "Provedores não resolvidos: {{providers}}",
+  "inspector.resolutionWarning.LOCALE_FALLBACK": "Solicitado {{requested}}, selecionado {{selected}}.",
+  "inspector.resolutionWarning.RESOLUTION_FALLBACK": "Passo {{index}} selecionado após tentativas anteriores sem sucesso.",
+  "inspector.resolutionWarning.DERIVED_FROM_FIELD_PROVIDERS": "Plano derivado do fieldProviders legado."
 }

@@ -13,7 +13,7 @@ Implementation status: **shipped** as Phase F2 — see `docs/phase-f-exit.md`.
 | Surface | Fields / behavior |
 |---|---|
 | Appearance (`/configure/appearance`) | title, description, poster, background, **logo** via `ResolutionChainBuilder` |
-| Meta Inspector | Attempt list with localized status/reason codes |
+| Meta Inspector | Attempt list with localized status/reason codes; field warnings use stable codes (`LOCALE_FALLBACK`, `RESOLUTION_FALLBACK`, …) via `inspector.resolutionWarning.*` |
 | Management API | `GET/PUT .../resolution`, `POST .../compile`, `POST .../test` |
 
 Artwork defaults include `no-language` for poster/background. See `docs/appearance.md`.
