@@ -51,6 +51,14 @@ describe('@metalayer/server rules and sorting', () => {
     expect(rulesPreview.json().included).toEqual(['high']);
     expect(rulesPreview.json().excluded.sort()).toEqual(['adult', 'low']);
 
+    const sortingGet = await app.inject({
+      method: 'GET',
+      url: `/api/v1/configurations/${configId}/sorting`,
+      headers,
+    });
+    expect(sortingGet.statusCode).toBe(200);
+    expect(sortingGet.json().globalSorting.criteria[0].field).toBe('rating');
+
     const sortingPreview = await app.inject({
       method: 'POST',
       url: `/api/v1/configurations/${configId}/sorting/preview`,

@@ -445,6 +445,15 @@ export interface SortingPlanDraft {
   randomSeedWindow?: 'request' | 'hour' | 'day' | 'week';
 }
 
+export async function fetchGlobalSorting(
+  configId: string,
+  editCredential: string,
+): Promise<{ globalSorting: SortingPlanDraft | null }> {
+  return apiFetch(`/api/v1/configurations/${configId}/sorting`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
 export async function saveGlobalSorting(
   configId: string,
   editCredential: string,

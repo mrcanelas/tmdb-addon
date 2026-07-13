@@ -191,6 +191,21 @@ export const rulesSortingRoutes: FastifyPluginAsync = async (app) => {
     };
   });
 
+  app.get<{ Params: { configId: string } }>(
+    '/configurations/:configId/sorting',
+    async (request, reply) => {
+      const access = await requireEdit(app, request, request.params.configId);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+
+      const view = (await app.configStore.getPublic(request.params.configId))!;
+      return {
+        configId: view.configId,
+        globalSorting: view.config.globalSorting ?? null,
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
   app.post<{
     Params: { configId: string };
     Body: {

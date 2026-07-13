@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ensureStudioSession,
+  fetchGlobalSorting,
   previewSorting,
   saveGlobalSorting,
   type SortingPlanDraft,
@@ -48,7 +49,18 @@ export function SortingPage() {
   async function load() {
     setStatus('loading');
     try {
-      await ensureStudioSession();
+      const session = await ensureStudioSession();
+      const result = await fetchGlobalSorting(
+        session.configId,
+        session.editCredential,
+      );
+      if (result.globalSorting?.criteria?.length) {
+        setPlan({
+          criteria: result.globalSorting.criteria,
+          stable: result.globalSorting.stable ?? true,
+          randomSeedWindow: result.globalSorting.randomSeedWindow,
+        });
+      }
       setStatus('ready');
       setSaveState('idle');
     } catch {
