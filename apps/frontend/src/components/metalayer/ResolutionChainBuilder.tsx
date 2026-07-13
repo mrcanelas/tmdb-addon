@@ -51,8 +51,11 @@ export function ResolutionChainBuilder({
 }: ResolutionChainBuilderProps) {
   const { t } = useTranslation('resolution');
 
-  const providers = value.providers ?? [];
-  const locales = value.locales ?? [];
+  const providers = useMemo(
+    () => value.providers ?? [],
+    [value.providers],
+  );
+  const locales = useMemo(() => value.locales ?? [], [value.locales]);
 
   const effectivePreview = useMemo(() => {
     if (value.strategy === 'explicit' && value.steps) {

@@ -10,7 +10,10 @@ export {
   type LocaleDefinition,
 } from './locale-registry.js';
 
-export { applyDocumentLocale } from './document-locale.js';
+export {
+  applyDocumentLocale,
+  type DocumentLocaleTarget,
+} from './document-locale.js';
 
 export {
   toPseudoExpanded,
