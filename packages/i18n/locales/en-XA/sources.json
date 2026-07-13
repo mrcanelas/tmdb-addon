@@ -33,7 +33,10 @@
   "sources.test.apiKeyLabel": "ÅPÎ kéy før téstÅPÎ k",
   "sources.test.apiKeyPlaceholder": "Ûséd øñly før thîs réqûést — ñøt såvédÛséd øñly fø",
   "sources.test.running": "Téstîñg…Tés",
-  "sources.test.success": "Prøvîdér réspøñdéd sûççéssfûlly ({ståté}).Prøvîdér résp",
-  "sources.test.failure": "Prøvîdér tést fåîléd ({çødé}).Prøvîdér ",
-  "sources.test.offline": "ÅPÎ ûñréåçhåblé. Stårt thé MétåLåyér ÅPÎ tø rûñ lîvé tésts.ÅPÎ ûñréåçhåblé. S"
+  "sources.test.success": "Prøvîdér réspøñdéd sûççéssfûlly (Prøvîdér r{{state}}).)",
+  "sources.test.failure": "Prøvîdér tést fåîléd (Prøvîdé{{code}}).)",
+  "sources.test.offline": "ÅPÎ ûñréåçhåblé. Stårt thé MétåLåyér ÅPÎ tø rûñ lîvé tésts.ÅPÎ ûñréåçhåblé. S",
+  "sources.health.healthy": "héålthyhéå",
+  "sources.health.degraded": "dégrådéddég",
+  "sources.health.open": "çîrçûît øpéñçîrç"
 }

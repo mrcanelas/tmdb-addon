@@ -33,7 +33,10 @@
   "sources.test.apiKeyLabel": "Clave de API para prueba",
   "sources.test.apiKeyPlaceholder": "Solo para esta solicitud — no se guarda",
   "sources.test.running": "Probando…",
-  "sources.test.success": "El proveedor respondió correctamente ({state}).",
-  "sources.test.failure": "Falló la prueba del proveedor ({code}).",
-  "sources.test.offline": "API inaccesible. Inicia la API MetaLayer para pruebas en vivo."
+  "sources.test.success": "El proveedor respondió correctamente ({{state}}).",
+  "sources.test.failure": "Falló la prueba del proveedor ({{code}}).",
+  "sources.test.offline": "API inaccesible. Inicia la API MetaLayer para pruebas en vivo.",
+  "sources.health.healthy": "saludable",
+  "sources.health.degraded": "degradado",
+  "sources.health.open": "circuito abierto"
 }

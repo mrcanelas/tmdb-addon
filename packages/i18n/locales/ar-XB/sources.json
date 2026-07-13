@@ -33,7 +33,10 @@
   "sources.test.apiKeyLabel": "‏API key for test‎",
   "sources.test.apiKeyPlaceholder": "‏Used only for this request — not saved‎",
   "sources.test.running": "‏Testing…‎",
-  "sources.test.success": "‏Provider responded successfully ({state}).‎",
-  "sources.test.failure": "‏Provider test failed ({code}).‎",
-  "sources.test.offline": "‏API unreachable. Start the MetaLayer API to run live tests.‎"
+  "sources.test.success": "‏Provider responded successfully (‎{{state}}‏).‎",
+  "sources.test.failure": "‏Provider test failed (‎{{code}}‏).‎",
+  "sources.test.offline": "‏API unreachable. Start the MetaLayer API to run live tests.‎",
+  "sources.health.healthy": "‏healthy‎",
+  "sources.health.degraded": "‏degraded‎",
+  "sources.health.open": "‏circuit open‎"
 }

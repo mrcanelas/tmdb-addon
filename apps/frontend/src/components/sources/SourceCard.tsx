@@ -59,6 +59,13 @@ export function SourceCard({ source }: SourceCardProps) {
     source.capabilities.supportsSearch ? t('sources.capability.search') : null,
   ].filter(Boolean) as string[];
 
+  function healthLabel(state: string | undefined): string {
+    const raw = state ?? 'healthy';
+    const key = `sources.health.${raw}`;
+    const translated = t(key);
+    return translated === key ? raw : translated;
+  }
+
   async function onSubmit(values: SourceTestFormValues) {
     if (!canTest || testMutation.isPending) return;
     setStatus({ kind: 'idle' });
@@ -165,7 +172,7 @@ export function SourceCard({ source }: SourceCardProps) {
       {status.kind === 'success' ? (
         <p className="mt-3 text-sm text-[var(--ml-success)]" role="status">
           {t('sources.test.success', {
-            state: status.result.health?.state ?? 'healthy',
+            state: healthLabel(status.result.health?.state),
           })}
         </p>
       ) : null}
