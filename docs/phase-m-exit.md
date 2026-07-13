@@ -28,7 +28,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
-| Field Resolution Chains inheritance/episode UX depth | **Deferred** — maintainer will redesign FRC configure page (+ docs); Appearance background/logo + artwork `no-language` defaults already landed |
+| Field Resolution Chains inheritance/episode UX depth | **Deferred → redesigned** — dedicated `/configure/resolution` (field rail × plan editor, Stremio meta mapping); Appearance is display + bridge until page ships (`FRONTEND.md`, `docs/field-resolution-chains.md`) |
+| Admin-first instance settings (replace day-two `.env`) | **Documented** — ADR 0008; Providers/Settings UI + vault APIs still to implement; env remains default until then |
 | Full i18n/RTL layout hardening | **Done (MVP)** — configure + dashboard load en-XA/ar-XB with `dir`; smoke + physical-CSS guard; checklist `docs/rtl-layout-checklist.md` signed 2026-07-13 |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | **Done (MVP)** — migration fixtures + security hardening (OAuth redirect allowlist, OAuth `state` CSRF, redaction); formal notes in `docs/security.md` |
@@ -38,7 +39,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Task | Status |
 |---|---|
 | Feature freeze for new major modules | **Done** — no new major product modules until Phase N; beta work limited to hardening, i18n/a11y, docs, and maintainer-approved deferral closure |
-| UX review of configure primary pages | Partial — Overview legacy import; Catalog Studio locale names; Language & Region coded display labels; **Field Resolution Chains UI deferred to maintainer redesign** |
+| UX review of configure primary pages | Partial — shell/core redesign planned (`FRONTEND.md`); FRC dedicated page documented; residual polish Open |
 | Accessibility pass | **Done (MVP)** — live regions; token colors; skip-to-main; dialog/command-palette focus trap; PageHeader landmarks |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
@@ -46,8 +47,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Security review | **Done (MVP)** — see `docs/security.md` (OAuth `state` CSRF + redact paths + allowlist) |
 | Translation review (en-US / pt-BR / es-ES) | **Done (MVP)** — attention codes + dashboard pseudo labels; per-locale catalog rename editor still Open (non-blocking) |
 | Pseudo-locale and RTL layout review | **Done (MVP)** — checklist signed 2026-07-13; `rtl-physical-css` guard + pseudo smoke tests |
-| Field Resolution Chains review | Partial — Appearance background/logo + Inspector logo + resolution warning i18n; **inheritance/episode UX + docs deferred (maintainer redesign)** |
-| Documentation pass | Partial — §36 stubs + CHANGELOG + RTL/security narratives; FRC docs wait on UI redesign |
+| Field Resolution Chains review | Partial — product UX contracted (dedicated page + Stremio meta field rail); implementation of new page Open |
+| Documentation pass | Partial — ADR 0008 + Admin-first + FRC/FRONTEND/AGENTS updates landed; UX mockups / deeper §36 still Open |
 
 ## Exit criterion
 

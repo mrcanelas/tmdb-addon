@@ -1,10 +1,17 @@
 # Appearance
 
-Appearance Studio controls how metadata and artwork are presented. Artwork and localized text use Field Resolution Chains (`AGENTS.md` §10 / §15).
+Appearance Studio controls how metadata and artwork are **presented** in Stremio-like previews. Artwork and localized text **resolution** use Field Resolution Chains (`AGENTS.md` §10 / §15).
 
-Configure UI: `/configure/appearance` (title, overview, poster, background, logo). Shared builder: `ResolutionChainBuilder`. Canonical Field Resolution index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phase-f-exit.md`.
+Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phase-f-exit.md`. Frontend targets: `FRONTEND.md`.
 
-## Fields editable in beta configure
+## Primary vs bridge surfaces
+
+| Surface | Role |
+|---|---|
+| `/configure/resolution` | **Primary** chain editor (target Advanced module) — field list × plan pane |
+| `/configure/appearance` | Display settings + temporary/bridge host for `ResolutionChainBuilder` until Resolution Chains page ships |
+
+## Fields editable in beta configure (current bridge)
 
 | Field | Kind | Default strategy | Default providers (when unset) | Default locales |
 |---|---|---|---|---|
@@ -14,13 +21,13 @@ Configure UI: `/configure/appearance` (title, overview, poster, background, logo
 | `background` | Artwork | `locale-first` | Fanart.tv → TMDB → RPDB | pt-BR → **no-language** → en-US |
 | `logo` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB → TVDB | pt-BR → **no-language** → en-US |
 
-Provider pickers in the UI also offer IMDb (text) and TVDB (artwork) for reordering. Defaults are applied client-side via `ensureAppearancePlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
+Provider pickers must only offer **instance-available** providers (`AGENTS.md` §8.1.1). Defaults are applied client-side via `ensureAppearancePlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
 
 `no-language` is a first-class locale preference for artwork (textless posters/backgrounds). It is not treated as missing metadata.
 
 ## Operator flow
 
-1. Open `/configure/appearance` for a persistent configuration (edit credential required).
+1. Prefer `/configure/resolution` once shipped; until then open `/configure/appearance` for a persistent configuration (edit credential required).
 2. Adjust strategy (language-first / provider-first), provider order, and locale order per field.
 3. Save — writes `PUT /api/v1/configurations/:configId/resolution`.
 4. Verify selection and fallbacks in Meta Inspector (`AGENTS.md` §11) for a sample title.
@@ -42,7 +49,7 @@ Secrets must never appear in plans or diagnostics.
 
 ## Still follow-up (not blocking Phase F exit)
 
+- Dedicated Resolution Chains page (move builders out of Appearance)
 - Profile / catalog / title inheritance UI for Appearance overrides
-- Explicit advanced step editor and episode-order chains in this page
 - Remaining §15 display sections (credits, certifications, live preview)
 - Dedicated artwork ranking polish beyond default `no-language` chains

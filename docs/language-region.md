@@ -26,6 +26,8 @@ Configure selectors show **localized labels** via `@metalayer/i18n` `Intl.Displa
 
 Persist via `GET/PUT /api/v1/configurations/:configId/localization` (edit credential required). Profiles may override a subset (`docs/profiles.md`).
 
+Field-level provider/locale chains are edited in **Resolution Chains** (`/configure/resolution`, `docs/field-resolution-chains.md`); this page sets global locale/region defaults those plans consume.
+
 ## Cache impact
 
 Response caches must include every locale/region value that affects output (metadata locale, fallback-chain hash, title mode, regions, timezone when relevant). Do not share localized output across incompatible configurations.
@@ -36,5 +38,5 @@ The configure shell (and dashboard) can switch to `en-XA` (expanded LTR) and `ar
 
 ## Still follow-up
 
-- Signed visual pass under en-XA/ar-XB (`docs/rtl-layout-checklist.md`)
 - End-to-end localized catalog display-name editing in UI
+- Live metadata preview wired to real resolve (Language & Region right rail)

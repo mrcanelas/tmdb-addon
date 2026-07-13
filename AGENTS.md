@@ -547,6 +547,7 @@ Catalog Studio
 Rules
 Sorting
 Appearance
+Resolution Chains
 Search & AI
 Tracking
 Corrections
@@ -581,6 +582,18 @@ The Sources module manages external services that provide:
 - tracking;
 - identity mapping;
 - AI capabilities.
+
+## 8.1.1 Instance availability (Admin gate)
+
+Provider **app credentials and instance enablement** are configured by operators in the Dashboard (`AGENTS.md` §24), not only via process environment variables.
+
+Rules:
+
+1. Prefer Admin Settings / Providers over new env vars for operational secrets (OAuth client id/secret, Fanart, optional instance TMDB key, Redis/Postgres URLs after bootstrap, proxy, cache limits, scheduler flags).
+2. Bootstrap-only env remains for chicken-egg and process sovereignty (`METALAYER_ENCRYPTION_KEY`, `METALAYER_DASHBOARD_TOKEN`, listen ports / public base URL, optional first-boot SQLite path). See `docs/deployment.md`.
+3. A provider that is **not configured / not enabled** at the instance level must **not** appear as an available source in Configure (Sources cards, Field Resolution Chains provider pickers, Tracking connect targets that require instance OAuth apps).
+4. Distinguish **instance secrets** (operator vault / instance settings) from **configuration secrets** (per MetaLayer config: user TMDB API key, user OAuth tokens). Neither appears in manifest URLs or default exports.
+5. Capability APIs (`GET /api/v1/sources`, resolution compile) must filter or mark unavailable providers so the UI never pretends an unconfigured provider can resolve fields.
 
 ## 8.2 Provider categories
 
@@ -1756,13 +1769,36 @@ POST /api/v1/resolution/test
 
 Compile returns the effective plan for a field/media type/profile/catalog context. Test runs resolution against a sample identity and returns attempts plus the selected result.
 
-## 10.17 Frontend: Resolution Chain Builder
+## 10.17 Frontend: Resolution Chains page and builder
 
-Provide a reusable `ResolutionChainBuilder` used from Appearance, Language & Region, Advanced provider priorities, Anime settings, Episode Order, catalog/profile overrides, and Meta Inspector — not duplicated one-off controls.
+### Dedicated configure module
 
-Simple mode: strategy (language first / provider first), reorderable languages, reorderable providers, read-only effective-order preview.
+Primary editing surface (Advanced navigation):
 
-Advanced mode: explicit custom attempt lists, capability warnings, test-with-title action.
+```text
+/configure/resolution
+```
+
+Layout pattern (product UX, independently implemented — do **not** copy AIOStreams or other GPL sources):
+
+```text
+[ Field list ]  |  [ Plan editor for selected field ]
+```
+
+- **Left rail:** configurable output fields, grouped, driven by Stremio [meta object](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/meta.md) properties mapped onto `MetadataField` (and related episode/structure fields). Examples: `name` → title, `description` → overview, `poster` / `background` / `logo`, credits, `videos` / episode order, links/trailers.
+- **Main pane:** how the selected field is supplied — strategy (`locale-first` / `provider-first` / `explicit`), provider order, locale preferences (including artwork `no-language`), capability warnings, effective-order preview, optional test-with-title.
+- **Prev / Next** between fields for keyboard-friendly scanning.
+- Only **instance-available** providers appear in pickers (`§8.1.1`).
+
+`Appearance` owns Stremio-like **display** and may deep-link into Resolution Chains for artwork/title/overview plans. `Language & Region` owns global locales/regions; Resolution Chains consume those as defaults. Meta Inspector remains the read-only attempt surface.
+
+### Reusable builder
+
+Provide `ResolutionChainBuilder` for the Resolution Chains page and for catalog/profile/title overrides — not duplicated one-off controls.
+
+Simple mode: strategy, reorderable languages, reorderable providers, read-only effective-order preview.
+
+Advanced mode: explicit custom attempt lists, capability warnings, test-with-title.
 
 Warnings must not block save unless the complete plan is invalid.
 
@@ -2304,7 +2340,7 @@ Artwork resolution uses Field Resolution Chains (§10), including:
 - per-content-type settings;
 - per-catalog overrides.
 
-UI editing for these chains must reuse `ResolutionChainBuilder` (§10.17).
+Primary UI for editing artwork (and other field) chains is the **Resolution Chains** module (`/configure/resolution`, §10.17). Appearance may summarize or deep-link; it must reuse `ResolutionChainBuilder`, not a second editor.
 
 ## 15.4 Metadata display
 
@@ -2854,7 +2890,16 @@ Secret Vault stores:
 - OAuth access tokens;
 - OAuth refresh tokens;
 - provider credentials;
+- **instance-level** app credentials (e.g. Trakt/SIMKL/AniList/MAL client secrets, Fanart) when managed from the Dashboard;
 - edit-recovery secrets where applicable.
+
+Scope secrets clearly:
+
+| Scope | Examples | Who configures |
+|---|---|---|
+| Process bootstrap | Encryption key, dashboard bootstrap token | Env / host only |
+| Instance | OAuth *client* id/secret, instance API keys, Redis/Postgres URL after first boot | Dashboard Admin |
+| Configuration | User TMDB key, user OAuth access/refresh | Configure (per configId) |
 
 ## 23.2 Encryption
 
@@ -2939,6 +2984,32 @@ Updates
 Settings
 ```
 
+### Providers (operator)
+
+Operators enable providers for the instance and store **instance app credentials** (Fanart API key, Trakt/SIMKL/AniList/MAL client id+secret, optional shared TMDB key, etc.).
+
+UX expectations:
+
+- status: Healthy / Degraded / Not configured / Disabled;
+- Test connection;
+- masked secrets after save;
+- declare which Configure features unlock when the provider becomes available.
+
+Unconfigured or disabled providers are excluded from Configure availability (`§8.1.1`).
+
+### Settings (operator)
+
+Prefer Admin Settings over growing `.env` for day-two operations. Each setting declares restart semantics (`§24.5`).
+
+Target categories:
+
+- persistence (Postgres URL after Lite bootstrap; Redis URL);
+- cache limits / TTLs;
+- TMDB proxy;
+- telemetry and tracking-refresh scheduler;
+- optional email / GitHub integrations;
+- deployment mode readout.
+
 ## 24.3 Metrics
 
 Track:
@@ -2974,6 +3045,18 @@ Settings changed from the dashboard must declare:
 - worker restart required;
 - full process restart required;
 - immutable after startup.
+
+## 24.6 Bootstrap vs Admin-managed configuration
+
+**Goal:** configure the instance as much as possible from the Dashboard so operators avoid maintaining a large `.env`.
+
+| Class | Examples | Where |
+|---|---|---|
+| Bootstrap / sovereignty | `METALAYER_ENCRYPTION_KEY` (+ key ring), `METALAYER_DASHBOARD_TOKEN`, listen ports, public base URL, first-boot SQLite path | Environment only |
+| Instance (Admin) | OAuth client credentials, Fanart, Redis/Postgres URLs, proxy, cache limits, telemetry/scheduler toggles | Dashboard + vault |
+| Per-user config | User API keys, user OAuth tokens, catalogs, rules, resolution plans | Configure `/configure` |
+
+Document the live inventory in `docs/deployment.md` and keep `.env.example` annotated with `bootstrap` vs `admin-candidate`.
 
 ---
 
@@ -3305,10 +3388,12 @@ Search settings
 
 Overview
 Sources
+Language & Region
 Catalog Studio
 Rules
 Sorting
 Appearance
+Resolution Chains
 Search & AI
 Tracking
 Corrections
@@ -3333,13 +3418,15 @@ Show:
 - Appearance;
 - Save & Install.
 
+Simple mode may expose a reduced Resolution Chains entry (title / description / artwork only) or deep-link from Appearance; full field list remains Advanced.
+
 Simple mode should use presets.
 
 ## 31.3 Advanced mode
 
 Show:
 
-- field-level provider resolution;
+- full **Resolution Chains** module (field list × plan editor, §10.17);
 - independent locale and regional preferences;
 - metadata language fallback chains;
 - rule inheritance;
@@ -3604,6 +3691,7 @@ docs/
   sorting.md
   appearance.md
   field-resolution-chains.md
+  dashboard.md
   search-ai.md
   tracking.md
   anime.md
@@ -3668,7 +3756,7 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist) — in progress; **feature freeze Done**; **RTL checklist landed**; **Tracking docs narrative expanded**; formal security sign-off + signed RTL pass Open
+1. **UX redesign** — Configure shell + core pages + dedicated Resolution Chains (`§10.17`); admin-first instance settings (`§8.1.1`, `§24.6`). Hardening checklist (a11y / i18n / RTL / security) largely Done MVP — see `docs/phase-m-exit.md`.
 2. ~~**Encryption key rotation tooling**~~ (**Done** — key ring + `pnpm metalayer:vault-reencrypt`)
 3. ~~**Advanced configure module**~~ (**Partial MVP** — identity + cache diagnostics + feature flags)
 4. ~~**Series specials / alternative episode orders**~~ (**Partial MVP** — corrections on native series meta)
@@ -4223,11 +4311,11 @@ Then verify:
 
 ## Should MetaLayer add a provider immediately?
 
-Only after the provider framework and capability model support it.
+Only after the provider framework and capability model support it, and after **instance enablement** is defined (Dashboard Providers / Settings). Unconfigured instance providers must not appear in Configure.
 
 ## Should MetaLayer choose one provider for an entire title?
 
-Only when the user configures that behavior. Default model is Field Resolution Chains per field (§10).
+Only when the user configures that behavior. Default model is Field Resolution Chains per field (§10), edited primarily on `/configure/resolution`.
 
 ## Should unsupported rules be ignored?
 
@@ -4236,6 +4324,10 @@ No.
 ## Should language and region be represented by one setting?
 
 No. Interface locale, metadata locale, availability region, certification region, and release region are independent concepts.
+
+## Should operator secrets live only in `.env`?
+
+No. Prefer Dashboard Admin for day-two instance credentials and settings. Keep bootstrap keys (encryption, dashboard token, listen ports) in the environment (`§24.6`).
 
 ## Should the backend return only translated error messages?
 

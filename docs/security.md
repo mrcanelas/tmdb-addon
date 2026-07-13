@@ -14,6 +14,7 @@ Operator / contributor policy overview: root `SECURITY.md`.
 | OAuth `redirectUri` allowlist | Done — see below |
 | Safe default exports (no secrets) | Done |
 | Formal security review sign-off | **Done (MVP)** — Phase M review closed CSRF OAuth state + log redact hardening; residual items tracked below |
+| Admin-first instance secrets | **Documented** — prefer Dashboard over day-two `.env` (ADR 0008); implementation Open |
 
 ## Logging and redaction
 
@@ -60,5 +61,6 @@ Residual / follow-up (not Phase M blockers): deeper SSRF audit of custom URL art
 ## Related
 
 - Deployment / encryption env: `docs/deployment.md`
+- Admin-first instance config: `docs/adr/0008-admin-first-instance-config.md`, `docs/dashboard.md`
 - Telemetry defaults off: `docs/telemetry.md`
 - Legacy import vaults secrets: `docs/migration-from-tmdb-addon.md`

@@ -19,7 +19,7 @@ Tagline:
 
 > Your metadata. Your catalogs. Your way.
 
-Authoritative product behavior remains in `AGENTS.md`. UI kit decision: **ADR 0007**. Bundler / two-app layout: **ADR 0002** (as amended).
+Authoritative product behavior remains in `AGENTS.md`. UI kit decision: **ADR 0007**. Bundler / two-app layout: **ADR 0002** (as amended). Instance settings / Admin-first secrets: **ADR 0008**.
 
 ---
 
@@ -60,11 +60,14 @@ HeroUI primitive → MetaLayer component
 
 Card → ProviderCard
 Modal → CatalogMergeDialog
-Drawer → MetaInspector
+Drawer → MetaInspector / CatalogPreview / ProviderDiagnostics
 Table → AdminDataTable
 Input + Select → RuleBuilderRow
 Tabs → InspectorTabs
+List + Panel → ResolutionChainsPage (field rail + plan editor)
 ```
+
+Study competitor layout patterns freely. Do **not** copy source, UI kit code, or GPL-licensed implementations (including AIOStreams).
 
 ---
 
@@ -78,7 +81,7 @@ Visual direction: **Layered Minimalism**.
 10% restrained glass
 ```
 
-Flat opaque surfaces for dense/operational content (forms, tables, Catalog Studio, logs, diagnostics).
+Flat opaque surfaces for dense/operational content (forms, tables, Catalog Studio, Resolution Chains, logs, diagnostics).
 
 Glass only for floating/temporary UI (top nav, command palette, popovers, modals, drawers, Meta Inspector, unsaved-changes bar).
 
@@ -112,19 +115,31 @@ Support light theme via semantic CSS variables. Customize HeroUI through tokens 
 
 ## Global application shell
 
-Desktop:
+Desktop (Configure and Admin):
 
 ```text
-Sidebar | Main content | Optional inspector panel
+Sidebar | Main content | Optional inspector / detail panel (~340px)
 ```
 
 Suggested widths: Sidebar 260px · Inspector 340px · Main fluid.
 
-Mobile: navigation drawer/sheet, sticky Save bar, accessible alternatives to drag-and-drop.
+Do not cage the shell in a narrow `max-w-6xl` marketing column. Operational modules need full useful width with responsive gutters.
 
-Global header (configure): logo, configuration name, Simple/Advanced toggle, command palette, locale, theme, user menu, unsaved status.
+Mobile: navigation drawer/sheet, sticky Save / Install bar, accessible alternatives to drag-and-drop.
 
-Admin apps show a visible Admin badge.
+### Configure header
+
+- configuration name (and optional profile);
+- last-saved / unsaved status;
+- Simple / Advanced toggle;
+- command palette trigger;
+- interface locale;
+- theme;
+- account / overflow menu (stub allowed until auth exists).
+
+### Admin chrome
+
+Visible **Admin** badge. Operator token gate. Instance version / health footprint in sidebar footer.
 
 ---
 
@@ -150,6 +165,7 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 /configure/rules
 /configure/sorting
 /configure/appearance
+/configure/resolution        (Field Resolution Chains — primary chain editor)
 /configure/search-ai
 /configure/tracking
 /configure/corrections
@@ -166,7 +182,7 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 /admin
 /admin/overview
 /admin/health
-/admin/providers
+/admin/providers             (instance enablement + app secrets)
 /admin/users
 /admin/configurations
 /admin/requests
@@ -178,7 +194,7 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 /admin/security
 /admin/backups
 /admin/updates
-/admin/settings
+/admin/settings              (Redis/Postgres/proxy/telemetry — Admin-first)
 ```
 
 ---
@@ -187,15 +203,43 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 
 ## Navigation
 
-Advanced mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Sorting, Appearance, Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install.
+Advanced mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Sorting, Appearance, **Resolution Chains**, Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install.
 
-Simple mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Appearance, Save & Install.
+Simple mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Appearance, Save & Install (Resolution Chains reduced or deep-linked from Appearance).
 
 Secondary: Diagnostics, Documentation, Donate.
 
-## Modules
+## Module notes
 
-Implement Catalog Studio, Rules, Sorting, Appearance, Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install, Diagnostics, Meta Inspector, revision history, onboarding, and command palette as described in product sections of the previous FRONTEND master prompt and `AGENTS.md` §§7–24 / §31.
+| Module | UI responsibility |
+|---|---|
+| Overview | Health summary, next steps, legacy import |
+| Sources | Cards for **instance-available** providers only; connect/test; diagnostics drawer |
+| Language & Region | Interface / metadata locales, regions, title modes; live preview |
+| Catalog Studio | Catalog **definitions** order, Home/Hidden, preview drawer — not an editorial title library |
+| Rules / Sorting | Builders + estimate / explanation panels |
+| Appearance | Stremio-like display + deep-links into Resolution Chains |
+| **Resolution Chains** | Primary FRC editor — field rail × plan pane (`AGENTS.md` §10.17) |
+| Search & AI | Discovery / ranked list with confirm+diff |
+| Tracking / Corrections / Profiles / Advanced | Per product docs |
+| Save & Install | Validation, revisions, manifest URL, install |
+
+### Resolution Chains layout
+
+Inspired by dense “category list + detail” configuration UIs (independent implementation):
+
+```text
+┌──────────────┬────────────────────────────────────┐
+│ Field groups │ Selected field plan editor           │
+│ title        │ strategy · providers · locales     │
+│ overview     │ effective order · warnings · test  │
+│ poster …     │ ← Prev                    Next →   │
+└──────────────┴────────────────────────────────────┘
+```
+
+Left rail fields map from Stremio [meta responses](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/meta.md) onto `MetadataField` (e.g. `name`→title, `description`→overview, poster/background/logo, credits, videos/episode order).
+
+Provider pickers list only providers enabled for the instance (`AGENTS.md` §8.1.1).
 
 Key UX invariants:
 
@@ -203,14 +247,26 @@ Key UX invariants:
 - AI proposals require confirmation + diff.
 - Provider failure must not blank an entire page.
 - Every page: skeleton, empty, partial error, full error, retry.
+- Unconfigured instance providers never appear as selectable sources.
 
 ---
 
 # ADMIN APPLICATION
 
-Operator modules: Overview, Health, Providers, Users, Configurations, Requests, Errors, Cache, Database, Workers, Logs, Security, Backups, Updates, Settings (`AGENTS.md` §24).
+Operator modules: Overview, Health, **Providers**, Users, Configurations, Requests, Errors, Cache, Database, Workers, Logs, Security, Backups, Updates, **Settings** (`AGENTS.md` §24).
 
-Auth: `METALAYER_DASHBOARD_TOKEN` via `x-metalayer-dashboard-token` (see Phase L).
+Auth: `METALAYER_DASHBOARD_TOKEN` via `x-metalayer-dashboard-token` (see Phase L / ADR 0008).
+
+## Admin-first instance configuration
+
+Prefer the Admin UI over new environment variables for day-two operation:
+
+- Providers: Fanart, Trakt/SIMKL/AniList/MAL OAuth **client** id/secret, optional instance TMDB key, enable/disable.
+- Settings: Redis / Postgres URLs (after bootstrap), cache limits, TMDB proxy, telemetry, tracking-refresh scheduler.
+
+Bootstrap-only env (encryption key, dashboard token, ports, public base URL) remains documented in `docs/deployment.md` and ADR 0008.
+
+When a provider is not configured/enabled in Admin, Configure must not offer it.
 
 ---
 
@@ -218,7 +274,7 @@ Auth: `METALAYER_DASHBOARD_TOKEN` via `x-metalayer-dashboard-token` (see Phase L
 
 Prefer `@metalayer/shared-ui` exports, then app-local `components/metalayer/`.
 
-Target set: AppShell, Sidebar, CommandPalette, PageHeader, SectionCard, StatusBadge, ProviderCard, MetricCard, EmptyState, ErrorState, LoadingState, FormSection, UnsavedChangesBar, InspectorPanel, DataTable, ConfirmDialog, SecretField, LocaleSelect, CatalogCard, RuleBuilder, SortingBuilder, StremioPreview, CodeViewer, JsonDiff, LogViewer.
+Target set: AppShell, Sidebar, CommandPalette, PageHeader, SectionCard, StatusBadge, ProviderCard, MetricCard, EmptyState, ErrorState, LoadingState, FormSection, UnsavedChangesBar, InspectorPanel, DataTable, ConfirmDialog, SecretField, LocaleSelect, CatalogCard, RuleBuilder, SortingBuilder, ResolutionChainBuilder, ResolutionFieldRail, StremioPreview, CodeViewer, JsonDiff, LogViewer.
 
 ---
 
@@ -229,6 +285,7 @@ Talk to MetaLayer Fastify API (`apps/server`):
 ```text
 /api/v1/configurations...
 /api/v1/dashboard...
+/api/v1/sources...
 ```
 
 Suggested structure (target):
@@ -269,9 +326,11 @@ Additional UI rules:
 2. Routing basenames `/configure` and `/admin`
 3. Shells + i18n
 4. Typed API / Query layer
-5. Configure modules (Overview → Save & Install)
-6. Admin modules
+5. Configure modules (Overview → Save & Install), including **Resolution Chains** page
+6. Admin Providers + Settings (Admin-first instance config)
 7. Accessibility + responsive + visual consistency passes
+
+UX mockups (planning artifacts) may live under `docs/ux-mocks/` before React implementation.
 
 ---
 
@@ -281,6 +340,8 @@ Additional UI rules:
 - HeroUI v3 + Layered Minimalism via `@metalayer/shared-ui`
 - Dark-first (light via tokens)
 - i18n en-US / pt-BR / es-ES
+- Resolution Chains dedicated Advanced module
+- Admin-first instance provider settings (gated availability)
 - README run instructions per app
 
 Do not prioritize a marketing landing page before the applications themselves.

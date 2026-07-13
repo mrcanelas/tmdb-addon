@@ -2,7 +2,13 @@
 
 Sources are external providers for metadata, artwork, ratings, catalogs, tracking, and related capabilities.
 
-Configure UI: `/configure/sources`. Canonical categories and source cards: `AGENTS.md` §8. Resilience: `AGENTS.md` §29. Phase C exit: `docs/phase-c-exit.md`.
+Configure UI: `/configure/sources`. Canonical categories and source cards: `AGENTS.md` §8. Instance enablement / Admin gate: `AGENTS.md` §8.1.1, ADR 0008, `docs/dashboard.md`. Resilience: `AGENTS.md` §29. Phase C exit: `docs/phase-c-exit.md`.
+
+## Instance availability
+
+Operators configure provider **app credentials** and enablement in Admin (`/admin/providers`). Configure lists only providers that are available for the instance. Unconfigured OAuth apps (Trakt, SIMKL, AniList, MAL client id/secret) and required artwork keys (e.g. Fanart) keep those providers out of Sources, Resolution Chains pickers, and Tracking connect when the feature depends on them.
+
+Per-configuration secrets (user TMDB API key, user OAuth tokens) remain separate from instance app credentials.
 
 ## Configure UI
 
@@ -14,7 +20,7 @@ Test success/failure uses live regions (`role=status` / `role=alert`). Health af
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/v1/sources` | Registered providers, capabilities, adapter availability, health snapshot (no secrets) |
+| GET | `/api/v1/sources` | Registered providers, capabilities, adapter availability, health snapshot (no secrets) — **must respect instance availability** |
 | GET | `/api/v1/sources/:providerId` | One provider + locale-adapter sample |
 | POST | `/api/v1/sources/:providerId/test` | Connectivity ping; optional vaulted credentials via `configId` + edit credential header |
 
@@ -26,6 +32,8 @@ Adapters created through the server share a process-scoped `ProviderHealthRegist
 
 ## Still follow-up
 
+- Admin Providers UI + instance vault for OAuth client secrets (replace env-only day-two setup)
+- Enforce instance availability filter end-to-end on Sources and Resolution pickers
 - First-class Connect/Disconnect on Sources for providers that OAuth elsewhere
 - Per-source last success/failure timestamps and latency charts in configure
 - Redis-shared health for multi-instance Server mode

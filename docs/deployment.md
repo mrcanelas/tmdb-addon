@@ -2,6 +2,20 @@
 
 MetaLayer supports two deployment profiles.
 
+Canonical ops rules: `AGENTS.md` §24–§25. Admin-first instance config: ADR 0008 / `docs/dashboard.md`.
+
+## Bootstrap vs Admin-managed
+
+**Goal:** minimize day-two `.env` editing. Prefer `/admin` Providers + Settings after first boot.
+
+| Class | Examples | Where |
+|---|---|---|
+| Bootstrap / sovereignty | `METALAYER_ENCRYPTION_KEY` (+ ring), `METALAYER_DASHBOARD_TOKEN`, `METALAYER_API_PORT` / public base URL / `HOST_NAME`, first-boot `METALAYER_SQLITE_PATH` | Environment only |
+| Instance (Admin target) | Trakt/SIMKL/AniList/MAL client id+secret, Fanart API key, optional instance TMDB key, `REDIS_URL`, `POSTGRES_URL`, TMDB proxy, cache limits, telemetry / tracking-refresh flags | Dashboard + vault (env still accepted as defaults until UI ships fully) |
+| Per-config | User API keys, user OAuth tokens, catalogs, rules, resolution | `/configure` |
+
+Until Admin Providers/Settings APIs land, existing env vars remain the practical way to supply instance credentials. New work must not *require* additional env vars when an Admin setting can host them.
+
 ## MetaLayer Lite (personal / family)
 
 ```text
@@ -15,7 +29,7 @@ Automatic local migrations (config store)
 
 ### Quick start
 
-1. Set secrets in `.env` (never commit real values):
+1. Set **bootstrap** secrets in `.env` (never commit real values):
 
 ```bash
 METALAYER_ENCRYPTION_KEY=<32-byte base64>
@@ -36,6 +50,8 @@ docker compose -f docker/docker-compose.lite.yml up -d --build
 - API health: `http://localhost:1338/api/v1/health`
 - Configure UI: `http://localhost:1338/configure/`
 - Admin UI: `http://localhost:1338/admin/`
+
+4. (Target) In Admin → Providers / Settings, enable providers and paste instance secrets (Trakt client id/secret, Fanart, Redis, …) so Configure only offers available sources.
 
 For hot-reload UI development:
 
@@ -61,7 +77,7 @@ Rate limiting / horizontal scaling later
 docker compose -f docker/docker-compose.server.yml up -d --build
 ```
 
-Set `POSTGRES_URL` (Compose sets it automatically) and `METALAYER_ENCRYPTION_KEY`. When `POSTGRES_URL` is present, the API uses `PostgresConfigurationStore` instead of SQLite. Lite remains SQLite via `METALAYER_SQLITE_PATH`.
+Set `POSTGRES_URL` (Compose sets it automatically) and `METALAYER_ENCRYPTION_KEY`. When `POSTGRES_URL` is present, the API uses `PostgresConfigurationStore` instead of SQLite. Lite remains SQLite via `METALAYER_SQLITE_PATH`. Moving `POSTGRES_URL` / `REDIS_URL` into Admin Settings remains the long-term target (restart-declared).
 
 When `REDIS_URL` is set, provider/identity caches use `RedisCache` (shared across instances). Without it, the API keeps an in-process `MemoryCache` (Lite default).
 
@@ -87,7 +103,7 @@ GET /api/v1/dashboard/overview
 x-metalayer-dashboard-token: <token>
 ```
 
-Modules exposed: overview, health, metrics, logs, configurations, settings, backups, updates.
+Modules: overview, health, metrics, logs, configurations, **providers**, **settings**, backups, updates — see `docs/dashboard.md`.
 
 ## Upgrades
 
@@ -148,7 +164,7 @@ METALAYER_TRACKING_REFRESH_ENABLED=true
 # METALAYER_TRACKING_REFRESH_INTERVAL_MS=21600000
 ```
 
-Requires `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` and/or `MAL_CLIENT_ID` / `MAL_CLIENT_SECRET` for the providers you use. Never logs tokens or vault plaintext.
+Requires Trakt/MAL OAuth **client** credentials from Admin Providers (or env defaults until that UI lands). Never logs tokens or vault plaintext.
 
 ## Security notes
 
