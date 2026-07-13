@@ -20,3 +20,10 @@ export {
   toPseudoRtl,
   transformMessageCatalog,
 } from './pseudo.js';
+
+export {
+  formatLanguageDisplayName,
+  formatRegionDisplayName,
+  formatTimezoneDisplayName,
+  formatCodedDisplayName,
+} from './formatting.js';

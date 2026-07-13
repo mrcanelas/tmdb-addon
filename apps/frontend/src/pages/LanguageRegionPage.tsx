@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LocalizationPreferences } from '@metalayer/config';
 import { LocalizationPreferencesSchema } from '@metalayer/config';
-import { applyDocumentLocale, STABLE_LOCALES } from '@metalayer/i18n';
+import {
+  applyDocumentLocale,
+  formatCodedDisplayName,
+  formatLanguageDisplayName,
+  formatRegionDisplayName,
+  formatTimezoneDisplayName,
+  STABLE_LOCALES,
+} from '@metalayer/i18n';
 import { Button } from '@metalayer/shared-ui';
 import {
   ensureStudioSession,
@@ -87,6 +94,7 @@ function syncRegionsFromCountry(
 
 export function LanguageRegionPage() {
   const { t } = useTranslation(['languageRegion', 'common']);
+  const displayLocale = i18n.language || 'en-US';
   const mode = useConfigureUiStore((s) => s.mode);
   const isAdvanced = mode === 'advanced';
 
@@ -212,7 +220,10 @@ export function LanguageRegionPage() {
                 >
                   {STABLE_LOCALES.map((locale) => (
                     <option key={locale} value={locale}>
-                      {locale}
+                      {formatCodedDisplayName(
+                        formatLanguageDisplayName(locale, displayLocale),
+                        locale,
+                      )}
                     </option>
                   ))}
                 </select>
@@ -235,7 +246,10 @@ export function LanguageRegionPage() {
                       ]),
                     ].map((locale) => (
                       <option key={locale} value={locale}>
-                        {locale}
+                        {formatCodedDisplayName(
+                          formatLanguageDisplayName(locale, displayLocale),
+                          locale,
+                        )}
                       </option>
                     ))}
                   </select>
@@ -279,7 +293,10 @@ export function LanguageRegionPage() {
                 >
                   {REGION_OPTIONS.map((region) => (
                     <option key={region} value={region}>
-                      {region}
+                      {formatCodedDisplayName(
+                        formatRegionDisplayName(region, displayLocale),
+                        region,
+                      )}
                     </option>
                   ))}
                 </select>
@@ -329,7 +346,10 @@ export function LanguageRegionPage() {
                           region !== localization.contentRegion,
                       ).map((region) => (
                         <option key={region} value={region}>
-                          {region}
+                          {formatCodedDisplayName(
+                            formatRegionDisplayName(region, displayLocale),
+                            region,
+                          )}
                         </option>
                       ))}
                     </select>
@@ -349,7 +369,10 @@ export function LanguageRegionPage() {
                   ...new Set([...TIMEZONE_OPTIONS, localization.timezone]),
                 ].map((zone) => (
                   <option key={zone} value={zone}>
-                    {zone}
+                    {formatCodedDisplayName(
+                      formatTimezoneDisplayName(zone, displayLocale),
+                      zone,
+                    )}
                   </option>
                 ))}
               </select>

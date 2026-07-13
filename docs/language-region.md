@@ -22,6 +22,8 @@ Typical fields on `LocalizationPreferences`:
 - `contentRegion`, `availabilityRegion`, `certificationRegion`, `releaseRegion`
 - `timezone`, optional date/time/number formatting styles
 
+Configure selectors show **localized labels** via `@metalayer/i18n` `Intl.DisplayNames` helpers (`formatLanguageDisplayName`, `formatRegionDisplayName`, `formatTimezoneDisplayName`) while keeping stable codes in the option value.
+
 Persist via `GET/PUT /api/v1/configurations/:configId/localization` (edit credential required). Profiles may override a subset (`docs/profiles.md`).
 
 ## Cache impact
