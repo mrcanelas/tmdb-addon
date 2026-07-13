@@ -6,11 +6,11 @@ Canonical rules: `AGENTS.md` §6. Dual-identity strategy and migration report fi
 
 ## Flow
 
-1. Open configure → import (or `POST /api/v1/configurations/import-legacy`).
-2. MetaLayer parses and validates the legacy payload (dry-run supported).
-3. The import summary lists imported fields and items that need attention.
-4. On confirm, MetaLayer creates a native persistent configuration; secrets move into the Secret Vault.
-5. The user receives a new `/c/:configId/manifest.json` URL. The legacy configuration remains untouched.
+1. Open configure → Overview → **Import TMDB Addon config** (or `POST /api/v1/configurations/import-legacy`).
+2. MetaLayer parses and validates the legacy payload (dry-run / preview supported).
+3. The import summary lists imported fields, secrets destined for the vault (ids only), and items that need attention.
+4. On confirm, MetaLayer creates a native persistent configuration; secrets move into the Secret Vault; the configure session switches to the new `configId`.
+5. The user is taken to Save & Install for `/c/:configId/manifest.json`. The legacy configuration remains untouched.
 
 ## Typical import mapping
 

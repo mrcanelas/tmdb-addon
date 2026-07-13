@@ -178,6 +178,58 @@ export function clearCatalogSession(): void {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
+export interface LegacyImportReportView {
+  imported: string[];
+  needsAttention: Array<{ code: string; message: string; field?: string }>;
+  secretsToVault: string[];
+}
+
+export interface LegacyImportDryRunResult {
+  dryRun: true;
+  report: LegacyImportReportView;
+  config: { name?: string; catalogs?: unknown[] };
+  correlationId?: string;
+}
+
+export interface LegacyImportPersistResult {
+  dryRun: false;
+  configId: string;
+  manifestPath: string;
+  report: LegacyImportReportView;
+  correlationId?: string;
+}
+
+/** Accepts JSON object text, compressed legacy segment, or language-only string. */
+export function parseLegacyImportInput(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    throw new Error('LEGACY_IMPORT_EMPTY');
+  }
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    return JSON.parse(trimmed) as unknown;
+  }
+  return trimmed;
+}
+
+export async function dryRunLegacyImport(
+  legacy: unknown,
+): Promise<LegacyImportDryRunResult> {
+  return apiFetch('/api/v1/configurations/import-legacy', {
+    method: 'POST',
+    body: JSON.stringify({ dryRun: true, legacy }),
+  });
+}
+
+export async function persistLegacyImport(
+  legacy: unknown,
+  editCredential: string,
+): Promise<LegacyImportPersistResult> {
+  return apiFetch('/api/v1/configurations/import-legacy', {
+    method: 'POST',
+    body: JSON.stringify({ dryRun: false, legacy, editCredential }),
+  });
+}
+
 function sampleCatalogs() {
   const id = () => `cat_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
   return [
