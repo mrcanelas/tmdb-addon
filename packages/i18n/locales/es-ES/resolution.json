@@ -29,5 +29,6 @@
   "resolution.loading": "Cargando planes de resolución…",
   "resolution.field.title": "Título",
   "resolution.field.description": "Sinopsis",
-  "resolution.field.poster": "Póster"
+  "resolution.field.poster": "Póster",
+  "resolution.field.background": "Fondo"
 }

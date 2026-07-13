@@ -1,47 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FieldResolutionPlan, ResolutionConfig } from '@metalayer/config';
-import { planFromProviderChain } from '@metalayer/config';
 import { Button } from '@metalayer/shared-ui';
 import {
   ensureStudioSession,
   fetchResolutionConfig,
   saveResolutionConfig,
 } from '@/lib/api';
+import {
+  APPEARANCE_EDIT_FIELDS,
+  ensureAppearancePlan,
+  isArtworkField,
+  type AppearanceEditField,
+} from '@/lib/appearance-plans';
 import { PageHeader } from '@/components/metalayer/PageHeader';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { ResolutionChainBuilder } from '@/components/metalayer/ResolutionChainBuilder';
-
-const EDIT_FIELDS = ['title', 'description', 'poster'] as const;
-
-function ensurePlan(
-  resolution: ResolutionConfig,
-  field: (typeof EDIT_FIELDS)[number],
-): FieldResolutionPlan {
-  const existing = resolution.defaults.fields[field];
-  if (existing) return existing;
-  if (field === 'title' || field === 'description') {
-    return planFromProviderChain(
-      ['tmdb', 'tvdb'],
-      [
-        { type: 'locale', value: 'pt-BR' },
-        { type: 'locale', value: 'en-US' },
-        { type: 'original-language' },
-      ],
-      'locale-first',
-    );
-  }
-  return planFromProviderChain(
-    ['rpdb', 'fanart', 'tmdb'],
-    [
-      { type: 'locale', value: 'pt-BR' },
-      { type: 'no-language' },
-      { type: 'locale', value: 'en-US' },
-    ],
-    'locale-first',
-  );
-}
 
 export function AppearancePage() {
   const { t } = useTranslation(['resolution', 'common']);
@@ -63,8 +38,8 @@ export function AppearancePage() {
       next.defaults = {
         fields: { ...next.defaults.fields },
       };
-      for (const field of EDIT_FIELDS) {
-        next.defaults.fields[field] = ensurePlan(next, field);
+      for (const field of APPEARANCE_EDIT_FIELDS) {
+        next.defaults.fields[field] = ensureAppearancePlan(next, field);
       }
       setResolution(next);
       setStatus('ready');
@@ -77,10 +52,7 @@ export function AppearancePage() {
     void load();
   }, []);
 
-  function updateField(
-    field: (typeof EDIT_FIELDS)[number],
-    plan: FieldResolutionPlan,
-  ) {
+  function updateField(field: AppearanceEditField, plan: FieldResolutionPlan) {
     setResolution((current) => {
       if (!current) return current;
       return {
@@ -157,14 +129,14 @@ export function AppearancePage() {
       ) : null}
 
       {resolution
-        ? EDIT_FIELDS.map((field) => (
+        ? APPEARANCE_EDIT_FIELDS.map((field) => (
             <ResolutionChainBuilder
               key={field}
               fieldLabel={t(`resolution.field.${field}`)}
-              value={ensurePlan(resolution, field)}
+              value={ensureAppearancePlan(resolution, field)}
               onChange={(plan) => updateField(field, plan)}
               providerOptions={
-                field === 'poster'
+                isArtworkField(field)
                   ? ['rpdb', 'fanart', 'tmdb', 'tvdb']
                   : ['tmdb', 'tvdb', 'imdb']
               }

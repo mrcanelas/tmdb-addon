@@ -29,5 +29,6 @@
   "resolution.loading": "‏Loading resolution plans…‎",
   "resolution.field.title": "‏Title‎",
   "resolution.field.description": "‏Overview‎",
-  "resolution.field.poster": "‏Poster‎"
+  "resolution.field.poster": "‏Poster‎",
+  "resolution.field.background": "‏Background‎"
 }

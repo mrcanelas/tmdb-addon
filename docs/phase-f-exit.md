@@ -25,7 +25,7 @@ Status: **product-complete** — baseline field resolution (F1) plus Field Resol
 | Runtime resolve from plan | Done | `resolveFieldFromPlan` with `attempts[]` + `effectivePlanHash` |
 | Chains enabled by default | Done | `useFieldResolutionChains !== false` in `resolveWork` |
 | Management APIs | Done | `GET/PUT .../resolution`, `POST .../compile`, `POST .../test` |
-| ResolutionChainBuilder UI | Done | Appearance page for title / description / poster |
+| ResolutionChainBuilder UI | Done | Appearance: title / description / poster / **background** (artwork defaults include `no-language`) |
 | Meta Inspector attempts | Done | per-field attempt list (provider · locale · status · reason) |
 | i18n `resolution` namespace | Done | en-US / pt-BR / es-ES (+ pseudo) |
 
@@ -34,7 +34,7 @@ Status: **product-complete** — baseline field resolution (F1) plus Field Resol
 - Full inheritance UI for profile → catalog → title overrides (compiler layers exist; product UX incomplete).
 - Advanced explicit step editor beyond ordered provider chains.
 - Episode / anime order types wired through Corrections (Phase J) in the chain UI.
-- Dedicated artwork no-language ranking policy beyond provider-first expansion.
+- Dedicated artwork no-language **ranking** policy beyond locale-first expansion (Appearance defaults already insert `no-language` for poster/background).
 - Legacy `language` / `provider` / `artProvider` URL migration into plans (native `fieldProviders` bridge ships).
 - Shared cache keys including `effectivePlanHash` when Redis/shared catalog-meta caches land.
 

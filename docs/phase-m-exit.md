@@ -28,7 +28,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
-| Field Resolution Chains inheritance/episode UX depth | beta.N |
+| Field Resolution Chains inheritance/episode UX depth | beta.N (Appearance **background** + artwork `no-language` defaults landed; inheritance/episode UI still deferred) |
 | Full i18n/RTL layout hardening | **Partial** — shell landmarks; configure loads en-XA/ar-XB; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | Phase M → N (migration fixture coverage landed; **security hardening MVP** — dashboard token redaction + OAuth redirect allowlist; formal review still Open) |
@@ -46,7 +46,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Security review | Partial — log redaction includes dashboard token; OAuth `redirectUri` allowlist; formal sign-off Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell keys hardened; full review Open |
 | Pseudo-locale and RTL layout review | Partial — configure i18n loads en-XA/ar-XB; `dir` + pseudo strings wired; **layout audit Open** |
-| Field Resolution Chains review | Open |
+| Field Resolution Chains review | Partial — Appearance edits background (+ poster/title/description); artwork defaults include `no-language`; inheritance/episode UX still Open |
 | Documentation pass | Open |
 
 ## Exit criterion
