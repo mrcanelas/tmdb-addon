@@ -21,7 +21,9 @@ export interface FieldResolutionAttempt {
   resolvedLocale?: string;
   status: FieldAttemptStatus;
   confidence?: number;
+  /** Stable reason code for Meta Inspector i18n (not a user-facing sentence). */
   reason?: string;
+  reasonParams?: Record<string, string | number>;
 }
 
 function isPresent<T>(value: T | null | undefined): value is T {
@@ -100,7 +102,7 @@ export function resolveFieldFromPlan<T>(
         provider: step.provider,
         localePreference: step.locale,
         status: 'not-found',
-        reason: 'No contribution for provider/locale step',
+        reason: 'NO_CONTRIBUTION',
       });
       if (step.required) break;
       continue;
@@ -115,7 +117,7 @@ export function resolveFieldFromPlan<T>(
         localePreference: step.locale,
         resolvedLocale: matches[0]?.locale,
         status: 'empty',
-        reason: plan.skipEmpty ? 'Empty value skipped' : 'Empty value',
+        reason: plan.skipEmpty ? 'EMPTY_SKIPPED' : 'EMPTY',
       });
       if (step.required) break;
       continue;
@@ -132,7 +134,8 @@ export function resolveFieldFromPlan<T>(
         resolvedLocale: usable.locale,
         status: 'below-confidence',
         confidence,
-        reason: `Confidence ${confidence} < ${minimum}`,
+        reason: 'BELOW_CONFIDENCE',
+        reasonParams: { confidence, minimum },
       });
       if (step.required) break;
       continue;
@@ -161,7 +164,7 @@ export function resolveFieldFromPlan<T>(
       fallbackUsed: false,
       warnings,
       resolvedAt,
-      exclusionReason: 'No provider returned a usable value for the resolution plan',
+      exclusionReason: 'UNRESOLVED',
       attempts,
       effectivePlanHash: plan.effectivePlanHash,
     };

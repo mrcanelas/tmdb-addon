@@ -488,6 +488,7 @@ export interface FieldResolutionView {
     status: string;
     resolvedLocale?: string;
     reason?: string;
+    reasonParams?: Record<string, string | number>;
   }>;
   effectivePlanHash?: string;
 }

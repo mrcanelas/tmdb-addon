@@ -84,7 +84,7 @@ describe('resolveField', () => {
     );
     expect(result.value).toBeNull();
     expect(result.selectedProvider).toBeNull();
-    expect(result.exclusionReason).toMatch(/No provider/);
+    expect(result.exclusionReason).toBe('UNRESOLVED');
   });
 
   it('uses highest confidence for rating policy', () => {

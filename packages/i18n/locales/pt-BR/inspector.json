@@ -18,6 +18,7 @@
   "inspector.attempts": "Tentativas de resolução",
   "inspector.confidence": "Confiança",
   "inspector.exclusion": "Exclusão",
+  "inspector.exclusionLine": "Exclusão: {{reason}}",
   "inspector.displayTitle": "Título exibido",
   "inspector.timing": "Resolvido em {{ms}} ms",
   "inspector.fields.title": "Título",
@@ -31,5 +32,15 @@
   "inspector.fields.externalIds": "IDs externos",
   "inspector.yes": "sim",
   "inspector.no": "não",
-  "inspector.plan": "Plano"
+  "inspector.plan": "Plano",
+  "inspector.attemptStatus.selected": "Selecionado",
+  "inspector.attemptStatus.empty": "Vazio",
+  "inspector.attemptStatus.not-found": "Não encontrado",
+  "inspector.attemptStatus.skipped": "Ignorado",
+  "inspector.attemptStatus.below-confidence": "Abaixo da confiança",
+  "inspector.reason.NO_CONTRIBUTION": "Sem contribuição para este provedor e locale",
+  "inspector.reason.EMPTY": "Valor vazio",
+  "inspector.reason.EMPTY_SKIPPED": "Valor vazio ignorado",
+  "inspector.reason.BELOW_CONFIDENCE": "Confiança {{confidence}} abaixo de {{minimum}}",
+  "inspector.reason.UNRESOLVED": "Nenhum provedor retornou um valor utilizável"
 }

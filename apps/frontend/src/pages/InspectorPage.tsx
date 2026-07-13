@@ -24,6 +24,35 @@ const FIELD_KEYS = [
   'externalIds',
 ] as const;
 
+const ATTEMPT_STATUS_KEYS = [
+  'selected',
+  'empty',
+  'not-found',
+  'skipped',
+  'below-confidence',
+] as const;
+
+function translateAttemptStatus(
+  status: string,
+  t: (key: string) => string,
+): string {
+  if ((ATTEMPT_STATUS_KEYS as readonly string[]).includes(status)) {
+    return t(`inspector.attemptStatus.${status}`);
+  }
+  return status;
+}
+
+function translateReasonCode(
+  reason: string | undefined,
+  t: (key: string, options?: Record<string, unknown>) => string,
+  params?: Record<string, string | number>,
+): string | null {
+  if (!reason) return null;
+  const key = `inspector.reason.${reason}`;
+  const translated = t(key, params);
+  return translated === key ? reason : translated;
+}
+
 const SAMPLE_CONTRIBUTIONS = {
   title: [
     { provider: 'tmdb', value: 'Fight Club', locale: 'en-US' },
@@ -278,16 +307,27 @@ export function InspectorPage() {
                                 {t('inspector.attempts')}
                               </p>
                               <ol className="list-decimal space-y-1 ps-5 font-mono text-xs">
-                                {field.attempts.map((attempt) => (
-                                  <li key={`${attempt.stepId}-${attempt.index}`}>
-                                    {attempt.provider}
-                                    {attempt.resolvedLocale
-                                      ? ` · ${attempt.resolvedLocale}`
-                                      : ''}{' '}
-                                    — {attempt.status}
-                                    {attempt.reason ? ` (${attempt.reason})` : ''}
-                                  </li>
-                                ))}
+                                {field.attempts.map((attempt) => {
+                                  const statusLabel = translateAttemptStatus(
+                                    attempt.status,
+                                    t,
+                                  );
+                                  const reasonLabel = translateReasonCode(
+                                    attempt.reason,
+                                    t,
+                                    attempt.reasonParams,
+                                  );
+                                  return (
+                                    <li key={`${attempt.stepId}-${attempt.index}`}>
+                                      {attempt.provider}
+                                      {attempt.resolvedLocale
+                                        ? ` · ${attempt.resolvedLocale}`
+                                        : ''}{' '}
+                                      — {statusLabel}
+                                      {reasonLabel ? ` (${reasonLabel})` : ''}
+                                    </li>
+                                  );
+                                })}
                               </ol>
                               {field.effectivePlanHash ? (
                                 <p className="mt-1 text-xs">
@@ -301,7 +341,11 @@ export function InspectorPage() {
                           ) : null}
                           {field.exclusionReason ? (
                             <div className="sm:col-span-2 text-amber-700 dark:text-amber-400">
-                              {t('inspector.exclusion')}: {field.exclusionReason}
+                              {t('inspector.exclusionLine', {
+                                reason:
+                                  translateReasonCode(field.exclusionReason, t) ??
+                                  field.exclusionReason,
+                              })}
                             </div>
                           ) : null}
                         </dl>

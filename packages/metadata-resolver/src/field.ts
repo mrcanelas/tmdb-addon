@@ -43,7 +43,9 @@ export interface FieldResolutionAttempt {
   resolvedLocale?: string;
   status: FieldAttemptStatus;
   confidence?: number;
+  /** Stable reason code for Meta Inspector i18n (not a user-facing sentence). */
   reason?: string;
+  reasonParams?: Record<string, string | number>;
 }
 
 export type ResolutionPolicy =
@@ -109,7 +111,7 @@ export function resolveField<T>(
       warnings,
       resolvedAt,
       requestedLocale: options.requestedLocale,
-      exclusionReason: 'No provider returned a usable value',
+      exclusionReason: 'UNRESOLVED',
     };
   }
 

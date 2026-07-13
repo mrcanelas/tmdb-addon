@@ -18,6 +18,7 @@
   "inspector.attempts": "‏Resolution attempts‎",
   "inspector.confidence": "‏Confidence‎",
   "inspector.exclusion": "‏Exclusion‎",
+  "inspector.exclusionLine": "‏Exclusion: ‎{{reason}}‏‎",
   "inspector.displayTitle": "‏Display title‎",
   "inspector.timing": "‏Resolved in ‎{{ms}}‏ ms‎",
   "inspector.fields.title": "‏Title‎",
@@ -31,5 +32,15 @@
   "inspector.fields.externalIds": "‏External IDs‎",
   "inspector.yes": "‏yes‎",
   "inspector.no": "‏no‎",
-  "inspector.plan": "‏Plan‎"
+  "inspector.plan": "‏Plan‎",
+  "inspector.attemptStatus.selected": "‏Selected‎",
+  "inspector.attemptStatus.empty": "‏Empty‎",
+  "inspector.attemptStatus.not-found": "‏Not found‎",
+  "inspector.attemptStatus.skipped": "‏Skipped‎",
+  "inspector.attemptStatus.below-confidence": "‏Below confidence‎",
+  "inspector.reason.NO_CONTRIBUTION": "‏No contribution for this provider and locale step‎",
+  "inspector.reason.EMPTY": "‏Empty value‎",
+  "inspector.reason.EMPTY_SKIPPED": "‏Empty value skipped‎",
+  "inspector.reason.BELOW_CONFIDENCE": "‏Confidence ‎{{confidence}}‏ is below ‎{{minimum}}‏‎",
+  "inspector.reason.UNRESOLVED": "‏No provider returned a usable value‎"
 }

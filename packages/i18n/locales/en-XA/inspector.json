@@ -18,6 +18,7 @@
   "inspector.attempts": "Résølûtîøñ åttémptsRésølû",
   "inspector.confidence": "ÇøñfîdéñçéÇøñ",
   "inspector.exclusion": "ÉxçlûsîøñÉxç",
+  "inspector.exclusionLine": "Éxçlûsîøñ: Éxçl{{reason}}",
   "inspector.displayTitle": "Dîsplåy tîtléDîsp",
   "inspector.timing": "Résølvéd îñ Résø{{ms}} ms ",
   "inspector.fields.title": "TîtléTî",
@@ -31,5 +32,15 @@
   "inspector.fields.externalIds": "Éxtérñål ÎDsÉxté",
   "inspector.yes": "yésy",
   "inspector.no": "ñøñ",
-  "inspector.plan": "PlåñPl"
+  "inspector.plan": "PlåñPl",
+  "inspector.attemptStatus.selected": "SéléçtédSél",
+  "inspector.attemptStatus.empty": "ÉmptyÉm",
+  "inspector.attemptStatus.not-found": "Ñøt føûñdÑøt",
+  "inspector.attemptStatus.skipped": "SkîppédSkî",
+  "inspector.attemptStatus.below-confidence": "Béløw çøñfîdéñçéBéløw",
+  "inspector.reason.NO_CONTRIBUTION": "Ñø çøñtrîbûtîøñ før thîs prøvîdér åñd løçålé stépÑø çøñtrîbûtîøñ",
+  "inspector.reason.EMPTY": "Émpty vålûéÉmpt",
+  "inspector.reason.EMPTY_SKIPPED": "Émpty vålûé skîppédÉmpty ",
+  "inspector.reason.BELOW_CONFIDENCE": "Çøñfîdéñçé Çøñf{{confidence}} îs béløw  îs{{minimum}}",
+  "inspector.reason.UNRESOLVED": "Ñø prøvîdér rétûrñéd å ûsåblé vålûéÑø prøvîdér"
 }
