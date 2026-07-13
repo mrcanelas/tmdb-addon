@@ -24,4 +24,4 @@ Stable locales for `1.0.0`: **en-US**, **pt-BR**, **es-ES**.
 
 Configure sets `dir=rtl` for `ar-XB`. Prefer CSS logical properties (`ps-*`, `ms-*`, `border-s`). Dashboard Updates list uses `ps-5` for indentation.
 
-Manual walkthrough: `docs/rtl-layout-checklist.md`. A signed-off visual pass under en-XA/ar-XB remains a Phase M follow-up until recorded in `docs/phase-m-exit.md`.
+Manual walkthrough: `docs/rtl-layout-checklist.md`. Configure and dashboard both load en-XA/ar-XB and apply `document.dir` via `applyDocumentLocale` (Vitest smoke tests). A signed visual pass under en-XA/ar-XB remains a Phase M follow-up until recorded in `docs/phase-m-exit.md`.

@@ -45,7 +45,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | Partial — log redaction includes dashboard token; OAuth `redirectUri` allowlist; formal sign-off Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell + Search & AI + Corrections/Tracking + **Inspector attempt reasons** hardened; full catalog review Open |
-| Pseudo-locale and RTL layout review | Partial — configure loads en-XA/ar-XB; logical CSS in apps; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
+| Pseudo-locale and RTL layout review | Partial — configure + **dashboard** load en-XA/ar-XB with `dir`; smoke tests; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
 | Field Resolution Chains review | Partial — Appearance background + Inspector localizes attempt codes; inheritance/episode UX still Open |
 | Documentation pass | Partial — §36 stubs + CHANGELOG/CONTRIBUTING + RTL checklist; **Tracking narrative expanded**; deeper appearance/catalog docs still Open |
 

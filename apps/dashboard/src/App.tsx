@@ -1,11 +1,16 @@
 import { NavLink, Route, Routes, BrowserRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { Button, MetaLayerThemeProvider } from '@metalayer/shared-ui';
 import { OverviewPage } from './pages/OverviewPage';
 import { LogsPage } from './pages/LogsPage';
 import { BackupsPage } from './pages/BackupsPage';
 import { UpdatesPage } from './pages/UpdatesPage';
 import { LoginGate } from './components/LoginGate';
+
+const SHELL_LOCALES = LOCALE_REGISTRY.filter(
+  (locale) => locale.status === 'stable' || locale.status === 'pseudo',
+);
 
 export function App() {
   const { t, i18n } = useTranslation('dashboard');
@@ -38,17 +43,18 @@ export function App() {
                 </NavLink>
               </nav>
               <div className="mt-4 flex flex-wrap gap-2">
-                {(['en-US', 'pt-BR', 'es-ES'] as const).map((locale) => (
+                {SHELL_LOCALES.map((locale) => (
                   <Button
-                    key={locale}
+                    key={locale.id}
                     size="sm"
-                    variant={i18n.language === locale ? 'primary' : 'outline'}
+                    variant={i18n.language === locale.id ? 'primary' : 'outline'}
                     onPress={() => {
-                      void i18n.changeLanguage(locale);
-                      document.documentElement.lang = locale;
+                      void i18n.changeLanguage(locale.id).then(() => {
+                        applyDocumentLocale(locale.id);
+                      });
                     }}
                   >
-                    {locale}
+                    {locale.status === 'pseudo' ? `${locale.id} (QA)` : locale.id}
                   </Button>
                 ))}
               </div>

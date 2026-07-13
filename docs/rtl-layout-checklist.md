@@ -27,7 +27,10 @@ Configure:
 
 Dashboard (`/admin`), when token-gated access is available:
 
-- Overview, Health, Configurations, Updates, Settings
+- Overview, Logs, Backups, Updates
+- Locale switcher includes `en-XA` / `ar-XB` labeled `(QA)`
+
+Automated smoke (not a visual sign-off): `apps/frontend/src/lib/i18n.pseudo.test.ts` and `apps/dashboard/src/lib/i18n.pseudo.test.ts`.
 
 ## What to verify
 
