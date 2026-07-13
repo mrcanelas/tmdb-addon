@@ -13,11 +13,13 @@ import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
-const SAMPLE_ITEMS = [
-  { id: 'b', title: 'Beta', rating: 7.1, popularity: 40 },
-  { id: 'a', title: 'Alpha', rating: 8.8, popularity: 90 },
-  { id: 'c', title: 'Gamma', rating: 8.1, popularity: 55 },
-];
+function buildSampleItems(t: (key: string) => string) {
+  return [
+    { id: 'b', title: t('sorting.sample.b'), rating: 7.1, popularity: 40 },
+    { id: 'a', title: t('sorting.sample.a'), rating: 8.8, popularity: 90 },
+    { id: 'c', title: t('sorting.sample.c'), rating: 8.1, popularity: 55 },
+  ];
+}
 
 const FIELDS = [
   'sourceOrder',
@@ -91,7 +93,7 @@ export function SortingPage() {
       const result = await previewSorting(
         session.configId,
         session.editCredential,
-        SAMPLE_ITEMS,
+        buildSampleItems(t),
         plan,
       );
       setOrder(result.order);
@@ -299,7 +301,8 @@ export function SortingPage() {
               <ol className="space-y-1 text-sm text-[var(--ml-text)]">
                 {order.map((id, index) => (
                   <li key={id}>
-                    {index + 1}. {id}
+                    {index + 1}.{' '}
+                    {t(`sorting.sample.${id}`, { defaultValue: id })}
                   </li>
                 ))}
               </ol>

@@ -34,5 +34,8 @@
   "rules.warning.TRACKING_REQUIRED": "El proveedor no tiene capacidad de tracking",
   "rules.fallback.POST_FILTER": "post-filtro tras el fetch",
   "rules.fallback.IGNORE_AT_PROVIDER": "ignorar la restricción de región en el límite del proveedor",
-  "rules.fallback.REQUIRES_TRACKING": "requiere integración de tracking"
+  "rules.fallback.REQUIRES_TRACKING": "requiere integración de tracking",
+  "rules.sample.adult-hit": "Contenido adulto",
+  "rules.sample.low-rated": "Nota baja",
+  "rules.sample.keeper": "Conservado"
 }

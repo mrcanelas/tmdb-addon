@@ -30,5 +30,8 @@
   "sorting.fields.random": "Aleatorio",
   "sorting.dir.asc": "Ascendente",
   "sorting.dir.desc": "Descendente",
-  "sorting.bootstrapping": "Preparando configuración borrador…"
+  "sorting.bootstrapping": "Preparando configuración borrador…",
+  "sorting.sample.a": "Alfa",
+  "sorting.sample.b": "Beta",
+  "sorting.sample.c": "Gamma"
 }

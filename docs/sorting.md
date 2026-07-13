@@ -31,6 +31,7 @@ Catalog overrides may set `CatalogDefinition.sorting`; preview prefers catalog p
 2. Load the stored global plan (`GET .../sorting`) — falls back to Studio defaults when unset.
 3. Add/reorder criteria, set direction and stability.
 4. **Preview** sample items to see resolved order and active seed window.
+   Sample labels are localized via `sorting.sample.*` (ids remain stable).
 5. Save with `PUT .../sorting`.
 
 ## Management API

@@ -13,11 +13,31 @@ import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
-const SAMPLE_ITEMS = [
-  { id: 'adult-hit', title: 'Adult Hit', rating: 9, adult: true, voteCount: 1000 },
-  { id: 'low-rated', title: 'Low Rated', rating: 4.2, adult: false, voteCount: 20 },
-  { id: 'keeper', title: 'Keeper', rating: 8.4, adult: false, voteCount: 500 },
-];
+function buildSampleItems(t: (key: string) => string) {
+  return [
+    {
+      id: 'adult-hit',
+      title: t('rules.sample.adult-hit'),
+      rating: 9,
+      adult: true,
+      voteCount: 1000,
+    },
+    {
+      id: 'low-rated',
+      title: t('rules.sample.low-rated'),
+      rating: 4.2,
+      adult: false,
+      voteCount: 20,
+    },
+    {
+      id: 'keeper',
+      title: t('rules.sample.keeper'),
+      rating: 8.4,
+      adult: false,
+      voteCount: 500,
+    },
+  ];
+}
 
 export function RulesPage() {
   const { t } = useTranslation(['rules', 'common']);
@@ -81,7 +101,7 @@ export function RulesPage() {
       const result = await previewRules(
         session.configId,
         session.editCredential,
-        SAMPLE_ITEMS,
+        buildSampleItems(t),
         rules,
       );
       setIncluded(result.included);
@@ -257,14 +277,18 @@ export function RulesPage() {
               <SectionCard title={t('rules.included')}>
                 <ul className="space-y-1 text-sm text-[var(--ml-text)]">
                   {included.map((id) => (
-                    <li key={id}>{id}</li>
+                    <li key={id}>
+                      {t(`rules.sample.${id}`, { defaultValue: id })}
+                    </li>
                   ))}
                 </ul>
               </SectionCard>
               <SectionCard title={t('rules.excluded')}>
                 <ul className="space-y-1 text-sm text-[var(--ml-text)]">
                   {excluded.map((id) => (
-                    <li key={id}>{id}</li>
+                    <li key={id}>
+                      {t(`rules.sample.${id}`, { defaultValue: id })}
+                    </li>
                   ))}
                 </ul>
               </SectionCard>

@@ -25,6 +25,7 @@ Full `RuleSet` (genres, runtime, certifications, networks, hide watched, etc.) i
 1. Open `/configure/rules` with edit credential.
 2. Load effective rules (`GET .../rules/effective`) — includes provider capability warnings.
 3. Adjust global fields and **Preview** against sample candidates.
+   Sample candidate labels are localized via `rules.sample.*` (ids remain stable).
 4. Save with `PUT .../rules` (creates a configuration revision).
 5. Empty catalogs still return `{ "metas": [] }` when rules exclude everything.
 

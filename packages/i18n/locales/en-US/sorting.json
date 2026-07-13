@@ -30,5 +30,8 @@
   "sorting.fields.random": "Random",
   "sorting.dir.asc": "Ascending",
   "sorting.dir.desc": "Descending",
-  "sorting.bootstrapping": "Preparing draft configuration…"
+  "sorting.bootstrapping": "Preparing draft configuration…",
+  "sorting.sample.a": "Alpha",
+  "sorting.sample.b": "Beta",
+  "sorting.sample.c": "Gamma"
 }

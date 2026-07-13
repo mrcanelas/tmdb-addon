@@ -34,5 +34,8 @@
   "rules.warning.TRACKING_REQUIRED": "Provider has no tracking capability",
   "rules.fallback.POST_FILTER": "post-filter after fetch",
   "rules.fallback.IGNORE_AT_PROVIDER": "ignore region constraint at provider boundary",
-  "rules.fallback.REQUIRES_TRACKING": "requires tracking integration"
+  "rules.fallback.REQUIRES_TRACKING": "requires tracking integration",
+  "rules.sample.adult-hit": "Adult Hit",
+  "rules.sample.low-rated": "Low Rated",
+  "rules.sample.keeper": "Keeper"
 }

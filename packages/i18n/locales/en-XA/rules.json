@@ -34,5 +34,8 @@
   "rules.warning.TRACKING_REQUIRED": "Prøvîdér hås ñø tråçkîñg çåpåbîlîtyPrøvîdér hå",
   "rules.fallback.POST_FILTER": "pøst-fîltér åftér fétçhpøst-fî",
   "rules.fallback.IGNORE_AT_PROVIDER": "îgñøré régîøñ çøñstråîñt åt prøvîdér bøûñdåryîgñøré régîøñ ",
-  "rules.fallback.REQUIRES_TRACKING": "réqûîrés tråçkîñg îñtégråtîøñréqûîrés "
+  "rules.fallback.REQUIRES_TRACKING": "réqûîrés tråçkîñg îñtégråtîøñréqûîrés ",
+  "rules.sample.adult-hit": "Ådûlt HîtÅdû",
+  "rules.sample.low-rated": "Løw RåtédLøw",
+  "rules.sample.keeper": "KéépérKé"
 }
