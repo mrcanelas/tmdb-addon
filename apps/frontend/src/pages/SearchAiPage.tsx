@@ -20,13 +20,13 @@ export function SearchAiPage() {
   const { t } = useTranslation(['searchAi', 'common']);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busy, setBusy] = useState(false);
-  const [query, setQuery] = useState('Fight');
+  const [query, setQuery] = useState(() => t('searchAi.seed.combinedQuery'));
   const [hits, setHits] = useState<string[]>([]);
-  const [discoveryPrompt, setDiscoveryPrompt] = useState(
-    'Investigation movies without horror and under two hours.',
+  const [discoveryPrompt, setDiscoveryPrompt] = useState(() =>
+    t('searchAi.seed.discoveryPrompt'),
   );
-  const [rankedPrompt, setRankedPrompt] = useState(
-    'Best science-fiction movies of all time.',
+  const [rankedPrompt, setRankedPrompt] = useState(() =>
+    t('searchAi.seed.rankedPrompt'),
   );
   const [planSummary, setPlanSummary] = useState<string | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
@@ -58,7 +58,11 @@ export function SearchAiPage() {
         session.editCredential,
         query,
       );
-      setHits(result.hits.map((hit) => `${hit.title} (${hit.provider})`));
+      setHits(
+        result.hits.map((hit) =>
+          t('searchAi.hitItem', { title: hit.title, provider: hit.provider }),
+        ),
+      );
       setStatus('ready');
     } catch {
       setStatus('error');
@@ -184,7 +188,7 @@ export function SearchAiPage() {
               </Button>
               {hits.length > 0 ? (
                 <p className="text-sm text-[var(--ml-text)]" role="status">
-                  {t('searchAi.hits')}: {hits.join(', ')}
+                  {t('searchAi.hitsLine', { list: hits.join(', ') })}
                 </p>
               ) : null}
             </div>
@@ -211,9 +215,7 @@ export function SearchAiPage() {
               </Button>
               {planSummary ? (
                 <pre className="max-w-xl overflow-auto text-xs ml-text-muted">
-                  {t('searchAi.plan')}
-                  {'\n'}
-                  {planSummary}
+                  {t('searchAi.planBlock', { plan: planSummary })}
                 </pre>
               ) : null}
             </div>
@@ -240,17 +242,19 @@ export function SearchAiPage() {
               </Button>
               {explanation ? (
                 <p className="text-sm text-[var(--ml-text)]">
-                  {t('searchAi.explanation')}: {explanation}
+                  {t('searchAi.explanationLine', { text: explanation })}
                 </p>
               ) : null}
               {unresolved.length > 0 ? (
                 <p className="text-sm text-[var(--ml-text)]">
-                  {t('searchAi.unresolved')}: {unresolved.join(', ')}
+                  {t('searchAi.unresolvedLine', {
+                    list: unresolved.join(', '),
+                  })}
                 </p>
               ) : null}
               {duplicates > 0 ? (
                 <p className="text-sm text-[var(--ml-text)]">
-                  {t('searchAi.duplicates')}: {duplicates}
+                  {t('searchAi.duplicatesLine', { count: duplicates })}
                 </p>
               ) : null}
             </div>

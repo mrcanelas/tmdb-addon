@@ -17,8 +17,17 @@
   "searchAi.requiresConfirm": "Propuesta lista — se requiere confirmación antes de guardar.",
   "searchAi.applied": "Propuesta aplicada.",
   "searchAi.hits": "Resultados",
+  "searchAi.hitsLine": "Resultados: {{list}}",
+  "searchAi.hitItem": "{{title}} ({{provider}})",
   "searchAi.plan": "Plan interpretado",
+  "searchAi.planBlock": "Plan interpretado\n{{plan}}",
   "searchAi.unresolved": "Sin resolver",
+  "searchAi.unresolvedLine": "Sin resolver: {{list}}",
   "searchAi.duplicates": "Duplicados",
-  "searchAi.explanation": "Explicación"
+  "searchAi.duplicatesLine": "Duplicados: {{count}}",
+  "searchAi.explanation": "Explicación",
+  "searchAi.explanationLine": "Explicación: {{text}}",
+  "searchAi.seed.combinedQuery": "Lucha",
+  "searchAi.seed.discoveryPrompt": "Películas de investigación sin terror y de menos de dos horas.",
+  "searchAi.seed.rankedPrompt": "Mejores películas de ciencia ficción de todos los tiempos."
 }

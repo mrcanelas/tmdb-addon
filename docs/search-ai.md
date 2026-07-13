@@ -21,3 +21,7 @@ MetaLayer Search & AI (`@metalayer/search-ai`) turns natural language and multi-
 - `POST /api/v1/configurations/:configId/search/smart-discovery`
 - `POST /api/v1/configurations/:configId/search/ranked-list`
 - `POST /api/v1/configurations/:configId/ai/apply-proposal`
+
+## Configure UI
+
+`/configure/search-ai` localizes demo seed prompts and result lines via the `searchAi` namespace (no hard-coded English seeds or label+value concatenation).

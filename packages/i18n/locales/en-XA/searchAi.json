@@ -17,8 +17,17 @@
   "searchAi.requiresConfirm": "Prøpøsål réådy — çøñfîrmåtîøñ réqûîréd béføré såvé.Prøpøsål réådy —",
   "searchAi.applied": "Prøpøsål åpplîéd.Prøpøs",
   "searchAi.hits": "HîtsHî",
+  "searchAi.hitsLine": "Hîts: Hî{{list}}",
+  "searchAi.hitItem": "{{title}} ( {{provider}}))",
   "searchAi.plan": "Îñtérprétéd plåñÎñtér",
+  "searchAi.planBlock": "Îñtérprétéd plåñ\nÎñtérp{{plan}}",
   "searchAi.unresolved": "ÛñrésølvédÛñr",
+  "searchAi.unresolvedLine": "Ûñrésølvéd: Ûñré{{list}}",
   "searchAi.duplicates": "DûplîçåtésDûp",
-  "searchAi.explanation": "ÉxplåñåtîøñÉxpl"
+  "searchAi.duplicatesLine": "Dûplîçåtés: Dûpl{{count}}",
+  "searchAi.explanation": "ÉxplåñåtîøñÉxpl",
+  "searchAi.explanationLine": "Éxplåñåtîøñ: Éxpl{{text}}",
+  "searchAi.seed.combinedQuery": "FîghtFî",
+  "searchAi.seed.discoveryPrompt": "Îñvéstîgåtîøñ møvîés wîthøût hørrør åñd ûñdér twø høûrs.Îñvéstîgåtîøñ møv",
+  "searchAi.seed.rankedPrompt": "Bést sçîéñçé-fîçtîøñ møvîés øf åll tîmé.Bést sçîéñçé"
 }

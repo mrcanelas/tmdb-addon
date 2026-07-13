@@ -17,8 +17,17 @@
   "searchAi.requiresConfirm": "‏Proposal ready — confirmation required before save.‎",
   "searchAi.applied": "‏Proposal applied.‎",
   "searchAi.hits": "‏Hits‎",
+  "searchAi.hitsLine": "‏Hits: ‎{{list}}‏‎",
+  "searchAi.hitItem": "‏‎{{title}}‏ (‎{{provider}}‏)‎",
   "searchAi.plan": "‏Interpreted plan‎",
+  "searchAi.planBlock": "‏Interpreted plan\n‎{{plan}}‏‎",
   "searchAi.unresolved": "‏Unresolved‎",
+  "searchAi.unresolvedLine": "‏Unresolved: ‎{{list}}‏‎",
   "searchAi.duplicates": "‏Duplicates‎",
-  "searchAi.explanation": "‏Explanation‎"
+  "searchAi.duplicatesLine": "‏Duplicates: ‎{{count}}‏‎",
+  "searchAi.explanation": "‏Explanation‎",
+  "searchAi.explanationLine": "‏Explanation: ‎{{text}}‏‎",
+  "searchAi.seed.combinedQuery": "‏Fight‎",
+  "searchAi.seed.discoveryPrompt": "‏Investigation movies without horror and under two hours.‎",
+  "searchAi.seed.rankedPrompt": "‏Best science-fiction movies of all time.‎"
 }
