@@ -14,6 +14,11 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 
+type Feedback =
+  | { kind: 'ok'; messageKey: string }
+  | { kind: 'error'; messageKey: string }
+  | null;
+
 export function CorrectionsPage() {
   const { t } = useTranslation(['corrections', 'common']);
   const sessionQuery = useStudioSessionQuery();
@@ -28,6 +33,53 @@ export function CorrectionsPage() {
   const community = correctionsQuery.data?.community ?? [];
   const resolved = correctionsQuery.data?.resolved ?? [];
 
+  const feedback: Feedback = createMutation.isError
+    ? { kind: 'error', messageKey: 'corrections.createError' }
+    : deleteMutation.isError
+      ? { kind: 'error', messageKey: 'corrections.rollbackError' }
+      : previewMutation.isError
+        ? { kind: 'error', messageKey: 'corrections.previewError' }
+        : createMutation.isSuccess
+          ? { kind: 'ok', messageKey: 'corrections.createOk' }
+          : deleteMutation.isSuccess
+            ? { kind: 'ok', messageKey: 'corrections.rollbackOk' }
+            : previewMutation.isSuccess
+              ? { kind: 'ok', messageKey: 'corrections.previewOk' }
+              : null;
+
+  async function onCreate() {
+    createMutation.reset();
+    deleteMutation.reset();
+    previewMutation.reset();
+    try {
+      await createMutation.mutateAsync();
+    } catch {
+      // Feedback derived from mutation state.
+    }
+  }
+
+  async function onPreview() {
+    createMutation.reset();
+    deleteMutation.reset();
+    previewMutation.reset();
+    try {
+      await previewMutation.mutateAsync();
+    } catch {
+      // Feedback derived from mutation state.
+    }
+  }
+
+  async function onRollback(id: string) {
+    createMutation.reset();
+    deleteMutation.reset();
+    previewMutation.reset();
+    try {
+      await deleteMutation.mutateAsync(id);
+    } catch {
+      // Feedback derived from mutation state.
+    }
+  }
+
   return (
     <section className="space-y-6">
       <PageHeader
@@ -38,7 +90,7 @@ export function CorrectionsPage() {
             <Button
               type="button"
               onPress={() => {
-                void createMutation.mutateAsync();
+                void onCreate();
               }}
               isDisabled={bootstrapping || createMutation.isPending}
             >
@@ -48,7 +100,7 @@ export function CorrectionsPage() {
               type="button"
               variant="secondary"
               onPress={() => {
-                void previewMutation.mutateAsync();
+                void onPreview();
               }}
               isDisabled={bootstrapping || previewMutation.isPending}
             >
@@ -73,13 +125,24 @@ export function CorrectionsPage() {
         />
       ) : null}
 
+      {feedback?.kind === 'ok' ? (
+        <p className="text-sm text-[var(--ml-success)]" role="status">
+          {t(feedback.messageKey)}
+        </p>
+      ) : null}
+      {feedback?.kind === 'error' ? (
+        <p className="text-sm text-[var(--ml-error)]" role="alert">
+          {t(feedback.messageKey)}
+        </p>
+      ) : null}
+
       {previewMutation.data ? (
         <SectionCard>
-          <p className="text-sm text-[var(--ml-text)]">
-            {t('corrections.previewResult', {
+          <p className="text-sm text-[var(--ml-text)]" role="status">
+            {t('corrections.previewResultLine', {
               title: String(previewMutation.data.applied.title ?? ''),
-            })}{' '}
-            · {t('corrections.overlays')}: {previewMutation.data.overlays.length}
+              count: previewMutation.data.overlays.length,
+            })}
           </p>
         </SectionCard>
       ) : null}
@@ -90,11 +153,15 @@ export function CorrectionsPage() {
             title={t('corrections.local')}
             items={local}
             emptyLabel={t('corrections.empty')}
-            statusLabel={t('corrections.status')}
-            scopeLabel={t('corrections.scope')}
+            metaLine={(item) =>
+              t('corrections.metaLine', {
+                status: item.status,
+                scope: item.scope,
+              })
+            }
             rollbackLabel={t('corrections.rollback')}
             onRollback={(id) => {
-              void deleteMutation.mutateAsync(id);
+              void onRollback(id);
             }}
             rollbackPending={deleteMutation.isPending}
           />
@@ -102,15 +169,23 @@ export function CorrectionsPage() {
             title={t('corrections.resolved')}
             items={resolved}
             emptyLabel={t('corrections.empty')}
-            statusLabel={t('corrections.status')}
-            scopeLabel={t('corrections.scope')}
+            metaLine={(item) =>
+              t('corrections.metaLine', {
+                status: item.status,
+                scope: item.scope,
+              })
+            }
           />
           <CorrectionList
             title={t('corrections.community')}
             items={community}
             emptyLabel={t('corrections.empty')}
-            statusLabel={t('corrections.status')}
-            scopeLabel={t('corrections.scope')}
+            metaLine={(item) =>
+              t('corrections.metaLine', {
+                status: item.status,
+                scope: item.scope,
+              })
+            }
           />
         </>
       ) : null}
@@ -122,8 +197,7 @@ function CorrectionList(props: {
   title: string;
   items: CorrectionItem[];
   emptyLabel: string;
-  statusLabel: string;
-  scopeLabel: string;
+  metaLine: (item: CorrectionItem) => string;
   rollbackLabel?: string;
   onRollback?: (id: string) => void;
   rollbackPending?: boolean;
@@ -144,10 +218,7 @@ function CorrectionList(props: {
                   {item.type} · {item.target.provider}:{item.target.id}
                 </p>
                 <p className="text-sm ml-text-muted">{item.reason}</p>
-                <p className="text-xs ml-text-muted">
-                  {props.statusLabel}: {item.status} · {props.scopeLabel}:{' '}
-                  {item.scope}
-                </p>
+                <p className="text-xs ml-text-muted">{props.metaLine(item)}</p>
               </div>
               {props.onRollback && item.scope === 'local' ? (
                 <Button

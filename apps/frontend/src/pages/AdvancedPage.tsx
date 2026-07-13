@@ -151,7 +151,7 @@ export function AdvancedPage() {
                 </p>
               ) : null}
               {saveState === 'error' ? (
-                <p className="text-sm text-amber-700 dark:text-amber-400" role="status">
+                <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
                   {t('advanced.identity.saveError')}
                 </p>
               ) : null}

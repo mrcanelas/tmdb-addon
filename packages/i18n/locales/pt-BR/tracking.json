@@ -18,6 +18,8 @@
   "tracking.previewNeedsConnection": "Conecte o Trakt, o SIMKL, o AniList ou o MyAnimeList para pré-visualizar hide-watched com o histórico ao vivo.",
   "tracking.included": "Incluídos",
   "tracking.excluded": "Excluídos",
+  "tracking.includedLine": "Incluídos: {{list}}",
+  "tracking.excludedLine": "Excluídos: {{list}}",
   "tracking.emptyTitle": "Nenhum provedor de tracking listado",
   "tracking.actions.connect": "Conectar",
   "tracking.actions.disconnect": "Desconectar",

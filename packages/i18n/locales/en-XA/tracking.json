@@ -18,6 +18,8 @@
   "tracking.previewNeedsConnection": "Çøññéçt Tråkt, SÎMKL, ÅñîLîst, ør MyÅñîméLîst tø prévîéw hîdé-wåtçhéd wîth lîvé wåtçh hîstøry.Çøññéçt Tråkt, SÎMKL, ÅñîLîst",
   "tracking.included": "ÎñçlûdédÎñç",
   "tracking.excluded": "ÉxçlûdédÉxç",
+  "tracking.includedLine": "Îñçlûdéd: Îñç{{list}}",
+  "tracking.excludedLine": "Éxçlûdéd: Éxç{{list}}",
   "tracking.emptyTitle": "Ñø tråçkîñg prøvîdérs lîstédÑø tråçkî",
   "tracking.actions.connect": "ÇøññéçtÇøñ",
   "tracking.actions.disconnect": "DîsçøññéçtDîs",

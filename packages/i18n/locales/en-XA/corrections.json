@@ -13,5 +13,13 @@
   "corrections.status": "StåtûsSt",
   "corrections.scope": "SçøpéSç",
   "corrections.previewResult": "Åpplîéd tîtlé: Åpplî{{title}}",
-  "corrections.overlays": "ØvérlåysØvé"
+  "corrections.overlays": "ØvérlåysØvé",
+  "corrections.previewResultLine": "Åpplîéd tîtlé: Åpplî{{title}} · Øvérlåys:  · Ø{{count}}",
+  "corrections.metaLine": "Ståtûs: Stå{{status}} · Sçøpé:  · {{scope}}",
+  "corrections.createOk": "Løçål çørréçtîøñ åddéd.Løçål ç",
+  "corrections.createError": "Çøûld ñøt ådd thé løçål çørréçtîøñ.Çøûld ñøt å",
+  "corrections.rollbackOk": "Løçål çørréçtîøñ rølléd båçk.Løçål çør",
+  "corrections.rollbackError": "Çøûld ñøt røll båçk thé løçål çørréçtîøñ.Çøûld ñøt røl",
+  "corrections.previewOk": "Çørréçtîøñ prévîéw çømplétéd.Çørréçtîø",
+  "corrections.previewError": "Çøûld ñøt prévîéw çørréçtîøñs.Çøûld ñøt"
 }

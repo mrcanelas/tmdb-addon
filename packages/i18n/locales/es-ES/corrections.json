@@ -13,5 +13,13 @@
   "corrections.status": "Estado",
   "corrections.scope": "Ámbito",
   "corrections.previewResult": "Título aplicado: {{title}}",
-  "corrections.overlays": "Overlays"
+  "corrections.overlays": "Overlays",
+  "corrections.previewResultLine": "Título aplicado: {{title}} · Overlays: {{count}}",
+  "corrections.metaLine": "Estado: {{status}} · Ámbito: {{scope}}",
+  "corrections.createOk": "Corrección local añadida.",
+  "corrections.createError": "No se pudo añadir la corrección local.",
+  "corrections.rollbackOk": "Corrección local revertida.",
+  "corrections.rollbackError": "No se pudo revertir la corrección local.",
+  "corrections.previewOk": "Vista previa de correcciones completada.",
+  "corrections.previewError": "No se pudo previsualizar las correcciones."
 }

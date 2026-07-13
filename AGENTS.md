@@ -3668,7 +3668,7 @@ The version remains in the `1.0.0` prerelease line until stable.
 
 See `docs/phase-m-exit.md` for the full deferred list. Near-term:
 
-1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist) — in progress; **migration / perf / health / security / FRC background / Search AI i18n Done (MVP)**; **docs §36 seed Partial**; RTL visual audit Open
+1. **UX / a11y / i18n / performance / security** hardening (Phase M checklist) — in progress; prior MVPs Done; **docs §36 seed Partial**; **Corrections/Tracking/Advanced a11y live regions**; RTL visual audit Open
 2. ~~**Encryption key rotation tooling**~~ (**Done** — key ring + `pnpm metalayer:vault-reencrypt`)
 3. ~~**Advanced configure module**~~ (**Partial MVP** — identity + cache diagnostics + feature flags)
 4. ~~**Series specials / alternative episode orders**~~ (**Partial MVP** — corrections on native series meta)

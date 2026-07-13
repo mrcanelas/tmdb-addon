@@ -256,19 +256,21 @@ export function TrackingPage() {
           </p>
         ) : null}
         {previewMutation.data ? (
-          <div className="mt-3 space-y-1 text-sm text-[var(--ml-text)]">
+          <div className="mt-3 space-y-1 text-sm text-[var(--ml-text)]" role="status">
             <p>
               {t('tracking.previewOk', {
                 degraded: String(previewMutation.data.degraded),
               })}
             </p>
             <p>
-              {t('tracking.included')}:{' '}
-              {previewMutation.data.included.join(', ') || '—'}
+              {t('tracking.includedLine', {
+                list: previewMutation.data.included.join(', ') || '—',
+              })}
             </p>
             <p>
-              {t('tracking.excluded')}:{' '}
-              {previewMutation.data.excluded.join(', ') || '—'}
+              {t('tracking.excludedLine', {
+                list: previewMutation.data.excluded.join(', ') || '—',
+              })}
             </p>
           </div>
         ) : null}

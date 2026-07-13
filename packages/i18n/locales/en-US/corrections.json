@@ -13,5 +13,13 @@
   "corrections.status": "Status",
   "corrections.scope": "Scope",
   "corrections.previewResult": "Applied title: {{title}}",
-  "corrections.overlays": "Overlays"
+  "corrections.overlays": "Overlays",
+  "corrections.previewResultLine": "Applied title: {{title}} · Overlays: {{count}}",
+  "corrections.metaLine": "Status: {{status}} · Scope: {{scope}}",
+  "corrections.createOk": "Local correction added.",
+  "corrections.createError": "Could not add the local correction.",
+  "corrections.rollbackOk": "Local correction rolled back.",
+  "corrections.rollbackError": "Could not roll back the local correction.",
+  "corrections.previewOk": "Correction preview completed.",
+  "corrections.previewError": "Could not preview corrections."
 }
