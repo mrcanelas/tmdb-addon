@@ -92,7 +92,7 @@ importers:
         version: 12.42.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ioredis:
         specifier: ^5.6.1
-        version: 5.11.1
+        version: 5.11.1(supports-color@5.5.0)
       lucide-react:
         specifier: ^0.462.0
         version: 0.462.0(react@18.3.1)
@@ -266,6 +266,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.4.0
         version: 5.4.0(react-hook-form@7.81.0(react@19.2.7))
+      '@metalayer/catalogs':
+        specifier: workspace:^
+        version: link:../../packages/catalogs
       '@metalayer/config':
         specifier: workspace:^
         version: link:../../packages/config
@@ -424,7 +427,7 @@ importers:
         version: link:../providers
       ioredis:
         specifier: ^5.11.1
-        version: 5.11.1
+        version: 5.11.1(supports-color@5.5.0)
 
   packages/catalogs:
     dependencies:
@@ -7906,7 +7909,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ioredis@5.11.1:
+  ioredis@5.11.1(supports-color@5.5.0):
     dependencies:
       '@ioredis/commands': 1.10.0
       cluster-key-slot: 1.1.1

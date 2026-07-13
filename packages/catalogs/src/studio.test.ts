@@ -5,6 +5,7 @@ import {
   duplicateCatalog,
   moveCatalog,
   renameCatalog,
+  resolveCatalogDisplayName,
   setCatalogEnabled,
   sortCatalogsByPosition,
   toManifestCatalogEntries,
@@ -88,5 +89,29 @@ describe('@metalayer/catalogs studio', () => {
 
     catalogs = setCatalogEnabled(catalogs, movedId, false);
     expect(toManifestCatalogEntries(catalogs)).toHaveLength(2);
+  });
+
+  it('resolves localized catalog names with language fallback', () => {
+    const localized = catalog({
+      instanceId: 'loc',
+      position: 0,
+      mediaType: 'movie',
+      originalName: 'Trending Movies',
+      name: {
+        default: 'Trending Movies',
+        values: {
+          'pt-BR': 'Filmes em alta',
+          'es-ES': 'Películas en tendencia',
+        },
+      },
+    });
+
+    expect(resolveCatalogDisplayName(localized, 'pt-BR')).toBe('Filmes em alta');
+    expect(resolveCatalogDisplayName(localized, 'pt-PT')).toBe('Filmes em alta');
+    expect(resolveCatalogDisplayName(localized, 'es-MX')).toBe(
+      'Películas en tendencia',
+    );
+    expect(resolveCatalogDisplayName(localized, 'en-US')).toBe('Trending Movies');
+    expect(resolveCatalogDisplayName(localized)).toBe('Trending Movies');
   });
 });

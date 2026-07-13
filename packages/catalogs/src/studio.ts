@@ -29,8 +29,19 @@ export function resolveCatalogDisplayName(
   catalog: CatalogDefinition,
   locale?: string,
 ): string {
-  if (locale && catalog.name?.values?.[locale]) {
-    return catalog.name.values[locale];
+  const values = catalog.name?.values;
+  if (locale && values) {
+    const exact = values[locale];
+    if (exact) return exact;
+
+    const base = locale.split('-')[0]?.toLowerCase();
+    if (base) {
+      const languageMatch = Object.entries(values).find(([key]) => {
+        const keyBase = key.split('-')[0]?.toLowerCase();
+        return keyBase === base;
+      });
+      if (languageMatch?.[1]) return languageMatch[1];
+    }
   }
   if (catalog.name?.default) return catalog.name.default;
   if (catalog.customName) return catalog.customName;

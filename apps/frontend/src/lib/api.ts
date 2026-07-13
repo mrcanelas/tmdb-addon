@@ -239,6 +239,13 @@ function sampleCatalogs() {
       providerCatalogId: 'trending',
       mediaType: 'movie' as const,
       originalName: 'Trending Movies',
+      name: {
+        default: 'Trending Movies',
+        values: {
+          'pt-BR': 'Filmes em alta',
+          'es-ES': 'Películas en tendencia',
+        },
+      },
       enabled: true,
       showInHome: true,
       position: 0,
@@ -250,6 +257,13 @@ function sampleCatalogs() {
       providerCatalogId: 'popular',
       mediaType: 'series' as const,
       originalName: 'Popular Series',
+      name: {
+        default: 'Popular Series',
+        values: {
+          'pt-BR': 'Séries populares',
+          'es-ES': 'Series populares',
+        },
+      },
       enabled: true,
       showInHome: true,
       position: 1,
@@ -261,6 +275,13 @@ function sampleCatalogs() {
       providerCatalogId: 'trending',
       mediaType: 'anime' as const,
       originalName: 'Trending Anime',
+      name: {
+        default: 'Trending Anime',
+        values: {
+          'pt-BR': 'Anime em alta',
+          'es-ES': 'Anime en tendencia',
+        },
+      },
       enabled: true,
       showInHome: true,
       position: 2,

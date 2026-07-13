@@ -11,6 +11,7 @@ Canonical model, merge modes, and rotation: `AGENTS.md` §12. Phase D exit: `doc
 - Each catalog row is an **instance** (`instanceId`), not the raw provider catalog id — the same provider catalog may appear more than once.
 - Movie, series, and anime share one position list unless a profile overrides catalogs.
 - `GET .../catalogs` returns both `catalogs` (definitions) and `manifestOrder` (what Stremio will advertise).
+- Catalog display names use `LocalizedText` (`name.default` + `name.values`). Studio + `manifestOrder` resolve via `resolveCatalogDisplayName(locale)` with base-language fallback (e.g. `pt-PT` → `pt-BR` values when only `pt-BR` exists).
 - Empty catalog results use `{ "metas": [] }` — never fake error cards.
 
 ## Operator flow

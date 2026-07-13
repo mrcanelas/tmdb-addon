@@ -1,3 +1,5 @@
+import { resolveCatalogDisplayName } from '@metalayer/catalogs';
+import type { CatalogDefinition } from '@metalayer/config';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,8 +27,8 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { StudioPromptDialog } from '@/components/metalayer/StudioPromptDialog';
 
-function displayName(catalog: CatalogListItem): string {
-  return catalog.customName || catalog.name?.default || catalog.originalName;
+function displayName(catalog: CatalogListItem, locale: string): string {
+  return resolveCatalogDisplayName(catalog as CatalogDefinition, locale);
 }
 
 type CatalogEditDialog =
@@ -134,7 +136,7 @@ export function CatalogStudioPage() {
     const session = readCatalogSession();
     if (!session) return;
     setBusyId(catalog.instanceId);
-    setPreviewTitle(displayName(catalog));
+    setPreviewTitle(displayName(catalog, i18n.language));
     try {
       const result = await previewCatalogResults(
         session.configId,
@@ -249,7 +251,7 @@ export function CatalogStudioPage() {
       setEditDialog({
         kind,
         catalogId: catalog.instanceId,
-        value: displayName(catalog),
+        value: displayName(catalog, i18n.language),
       });
       return;
     }
@@ -403,7 +405,7 @@ export function CatalogStudioPage() {
             <ol className="space-y-3">
               {catalogs.map((catalog, index) => {
                 const busy = busyId === catalog.instanceId;
-                const name = displayName(catalog);
+                const name = displayName(catalog, i18n.language);
                 return (
                   <li
                     key={catalog.instanceId}

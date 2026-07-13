@@ -16,6 +16,7 @@
     "@heroui/styles": "^3.2.2",
     "@hookform/resolvers": "^5.4.0",
     "@metalayer/config": "workspace:^",
+    "@metalayer/catalogs": "workspace:^",
     "@metalayer/i18n": "workspace:*",
     "@metalayer/shared-ui": "workspace:*",
     "@tanstack/react-query": "^5.101.2",
