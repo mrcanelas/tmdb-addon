@@ -4,7 +4,6 @@ import type { ConfigurationStore } from '@metalayer/persistence';
 import {
   ProviderError,
   buildProviderCacheKey,
-  createProviderAdapter,
   getProvider,
   listAdapterProviderIds,
   listProviders,
@@ -13,6 +12,7 @@ import {
   unsupportedLocaleAdapter,
   type ProviderLocaleAdapter,
 } from '@metalayer/providers';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 type TestSourceBody = {
   apiKey?: string;
@@ -112,8 +112,15 @@ async function resolveApiKey(options: {
 
 export const sourcesRoutes: FastifyPluginAsync = async (app) => {
   app.get('/sources', async (request) => {
+    const healthByProvider = app.providerHealth.snapshotAll();
     return {
-      sources: listProviders().map(toPublicProvider),
+      sources: listProviders().map((definition) => ({
+        ...toPublicProvider(definition),
+        health: healthByProvider[definition.id] ?? {
+          state: 'healthy' as const,
+          consecutiveFailures: 0,
+        },
+      })),
       correlationId: request.correlationId,
     };
   });
@@ -172,9 +179,8 @@ export const sourcesRoutes: FastifyPluginAsync = async (app) => {
       });
       if (apiKey === 'failed') return;
 
-      const adapter = createProviderAdapter(providerId, {
+      const adapter = createAppProviderAdapter(app, providerId, {
         apiKey,
-        fetchImpl: app.providerFetch,
         cache: app.providerCache,
       });
       if (!adapter) {

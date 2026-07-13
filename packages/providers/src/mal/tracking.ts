@@ -33,6 +33,7 @@ export interface MalTrackingAdapterOptions {
   fetchImpl?: ProviderFetch;
   policy?: Partial<ProviderHttpPolicy>;
   fixtures?: MalWatchStateFixture[];
+  health?: ProviderHealthTracker;
 }
 
 /** MAL PKCE uses plain method: code_challenge === code_verifier (43–128 chars). */
@@ -183,7 +184,7 @@ export class MalTrackingAdapter implements ProviderAdapter {
     this.clientId = options.clientId ?? process.env.MAL_CLIENT_ID;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.fixtures = options.fixtures ?? [];
   }
 

@@ -35,6 +35,7 @@ export interface ImdbRatingsAdapterOptions {
   policy?: Partial<ProviderHttpPolicy>;
   cache?: ProviderCacheStore;
   cacheTtlMs?: number;
+  health?: ProviderHealthTracker;
 }
 
 /**
@@ -65,7 +66,7 @@ export class ImdbRatingsAdapter implements ProviderAdapter {
     ).replace(/\/$/, '');
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.cache = options.cache;
     this.cacheTtlMs = options.cacheTtlMs ?? 6 * 60 * 60_000;
   }

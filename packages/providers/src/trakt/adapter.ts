@@ -35,6 +35,7 @@ export interface TraktAdapterOptions {
   policy?: Partial<ProviderHttpPolicy>;
   /** Injectable fixture for CI — preferred over live sync in unit tests. */
   fixtures?: TraktWatchStateFixture[];
+  health?: ProviderHealthTracker;
 }
 
 export function buildTraktAuthorizeUrl(input: {
@@ -178,7 +179,7 @@ export class TraktTrackingAdapter implements ProviderAdapter {
     this.clientId = options.clientId ?? process.env.TRAKT_CLIENT_ID;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.fixtures = options.fixtures ?? [];
   }
 

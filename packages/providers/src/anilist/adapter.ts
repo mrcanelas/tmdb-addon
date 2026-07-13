@@ -27,6 +27,7 @@ export interface AnilistAdapterOptions {
   baseUrl?: string;
   fetchImpl?: AnimeProviderFetch;
   policy?: Partial<ProviderHttpPolicy>;
+  health?: ProviderHealthTracker;
 }
 
 /**
@@ -50,7 +51,7 @@ export class AnilistProviderAdapter implements ProviderAdapter {
     this.baseUrl = (options.baseUrl ?? 'https://graphql.anilist.co').replace(/\/$/, '');
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
   }
 
   getHealth(): ProviderHealthSnapshot {

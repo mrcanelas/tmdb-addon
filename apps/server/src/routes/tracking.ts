@@ -27,7 +27,7 @@ import {
   generateMalPkceVerifier,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
-import type { TmdbFetch } from '@metalayer/providers';
+import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
 import { randomBytes } from 'node:crypto';
 import {
   REFRESHABLE_TRACKING_PROVIDERS,
@@ -35,6 +35,7 @@ import {
   persistTrackingOAuthMetadata,
   tryRefreshTrackingToken,
 } from '../tracking-token-refresh.js';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
@@ -125,17 +126,16 @@ async function loadLiveWatchStates(input: {
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
   };
   configId: string;
   provider: TrackingProviderId;
   accessToken?: string;
   correlationId: string;
 }): Promise<WatchStateEntry[]> {
-  const fetchImpl = input.app.providerFetch ?? fetch;
   const run = async (token: string | undefined) => {
-    const adapter = createProviderAdapter(input.provider, {
+    const adapter = createAppProviderAdapter(input.app, input.provider, {
       accessToken: token,
-      fetchImpl,
     });
     if (!isTrackingAdapter(adapter)) return [] as WatchStateEntry[];
     return adapter.getWatchStates({

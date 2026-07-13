@@ -101,6 +101,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         startedAt: app.startedAt,
         activeConfigurations: (await app.configStore.listConfigIds()).length,
       }),
+      providers: app.providerHealth.snapshotAll(),
       correlationId: request.correlationId,
     };
   });

@@ -34,6 +34,7 @@ export interface SimklAdapterOptions {
   policy?: Partial<ProviderHttpPolicy>;
   /** Injectable fixture for CI — preferred over live sync in unit tests. */
   fixtures?: SimklWatchStateFixture[];
+  health?: ProviderHealthTracker;
 }
 
 const SIMKL_APP_NAME = 'metalayer';
@@ -200,7 +201,7 @@ export class SimklTrackingAdapter implements ProviderAdapter {
     this.clientId = options.clientId ?? process.env.SIMKL_CLIENT_ID;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.fixtures = options.fixtures ?? [];
   }
 

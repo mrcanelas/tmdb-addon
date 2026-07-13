@@ -11,4 +11,8 @@ Canonical product rules: `AGENTS.md` §9.
 - Changing interface language does not silently change content region.
 - Persist via `GET/PUT /api/v1/configurations/:configId/localization`.
 
+## Pseudo-locales (layout QA)
+
+The configure shell can switch to `en-XA` (expanded LTR) and `ar-XB` (RTL marks + `dir=rtl`). Catalogs are registered in `apps/frontend/src/lib/i18n-resources.ts` so QA exercises overflow and direction without falling back to en-US copy.
+
 Do not duplicate normative rules here; update `AGENTS.md` when the model changes.

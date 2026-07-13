@@ -19,6 +19,7 @@ export interface RpdbAdapterOptions {
   baseUrl?: string;
   fetchImpl?: ProviderFetch;
   policy?: Partial<ProviderHttpPolicy>;
+  health?: ProviderHealthTracker;
 }
 
 export type RpdbMediaType = 'movie' | 'series';
@@ -51,7 +52,7 @@ export class RpdbArtworkAdapter implements ProviderAdapter {
     this.defaultApiKey = options.apiKey;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
   }
 
   getHealth(): ProviderHealthSnapshot {

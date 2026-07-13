@@ -11,10 +11,10 @@ import {
 import {
   ProviderError,
   TmdbProviderAdapter,
-  createProviderAdapter,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
-import type { TmdbFetch } from '@metalayer/providers';
+import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
@@ -69,6 +69,7 @@ async function gatherIdsFromPublicId(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
   },
   configId: string,
@@ -83,9 +84,8 @@ async function gatherIdsFromPublicId(
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
-  const adapter = createProviderAdapter('tmdb', {
+  const adapter = createAppProviderAdapter(app, 'tmdb', {
     apiKey: key,
-    fetchImpl: app.providerFetch,
     cache: app.providerCache,
     stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
   });

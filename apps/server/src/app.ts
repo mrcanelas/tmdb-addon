@@ -16,7 +16,10 @@ import {
   SqliteConfigurationStore,
   type ConfigurationStore,
 } from '@metalayer/persistence';
-import type { TmdbFetch } from '@metalayer/providers';
+import {
+  ProviderHealthRegistry,
+  type TmdbFetch,
+} from '@metalayer/providers';
 import {
   MemoryCache,
   RedisCache,
@@ -45,6 +48,8 @@ export interface BuildAppOptions {
   sqlitePath?: string;
   /** Injectable HTTP for provider adapters (tests / offline). */
   providerFetch?: TmdbFetch;
+  /** Shared provider circuit-breaker registry (tests / process default). */
+  providerHealth?: ProviderHealthRegistry;
   providerCache?: CacheStore;
   correctionRegistry?: CorrectionRegistry;
   metrics?: MetricsRegistry;
@@ -61,6 +66,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
     correctionRegistry: CorrectionRegistry;
     metrics: MetricsRegistry;
@@ -136,9 +142,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
     })();
   const metrics = options.metrics ?? new MetricsRegistry();
   const logBuffer = options.logBuffer ?? new BoundedLogBuffer();
+  const providerHealth = options.providerHealth ?? new ProviderHealthRegistry();
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
+  app.decorate('providerHealth', providerHealth);
   app.decorate('providerCache', providerCache);
   app.decorate('correctionRegistry', correctionRegistry);
   app.decorate('metrics', metrics);

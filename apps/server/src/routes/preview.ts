@@ -5,8 +5,8 @@ import {
   ProviderError,
   TmdbProviderAdapter,
   ImdbRatingsAdapter,
-  createProviderAdapter,
 } from '@metalayer/providers';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 type PreviewQuery = {
   locale?: string;
@@ -32,9 +32,8 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
         process.env.METALAYER_TMDB_API_KEY ||
         process.env.TMDB_API;
 
-      const adapter = createProviderAdapter('tmdb', {
+      const adapter = createAppProviderAdapter(app, 'tmdb', {
         apiKey,
-        fetchImpl: app.providerFetch,
         cache: app.providerCache,
         stremioPublicId: request.query.publicIdMode || 'imdb',
       });
@@ -104,8 +103,7 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
     Params: { imdbId: string };
     Querystring: PreviewQuery & { type?: 'movie' | 'series' };
   }>('/preview/rating/:imdbId', async (request, reply) => {
-    const adapter = createProviderAdapter('imdb', {
-      fetchImpl: app.providerFetch,
+    const adapter = createAppProviderAdapter(app, 'imdb', {
       cache: app.providerCache,
     });
 

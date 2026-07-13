@@ -1,6 +1,7 @@
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { createDefaultMetaLayerConfig } from '@metalayer/config';
 import { createMemoryConfigurationStore } from '@metalayer/persistence';
+import { ProviderHealthRegistry } from '@metalayer/providers';
 import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 47).toString('base64');
@@ -11,7 +12,8 @@ describe('@metalayer/server dashboard', () => {
   process.env.METALAYER_DASHBOARD_TOKEN = TOKEN;
 
   const store = createMemoryConfigurationStore(TEST_KEY);
-  const appPromise = buildApp({ logger: false, store });
+  const providerHealth = new ProviderHealthRegistry();
+  const appPromise = buildApp({ logger: false, store, providerHealth });
 
   afterAll(async () => {
     await (await appPromise).close();
@@ -93,5 +95,14 @@ describe('@metalayer/server dashboard', () => {
     });
     expect(updates.statusCode).toBe(200);
     expect(updates.json().currentVersion).toBeTruthy();
+
+    providerHealth.getOrCreate('tmdb').recordFailure('upstream');
+    const health = await app.inject({
+      method: 'GET',
+      url: '/api/v1/dashboard/health',
+      headers,
+    });
+    expect(health.statusCode).toBe(200);
+    expect(health.json().providers.tmdb.state).toBe('degraded');
   });
 });

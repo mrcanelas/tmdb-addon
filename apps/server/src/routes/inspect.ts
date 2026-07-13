@@ -22,11 +22,11 @@ import {
   ImdbRatingsAdapter,
   FanartArtworkAdapter,
   RpdbArtworkAdapter,
-  createProviderAdapter,
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import type { CacheStore } from '@metalayer/cache';
-import type { TmdbFetch } from '@metalayer/providers';
+import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -96,6 +96,7 @@ async function gatherLiveBag(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
   },
   configId: string,
@@ -117,9 +118,8 @@ async function gatherLiveBag(
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
-  const tmdb = createProviderAdapter('tmdb', {
+  const tmdb = createAppProviderAdapter(app, 'tmdb', {
     apiKey,
-    fetchImpl: app.providerFetch,
     cache: app.providerCache,
     stremioPublicId: config.identity?.stremioPublicId || 'imdb',
   });
@@ -198,8 +198,7 @@ async function gatherLiveBag(
 
   if (movie.imdbId) {
     try {
-      const imdb = createProviderAdapter('imdb', {
-        fetchImpl: app.providerFetch,
+      const imdb = createAppProviderAdapter(app, 'imdb', {
         cache: app.providerCache,
       });
       if (imdb instanceof ImdbRatingsAdapter) {
@@ -222,9 +221,8 @@ async function gatherLiveBag(
   const fanartKey = await app.configStore.getSecretPlaintext(configId, 'fanart');
   if (fanartKey) {
     try {
-      const fanart = createProviderAdapter('fanart', {
+      const fanart = createAppProviderAdapter(app, 'fanart', {
         apiKey: fanartKey,
-        fetchImpl: app.providerFetch,
       });
       if (fanart instanceof FanartArtworkAdapter) {
         const art = await fanart.getMovieArtwork(
@@ -251,9 +249,8 @@ async function gatherLiveBag(
   const rpdbKey = await app.configStore.getSecretPlaintext(configId, 'rpdb');
   if (rpdbKey) {
     try {
-      const rpdb = createProviderAdapter('rpdb', {
+      const rpdb = createAppProviderAdapter(app, 'rpdb', {
         apiKey: rpdbKey,
-        fetchImpl: app.providerFetch,
       });
       if (rpdb instanceof RpdbArtworkAdapter) {
         const art = rpdb.getMovieArtwork(

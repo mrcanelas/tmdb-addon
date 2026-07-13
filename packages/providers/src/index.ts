@@ -25,6 +25,7 @@ export {
   withTimeout,
   sleep,
 } from './core/runtime.js';
+export { ProviderHealthRegistry } from './core/health-registry.js';
 export type {
   ProviderAdapter,
   ProviderContext,

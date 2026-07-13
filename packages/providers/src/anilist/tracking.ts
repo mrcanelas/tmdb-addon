@@ -33,6 +33,7 @@ export interface AnilistTrackingAdapterOptions {
   policy?: Partial<ProviderHttpPolicy>;
   fixtures?: AnilistWatchStateFixture[];
   graphqlUrl?: string;
+  health?: ProviderHealthTracker;
 }
 
 export function buildAnilistAuthorizeUrl(input: {
@@ -166,7 +167,7 @@ export class AnilistTrackingAdapter implements ProviderAdapter {
     this.accessToken = options.accessToken;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.fixtures = options.fixtures ?? [];
     this.graphqlUrl = (
       options.graphqlUrl ?? 'https://graphql.anilist.co'

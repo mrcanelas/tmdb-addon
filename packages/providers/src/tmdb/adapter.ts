@@ -95,6 +95,8 @@ export interface TmdbAdapterOptions {
   cacheTtlMs?: number;
   /** ADR 0006 — default public Stremio id strategy. */
   stremioPublicId?: StremioPublicIdPreference;
+  /** Shared circuit-breaker tracker when provided by the app registry. */
+  health?: ProviderHealthTracker;
 }
 
 export class TmdbProviderAdapter implements ProviderAdapter {
@@ -122,7 +124,7 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     this.defaultApiKey = options.apiKey;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.policy = { ...DEFAULT_PROVIDER_HTTP_POLICY, ...options.policy };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
     this.cache = options.cache;
     this.cacheTtlMs = options.cacheTtlMs ?? 15 * 60_000;
     this.stremioPublicId = options.stremioPublicId ?? 'imdb';

@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { createMemoryConfigurationStore } from '@metalayer/persistence';
+import { ProviderHealthRegistry } from '@metalayer/providers';
 import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 17).toString('base64');
@@ -91,5 +92,64 @@ describe('@metalayer/server sources diagnostics', () => {
     });
     expect(response.statusCode).toBe(404);
     expect(response.json().code).toBe('PROVIDER_UNAVAILABLE');
+  });
+
+  it('accumulates circuit failures across requests via shared health registry', async () => {
+    let fetchCalls = 0;
+    const providerHealth = new ProviderHealthRegistry({
+      circuitFailureThreshold: 2,
+      circuitOpenMs: 60_000,
+      maxRetries: 0,
+      backoffMs: 1,
+      timeoutMs: 1_000,
+    });
+
+    const app = await buildApp({
+      logger: false,
+      store: createMemoryConfigurationStore(TEST_KEY),
+      providerHealth,
+      providerFetch: async () => {
+        fetchCalls += 1;
+        return new Response('upstream', { status: 500 });
+      },
+    });
+
+    try {
+      const first = await app.inject({
+        method: 'POST',
+        url: '/api/v1/sources/tmdb/test',
+        payload: { apiKey: 'k', locale: 'en-US' },
+      });
+      expect(first.statusCode).toBe(502);
+      expect(first.json().ok).toBe(false);
+      expect(first.json().health.state).toBe('degraded');
+      expect(fetchCalls).toBe(1);
+
+      const second = await app.inject({
+        method: 'POST',
+        url: '/api/v1/sources/tmdb/test',
+        payload: { apiKey: 'k', locale: 'en-US' },
+      });
+      expect(second.statusCode).toBe(502);
+      expect(second.json().health.state).toBe('open');
+      expect(fetchCalls).toBe(2);
+
+      const beforeOpen = fetchCalls;
+      const third = await app.inject({
+        method: 'POST',
+        url: '/api/v1/sources/tmdb/test',
+        payload: { apiKey: 'k', locale: 'en-US' },
+      });
+      expect(third.statusCode).toBe(502);
+      expect(third.json().error.providerCode).toBe('circuit_open');
+      expect(fetchCalls).toBe(beforeOpen);
+
+      const listed = await app.inject({ method: 'GET', url: '/api/v1/sources' });
+      const tmdb = listed.json().sources.find((s: { id: string }) => s.id === 'tmdb');
+      expect(tmdb.health.state).toBe('open');
+      expect(tmdb.health.consecutiveFailures).toBeGreaterThanOrEqual(2);
+    } finally {
+      await app.close();
+    }
   });
 });

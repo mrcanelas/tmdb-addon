@@ -26,8 +26,8 @@ import {
   AnilistProviderAdapter,
   MalJikanProviderAdapter,
   KitsuProviderAdapter,
-  createProviderAdapter,
 } from '@metalayer/providers';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -360,9 +360,8 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
           };
 
           if (catalog.provider === 'tmdb') {
-            const adapter = createProviderAdapter('tmdb', {
+            const adapter = createAppProviderAdapter(app, 'tmdb', {
               apiKey,
-              fetchImpl: app.providerFetch,
               cache: app.providerCache,
               stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
             });
@@ -393,8 +392,7 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
             catalog.provider === 'mal' ||
             catalog.provider === 'kitsu'
           ) {
-            const adapter = createProviderAdapter(catalog.provider, {
-              fetchImpl: app.providerFetch,
+            const adapter = createAppProviderAdapter(app, catalog.provider, {
               cache: app.providerCache,
               jikanBaseUrl: process.env.METALAYER_JIKAN_URL,
             });

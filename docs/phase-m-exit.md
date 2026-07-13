@@ -29,7 +29,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
-| Full i18n/RTL layout hardening | **Partial** — shell landmarks; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
+| Full i18n/RTL layout hardening | **Partial** — shell landmarks; configure loads en-XA/ar-XB; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | Phase M → N (migration fixture coverage landed; formal review Open) |
 
@@ -42,10 +42,10 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Accessibility pass | Partial — Advanced-mode pages use PageHeader/SectionCard/live regions; Catalog Studio dialogs |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
-| Provider reliability / degradation | Open |
+| Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell keys hardened; full review Open |
-| Pseudo-locale and RTL layout review | Partial — document `dir` + ar-XB in shell; layout audit Open |
+| Pseudo-locale and RTL layout review | Partial — configure i18n loads en-XA/ar-XB; `dir` + pseudo strings wired; **layout audit Open** |
 | Field Resolution Chains review | Open |
 | Documentation pass | Open |
 

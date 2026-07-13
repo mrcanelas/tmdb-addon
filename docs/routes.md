@@ -51,7 +51,7 @@ Implemented by `apps/server` (port `1338` by default):
 | GET | `/api/v1/configurations/:configId/revisions/:revisionId` | Read revision snapshot |
 | POST | `/api/v1/configurations/:configId/revisions/:revisionId/restore` | Restore revision |
 | GET | `/api/v1/configurations/:configId/export` | Safe export (secret states only) |
-| GET | `/api/v1/sources` | Provider capability registry |
+| GET | `/api/v1/sources` | Provider capability registry + health snapshots |
 | GET | `/api/v1/sources/:providerId` | Provider details + locale example |
 | POST | `/api/v1/sources/:providerId/test` | Ping provider (body apiKey, env, or vault) |
 | GET | `/api/v1/preview/movie/:id` | Cached movie preview (`tt…`, `tmdb:`, or bare TMDB id) |

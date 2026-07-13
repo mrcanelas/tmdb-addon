@@ -24,15 +24,17 @@ import {
   MalJikanProviderAdapter,
   ProviderError,
   TmdbProviderAdapter,
-  createProviderAdapter,
+  type ProviderHealthRegistry,
   type TmdbFetch,
 } from '@metalayer/providers';
 import type { CacheStore } from '@metalayer/cache';
+import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
     correctionRegistry: CorrectionRegistry;
   }
@@ -116,6 +118,7 @@ async function loadCatalogMetas(
   app: {
     configStore: ConfigurationStore;
     providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
   },
   configId: string,
@@ -145,9 +148,8 @@ async function loadCatalogMetas(
       };
 
       if (source.provider === 'tmdb') {
-        const adapter = createProviderAdapter('tmdb', {
+        const adapter = createAppProviderAdapter(app, 'tmdb', {
           apiKey,
-          fetchImpl: app.providerFetch,
           cache: app.providerCache,
           stremioPublicId: config.identity?.stremioPublicId || 'imdb',
         });
@@ -176,8 +178,7 @@ async function loadCatalogMetas(
         source.provider === 'mal' ||
         source.provider === 'kitsu'
       ) {
-        const adapter = createProviderAdapter(source.provider, {
-          fetchImpl: app.providerFetch,
+        const adapter = createAppProviderAdapter(app, source.provider, {
           cache: app.providerCache,
           jikanBaseUrl: process.env.METALAYER_JIKAN_URL,
         });
@@ -341,9 +342,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
         if (anilistId === null) {
           return reply.status(404).send({ meta: null });
         }
-        const adapter = createProviderAdapter('anilist', {
-          fetchImpl: app.providerFetch,
-        });
+        const adapter = createAppProviderAdapter(app, 'anilist', {});
         if (!(adapter instanceof AnilistProviderAdapter)) {
           return reply.status(502).send({ meta: null });
         }
@@ -381,9 +380,8 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       process.env.METALAYER_TMDB_API_KEY ||
       process.env.TMDB_API;
 
-    const adapter = createProviderAdapter('tmdb', {
+    const adapter = createAppProviderAdapter(app, 'tmdb', {
       apiKey,
-      fetchImpl: app.providerFetch,
       cache: app.providerCache,
       stremioPublicId: effective.identity?.stremioPublicId || 'imdb',
     });

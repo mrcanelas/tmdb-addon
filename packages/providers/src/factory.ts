@@ -1,5 +1,8 @@
 import type { ProviderAdapter, ProviderHttpPolicy } from './core/runtime.js';
 import type { ProviderCacheStore } from './core/provider-cache.js';
+import type { ProviderHealthTracker } from './core/health.js';
+import { ProviderHealthRegistry } from './core/health-registry.js';
+import { DEFAULT_PROVIDER_HTTP_POLICY } from './core/health.js';
 import type { TmdbFetch } from './tmdb/adapter.js';
 import { TmdbProviderAdapter } from './tmdb/adapter.js';
 import { FanartArtworkAdapter } from './artwork/fanart.js';
@@ -27,6 +30,22 @@ export interface CreateProviderAdapterOptions {
   jikanBaseUrl?: string;
   /** OAuth access token for tracking providers. */
   accessToken?: string;
+  /** Explicit tracker (wins over registry). */
+  health?: ProviderHealthTracker;
+  /** Shared process registry for cross-request circuit breakers. */
+  healthRegistry?: ProviderHealthRegistry;
+}
+
+function resolveHealth(
+  providerId: string,
+  options: CreateProviderAdapterOptions,
+): ProviderHealthTracker | undefined {
+  if (options.health) return options.health;
+  if (!options.healthRegistry) return undefined;
+  return options.healthRegistry.getOrCreate(providerId, {
+    ...DEFAULT_PROVIDER_HTTP_POLICY,
+    ...options.policy,
+  });
 }
 
 /**
@@ -39,6 +58,7 @@ export function createProviderAdapter(
 ): ProviderAdapter | null {
   const definition = getProvider(providerId);
   if (!definition) return null;
+  const health = resolveHealth(providerId, options);
 
   switch (providerId) {
     case 'tmdb':
@@ -49,18 +69,21 @@ export function createProviderAdapter(
         cache: options.cache,
         cacheTtlMs: options.cacheTtlMs,
         stremioPublicId: options.stremioPublicId,
+        health,
       });
     case 'fanart':
       return new FanartArtworkAdapter({
         apiKey: options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'rpdb':
       return new RpdbArtworkAdapter({
         apiKey: options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'imdb':
       return new ImdbRatingsAdapter({
@@ -68,6 +91,7 @@ export function createProviderAdapter(
         policy: options.policy,
         cache: options.cache,
         cacheTtlMs: options.cacheTtlMs,
+        health,
       });
     case 'anilist':
       if (options.accessToken) {
@@ -75,11 +99,13 @@ export function createProviderAdapter(
           accessToken: options.accessToken,
           fetchImpl: options.fetchImpl,
           policy: options.policy,
+          health,
         });
       }
       return new AnilistProviderAdapter({
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'mal':
       if (options.accessToken) {
@@ -88,17 +114,20 @@ export function createProviderAdapter(
           clientId: process.env.MAL_CLIENT_ID,
           fetchImpl: options.fetchImpl,
           policy: options.policy,
+          health,
         });
       }
       return new MalJikanProviderAdapter({
         baseUrl: options.jikanBaseUrl,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'kitsu':
       return new KitsuProviderAdapter({
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'trakt':
       return new TraktTrackingAdapter({
@@ -106,6 +135,7 @@ export function createProviderAdapter(
         clientId: process.env.TRAKT_CLIENT_ID,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     case 'simkl':
       return new SimklTrackingAdapter({
@@ -113,6 +143,7 @@ export function createProviderAdapter(
         clientId: process.env.SIMKL_CLIENT_ID,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
+        health,
       });
     default:
       return null;

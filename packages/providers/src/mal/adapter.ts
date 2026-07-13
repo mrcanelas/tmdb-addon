@@ -28,6 +28,7 @@ export interface JikanAdapterOptions {
   baseUrl?: string;
   fetchImpl?: AnimeProviderFetch;
   policy?: Partial<ProviderHttpPolicy>;
+  health?: ProviderHealthTracker;
 }
 
 /**
@@ -59,7 +60,7 @@ export class MalJikanProviderAdapter implements ProviderAdapter {
       maxRetries: 2,
       ...options.policy,
     };
-    this.health = new ProviderHealthTracker(this.policy);
+    this.health = options.health ?? new ProviderHealthTracker(this.policy);
   }
 
   getHealth(): ProviderHealthSnapshot {
