@@ -43,7 +43,9 @@ export function CatalogStudioPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [previewMetas, setPreviewMetas] = useState<CatalogMetaPreview[]>([]);
-  const [previewWarnings, setPreviewWarnings] = useState<string[]>([]);
+  const [previewWarnings, setPreviewWarnings] = useState<
+    Array<{ code: string; params?: Record<string, string | undefined> }>
+  >([]);
   const [previewTitle, setPreviewTitle] = useState<string | null>(null);
   const [editDialog, setEditDialog] = useState<CatalogEditDialog | null>(null);
   const [actionFeedback, setActionFeedback] = useState<
@@ -144,7 +146,7 @@ export function CatalogStudioPage() {
       setPreviewWarnings(result.warnings ?? []);
     } catch {
       setPreviewMetas([]);
-      setPreviewWarnings([t('catalogs.previewError')]);
+      setPreviewWarnings([{ code: 'PREVIEW_REQUEST_FAILED' }]);
     } finally {
       setBusyId(null);
     }
@@ -580,7 +582,14 @@ export function CatalogStudioPage() {
                   role="status"
                 >
                   {previewWarnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
+                    <li
+                      key={`${warning.code}-${warning.params?.instanceId ?? ''}-${warning.params?.sourceId ?? ''}-${warning.params?.mode ?? ''}`}
+                    >
+                      {t(`catalogs.warning.${warning.code}`, {
+                        ...warning.params,
+                        defaultValue: warning.code,
+                      })}
+                    </li>
                   ))}
                 </ul>
               ) : null}

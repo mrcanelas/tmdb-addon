@@ -87,6 +87,43 @@ describe('@metalayer/catalogs merge and rotation', () => {
     expect(result.metas.map((meta) => meta.id)).toEqual(['1', '2', '3']);
   });
 
+  it('emits stable warning codes for missing instances and rotation', async () => {
+    const leaf = createCatalogInstance({
+      provider: 'tmdb',
+      providerCatalogId: 'trending',
+      mediaType: 'movie',
+      originalName: 'Trending',
+    });
+    const second = createCatalogInstance(
+      {
+        provider: 'tmdb',
+        providerCatalogId: 'popular',
+        mediaType: 'movie',
+        originalName: 'Popular',
+      },
+      [leaf],
+    );
+    let catalogs = createRotatedCatalog([leaf, second], {
+      name: 'Daily Mix',
+      mediaType: 'movie',
+      mode: 'daily',
+      sourceInstanceIds: [leaf.instanceId, second.instanceId],
+    });
+    catalogs = catalogs.map((item, index) => ({ ...item, position: index }));
+
+    const missing = await resolveCatalogResults(catalogs, 'missing-id', async () => []);
+    expect(missing.warnings).toEqual([
+      { code: 'INSTANCE_NOT_FOUND', params: { instanceId: 'missing-id' } },
+    ]);
+
+    const rotated = catalogs.find((item) => item.rotation)!;
+    const result = await resolveCatalogResults(catalogs, rotated.instanceId, async () => [
+      { id: '1', type: 'movie', name: 'One' },
+    ]);
+    expect(result.mode).toBe('rotation');
+    expect(result.warnings.some((w) => w.code === 'ROTATION_ACTIVE')).toBe(true);
+  });
+
   it('exports and imports catalog definitions with tags and rotation', () => {
     const leaf = createCatalogInstance({
       provider: 'tmdb',

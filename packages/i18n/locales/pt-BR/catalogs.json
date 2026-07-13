@@ -54,5 +54,13 @@
   "catalogs.mergedDefaultName": "Mix mesclado",
   "catalogs.rotatedDefaultName": "Rotação diária",
   "catalogs.syncHint": "As posições do Studio e as entradas do manifesto permanecem sincronizadas para catálogos ativos.",
-  "catalogs.configId": "Config {{id}}"
+  "catalogs.configId": "Config {{id}}",
+  "catalogs.warning.INSTANCE_NOT_FOUND": "Instância de catálogo {{instanceId}} não encontrada.",
+  "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Fonte de rotação {{sourceId}} não encontrada.",
+  "catalogs.warning.ROTATION_ACTIVE": "Rotação ({{mode}}): usando {{sourceId}}.",
+  "catalogs.warning.MERGE_SOURCE_NOT_FOUND": "Fonte de mesclagem {{sourceId}} não encontrada.",
+  "catalogs.warning.LEAF_FETCH_FAILED": "Não foi possível carregar resultados do catálogo {{instanceId}}.",
+  "catalogs.warning.SOURCE_CREDENTIAL_MISSING": "Falta uma credencial de fonte necessária para este preview.",
+  "catalogs.warning.PROVIDER_UNAVAILABLE": "O provedor do catálogo está temporariamente indisponível.",
+  "catalogs.warning.PREVIEW_REQUEST_FAILED": "Não foi possível carregar resultados do catálogo. Verifique a chave da API do TMDB e tente novamente."
 }

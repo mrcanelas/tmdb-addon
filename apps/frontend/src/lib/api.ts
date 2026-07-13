@@ -413,7 +413,7 @@ export async function previewCatalogResults(
   options: { locale?: string; apiKey?: string } = {},
 ): Promise<{
   metas: CatalogMetaPreview[];
-  warnings: string[];
+  warnings: Array<{ code: string; params?: Record<string, string | undefined> }>;
   mode?: string;
   activeSourceId?: string;
   timingMs?: number;
@@ -576,6 +576,7 @@ export interface MetaInspectorReport {
     description: FieldResolutionView;
     poster: FieldResolutionView;
     background: FieldResolutionView;
+    logo?: FieldResolutionView;
     rating: FieldResolutionView;
     voteCount: FieldResolutionView;
     releaseDate: FieldResolutionView;

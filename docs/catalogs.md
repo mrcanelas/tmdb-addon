@@ -19,6 +19,7 @@ Canonical model, merge modes, and rotation: `AGENTS.md` §12. Phase D exit: `doc
 2. Reorder, rename, enable/disable, show/hide on Home, tag, duplicate, or delete instances.
 3. Create **merged** or **rotated** catalogs from existing instance IDs when needed.
 4. Use **Preview** on an instance to inspect provider pages, rules/sorting effects, and warnings.
+   Preview warnings use **stable codes** (`INSTANCE_NOT_FOUND`, `ROTATION_ACTIVE`, `MERGE_SOURCE_NOT_FOUND`, …). The configure UI translates them via `catalogs.warning.*`.
 5. Export/import catalog definitions for backup or transfer (secrets stay out of catalog payloads).
 6. Install via Save & Install — native route `/c/:configId/catalog/:type/:id.json` (and profile-scoped `/c/.../p/:profileId/...`).
 

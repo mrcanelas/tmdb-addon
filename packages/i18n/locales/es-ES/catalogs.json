@@ -54,5 +54,13 @@
   "catalogs.mergedDefaultName": "Mix fusionado",
   "catalogs.rotatedDefaultName": "Rotación diaria",
   "catalogs.syncHint": "Las posiciones del Studio y las entradas del manifiesto se mantienen sincronizadas para catálogos activos.",
-  "catalogs.configId": "Config {{id}}"
+  "catalogs.configId": "Config {{id}}",
+  "catalogs.warning.INSTANCE_NOT_FOUND": "Instancia de catálogo {{instanceId}} no encontrada.",
+  "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Fuente de rotación {{sourceId}} no encontrada.",
+  "catalogs.warning.ROTATION_ACTIVE": "Rotación ({{mode}}): usando {{sourceId}}.",
+  "catalogs.warning.MERGE_SOURCE_NOT_FOUND": "Fuente de fusión {{sourceId}} no encontrada.",
+  "catalogs.warning.LEAF_FETCH_FAILED": "No se pudieron cargar resultados del catálogo {{instanceId}}.",
+  "catalogs.warning.SOURCE_CREDENTIAL_MISSING": "Falta una credencial de fuente necesaria para esta vista previa.",
+  "catalogs.warning.PROVIDER_UNAVAILABLE": "El proveedor del catálogo no está disponible temporalmente.",
+  "catalogs.warning.PREVIEW_REQUEST_FAILED": "No se pudieron cargar resultados del catálogo. Comprueba la clave de API de TMDB e inténtalo de nuevo."
 }

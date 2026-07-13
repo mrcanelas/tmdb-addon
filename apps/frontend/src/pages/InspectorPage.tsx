@@ -284,6 +284,7 @@ export function InspectorPage() {
                 <ul className="space-y-3">
                   {FIELD_KEYS.map((key) => {
                     const field = report.fields[key];
+                    if (!field) return null;
                     return (
                       <li
                         key={key}

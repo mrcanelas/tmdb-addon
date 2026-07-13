@@ -446,7 +446,14 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
       const status = providerError.code === 'auth' ? 400 : 502;
       return reply.status(status).send({
         metas: [],
-        warnings: [providerError.message],
+        warnings: [
+          {
+            code:
+              providerError.code === 'auth'
+                ? 'SOURCE_CREDENTIAL_MISSING'
+                : 'PROVIDER_UNAVAILABLE',
+          },
+        ],
         error: {
           code:
             providerError.code === 'auth'

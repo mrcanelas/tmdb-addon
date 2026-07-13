@@ -27,4 +27,6 @@ export {
   resolveCatalogResults,
   type FetchCatalogLeaf,
   type CatalogResolveResult,
+  type CatalogPreviewWarning,
+  type CatalogPreviewWarningCode,
 } from './resolve.js';

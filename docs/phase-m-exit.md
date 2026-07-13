@@ -44,7 +44,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | Partial — vault/redaction/OAuth allowlist landed; checklist in `docs/security.md`; formal sign-off Open |
-| Translation review (en-US / pt-BR / es-ES) | Partial — Corrections samples + Inspector logo + **Rules provider-warning codes**; full catalog review Open |
+| Translation review (en-US / pt-BR / es-ES) | Partial — Corrections samples + Inspector logo + Rules provider-warning codes + **Identity + Catalog Studio preview warning codes**; full catalog review Open |
 | Pseudo-locale and RTL layout review | Partial — configure + **dashboard** load en-XA/ar-XB with `dir`; smoke tests; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
 | Field Resolution Chains review | Partial — Appearance background/logo + Inspector logo dry-run + attempt codes; inheritance/episode UX still Open |
 | Documentation pass | Partial — §36 stubs + CHANGELOG + RTL checklist; **Security/Versioning/Deprecations** narratives expanded; remaining §36 depth still Open |

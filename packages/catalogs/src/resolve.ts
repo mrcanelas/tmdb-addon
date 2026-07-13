@@ -7,9 +7,25 @@ export type FetchCatalogLeaf = (
   catalog: CatalogDefinition,
 ) => Promise<CatalogMetaPreview[]>;
 
+export type CatalogPreviewWarningCode =
+  | 'INSTANCE_NOT_FOUND'
+  | 'ROTATION_SOURCE_NOT_FOUND'
+  | 'ROTATION_ACTIVE'
+  | 'MERGE_SOURCE_NOT_FOUND'
+  | 'LEAF_FETCH_FAILED';
+
+export interface CatalogPreviewWarning {
+  code: CatalogPreviewWarningCode;
+  params?: {
+    instanceId?: string;
+    sourceId?: string;
+    mode?: string;
+  };
+}
+
 export interface CatalogResolveResult {
   metas: CatalogMetaPreview[];
-  warnings: string[];
+  warnings: CatalogPreviewWarning[];
   activeSourceId?: string;
   mode?: 'leaf' | 'merge' | 'rotation';
 }
@@ -26,10 +42,13 @@ export async function resolveCatalogResults(
   const ordered = sortCatalogsByPosition(catalogs);
   const byId = new Map(ordered.map((catalog) => [catalog.instanceId, catalog]));
   const target = byId.get(instanceId);
-  const warnings: string[] = [];
+  const warnings: CatalogPreviewWarning[] = [];
 
   if (!target) {
-    return { metas: [], warnings: [`Catalog instance ${instanceId} was not found`] };
+    return {
+      metas: [],
+      warnings: [{ code: 'INSTANCE_NOT_FOUND', params: { instanceId } }],
+    };
   }
 
   if (target.rotation) {
@@ -42,7 +61,12 @@ export async function resolveCatalogResults(
     if (!source) {
       return {
         metas: [],
-        warnings: [`Rotation source ${activeSourceId} was not found`],
+        warnings: [
+          {
+            code: 'ROTATION_SOURCE_NOT_FOUND',
+            params: { sourceId: activeSourceId },
+          },
+        ],
         activeSourceId,
         mode: 'rotation',
       };
@@ -56,7 +80,10 @@ export async function resolveCatalogResults(
       warnings: [
         ...warnings,
         ...nested.warnings,
-        `Rotation ${target.rotation.mode}: using ${activeSourceId}`,
+        {
+          code: 'ROTATION_ACTIVE',
+          params: { mode: target.rotation.mode, sourceId: activeSourceId },
+        },
       ],
       activeSourceId,
       mode: 'rotation',
@@ -68,7 +95,10 @@ export async function resolveCatalogResults(
     for (const source of target.merge.sources) {
       const child = byId.get(source.instanceId);
       if (!child) {
-        warnings.push(`Merge source ${source.instanceId} was not found`);
+        warnings.push({
+          code: 'MERGE_SOURCE_NOT_FOUND',
+          params: { sourceId: source.instanceId },
+        });
         pages.push({ metas: [] as CatalogMetaPreview[], weight: source.weight });
         continue;
       }
@@ -106,10 +136,11 @@ export async function resolveCatalogResults(
       warnings,
       mode: 'leaf',
     };
-  } catch (error) {
-    warnings.push(
-      error instanceof Error ? error.message : `Failed to load ${target.instanceId}`,
-    );
+  } catch {
+    warnings.push({
+      code: 'LEAF_FETCH_FAILED',
+      params: { instanceId: target.instanceId },
+    });
     return { metas: [], warnings, mode: 'leaf' };
   }
 }

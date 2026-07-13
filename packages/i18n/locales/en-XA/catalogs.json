@@ -54,5 +54,13 @@
   "catalogs.mergedDefaultName": "Mérgéd mîxMér",
   "catalogs.rotatedDefaultName": "Dåîly røtåtîøñDåîly",
   "catalogs.syncHint": "Stûdîø pøsîtîøñs åñd måñîfést éñtrîés ståy îñ løçkstép før éñåbléd çåtåløgs.Stûdîø pøsîtîøñs åñd må",
-  "catalogs.configId": "Çøñfîg Çøñ{{id}}"
+  "catalogs.configId": "Çøñfîg Çøñ{{id}}",
+  "catalogs.warning.INSTANCE_NOT_FOUND": "Çåtåløg îñståñçé Çåtålø{{instanceId}} wås ñøt føûñd. wås ",
+  "catalogs.warning.ROTATION_SOURCE_NOT_FOUND": "Røtåtîøñ søûrçé Røtåt{{sourceId}} wås ñøt føûñd. wås ",
+  "catalogs.warning.ROTATION_ACTIVE": "Røtåtîøñ (Røt{{mode}}): ûsîñg ): {{sourceId}}..",
+  "catalogs.warning.MERGE_SOURCE_NOT_FOUND": "Mérgé søûrçé Mérg{{sourceId}} wås ñøt føûñd. wås ",
+  "catalogs.warning.LEAF_FETCH_FAILED": "Çøûld ñøt løåd résûlts før çåtåløg Çøûld ñøt l{{instanceId}}..",
+  "catalogs.warning.SOURCE_CREDENTIAL_MISSING": "Å réqûîréd søûrçé çrédéñtîål îs mîssîñg før thîs prévîéw.Å réqûîréd søûrçé ",
+  "catalogs.warning.PROVIDER_UNAVAILABLE": "Thé çåtåløg prøvîdér îs témpørårîly ûñåvåîlåblé.Thé çåtåløg prø",
+  "catalogs.warning.PREVIEW_REQUEST_FAILED": "Çøûld ñøt løåd çåtåløg résûlts. Çhéçk thé TMDB ÅPÎ kéy åñd try ågåîñ.Çøûld ñøt løåd çåtålø"
 }

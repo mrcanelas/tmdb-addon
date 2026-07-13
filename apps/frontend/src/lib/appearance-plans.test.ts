@@ -9,6 +9,7 @@ import {
 const emptyResolution: ResolutionConfig = {
   version: 1,
   defaults: { fields: {} },
+  mediaTypes: {},
 };
 
 describe('appearance field resolution defaults', () => {
