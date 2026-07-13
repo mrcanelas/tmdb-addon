@@ -15,6 +15,7 @@
   "rules.saving": "Salvando…",
   "rules.saveError": "Não foi possível salvar as regras globais.",
   "rules.preview": "Prévia com amostra",
+  "rules.previewError": "Não foi possível pré-visualizar as regras. Verifique a credencial de edição e tente de novo.",
   "rules.loadError": "Não foi possível carregar as regras da API.",
   "rules.saved": "Regras globais salvas.",
   "rules.included": "Incluídos",

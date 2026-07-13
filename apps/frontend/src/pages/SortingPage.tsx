@@ -45,6 +45,7 @@ export function SortingPage() {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'ok' | 'error'>(
     'idle',
   );
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   async function load() {
     setStatus('loading');
@@ -84,6 +85,7 @@ export function SortingPage() {
   }
 
   async function onPreview() {
+    setPreviewError(null);
     try {
       const session = await ensureStudioSession();
       const result = await previewSorting(
@@ -94,9 +96,8 @@ export function SortingPage() {
       );
       setOrder(result.order);
       setSeedWindow(result.seedWindow);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setPreviewError(t('sorting.previewError'));
     }
   }
 
@@ -280,8 +281,13 @@ export function SortingPage() {
             </p>
           ) : null}
           {saveState === 'error' ? (
-            <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
               {t('sorting.saveError')}
+            </p>
+          ) : null}
+          {previewError ? (
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
+              {previewError}
             </p>
           ) : null}
 

@@ -15,6 +15,7 @@
   "rules.saving": "Saving…",
   "rules.saveError": "Could not save global rules.",
   "rules.preview": "Preview sample",
+  "rules.previewError": "Could not preview rules. Check your edit credential and try again.",
   "rules.loadError": "Could not load rules from the API.",
   "rules.saved": "Global rules saved.",
   "rules.included": "Included",

@@ -32,6 +32,7 @@ export function RulesPage() {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'ok' | 'error'>(
     'idle',
   );
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   async function load() {
     setStatus('loading');
@@ -72,6 +73,7 @@ export function RulesPage() {
   }
 
   async function onPreview() {
+    setPreviewError(null);
     try {
       const session = await ensureStudioSession();
       const result = await previewRules(
@@ -83,9 +85,8 @@ export function RulesPage() {
       setIncluded(result.included);
       setExcluded(result.excluded);
       setWarnings(result.warnings);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setPreviewError(t('rules.previewError'));
     }
   }
 
@@ -239,8 +240,13 @@ export function RulesPage() {
             </p>
           ) : null}
           {saveState === 'error' ? (
-            <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
               {t('rules.saveError')}
+            </p>
+          ) : null}
+          {previewError ? (
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
+              {previewError}
             </p>
           ) : null}
 

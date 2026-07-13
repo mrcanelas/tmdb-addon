@@ -13,6 +13,7 @@
   "sorting.saving": "Salvando…",
   "sorting.saveError": "Não foi possível salvar a ordenação global.",
   "sorting.preview": "Prévia da ordem",
+  "sorting.previewError": "Não foi possível pré-visualizar a ordenação. Verifique a credencial de edição e tente de novo.",
   "sorting.loadError": "Não foi possível carregar a ordenação da API.",
   "sorting.saved": "Ordenação global salva.",
   "sorting.order": "Ordem resultante",

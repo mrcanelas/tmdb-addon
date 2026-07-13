@@ -13,6 +13,7 @@
   "sorting.saving": "Saving…",
   "sorting.saveError": "Could not save global sorting.",
   "sorting.preview": "Preview sample order",
+  "sorting.previewError": "Could not preview sorting. Check your edit credential and try again.",
   "sorting.loadError": "Could not load sorting from the API.",
   "sorting.saved": "Global sorting saved.",
   "sorting.order": "Result order",
