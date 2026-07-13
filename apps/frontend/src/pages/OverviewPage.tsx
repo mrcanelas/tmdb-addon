@@ -10,7 +10,7 @@ import {
   writeCatalogSession,
   type LegacyImportReportView,
 } from '@/lib/api';
-import { studioSessionQueryKey } from '@/api/hooks/use-studio-session';
+import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { PageHeader } from '@/components/metalayer/PageHeader';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { useConfigureUiStore } from '@/stores/ui-store';
@@ -62,7 +62,7 @@ export function OverviewPage() {
         editCredential,
       };
       writeCatalogSession(session);
-      queryClient.setQueryData(studioSessionQueryKey, session);
+      syncStudioSessionQuery(queryClient, session);
       setFeedback({
         tone: 'ok',
         message: t('overview.importOk', { id: result.configId }),

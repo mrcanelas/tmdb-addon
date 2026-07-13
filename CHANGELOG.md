@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 ## [Unreleased]
 
+### Added
+
+- Overview legacy TMDB Addon import (dry-run preview + confirm → Save & Install)
+
+### Fixed
+
+- Configure studio session React Query cache stays in sync after import and Catalog Studio draft reset
+- Sources test success/failure i18n placeholders and health state labels
+- Primary configure pages keep the form visible on action/preview/inspect failures
+
 ## [1.0.0-beta.1] — 2026-07-12
 
 ### Added

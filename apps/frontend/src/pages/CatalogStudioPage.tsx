@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   bootstrapCatalogDraft,
   clearCatalogSession,
@@ -15,6 +16,7 @@ import {
   type ManifestCatalogEntry,
   type StudioCatalogAction,
 } from '@/lib/api';
+import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { Button } from '@metalayer/shared-ui';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/metalayer/PageHeader';
@@ -34,6 +36,7 @@ type CatalogEditDialog =
 
 export function CatalogStudioPage() {
   const { t, i18n } = useTranslation(['catalogs', 'common']);
+  const queryClient = useQueryClient();
   const [catalogs, setCatalogs] = useState<CatalogListItem[]>([]);
   const [manifestOrder, setManifestOrder] = useState<ManifestCatalogEntry[]>([]);
   const [configId, setConfigId] = useState<string | null>(null);
@@ -58,15 +61,19 @@ export function CatalogStudioPage() {
       setCatalogs(payload.catalogs);
       setManifestOrder(payload.manifestOrder);
       setStatus('ready');
+      syncStudioSessionQuery(queryClient);
     },
-    [],
+    [queryClient],
   );
 
   const load = useCallback(
     async (reset = false) => {
       setStatus('loading');
       try {
-        if (reset) clearCatalogSession();
+        if (reset) {
+          clearCatalogSession();
+          syncStudioSessionQuery(queryClient, null);
+        }
         const session = readCatalogSession();
         if (!session) {
           const draft = await bootstrapCatalogDraft();
@@ -82,6 +89,7 @@ export function CatalogStudioPage() {
       } catch {
         try {
           clearCatalogSession();
+          syncStudioSessionQuery(queryClient, null);
           const draft = await bootstrapCatalogDraft();
           applyPayload(draft);
         } catch {
@@ -89,7 +97,7 @@ export function CatalogStudioPage() {
         }
       }
     },
-    [applyPayload, i18n.language],
+    [applyPayload, i18n.language, queryClient],
   );
 
   useEffect(() => {
