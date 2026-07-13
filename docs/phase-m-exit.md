@@ -31,7 +31,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
 | Full i18n/RTL layout hardening | **Partial** — shell landmarks; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
 | Performance measurement against §34 objectives | Phase M tasks |
-| Security / migration review sign-off | Phase M → N |
+| Security / migration review sign-off | Phase M → N (migration fixture coverage landed; formal review Open) |
 
 ## Phase M checklist
 
@@ -41,7 +41,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | UX review of configure primary pages | Partial — Sorting / Inspector / Search & AI aligned to layered layout; Catalog Studio dialogs done |
 | Accessibility pass | Partial — Advanced-mode pages use PageHeader/SectionCard/live regions; Catalog Studio dialogs |
 | Performance measurement | Open |
-| Migration testing (legacy import fixtures) | Open |
+| Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | Open |
 | Security review | Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell keys hardened; full review Open |
