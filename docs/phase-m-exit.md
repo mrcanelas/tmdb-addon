@@ -44,10 +44,10 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | Partial — log redaction includes dashboard token; OAuth `redirectUri` allowlist; formal sign-off Open |
-| Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell + Search & AI + Corrections/Tracking + Inspector + **Sources test interpolation/health labels**; full catalog review Open |
+| Translation review (en-US / pt-BR / es-ES) | Partial — Sources health + **Corrections sample strings** + Inspector **logo** labels; full catalog review Open |
 | Pseudo-locale and RTL layout review | Partial — configure + **dashboard** load en-XA/ar-XB with `dir`; smoke tests; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
-| Field Resolution Chains review | Partial — Appearance background + **logo** + Inspector attempt codes; inheritance/episode UX still Open |
-| Documentation pass | Partial — §36 stubs + CHANGELOG/CONTRIBUTING + RTL checklist; major domain narratives expanded (incl. **Configuration/Profiles/Migration**); remaining §36 depth still Open |
+| Field Resolution Chains review | Partial — Appearance background/logo + Inspector logo dry-run + attempt codes; inheritance/episode UX still Open |
+| Documentation pass | Partial — §36 stubs + CHANGELOG + RTL checklist; major narratives expanded (incl. **Versioning**); remaining §36 depth still Open |
 
 ## Exit criterion
 

@@ -21,5 +21,9 @@
   "corrections.rollbackOk": "Correção local revertida.",
   "corrections.rollbackError": "Não foi possível reverter a correção local.",
   "corrections.previewOk": "Pré-visualização de correções concluída.",
-  "corrections.previewError": "Não foi possível pré-visualizar as correções."
+  "corrections.previewError": "Não foi possível pré-visualizar as correções.",
+  "corrections.sample.localTitle": "Clube da Luta (Local)",
+  "corrections.sample.providerTitle": "Título do provedor",
+  "corrections.sample.reason": "Preferir título pessoal",
+  "corrections.sample.sourceLabel": "Preferência do operador"
 }

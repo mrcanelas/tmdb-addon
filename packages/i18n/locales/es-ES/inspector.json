@@ -28,6 +28,7 @@
   "inspector.fields.description": "Descripción",
   "inspector.fields.poster": "Póster",
   "inspector.fields.background": "Fondo",
+  "inspector.fields.logo": "Logo",
   "inspector.fields.rating": "Nota",
   "inspector.fields.voteCount": "Votos",
   "inspector.fields.releaseDate": "Fecha de estreno",

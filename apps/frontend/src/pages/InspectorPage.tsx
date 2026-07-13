@@ -18,6 +18,7 @@ const FIELD_KEYS = [
   'description',
   'poster',
   'background',
+  'logo',
   'rating',
   'voteCount',
   'releaseDate',
@@ -70,6 +71,11 @@ const SAMPLE_CONTRIBUTIONS = {
   ],
   background: [
     { provider: 'tmdb', value: 'https://image.tmdb.org/t/p/w1280/back.jpg' },
+  ],
+  logo: [
+    { provider: 'rpdb', value: null },
+    { provider: 'fanart', value: 'https://fanart.example/logo.png' },
+    { provider: 'tvdb', value: 'https://tvdb.example/logo.png' },
   ],
   rating: [
     { provider: 'imdb', value: 8.8, confidence: 0.95 },

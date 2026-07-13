@@ -7,6 +7,7 @@ import {
 } from '@/lib/api';
 import { queryKeys } from '@/api/query-keys';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
+import { i18n } from '@/lib/i18n';
 
 export function useCorrectionsQuery() {
   const sessionQuery = useStudioSessionQuery();
@@ -30,9 +31,18 @@ export function useCreateLocalCorrectionMutation() {
       return createLocalCorrection(session.configId, session.editCredential, {
         target: { provider: 'imdb', id: 'tt0137523', entityKind: 'movie' },
         type: 'title_correction',
-        payload: { title: 'Fight Club (Local)' },
-        reason: 'Prefer personal title',
-        sources: [{ kind: 'manual', label: 'Operator preference' }],
+        payload: {
+          title: i18n.t('corrections.sample.localTitle', { ns: 'corrections' }),
+        },
+        reason: i18n.t('corrections.sample.reason', { ns: 'corrections' }),
+        sources: [
+          {
+            kind: 'manual',
+            label: i18n.t('corrections.sample.sourceLabel', {
+              ns: 'corrections',
+            }),
+          },
+        ],
       });
     },
     onSuccess: async () => {
@@ -77,7 +87,11 @@ export function usePreviewCorrectionsMutation() {
       return previewCorrections(session.configId, session.editCredential, {
         provider: 'imdb',
         id: 'tt0137523',
-        base: { title: 'Provider Title' },
+        base: {
+          title: i18n.t('corrections.sample.providerTitle', {
+            ns: 'corrections',
+          }),
+        },
       });
     },
   });

@@ -21,5 +21,9 @@
   "corrections.rollbackOk": "Local correction rolled back.",
   "corrections.rollbackError": "Could not roll back the local correction.",
   "corrections.previewOk": "Correction preview completed.",
-  "corrections.previewError": "Could not preview corrections."
+  "corrections.previewError": "Could not preview corrections.",
+  "corrections.sample.localTitle": "Fight Club (Local)",
+  "corrections.sample.providerTitle": "Provider Title",
+  "corrections.sample.reason": "Prefer personal title",
+  "corrections.sample.sourceLabel": "Operator preference"
 }

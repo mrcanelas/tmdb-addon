@@ -21,5 +21,9 @@
   "corrections.rollbackOk": "Løçål çørréçtîøñ rølléd båçk.Løçål çør",
   "corrections.rollbackError": "Çøûld ñøt røll båçk thé løçål çørréçtîøñ.Çøûld ñøt røl",
   "corrections.previewOk": "Çørréçtîøñ prévîéw çømplétéd.Çørréçtîø",
-  "corrections.previewError": "Çøûld ñøt prévîéw çørréçtîøñs.Çøûld ñøt"
+  "corrections.previewError": "Çøûld ñøt prévîéw çørréçtîøñs.Çøûld ñøt",
+  "corrections.sample.localTitle": "Fîght Çlûb (Løçål)Fîght ",
+  "corrections.sample.providerTitle": "Prøvîdér TîtléPrøvî",
+  "corrections.sample.reason": "Préfér pérsøñål tîtléPréfér ",
+  "corrections.sample.sourceLabel": "Øpéråtør préféréñçéØpéråt"
 }
