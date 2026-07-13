@@ -1,6 +1,6 @@
 # Phase M — Beta stabilization
 
-Status: **in progress** — entered `1.0.0-beta.1` with maintainer-approved deferrals.
+Status: **in progress** — `1.0.0-beta.1` with **feature freeze** for new major modules (hardening / i18n / docs / approved deferral closure only).
 
 ## Entry gate
 
@@ -29,7 +29,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N (Appearance **background** + artwork `no-language` defaults landed; inheritance/episode UI still deferred) |
-| Full i18n/RTL layout hardening | **Partial** — shell landmarks; configure loads en-XA/ar-XB; dashboard list indent uses `ps-5`; deeper RTL layout audit remains |
+| Full i18n/RTL layout hardening | **Partial** — shell landmarks; configure loads en-XA/ar-XB; dashboard `ps-5`; checklist `docs/rtl-layout-checklist.md`; signed visual pass remains |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | Phase M → N (migration fixture coverage landed; **security hardening MVP** — dashboard token redaction + OAuth redirect allowlist; formal review still Open) |
 
@@ -37,17 +37,17 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Task | Status |
 |---|---|
-| Feature freeze for new major modules | Open — minimize new surface |
-| UX review of configure primary pages | Partial — Sorting / Inspector / Search & AI aligned to layered layout; Catalog Studio dialogs done |
-| Accessibility pass | Partial — Corrections create/rollback/preview live regions; Advanced save errors use `role="alert"`; Tracking preview announced |
+| Feature freeze for new major modules | **Done** — no new major product modules until Phase N; beta work limited to hardening, i18n/a11y, docs, and maintainer-approved deferral closure |
+| UX review of configure primary pages | Partial — primary pages on layered layout (PageHeader/SectionCard); residual polish Open |
+| Accessibility pass | Partial — Corrections/Tracking/Advanced live regions; Catalog Studio dialogs; broader pass Open |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | Partial — log redaction includes dashboard token; OAuth `redirectUri` allowlist; formal sign-off Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell + Search & AI + Corrections/Tracking + **Inspector attempt reasons** hardened; full catalog review Open |
-| Pseudo-locale and RTL layout review | Partial — configure i18n loads en-XA/ar-XB; `dir` + pseudo strings wired; dashboard `pl-5`→`ps-5`; **visual layout audit Open** |
+| Pseudo-locale and RTL layout review | Partial — configure loads en-XA/ar-XB; logical CSS in apps; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
 | Field Resolution Chains review | Partial — Appearance background + Inspector localizes attempt codes; inheritance/episode UX still Open |
-| Documentation pass | Partial — §36 seed stubs + `CHANGELOG.md` / `CONTRIBUTING.md`; deeper narrative docs still Open |
+| Documentation pass | Partial — §36 seed stubs + CHANGELOG/CONTRIBUTING + RTL checklist; deeper narrative docs still Open |
 
 ## Exit criterion
 
