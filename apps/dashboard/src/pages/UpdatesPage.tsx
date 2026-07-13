@@ -32,7 +32,7 @@ export function UpdatesPage() {
           <p className="ml-text-muted text-sm">
             {t('dashboard.upgradeCommand')}: <code>{data.upgradeCommand}</code>
           </p>
-          <ul className="list-disc pl-5">
+          <ul className="list-disc ps-5">
             {data.notes.map((note) => (
               <li key={note}>{note}</li>
             ))}
