@@ -4,7 +4,7 @@ This guide will help you set up your development environment and understand the 
 
 ## Prerequisites
 
-- Node.js 20.x or higher
+- Node.js 22.13+ (required by pnpm 11 / `node:sqlite`)
 - pnpm 11.x (see `packageManager` in root `package.json`)
 - Git
 - MongoDB (local or Atlas) — legacy addon only

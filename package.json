@@ -5,6 +5,9 @@
   "private": true,
   "main": "server.js",
   "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "pnpm -F core -F server -F frontend --parallel dev",
     "dev:core": "pnpm -F core dev",
