@@ -105,7 +105,7 @@ export type AiProposalKind =
 export interface AiProposal {
   id: string;
   kind: AiProposalKind;
-  summary: string;
+  summary: SearchAiNotice;
   explanation: AiExplanation;
   /** Suggested catalog definition when kind is ranked-list-catalog. */
   catalogDraft?: Omit<

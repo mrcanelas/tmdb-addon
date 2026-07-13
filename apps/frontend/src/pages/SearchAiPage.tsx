@@ -42,10 +42,17 @@ export function SearchAiPage() {
   const [unresolved, setUnresolved] = useState<string[]>([]);
   const [duplicates, setDuplicates] = useState<number>(0);
   const [proposalId, setProposalId] = useState<string | null>(null);
+  const [proposalSummary, setProposalSummary] = useState<SearchAiNotice | null>(
+    null,
+  );
   const [applied, setApplied] = useState(false);
 
   function translateNotice(
-    prefix: 'searchAi.warning' | 'searchAi.assumption' | 'searchAi.intent',
+    prefix:
+      | 'searchAi.warning'
+      | 'searchAi.assumption'
+      | 'searchAi.intent'
+      | 'searchAi.summary',
     notice: SearchAiNotice,
   ): string {
     return t(`${prefix}.${notice.code}`, {
@@ -122,6 +129,7 @@ export function SearchAiPage() {
         result.proposal.explanation.warnings ?? result.plan.warnings ?? [],
       );
       setProposalId(result.proposal.id);
+      setProposalSummary(result.proposal.summary ?? null);
       setApplied(false);
     } catch {
       setActionError(t('searchAi.actionError'));
@@ -146,6 +154,7 @@ export function SearchAiPage() {
       setNoticeAssumptions(result.explanation.assumptions ?? []);
       setNoticeWarnings(result.explanation.warnings ?? []);
       setProposalId(result.proposal.id);
+      setProposalSummary(result.proposal.summary ?? null);
       setApplied(false);
     } catch {
       setActionError(t('searchAi.actionError'));
@@ -166,6 +175,7 @@ export function SearchAiPage() {
       });
       setApplied(true);
       setProposalId(null);
+      setProposalSummary(null);
     } catch {
       setActionError(t('searchAi.applyError'));
     } finally {
@@ -336,6 +346,11 @@ export function SearchAiPage() {
 
           {proposalId ? (
             <SectionCard title={t('searchAi.proposalTitle')}>
+              {proposalSummary ? (
+                <p className="mb-2 text-sm text-[var(--ml-text)]" role="status">
+                  {translateNotice('searchAi.summary', proposalSummary)}
+                </p>
+              ) : null}
               <p className="mb-3 text-sm ml-text-muted">{t('searchAi.requiresConfirm')}</p>
               <Button
                 type="button"

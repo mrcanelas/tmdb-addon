@@ -874,6 +874,7 @@ export async function runSmartDiscovery(
   };
   proposal: {
     id: string;
+    summary?: { code: string; params?: Record<string, string | number | undefined> };
     explanation: {
       interpretedIntent: { code: string; params?: Record<string, string | number | undefined> };
       assumptions?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
@@ -900,7 +901,10 @@ export async function runRankedList(
     assumptions?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
     warnings?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
   };
-  proposal: { id: string };
+  proposal: {
+    id: string;
+    summary?: { code: string; params?: Record<string, string | number | undefined> };
+  };
 }> {
   return apiFetch(`/api/v1/configurations/${configId}/search/ranked-list`, {
     method: 'POST',

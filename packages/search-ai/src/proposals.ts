@@ -21,7 +21,10 @@ export function createSmartDiscoveryProposal(
   return {
     id: proposalId(),
     kind: 'smart-discovery-rules',
-    summary: `Apply Smart Discovery rules from: ${plan.rawPrompt}`,
+    summary: {
+      code: 'SMART_DISCOVERY_SUMMARY',
+      params: { prompt: plan.rawPrompt },
+    },
     explanation: buildExplanation({
       interpretedIntent: {
         code: 'DISCOVERY_PROMPT_INTENT',
@@ -49,7 +52,10 @@ export function createRankedListCatalogProposal(
   return {
     id: proposalId(),
     kind: 'ranked-list-catalog',
-    summary: `Save ranked list (${resolvedCount} resolved titles)`,
+    summary: {
+      code: 'RANKED_LIST_SUMMARY',
+      params: { count: resolvedCount },
+    },
     explanation: result.explanation,
     catalogDraft: {
       provider: 'metalayer',

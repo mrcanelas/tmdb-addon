@@ -42,5 +42,7 @@
   "searchAi.warning.NO_EXTERNAL_IDS": "‏No external IDs; left unresolved.‎",
   "searchAi.warning.SUSPICIOUS_YEAR": "‏Suspicious year: ‎{{year}}‏‎",
   "searchAi.warning.DUPLICATE_OF_RANK": "‏Duplicate of rank ‎{{rank}}‏‎",
-  "searchAi.warning.AI_PLAN_REJECTED": "‏AI plan rejected: ‎{{detail}}‏‎"
+  "searchAi.warning.AI_PLAN_REJECTED": "‏AI plan rejected: ‎{{detail}}‏‎",
+  "searchAi.summary.SMART_DISCOVERY_SUMMARY": "‏Apply Smart Discovery rules from: ‎{{prompt}}‏‎",
+  "searchAi.summary.RANKED_LIST_SUMMARY": "‏Save ranked list (‎{{count}}‏ resolved titles)‎"
 }

@@ -24,7 +24,7 @@ Configure UI: `/configure/search-ai`. Canonical product rules: `AGENTS.md` §16.
 1. Open `/configure/search-ai` (draft session bootstraps if needed).
 2. Run combined search, Smart Discovery, or Ranked List.
 3. Review interpreted intent, warnings/assumptions, unresolved titles, and duplicates.
-   Warnings and assumptions use **stable codes** (`DUPLICATE_DROPPED`, `NO_EXTERNAL_IDS`, `NO_GENRES_DETECTED`, …). The configure UI translates them via `searchAi.warning.*` / `searchAi.assumption.*` / `searchAi.intent.*`.
+   Warnings, assumptions, intent, and proposal **summaries** use **stable codes** (`DUPLICATE_DROPPED`, `NO_EXTERNAL_IDS`, `SMART_DISCOVERY_SUMMARY`, …). The configure UI translates them via `searchAi.warning.*` / `searchAi.assumption.*` / `searchAi.intent.*` / `searchAi.summary.*`.
 4. Confirm apply only when the proposal looks correct — UI never auto-saves.
 5. Action failures stay on the page with an alert; session bootstrap failures use retry.
 

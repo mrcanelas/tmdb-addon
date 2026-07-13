@@ -42,5 +42,7 @@
   "searchAi.warning.NO_EXTERNAL_IDS": "Ñø éxtérñål ÎDs; léft ûñrésølvéd.Ñø éxtérñå",
   "searchAi.warning.SUSPICIOUS_YEAR": "Sûspîçîøûs yéår: Sûspîç{{year}}",
   "searchAi.warning.DUPLICATE_OF_RANK": "Dûplîçåté øf råñk Dûplîç{{rank}}",
-  "searchAi.warning.AI_PLAN_REJECTED": "ÅÎ plåñ réjéçtéd: ÅÎ plå{{detail}}"
+  "searchAi.warning.AI_PLAN_REJECTED": "ÅÎ plåñ réjéçtéd: ÅÎ plå{{detail}}",
+  "searchAi.summary.SMART_DISCOVERY_SUMMARY": "Åpply Smårt Dîsçøvéry rûlés frøm: Åpply Smårt{{prompt}}",
+  "searchAi.summary.RANKED_LIST_SUMMARY": "Såvé råñkéd lîst (Såvé r{{count}} résølvéd tîtlés) résøl"
 }
