@@ -30,7 +30,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
 | Full i18n/RTL layout hardening | **Partial** — shell landmarks; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
-| Performance measurement against §34 objectives | Phase M tasks |
+| Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | Phase M → N (migration fixture coverage landed; formal review Open) |
 
 ## Phase M checklist
@@ -40,7 +40,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Feature freeze for new major modules | Open — minimize new surface |
 | UX review of configure primary pages | Partial — Sorting / Inspector / Search & AI aligned to layered layout; Catalog Studio dialogs done |
 | Accessibility pass | Partial — Advanced-mode pages use PageHeader/SectionCard/live regions; Catalog Studio dialogs |
-| Performance measurement | Open |
+| Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | Open |
 | Security review | Open |

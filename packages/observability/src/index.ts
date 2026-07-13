@@ -16,3 +16,8 @@ export {
 } from './health.js';
 export { safeTokenEquals, buildSafeBackup } from './backup.js';
 export type { BackupManifest } from './backup.js';
+export {
+  computePercentile,
+  summarizeLatency,
+  type LatencyPercentiles,
+} from './percentile.js';

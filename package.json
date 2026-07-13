@@ -23,6 +23,7 @@
     "start:server": "pnpm -F server start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:perf": "vitest run apps/server/src/performance.harness.test.ts",
     "test:proxy": "node test-proxy.js",
     "typecheck": "pnpm -F \"./packages/**\" -F \"./apps/**\" -r --if-present typecheck",
     "i18n:check": "pnpm -F @metalayer/i18n i18n:check",

@@ -1,4 +1,5 @@
 import type { LatencyBucket, MetricCounters } from './types.js';
+import { summarizeLatency, type LatencyPercentiles } from './percentile.js';
 
 const EMPTY: MetricCounters = {
   requestsTotal: 0,
@@ -10,34 +11,52 @@ const EMPTY: MetricCounters = {
   cacheMisses: 0,
 };
 
+const DEFAULT_SAMPLE_CAP = 1024;
+
 export class MetricsRegistry {
   private counters: MetricCounters = { ...EMPTY };
   private latency: LatencyBucket = { count: 0, totalMs: 0, maxMs: 0 };
+  private samples: number[] = [];
+  private readonly sampleCap: number;
+
+  constructor(options?: { sampleCap?: number }) {
+    this.sampleCap = options?.sampleCap ?? DEFAULT_SAMPLE_CAP;
+  }
 
   increment(counter: keyof MetricCounters, by = 1): void {
     this.counters[counter] += by;
   }
 
   recordLatency(ms: number): void {
+    const value = Math.max(0, ms);
     this.latency.count += 1;
-    this.latency.totalMs += Math.max(0, ms);
-    this.latency.maxMs = Math.max(this.latency.maxMs, ms);
+    this.latency.totalMs += value;
+    this.latency.maxMs = Math.max(this.latency.maxMs, value);
+    if (this.samples.length >= this.sampleCap) {
+      this.samples.shift();
+    }
+    this.samples.push(value);
   }
 
   snapshot(): MetricCounters & {
-    requestLatencyMs: { avg: number; max: number; samples: number };
+    requestLatencyMs: LatencyPercentiles;
     cacheHitRate: number | null;
   } {
-    const samples = this.latency.count;
     const hits = this.counters.cacheHits;
     const misses = this.counters.cacheMisses;
     const totalCache = hits + misses;
+    const percentiles = summarizeLatency(this.samples);
     return {
       ...this.counters,
       requestLatencyMs: {
-        avg: samples === 0 ? 0 : this.latency.totalMs / samples,
+        ...percentiles,
+        // Keep count aligned with lifetime latency samples even if ring dropped early ones.
+        samples: this.latency.count,
+        avg:
+          this.latency.count === 0
+            ? 0
+            : this.latency.totalMs / this.latency.count,
         max: this.latency.maxMs,
-        samples,
       },
       cacheHitRate: totalCache === 0 ? null : hits / totalCache,
     };
@@ -46,5 +65,6 @@ export class MetricsRegistry {
   reset(): void {
     this.counters = { ...EMPTY };
     this.latency = { count: 0, totalMs: 0, maxMs: 0 };
+    this.samples = [];
   }
 }

@@ -4,11 +4,26 @@ import {
   MetricsRegistry,
   buildHealthSnapshot,
   buildSafeBackup,
+  computePercentile,
   resolveDeploymentMode,
   safeTokenEquals,
+  summarizeLatency,
 } from './index.js';
 
 describe('@metalayer/observability', () => {
+  it('computes nearest-rank percentiles', () => {
+    const samples = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    expect(computePercentile(samples, 50)).toBe(50);
+    expect(computePercentile(samples, 95)).toBe(100);
+    expect(computePercentile([], 95)).toBe(0);
+    expect(summarizeLatency(samples)).toMatchObject({
+      p50: 50,
+      p95: 100,
+      p99: 100,
+      samples: 10,
+    });
+  });
+
   it('tracks metrics and builds health snapshots', () => {
     const metrics = new MetricsRegistry();
     metrics.increment('requestsTotal', 10);
@@ -34,6 +49,8 @@ describe('@metalayer/observability', () => {
     expect(health.mode).toBe('lite');
     expect(health.metrics.cacheHitRate).toBeCloseTo(0.8);
     expect(health.metrics.requestLatencyMs.samples).toBe(2);
+    expect(health.metrics.requestLatencyMs.p50).toBe(12);
+    expect(health.metrics.requestLatencyMs.p95).toBe(20);
     expect(health.database.kind).toBe('sqlite');
   });
 
