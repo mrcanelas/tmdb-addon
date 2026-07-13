@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@metalayer/shared-ui';
 import {
   dryRunLegacyImport,
@@ -9,6 +10,7 @@ import {
   writeCatalogSession,
   type LegacyImportReportView,
 } from '@/lib/api';
+import { studioSessionQueryKey } from '@/api/hooks/use-studio-session';
 import { PageHeader } from '@/components/metalayer/PageHeader';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { useConfigureUiStore } from '@/stores/ui-store';
@@ -19,7 +21,9 @@ const TEXTAREA_CLASS =
 export function OverviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const mode = useConfigureUiStore((s) => s.mode);
+  const empty = t('common.emptyValue');
   const [importOpen, setImportOpen] = useState(false);
   const [legacyRaw, setLegacyRaw] = useState('');
   const [busy, setBusy] = useState(false);
@@ -53,10 +57,12 @@ export function OverviewPage() {
     try {
       const editCredential = `import-${crypto.randomUUID().replace(/-/g, '')}`;
       const result = await persistLegacyImport(pendingLegacy, editCredential);
-      writeCatalogSession({
+      const session = {
         configId: result.configId,
         editCredential,
-      });
+      };
+      writeCatalogSession(session);
+      queryClient.setQueryData(studioSessionQueryKey, session);
       setFeedback({
         tone: 'ok',
         message: t('overview.importOk', { id: result.configId }),
@@ -180,10 +186,10 @@ export function OverviewPage() {
 
           {report ? (
             <div className="mt-4 space-y-3 text-sm text-[var(--ml-text)]" role="status">
-              <p>{t('overview.importImported', { list: report.imported.join(', ') || '—' })}</p>
+              <p>{t('overview.importImported', { list: report.imported.join(', ') || empty })}</p>
               <p>
                 {t('overview.importSecrets', {
-                  list: report.secretsToVault.join(', ') || '—',
+                  list: report.secretsToVault.join(', ') || empty,
                 })}
               </p>
               {report.needsAttention.length > 0 ? (

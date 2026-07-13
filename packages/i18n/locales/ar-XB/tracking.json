@@ -15,6 +15,8 @@
   "tracking.preview": "‏Preview hide watched‎",
   "tracking.previewRunning": "‏Running preview…‎",
   "tracking.previewOk": "‏Hide-watched preview completed (degraded: ‎{{degraded}}‏).‎",
+  "tracking.previewDegraded.yes": "‏yes‎",
+  "tracking.previewDegraded.no": "‏no‎",
   "tracking.previewNeedsConnection": "‏Connect Trakt, SIMKL, AniList, or MyAnimeList to preview hide-watched with live watch history.‎",
   "tracking.included": "‏Included‎",
   "tracking.excluded": "‏Excluded‎",

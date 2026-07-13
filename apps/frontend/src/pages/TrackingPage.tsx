@@ -259,17 +259,23 @@ export function TrackingPage() {
           <div className="mt-3 space-y-1 text-sm text-[var(--ml-text)]" role="status">
             <p>
               {t('tracking.previewOk', {
-                degraded: String(previewMutation.data.degraded),
+                degraded: previewMutation.data.degraded
+                  ? t('tracking.previewDegraded.yes')
+                  : t('tracking.previewDegraded.no'),
               })}
             </p>
             <p>
               {t('tracking.includedLine', {
-                list: previewMutation.data.included.join(', ') || '—',
+                list:
+                  previewMutation.data.included.join(', ') ||
+                  t('common.emptyValue', { ns: 'common' }),
               })}
             </p>
             <p>
               {t('tracking.excludedLine', {
-                list: previewMutation.data.excluded.join(', ') || '—',
+                list:
+                  previewMutation.data.excluded.join(', ') ||
+                  t('common.emptyValue', { ns: 'common' }),
               })}
             </p>
           </div>

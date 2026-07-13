@@ -15,6 +15,8 @@
   "tracking.preview": "Prévîéw hîdé wåtçhédPrévîé",
   "tracking.previewRunning": "Rûññîñg prévîéw…Rûññî",
   "tracking.previewOk": "Hîdé-wåtçhéd prévîéw çømplétéd (dégrådéd: Hîdé-wåtçhéd {{degraded}}).)",
+  "tracking.previewDegraded.yes": "yésy",
+  "tracking.previewDegraded.no": "ñøñ",
   "tracking.previewNeedsConnection": "Çøññéçt Tråkt, SÎMKL, ÅñîLîst, ør MyÅñîméLîst tø prévîéw hîdé-wåtçhéd wîth lîvé wåtçh hîstøry.Çøññéçt Tråkt, SÎMKL, ÅñîLîst",
   "tracking.included": "ÎñçlûdédÎñç",
   "tracking.excluded": "ÉxçlûdédÉxç",
