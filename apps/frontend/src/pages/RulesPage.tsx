@@ -25,7 +25,9 @@ export function RulesPage() {
     excludeAdult: true,
     minimumRating: 7,
   });
-  const [warnings, setWarnings] = useState<Array<{ rule: string; reason: string }>>([]);
+  const [warnings, setWarnings] = useState<
+    Array<{ rule: string; reason: string; fallback?: string }>
+  >([]);
   const [included, setIncluded] = useState<string[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -272,14 +274,28 @@ export function RulesPage() {
           {warnings.length > 0 ? (
             <SectionCard title={t('rules.warnings')}>
               <ul
-                className="space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                className="space-y-1 text-sm text-[var(--ml-warning)]"
                 role="status"
               >
-                {warnings.map((warning) => (
-                  <li key={warning.rule}>
-                    {warning.rule}: {warning.reason}
-                  </li>
-                ))}
+                {warnings.map((warning) => {
+                  const ruleLabel = t(`rules.rule.${warning.rule}`, {
+                    defaultValue: warning.rule,
+                  });
+                  const reasonLabel = t(`rules.warning.${warning.reason}`, {
+                    defaultValue: warning.reason,
+                  });
+                  const fallbackLabel = warning.fallback
+                    ? t(`rules.fallback.${warning.fallback}`, {
+                        defaultValue: warning.fallback,
+                      })
+                    : null;
+                  return (
+                    <li key={`${warning.rule}-${warning.reason}`}>
+                      {ruleLabel}: {reasonLabel}
+                      {fallbackLabel ? ` (${fallbackLabel})` : ''}
+                    </li>
+                  );
+                })}
               </ul>
             </SectionCard>
           ) : null}

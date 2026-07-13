@@ -21,5 +21,18 @@
   "rules.included": "Incluídos",
   "rules.excluded": "Excluídos",
   "rules.warnings": "Limitações do provedor",
-  "rules.bootstrapping": "Preparando configuração rascunho…"
+  "rules.bootstrapping": "Preparando configuração rascunho…",
+  "rules.rule.digitallyReleasedOnly": "Somente lançamento digital",
+  "rules.rule.maximumCertification": "Classificação máxima",
+  "rules.rule.availableInRegion": "Disponível na região",
+  "rules.rule.originalLanguages": "Idiomas originais",
+  "rules.rule.hideWatched": "Ocultar assistidos",
+  "rules.warning.DIGITAL_RELEASE_UNSUPPORTED": "O provedor não expõe filtro de lançamento digital",
+  "rules.warning.CERTIFICATION_UNSUPPORTED": "O provedor não expõe filtro de classificação",
+  "rules.warning.REGION_UNSUPPORTED": "O provedor não suporta catálogos cientes de região",
+  "rules.warning.LANGUAGE_LIMITED": "O suporte a idioma do provedor é limitado",
+  "rules.warning.TRACKING_REQUIRED": "O provedor não tem capacidade de tracking",
+  "rules.fallback.POST_FILTER": "pós-filtro após o fetch",
+  "rules.fallback.IGNORE_AT_PROVIDER": "ignorar restrição de região na borda do provedor",
+  "rules.fallback.REQUIRES_TRACKING": "requer integração de tracking"
 }

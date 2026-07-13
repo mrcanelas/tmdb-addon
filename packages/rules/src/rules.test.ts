@@ -54,6 +54,12 @@ describe('@metalayer/rules', () => {
       'digitallyReleasedOnly',
       'hideWatched',
     ]);
+    expect(warnings.find((item) => item.rule === 'digitallyReleasedOnly')?.reason).toBe(
+      'DIGITAL_RELEASE_UNSUPPORTED',
+    );
+    expect(warnings.find((item) => item.rule === 'hideWatched')?.reason).toBe(
+      'TRACKING_REQUIRED',
+    );
   });
 
   it('keeps prefer genres as annotations without excluding', () => {

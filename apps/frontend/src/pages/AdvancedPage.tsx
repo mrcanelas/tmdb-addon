@@ -114,7 +114,7 @@ export function AdvancedPage() {
             description={t('advanced.identity.description')}
           >
             <label className="flex flex-col gap-2 text-sm">
-              <span className="text-muted-foreground">
+              <span className="ml-text-muted">
                 {t('advanced.identity.title')}
               </span>
               <select
@@ -146,12 +146,12 @@ export function AdvancedPage() {
                   : t('advanced.identity.save')}
               </Button>
               {saveState === 'ok' ? (
-                <p className="text-sm text-emerald-700 dark:text-emerald-400" role="status">
+                <p className="text-sm text-[var(--ml-success)]" role="status">
                   {t('advanced.identity.saveOk')}
                 </p>
               ) : null}
               {saveState === 'error' ? (
-                <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
+                <p className="text-sm text-[var(--ml-error)]" role="alert">
                   {t('advanced.identity.saveError')}
                 </p>
               ) : null}
@@ -164,13 +164,13 @@ export function AdvancedPage() {
           >
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-muted-foreground">
+                <dt className="ml-text-muted">
                   {t('advanced.diagnostics.configId')}
                 </dt>
                 <dd className="break-all font-mono">{configId}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-muted-foreground">
+                <dt className="ml-text-muted">
                   {t('advanced.diagnostics.manifest')}
                 </dt>
                 <dd className="break-all font-mono">
@@ -180,25 +180,25 @@ export function AdvancedPage() {
               {cacheStats ? (
                 <>
                   <div>
-                    <dt className="text-muted-foreground">
+                    <dt className="ml-text-muted">
                       {t('advanced.diagnostics.cacheHits')}
                     </dt>
                     <dd>{cacheStats.hits}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">
+                    <dt className="ml-text-muted">
                       {t('advanced.diagnostics.cacheMisses')}
                     </dt>
                     <dd>{cacheStats.misses}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">
+                    <dt className="ml-text-muted">
                       {t('advanced.diagnostics.cacheSize')}
                     </dt>
                     <dd>{cacheStats.size}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">
+                    <dt className="ml-text-muted">
                       {t('advanced.diagnostics.cacheStales')}
                     </dt>
                     <dd>{cacheStats.stales}</dd>
@@ -207,7 +207,7 @@ export function AdvancedPage() {
               ) : null}
             </dl>
             <div className="mt-4">
-              <p className="mb-2 text-sm text-muted-foreground">
+              <p className="mb-2 text-sm ml-text-muted">
                 {t('advanced.diagnostics.links')}
               </p>
               <ul className="flex flex-wrap gap-3 text-sm">
@@ -244,7 +244,7 @@ export function AdvancedPage() {
             description={t('advanced.featureFlags.description')}
           >
             {flagEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm ml-text-muted">
                 {t('advanced.featureFlags.empty')}
               </p>
             ) : (
@@ -255,7 +255,7 @@ export function AdvancedPage() {
                     className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--ml-border)] px-3 py-2"
                   >
                     <span className="font-mono">{key}</span>
-                    <span className="text-muted-foreground">
+                    <span className="ml-text-muted">
                       {enabled
                         ? t('advanced.featureFlags.enabled')
                         : t('advanced.featureFlags.disabled')}

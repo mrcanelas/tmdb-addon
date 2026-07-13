@@ -21,5 +21,18 @@
   "rules.included": "Included",
   "rules.excluded": "Excluded",
   "rules.warnings": "Provider limitations",
-  "rules.bootstrapping": "Preparing draft configuration…"
+  "rules.bootstrapping": "Preparing draft configuration…",
+  "rules.rule.digitallyReleasedOnly": "Digitally released only",
+  "rules.rule.maximumCertification": "Maximum certification",
+  "rules.rule.availableInRegion": "Available in region",
+  "rules.rule.originalLanguages": "Original languages",
+  "rules.rule.hideWatched": "Hide watched",
+  "rules.warning.DIGITAL_RELEASE_UNSUPPORTED": "Provider does not expose digital-release filtering",
+  "rules.warning.CERTIFICATION_UNSUPPORTED": "Provider does not expose certification filtering",
+  "rules.warning.REGION_UNSUPPORTED": "Provider does not support region-aware catalogs",
+  "rules.warning.LANGUAGE_LIMITED": "Provider language support is limited",
+  "rules.warning.TRACKING_REQUIRED": "Provider has no tracking capability",
+  "rules.fallback.POST_FILTER": "post-filter after fetch",
+  "rules.fallback.IGNORE_AT_PROVIDER": "ignore region constraint at provider boundary",
+  "rules.fallback.REQUIRES_TRACKING": "requires tracking integration"
 }

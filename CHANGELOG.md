@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 - Configure studio session React Query cache stays in sync after import and Catalog Studio draft reset
 - Sources test success/failure i18n placeholders and health state labels
 - Primary configure pages keep the form visible on action/preview/inspect failures
+- Rules provider limitation warnings use stable codes + client i18n (not English sentences)
 
 ## [1.0.0-beta.1] — 2026-07-12
 

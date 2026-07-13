@@ -4,6 +4,7 @@ import type { ProviderCapabilities } from '@metalayer/providers';
 export interface UnsupportedRuleWarning {
   rule: string;
   provider: string;
+  /** Stable reason code for client i18n — not a user-facing sentence. */
   reason: string;
   fallback?: string;
 }
@@ -26,24 +27,24 @@ export function checkProviderRuleSupport(
   if (rules.digitallyReleasedOnly && !capabilities.supportsDigitalRelease) {
     push(
       'digitallyReleasedOnly',
-      'Provider does not expose digital-release filtering',
-      'post-filter after fetch',
+      'DIGITAL_RELEASE_UNSUPPORTED',
+      'POST_FILTER',
     );
   }
 
   if (rules.maximumCertification && !capabilities.supportsAgeRating) {
     push(
       'maximumCertification',
-      'Provider does not expose certification filtering',
-      'post-filter after fetch',
+      'CERTIFICATION_UNSUPPORTED',
+      'POST_FILTER',
     );
   }
 
   if (rules.availableInRegion && !capabilities.supportsRegion) {
     push(
       'availableInRegion',
-      'Provider does not support region-aware catalogs',
-      'ignore region constraint at provider boundary',
+      'REGION_UNSUPPORTED',
+      'IGNORE_AT_PROVIDER',
     );
   }
 
@@ -54,16 +55,16 @@ export function checkProviderRuleSupport(
   ) {
     push(
       'originalLanguages',
-      'Provider language support is limited',
-      'post-filter after fetch',
+      'LANGUAGE_LIMITED',
+      'POST_FILTER',
     );
   }
 
   if (rules.hideWatched && !capabilities.supportsTracking) {
     push(
       'hideWatched',
-      'Provider has no tracking capability',
-      'requires tracking integration',
+      'TRACKING_REQUIRED',
+      'REQUIRES_TRACKING',
     );
   }
 

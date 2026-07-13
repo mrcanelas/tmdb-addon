@@ -21,5 +21,18 @@
   "rules.included": "ÎñçlûdédÎñç",
   "rules.excluded": "ÉxçlûdédÉxç",
   "rules.warnings": "Prøvîdér lîmîtåtîøñsPrøvîd",
-  "rules.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg"
+  "rules.bootstrapping": "Prépårîñg dråft çøñfîgûråtîøñ…Prépårîñg",
+  "rules.rule.digitallyReleasedOnly": "Dîgîtålly réléåséd øñlyDîgîtål",
+  "rules.rule.maximumCertification": "Måxîmûm çértîfîçåtîøñMåxîmûm",
+  "rules.rule.availableInRegion": "Åvåîlåblé îñ régîøñÅvåîlå",
+  "rules.rule.originalLanguages": "Ørîgîñål låñgûågésØrîgîñ",
+  "rules.rule.hideWatched": "Hîdé wåtçhédHîdé",
+  "rules.warning.DIGITAL_RELEASE_UNSUPPORTED": "Prøvîdér døés ñøt éxpøsé dîgîtål-réléåsé fîltérîñgPrøvîdér døés ñ",
+  "rules.warning.CERTIFICATION_UNSUPPORTED": "Prøvîdér døés ñøt éxpøsé çértîfîçåtîøñ fîltérîñgPrøvîdér døés ñ",
+  "rules.warning.REGION_UNSUPPORTED": "Prøvîdér døés ñøt sûppørt régîøñ-åwåré çåtåløgsPrøvîdér døés ñ",
+  "rules.warning.LANGUAGE_LIMITED": "Prøvîdér låñgûågé sûppørt îs lîmîtédPrøvîdér lå",
+  "rules.warning.TRACKING_REQUIRED": "Prøvîdér hås ñø tråçkîñg çåpåbîlîtyPrøvîdér hå",
+  "rules.fallback.POST_FILTER": "pøst-fîltér åftér fétçhpøst-fî",
+  "rules.fallback.IGNORE_AT_PROVIDER": "îgñøré régîøñ çøñstråîñt åt prøvîdér bøûñdåryîgñøré régîøñ ",
+  "rules.fallback.REQUIRES_TRACKING": "réqûîrés tråçkîñg îñtégråtîøñréqûîrés "
 }

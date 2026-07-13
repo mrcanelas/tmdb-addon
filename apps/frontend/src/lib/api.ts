@@ -483,7 +483,11 @@ export async function previewRules(
   editCredential: string,
   items: Array<Record<string, unknown>>,
   rules?: RuleSetDraft,
-): Promise<{ included: string[]; excluded: string[]; warnings: Array<{ rule: string; reason: string }> }> {
+): Promise<{
+  included: string[];
+  excluded: string[];
+  warnings: Array<{ rule: string; reason: string; fallback?: string }>;
+}> {
   return apiFetch(`/api/v1/configurations/${configId}/rules/preview`, {
     method: 'POST',
     headers: { 'x-metalayer-edit-credential': editCredential },

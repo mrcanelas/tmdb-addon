@@ -3,6 +3,18 @@
 Canonical product rules: `AGENTS.md` §23 (Secret Vault) and §30 (Security requirements).
 Operator / contributor policy overview: root `SECURITY.md`.
 
+## Phase M hardening (landed)
+
+| Area | Status |
+|---|---|
+| Secrets out of manifest URLs | Done — native `/c/:configId/...` |
+| Secret Vault AES-256-GCM at rest | Done — ADR 0005 |
+| Key ring + vault reencrypt CLI | Done — `pnpm metalayer:vault-reencrypt` |
+| Log redaction (edit credential, vault, OAuth, dashboard token) | Done — `@metalayer/security` |
+| OAuth `redirectUri` allowlist | Done — see below |
+| Safe default exports (no secrets) | Done |
+| Formal security review sign-off | **Open** — Phase M → N gate |
+
 ## Logging and redaction
 
 Operator logs and Fastify request logs must not persist:
@@ -26,3 +38,9 @@ Tracking OAuth `redirectUri` values (auth-url query and callback body) are allow
 Arbitrary third-party hosts are rejected with `VALIDATION_FAILED` even when the path looks like a MetaLayer callback.
 
 Self-hosted public instances should set `METALAYER_PUBLIC_BASE_URL` and/or each provider `*_REDIRECT_URI`.
+
+## Related
+
+- Deployment / encryption env: `docs/deployment.md`
+- Telemetry defaults off: `docs/telemetry.md`
+- Legacy import vaults secrets: `docs/migration-from-tmdb-addon.md`
