@@ -55,7 +55,7 @@ describe('@metalayer/search-ai', () => {
       },
     ]);
     expect(combined.hits).toHaveLength(1);
-    expect(combined.warnings.some((w) => w.includes('Duplicate'))).toBe(true);
+    expect(combined.warnings.some((w) => w.code === 'DUPLICATE_DROPPED')).toBe(true);
   });
 
   it('resolves ranked lists with duplicates and unresolved titles', () => {

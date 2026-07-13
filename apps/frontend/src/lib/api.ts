@@ -822,7 +822,10 @@ export async function runCombinedSearch(
   configId: string,
   editCredential: string,
   query: string,
-): Promise<{ hits: Array<{ title: string; provider: string }> }> {
+): Promise<{
+  hits: Array<{ title: string; provider: string }>;
+  warnings?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+}> {
   return apiFetch(`/api/v1/configurations/${configId}/search/combined`, {
     method: 'POST',
     headers: { 'x-metalayer-edit-credential': editCredential },
@@ -840,10 +843,16 @@ export async function runSmartDiscovery(
     includeGenres?: string[];
     excludeGenres?: string[];
     runtimeMax?: number;
+    assumptions?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+    warnings?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
   };
   proposal: {
     id: string;
-    explanation: { interpretedIntent: string };
+    explanation: {
+      interpretedIntent: { code: string; params?: Record<string, string | number | undefined> };
+      assumptions?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+      warnings?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+    };
   };
 }> {
   return apiFetch(`/api/v1/configurations/${configId}/search/smart-discovery`, {
@@ -860,7 +869,11 @@ export async function runRankedList(
 ): Promise<{
   unresolved: Array<{ title: string }>;
   duplicates: unknown[];
-  explanation: { interpretedIntent: string };
+  explanation: {
+    interpretedIntent: { code: string; params?: Record<string, string | number | undefined> };
+    assumptions?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+    warnings?: Array<{ code: string; params?: Record<string, string | number | undefined> }>;
+  };
   proposal: { id: string };
 }> {
   return apiFetch(`/api/v1/configurations/${configId}/search/ranked-list`, {

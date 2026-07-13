@@ -4,6 +4,7 @@ import type {
   RankedListCandidate,
   RankedListResult,
   ResolvedRankedItem,
+  SearchAiNotice,
 } from './types.js';
 import { buildExplanation } from './explain.js';
 import { discoveryPlanToRuleSet, parseDiscoveryPrompt } from './discovery.js';
@@ -31,12 +32,16 @@ export function resolveRankedList(input: ResolveRankedListInput): RankedListResu
   const ordered = [...input.candidates].sort((a, b) => a.rank - b.rank);
 
   for (const candidate of ordered) {
-    const warnings: string[] = [];
+    const warnings: SearchAiNotice[] = [];
     const candidateType = candidate.mediaType ?? mediaType;
     if (candidate.mediaType && candidate.mediaType !== mediaType) {
-      warnings.push(
-        `Type mismatch: candidate is ${candidate.mediaType}, list expects ${mediaType}`,
-      );
+      warnings.push({
+        code: 'TYPE_MISMATCH',
+        params: {
+          candidateType: candidate.mediaType,
+          expectedType: mediaType,
+        },
+      });
     }
 
     const externalIds = { ...(candidate.externalIds ?? {}) };
@@ -58,7 +63,7 @@ export function resolveRankedList(input: ResolveRankedListInput): RankedListResu
       if (!resolved && !externalIds.imdb && !externalIds.tmdb) {
         // Title-only candidates remain unresolved until identity is known.
         canonicalId = null;
-        warnings.push('No external IDs; left unresolved');
+        warnings.push({ code: 'NO_EXTERNAL_IDS' });
       } else if (resolved) {
         for (const match of mapping.matches) {
           externalIds[match.provider] = match.id;
@@ -67,7 +72,10 @@ export function resolveRankedList(input: ResolveRankedListInput): RankedListResu
     }
 
     if (candidate.year !== undefined && (candidate.year < 1888 || candidate.year > 2100)) {
-      warnings.push(`Suspicious year: ${candidate.year}`);
+      warnings.push({
+        code: 'SUSPICIOUS_YEAR',
+        params: { year: candidate.year },
+      });
     }
 
     const identityKey =
@@ -78,7 +86,10 @@ export function resolveRankedList(input: ResolveRankedListInput): RankedListResu
     let duplicateOfRank: number | undefined;
     if (byIdentity.has(identityKey)) {
       duplicateOfRank = byIdentity.get(identityKey);
-      warnings.push(`Duplicate of rank ${duplicateOfRank}`);
+      warnings.push({
+        code: 'DUPLICATE_OF_RANK',
+        params: { rank: duplicateOfRank },
+      });
     } else {
       byIdentity.set(identityKey, candidate.rank);
     }
@@ -107,15 +118,15 @@ export function resolveRankedList(input: ResolveRankedListInput): RankedListResu
     unresolved,
     duplicates,
     explanation: buildExplanation({
-      interpretedIntent: `Ranked ${mediaType} list from: ${input.prompt}`,
+      interpretedIntent: {
+        code: 'RANKED_LIST_INTENT',
+        params: { mediaType, prompt: input.prompt },
+      },
       generatedRules: discoveryPlanToRuleSet(plan),
       providerSelection: ['identity-graph', 'fixture-ai'],
       unresolvedItems: unresolved.map((item) => item.title),
       assumptions: plan.assumptions,
-      warnings: [
-        ...plan.warnings,
-        ...items.flatMap((item) => item.warnings),
-      ],
+      warnings: [...plan.warnings, ...items.flatMap((item) => item.warnings)],
     }),
   };
 }

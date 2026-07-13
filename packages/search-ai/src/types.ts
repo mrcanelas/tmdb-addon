@@ -12,6 +12,12 @@ export type SearchMode =
 
 export type MediaType = 'movie' | 'series' | 'anime';
 
+/** Stable notice for UI translation (AGENTS.md §9.11 / Phase M i18n). */
+export interface SearchAiNotice {
+  code: string;
+  params?: Record<string, string | number | undefined>;
+}
+
 export interface SearchHit {
   id: string;
   title: string;
@@ -27,7 +33,7 @@ export interface CombinedSearchResult {
   mode: SearchMode;
   hits: SearchHit[];
   providers: string[];
-  warnings: string[];
+  warnings: SearchAiNotice[];
 }
 
 export interface DiscoverySortCriterion {
@@ -48,8 +54,8 @@ export interface DiscoveryPlan {
   minimumRating?: number;
   sort: DiscoverySortCriterion[];
   rawPrompt: string;
-  assumptions: string[];
-  warnings: string[];
+  assumptions: SearchAiNotice[];
+  warnings: SearchAiNotice[];
 }
 
 export interface RankedListCandidate {
@@ -69,7 +75,7 @@ export interface ResolvedRankedItem {
   canonicalId: string | null;
   externalIds: Record<string, string | number>;
   duplicateOfRank?: number;
-  warnings: string[];
+  warnings: SearchAiNotice[];
 }
 
 export interface RankedListResult {
@@ -82,12 +88,12 @@ export interface RankedListResult {
 }
 
 export interface AiExplanation {
-  interpretedIntent: string;
+  interpretedIntent: SearchAiNotice;
   generatedRules: RuleSet;
   providerSelection: string[];
   unresolvedItems: string[];
-  assumptions: string[];
-  warnings: string[];
+  assumptions: SearchAiNotice[];
+  warnings: SearchAiNotice[];
 }
 
 export type AiProposalKind =

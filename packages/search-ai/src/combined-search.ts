@@ -1,4 +1,4 @@
-import type { CombinedSearchResult, SearchHit, SearchMode } from './types.js';
+import type { CombinedSearchResult, SearchAiNotice, SearchHit, SearchMode } from './types.js';
 
 /**
  * Merge provider search hits: dedupe by external id / title+year, preserve provider diversity.
@@ -10,7 +10,7 @@ export function combineSearchHits(
 ): CombinedSearchResult {
   const seen = new Set<string>();
   const hits: SearchHit[] = [];
-  const warnings: string[] = [];
+  const warnings: SearchAiNotice[] = [];
   const providers: string[] = [];
 
   for (const group of providerHits) {
@@ -18,7 +18,10 @@ export function combineSearchHits(
     for (const hit of group.hits) {
       const key = hitKey(hit);
       if (seen.has(key)) {
-        warnings.push(`Duplicate dropped: ${hit.title} (${hit.provider})`);
+        warnings.push({
+          code: 'DUPLICATE_DROPPED',
+          params: { title: hit.title, provider: hit.provider },
+        });
         continue;
       }
       seen.add(key);

@@ -23,7 +23,10 @@ export function createSmartDiscoveryProposal(
     kind: 'smart-discovery-rules',
     summary: `Apply Smart Discovery rules from: ${plan.rawPrompt}`,
     explanation: buildExplanation({
-      interpretedIntent: plan.rawPrompt,
+      interpretedIntent: {
+        code: 'DISCOVERY_PROMPT_INTENT',
+        params: { prompt: plan.rawPrompt },
+      },
       generatedRules: rules,
       providerSelection: ['heuristic-discovery'],
       assumptions: plan.assumptions,

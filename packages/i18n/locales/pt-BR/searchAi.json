@@ -32,5 +32,15 @@
   "searchAi.explanationLine": "Explicação: {{text}}",
   "searchAi.seed.combinedQuery": "Luta",
   "searchAi.seed.discoveryPrompt": "Filmes de investigação sem terror e com menos de duas horas.",
-  "searchAi.seed.rankedPrompt": "Melhores filmes de ficção científica de todos os tempos."
+  "searchAi.seed.rankedPrompt": "Melhores filmes de ficção científica de todos os tempos.",
+  "searchAi.intent.DISCOVERY_PROMPT_INTENT": "{{prompt}}",
+  "searchAi.intent.RANKED_LIST_INTENT": "Lista ranqueada de {{mediaType}} a partir de: {{prompt}}",
+  "searchAi.assumption.NO_GENRES_DETECTED": "Nenhum gênero detectado; ordenação apenas por popularidade.",
+  "searchAi.assumption.DEFAULTED_MEDIA_TYPE_MOVIE": "Tipo de mídia padrão definido como filme.",
+  "searchAi.warning.DUPLICATE_DROPPED": "Duplicata removida: {{title}} ({{provider}})",
+  "searchAi.warning.TYPE_MISMATCH": "Tipo incompatível: o candidato é {{candidateType}}, a lista espera {{expectedType}}",
+  "searchAi.warning.NO_EXTERNAL_IDS": "Sem IDs externos; deixado sem resolução.",
+  "searchAi.warning.SUSPICIOUS_YEAR": "Ano suspeito: {{year}}",
+  "searchAi.warning.DUPLICATE_OF_RANK": "Duplicata da posição {{rank}}",
+  "searchAi.warning.AI_PLAN_REJECTED": "Plano de IA rejeitado: {{detail}}"
 }

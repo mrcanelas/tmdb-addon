@@ -1,6 +1,7 @@
 export type {
   SearchMode,
   MediaType,
+  SearchAiNotice,
   SearchHit,
   CombinedSearchResult,
   DiscoverySortCriterion,

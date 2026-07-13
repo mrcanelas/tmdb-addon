@@ -1,13 +1,13 @@
 import type { RuleSet } from '@metalayer/config';
-import type { AiExplanation } from './types.js';
+import type { AiExplanation, SearchAiNotice } from './types.js';
 
 export function buildExplanation(input: {
-  interpretedIntent: string;
+  interpretedIntent: SearchAiNotice;
   generatedRules: RuleSet;
   providerSelection: string[];
   unresolvedItems?: string[];
-  assumptions?: string[];
-  warnings?: string[];
+  assumptions?: SearchAiNotice[];
+  warnings?: SearchAiNotice[];
 }): AiExplanation {
   return {
     interpretedIntent: input.interpretedIntent,

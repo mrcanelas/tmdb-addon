@@ -1,5 +1,10 @@
 import { RuleSetSchema, type RuleSet } from '@metalayer/config';
-import type { DiscoveryPlan, DiscoverySortCriterion, MediaType } from './types.js';
+import type {
+  DiscoveryPlan,
+  DiscoverySortCriterion,
+  MediaType,
+  SearchAiNotice,
+} from './types.js';
 
 const GENRE_ALIASES: Record<string, string> = {
   investigation: 'Mystery',
@@ -80,14 +85,14 @@ export function parseDiscoveryPrompt(prompt: string): DiscoveryPlan {
   const mediaType = detectMediaType(prompt);
   const { include, exclude } = extractGenres(prompt);
   const runtimeMax = extractRuntimeMax(prompt);
-  const assumptions: string[] = [];
-  const warnings: string[] = [];
+  const assumptions: SearchAiNotice[] = [];
+  const warnings: SearchAiNotice[] = [];
 
   if (include.length === 0 && exclude.length === 0) {
-    assumptions.push('No genres detected; popularity sort only');
+    assumptions.push({ code: 'NO_GENRES_DETECTED' });
   }
   if (mediaType === 'movie' && /\bmovies?\b/i.test(prompt) === false) {
-    assumptions.push('Defaulted media type to movie');
+    assumptions.push({ code: 'DEFAULTED_MEDIA_TYPE_MOVIE' });
   }
 
   const sort: DiscoverySortCriterion[] = [

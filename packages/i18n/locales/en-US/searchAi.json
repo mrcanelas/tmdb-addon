@@ -32,5 +32,15 @@
   "searchAi.explanationLine": "Explanation: {{text}}",
   "searchAi.seed.combinedQuery": "Fight",
   "searchAi.seed.discoveryPrompt": "Investigation movies without horror and under two hours.",
-  "searchAi.seed.rankedPrompt": "Best science-fiction movies of all time."
+  "searchAi.seed.rankedPrompt": "Best science-fiction movies of all time.",
+  "searchAi.intent.DISCOVERY_PROMPT_INTENT": "{{prompt}}",
+  "searchAi.intent.RANKED_LIST_INTENT": "Ranked {{mediaType}} list from: {{prompt}}",
+  "searchAi.assumption.NO_GENRES_DETECTED": "No genres detected; popularity sort only.",
+  "searchAi.assumption.DEFAULTED_MEDIA_TYPE_MOVIE": "Defaulted media type to movie.",
+  "searchAi.warning.DUPLICATE_DROPPED": "Duplicate dropped: {{title}} ({{provider}})",
+  "searchAi.warning.TYPE_MISMATCH": "Type mismatch: candidate is {{candidateType}}, list expects {{expectedType}}",
+  "searchAi.warning.NO_EXTERNAL_IDS": "No external IDs; left unresolved.",
+  "searchAi.warning.SUSPICIOUS_YEAR": "Suspicious year: {{year}}",
+  "searchAi.warning.DUPLICATE_OF_RANK": "Duplicate of rank {{rank}}",
+  "searchAi.warning.AI_PLAN_REJECTED": "AI plan rejected: {{detail}}"
 }

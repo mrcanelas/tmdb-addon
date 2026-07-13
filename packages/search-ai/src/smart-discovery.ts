@@ -43,7 +43,10 @@ export async function runSmartDiscovery(input: {
           ...plan,
           warnings: [
             ...plan.warnings,
-            `AI plan rejected: ${(validated.issues ?? []).join('; ')}`,
+            {
+              code: 'AI_PLAN_REJECTED',
+              params: { detail: (validated.issues ?? []).join('; ') },
+            },
           ],
         };
       }
@@ -60,7 +63,10 @@ export async function runSmartDiscovery(input: {
 
   const proposal = createSmartDiscoveryProposal(validated.plan);
   proposal.explanation = buildExplanation({
-    interpretedIntent: validated.plan.rawPrompt,
+    interpretedIntent: {
+      code: 'DISCOVERY_PROMPT_INTENT',
+      params: { prompt: validated.plan.rawPrompt },
+    },
     generatedRules: discoveryPlanToRuleSet(validated.plan),
     providerSelection: usedAi && input.ai ? [input.ai.id] : ['heuristic-discovery'],
     assumptions: validated.plan.assumptions,

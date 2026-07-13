@@ -32,5 +32,15 @@
   "searchAi.explanationLine": "Éxplåñåtîøñ: Éxpl{{text}}",
   "searchAi.seed.combinedQuery": "FîghtFî",
   "searchAi.seed.discoveryPrompt": "Îñvéstîgåtîøñ møvîés wîthøût hørrør åñd ûñdér twø høûrs.Îñvéstîgåtîøñ møv",
-  "searchAi.seed.rankedPrompt": "Bést sçîéñçé-fîçtîøñ møvîés øf åll tîmé.Bést sçîéñçé"
+  "searchAi.seed.rankedPrompt": "Bést sçîéñçé-fîçtîøñ møvîés øf åll tîmé.Bést sçîéñçé",
+  "searchAi.intent.DISCOVERY_PROMPT_INTENT": "{{prompt}}",
+  "searchAi.intent.RANKED_LIST_INTENT": "Råñkéd Råñ{{mediaType}} lîst frøm:  lîs{{prompt}}",
+  "searchAi.assumption.NO_GENRES_DETECTED": "Ñø géñrés détéçtéd; pøpûlårîty sørt øñly.Ñø géñrés dét",
+  "searchAi.assumption.DEFAULTED_MEDIA_TYPE_MOVIE": "Défåûltéd médîå typé tø møvîé.Défåûltéd",
+  "searchAi.warning.DUPLICATE_DROPPED": "Dûplîçåté drøppéd: Dûplîç{{title}} ( {{provider}}))",
+  "searchAi.warning.TYPE_MISMATCH": "Typé mîsmåtçh: çåñdîdåté îs Typé mîsm{{candidateType}}, lîst éxpéçts , lîs{{expectedType}}",
+  "searchAi.warning.NO_EXTERNAL_IDS": "Ñø éxtérñål ÎDs; léft ûñrésølvéd.Ñø éxtérñå",
+  "searchAi.warning.SUSPICIOUS_YEAR": "Sûspîçîøûs yéår: Sûspîç{{year}}",
+  "searchAi.warning.DUPLICATE_OF_RANK": "Dûplîçåté øf råñk Dûplîç{{rank}}",
+  "searchAi.warning.AI_PLAN_REJECTED": "ÅÎ plåñ réjéçtéd: ÅÎ plå{{detail}}"
 }
