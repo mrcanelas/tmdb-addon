@@ -20,6 +20,7 @@ export function SearchAiPage() {
   const { t } = useTranslation(['searchAi', 'common']);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [query, setQuery] = useState(() => t('searchAi.seed.combinedQuery'));
   const [hits, setHits] = useState<string[]>([]);
   const [discoveryPrompt, setDiscoveryPrompt] = useState(() =>
@@ -37,6 +38,7 @@ export function SearchAiPage() {
 
   async function load() {
     setStatus('loading');
+    setActionError(null);
     try {
       await ensureStudioSession();
       setStatus('ready');
@@ -51,6 +53,7 @@ export function SearchAiPage() {
 
   async function onCombined() {
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       const result = await runCombinedSearch(
@@ -63,9 +66,8 @@ export function SearchAiPage() {
           t('searchAi.hitItem', { title: hit.title, provider: hit.provider }),
         ),
       );
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('searchAi.actionError'));
     } finally {
       setBusy(false);
     }
@@ -73,6 +75,7 @@ export function SearchAiPage() {
 
   async function onDiscovery() {
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       const result = await runSmartDiscovery(
@@ -95,9 +98,8 @@ export function SearchAiPage() {
       setExplanation(result.proposal.explanation.interpretedIntent);
       setProposalId(result.proposal.id);
       setApplied(false);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('searchAi.actionError'));
     } finally {
       setBusy(false);
     }
@@ -105,6 +107,7 @@ export function SearchAiPage() {
 
   async function onRanked() {
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       const result = await runRankedList(
@@ -117,9 +120,8 @@ export function SearchAiPage() {
       setExplanation(result.explanation.interpretedIntent);
       setProposalId(result.proposal.id);
       setApplied(false);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('searchAi.actionError'));
     } finally {
       setBusy(false);
     }
@@ -128,6 +130,7 @@ export function SearchAiPage() {
   async function onConfirm() {
     if (!proposalId) return;
     setBusy(true);
+    setActionError(null);
     try {
       const session = await ensureStudioSession();
       await applyAiProposal(session.configId, session.editCredential, {
@@ -136,9 +139,8 @@ export function SearchAiPage() {
       });
       setApplied(true);
       setProposalId(null);
-      setStatus('ready');
     } catch {
-      setStatus('error');
+      setActionError(t('searchAi.applyError'));
     } finally {
       setBusy(false);
     }
@@ -157,7 +159,7 @@ export function SearchAiPage() {
 
       {status === 'error' ? (
         <ErrorState
-          message={t('searchAi.loadError')}
+          message={t('searchAi.sessionError')}
           retryLabel={t('state.retry', { ns: 'common' })}
           onRetry={() => {
             void load();
@@ -167,6 +169,12 @@ export function SearchAiPage() {
 
       {status === 'ready' ? (
         <>
+          {actionError ? (
+            <p className="text-sm text-[var(--ml-error)]" role="alert">
+              {actionError}
+            </p>
+          ) : null}
+
           <SectionCard title={t('searchAi.combined')}>
             <div className="space-y-3">
               <label className="block space-y-1 text-sm text-[var(--ml-text)]">

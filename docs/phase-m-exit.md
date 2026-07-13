@@ -39,7 +39,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 |---|---|
 | Feature freeze for new major modules | **Done** — no new major product modules until Phase N; beta work limited to hardening, i18n/a11y, docs, and maintainer-approved deferral closure |
 | UX review of configure primary pages | Partial — primary pages on layered layout (PageHeader/SectionCard); **Sorting loads saved global plan**; residual polish Open |
-| Accessibility pass | Partial — Corrections/Tracking/Advanced live regions; Catalog Studio dialogs + **mutation feedback without wiping the list**; broader pass Open |
+| Accessibility pass | Partial — Corrections/Tracking/Advanced/Catalog Studio live regions; **Search & AI action errors no longer wipe the page**; broader pass Open |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
@@ -47,7 +47,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell + Search & AI + Corrections/Tracking + **Inspector attempt reasons** hardened; full catalog review Open |
 | Pseudo-locale and RTL layout review | Partial — configure + **dashboard** load en-XA/ar-XB with `dir`; smoke tests; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
 | Field Resolution Chains review | Partial — Appearance background + Inspector localizes attempt codes; inheritance/episode UX still Open |
-| Documentation pass | Partial — §36 stubs + CHANGELOG/CONTRIBUTING + RTL checklist; **Tracking/Appearance/Catalogs/Rules/Sorting/Identity/Language/Anime narratives expanded**; remaining §36 depth still Open |
+| Documentation pass | Partial — §36 stubs + CHANGELOG/CONTRIBUTING + RTL checklist; **Tracking/Appearance/Catalogs/Rules/Sorting/Identity/Language/Anime/Corrections/Search-AI/Sources narratives expanded**; remaining §36 depth still Open |
 
 ## Exit criterion
 
