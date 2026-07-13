@@ -181,10 +181,25 @@ export function validateDiscoveryPlan(input: unknown): {
       minimumRating: record.minimumRating as number | undefined,
       sort: sort as DiscoverySortCriterion[],
       rawPrompt: String(record.rawPrompt),
-      assumptions: Array.isArray(record.assumptions)
-        ? (record.assumptions as string[])
-        : [],
-      warnings: Array.isArray(record.warnings) ? (record.warnings as string[]) : [],
+      assumptions: normalizeNoticeList(record.assumptions),
+      warnings: normalizeNoticeList(record.warnings),
     },
   };
+}
+
+function normalizeNoticeList(value: unknown): SearchAiNotice[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item === 'string' && item.trim()) {
+      return [{ code: 'LEGACY_FREE_TEXT', params: { text: item } }];
+    }
+    if (typeof item === 'object' && item !== null && 'code' in item) {
+      const code = (item as { code?: unknown }).code;
+      if (typeof code === 'string' && code.trim()) {
+        const params = (item as { params?: SearchAiNotice['params'] }).params;
+        return [{ code, params }];
+      }
+    }
+    return [];
+  });
 }

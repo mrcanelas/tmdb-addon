@@ -2,6 +2,7 @@
   "dashboard.appName": "MetaLayer Dashboard",
   "dashboard.tagline": "Operator controls for this instance",
   "dashboard.navAria": "Dashboard modules",
+  "dashboard.skipToMain": "Skip to main content",
   "dashboard.nav.overview": "Overview",
   "dashboard.nav.logs": "Logs",
   "dashboard.nav.backups": "Backups",
@@ -28,5 +29,6 @@
   "dashboard.updatesTitle": "Updates",
   "dashboard.updatesIntro": "Check the current MetaLayer version and upgrade notes.",
   "dashboard.currentVersion": "Current version",
-  "dashboard.upgradeCommand": "Upgrade check"
+  "dashboard.upgradeCommand": "Upgrade check",
+  "dashboard.locale.pseudoQa": "{{locale}} (QA)"
 }

@@ -10,6 +10,8 @@ export interface LegacyImportAttentionItem {
   code: string;
   message: string;
   field?: string;
+  /** Stable interpolation params for client i18n (never secrets). */
+  params?: Record<string, string>;
 }
 
 export interface LegacyImportReport {
@@ -132,6 +134,7 @@ export function planLegacyImport(
         code: 'CATALOG_PROVIDER_UNKNOWN',
         message: `Catalog id "${catalog.id}" has no provider prefix.`,
         field: 'catalogs',
+        params: { catalogId: catalog.id },
       });
     }
     return {

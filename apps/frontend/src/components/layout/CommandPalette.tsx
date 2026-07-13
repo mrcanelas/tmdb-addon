@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Command } from 'cmdk';
 import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { CONFIGURE_NAV } from '@/navigation';
+import { trapFocusKeyDown } from '@/lib/focus-trap';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
 const SHELL_LOCALES = LOCALE_REGISTRY.filter(
@@ -19,6 +20,7 @@ export function CommandPalette() {
   const toggleMode = useConfigureUiStore((s) => s.toggleMode);
   const toggleTheme = useConfigureUiStore((s) => s.toggleTheme);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -43,6 +45,10 @@ export function CommandPalette() {
       if (event.key === 'Escape') {
         event.preventDefault();
         setOpen(false);
+        return;
+      }
+      if (panelRef.current) {
+        trapFocusKeyDown(event, panelRef.current);
       }
     }
 
@@ -68,14 +74,18 @@ export function CommandPalette() {
       role="presentation"
       onMouseDown={() => setOpen(false)}
     >
-      <Command
-        className="ml-glass w-full max-w-lg overflow-hidden rounded-[var(--ml-radius)] shadow-xl"
-        label={t('shell.commandPalette.label')}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('shell.commandPalette.label')}
+      <div
+        ref={panelRef}
+        className="w-full max-w-lg"
         onMouseDown={(event) => event.stopPropagation()}
       >
+        <Command
+          className="ml-glass w-full overflow-hidden rounded-[var(--ml-radius)] shadow-xl"
+          label={t('shell.commandPalette.label')}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('shell.commandPalette.label')}
+        >
         <div className="border-b border-[var(--ml-border)] px-3 py-2">
           <Command.Input
             autoFocus
@@ -144,6 +154,7 @@ export function CommandPalette() {
           </Command.Group>
         </Command.List>
       </Command>
+      </div>
     </div>
   );
 }

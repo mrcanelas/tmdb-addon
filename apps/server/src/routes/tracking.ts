@@ -104,6 +104,137 @@ function resolveOAuthRedirectUri(input: {
   return redirectUri;
 }
 
+type OAuthSessionPayload = {
+  nonce: string;
+  codeVerifier?: string;
+};
+
+async function beginOAuthSession(
+  store: ConfigurationStore,
+  configId: string,
+  provider: OAuthTrackingProvider,
+  extra: { codeVerifier?: string } = {},
+): Promise<{ state: string; nonce: string }> {
+  const nonce = randomBytes(8).toString('hex');
+  const state = Buffer.from(
+    JSON.stringify({
+      configId,
+      nonce,
+    }),
+  ).toString('base64url');
+  const payload: OAuthSessionPayload = { nonce, ...extra };
+  await store.upsertVaultSecret(
+    configId,
+    provider,
+    'session',
+    JSON.stringify(payload),
+  );
+  return { state, nonce };
+}
+
+/**
+ * Validate OAuth `state` against the vaulted session nonce.
+ * Returns session payload on success, or `'failed'` after sending 400.
+ */
+async function assertOAuthCallbackState(input: {
+  store: ConfigurationStore;
+  reply: FastifyReply;
+  correlationId: string;
+  configId: string;
+  provider: OAuthTrackingProvider;
+  state: string | undefined;
+}): Promise<OAuthSessionPayload | 'failed'> {
+  if (!input.state?.trim()) {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'OAuth state is required',
+        correlationId: input.correlationId,
+        params: { field: 'state' },
+      }),
+    );
+    return 'failed';
+  }
+
+  let decoded: { configId?: string; nonce?: string };
+  try {
+    decoded = JSON.parse(
+      Buffer.from(input.state, 'base64url').toString('utf8'),
+    ) as { configId?: string; nonce?: string };
+  } catch {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'OAuth state is invalid',
+        correlationId: input.correlationId,
+        params: { field: 'state' },
+      }),
+    );
+    return 'failed';
+  }
+
+  if (decoded.configId !== input.configId || !decoded.nonce) {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'OAuth state does not match this configuration',
+        correlationId: input.correlationId,
+        params: { field: 'state' },
+      }),
+    );
+    return 'failed';
+  }
+
+  const sessionRaw = await input.store.getSecretPlaintext(
+    input.configId,
+    input.provider,
+    'session',
+  );
+  if (!sessionRaw) {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'OAuth session was not found; restart authorization',
+        correlationId: input.correlationId,
+        params: { field: 'state' },
+      }),
+    );
+    return 'failed';
+  }
+
+  try {
+    const session = JSON.parse(sessionRaw) as OAuthSessionPayload;
+    if (!session.nonce || session.nonce !== decoded.nonce) {
+      void input.reply.status(400).send(
+        createApiError({
+          code: 'VALIDATION_FAILED',
+          message: 'OAuth state nonce mismatch',
+          correlationId: input.correlationId,
+          params: { field: 'state' },
+        }),
+      );
+      return 'failed';
+    }
+    // One-time use: clear vaulted OAuth session after successful state check.
+    await input.store.deleteVaultSecret(
+      input.configId,
+      input.provider,
+      'session',
+    );
+    return session;
+  } catch {
+    void input.reply.status(400).send(
+      createApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'OAuth session is invalid; restart authorization',
+        correlationId: input.correlationId,
+        params: { field: 'state' },
+      }),
+    );
+    return 'failed';
+  }
+}
+
 async function requireEdit(
   app: { configStore: ConfigurationStore },
   request: FastifyRequest,
@@ -493,12 +624,11 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     });
     if (redirectUri === 'failed') return;
 
-    const state = Buffer.from(
-      JSON.stringify({
-        configId: request.params.configId,
-        nonce: randomBytes(8).toString('hex'),
-      }),
-    ).toString('base64url');
+    const { state } = await beginOAuthSession(
+      app.configStore,
+      request.params.configId,
+      'trakt',
+    );
 
     return {
       authUrl: buildTraktAuthorizeUrl({
@@ -514,7 +644,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
   app.post<{
     Params: { configId: string };
-    Body: { code?: string; redirectUri?: string };
+    Body: { code?: string; redirectUri?: string; state?: string };
   }>('/configurations/:configId/tracking/trakt/callback', async (request, reply) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
@@ -542,6 +672,16 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const oauthSession = await assertOAuthCallbackState({
+      store: app.configStore,
+      reply,
+      correlationId: request.correlationId,
+      configId: request.params.configId,
+      provider: 'trakt',
+      state: request.body?.state,
+    });
+    if (oauthSession === 'failed') return;
+
     const redirectUri = resolveOAuthRedirectUri({
       request,
       reply,
@@ -656,12 +796,11 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     });
     if (redirectUri === 'failed') return;
 
-    const state = Buffer.from(
-      JSON.stringify({
-        configId: request.params.configId,
-        nonce: randomBytes(8).toString('hex'),
-      }),
-    ).toString('base64url');
+    const { state } = await beginOAuthSession(
+      app.configStore,
+      request.params.configId,
+      'simkl',
+    );
 
     return {
       authUrl: buildSimklAuthorizeUrl({
@@ -677,7 +816,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
   app.post<{
     Params: { configId: string };
-    Body: { code?: string; redirectUri?: string };
+    Body: { code?: string; redirectUri?: string; state?: string };
   }>('/configurations/:configId/tracking/simkl/callback', async (request, reply) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
@@ -705,6 +844,16 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const oauthSession = await assertOAuthCallbackState({
+      store: app.configStore,
+      reply,
+      correlationId: request.correlationId,
+      configId: request.params.configId,
+      provider: 'simkl',
+      state: request.body?.state,
+    });
+    if (oauthSession === 'failed') return;
+
     const redirectUri = resolveOAuthRedirectUri({
       request,
       reply,
@@ -812,12 +961,11 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     });
     if (redirectUri === 'failed') return;
 
-    const state = Buffer.from(
-      JSON.stringify({
-        configId: request.params.configId,
-        nonce: randomBytes(8).toString('hex'),
-      }),
-    ).toString('base64url');
+    const { state } = await beginOAuthSession(
+      app.configStore,
+      request.params.configId,
+      'anilist',
+    );
 
     return {
       authUrl: buildAnilistAuthorizeUrl({
@@ -833,7 +981,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
 
   app.post<{
     Params: { configId: string };
-    Body: { code?: string; redirectUri?: string };
+    Body: { code?: string; redirectUri?: string; state?: string };
   }>('/configurations/:configId/tracking/anilist/callback', async (request, reply) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
@@ -861,6 +1009,16 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const oauthSession = await assertOAuthCallbackState({
+      store: app.configStore,
+      reply,
+      correlationId: request.correlationId,
+      configId: request.params.configId,
+      provider: 'anilist',
+      state: request.body?.state,
+    });
+    if (oauthSession === 'failed') return;
+
     const redirectUri = resolveOAuthRedirectUri({
       request,
       reply,
@@ -970,21 +1128,12 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     });
     if (redirectUri === 'failed') return;
 
-    const nonce = randomBytes(8).toString('hex');
     const codeVerifier = generateMalPkceVerifier();
-    const state = Buffer.from(
-      JSON.stringify({
-        configId: request.params.configId,
-        nonce,
-      }),
-    ).toString('base64url');
-
-    // Persist PKCE verifier until callback (MAL requires plain code_challenge).
-    await app.configStore.upsertVaultSecret(
+    const { state } = await beginOAuthSession(
+      app.configStore,
       request.params.configId,
       'mal',
-      'session',
-      JSON.stringify({ nonce, codeVerifier }),
+      { codeVerifier },
     );
 
     return {
@@ -1030,6 +1179,16 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
         }),
       );
     }
+    const oauthSession = await assertOAuthCallbackState({
+      store: app.configStore,
+      reply,
+      correlationId: request.correlationId,
+      configId: request.params.configId,
+      provider: 'mal',
+      state: request.body?.state,
+    });
+    if (oauthSession === 'failed') return;
+
     const redirectUri = resolveOAuthRedirectUri({
       request,
       reply,
@@ -1039,37 +1198,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     });
     if (redirectUri === 'failed') return;
 
-    const sessionRaw = await app.configStore.getSecretPlaintext(
-      request.params.configId,
-      'mal',
-      'session',
-    );
-    let codeVerifier: string | undefined;
-    if (sessionRaw) {
-      try {
-        const session = JSON.parse(sessionRaw) as {
-          nonce?: string;
-          codeVerifier?: string;
-        };
-        if (request.body?.state) {
-          const decoded = JSON.parse(
-            Buffer.from(request.body.state, 'base64url').toString('utf8'),
-          ) as { nonce?: string };
-          if (decoded.nonce && session.nonce && decoded.nonce !== session.nonce) {
-            return reply.status(400).send(
-              createApiError({
-                code: 'VALIDATION_FAILED',
-                message: 'OAuth state nonce mismatch',
-                correlationId: request.correlationId,
-              }),
-            );
-          }
-        }
-        codeVerifier = session.codeVerifier;
-      } catch {
-        codeVerifier = undefined;
-      }
-    }
+    const codeVerifier = oauthSession.codeVerifier;
     if (!codeVerifier) {
       return reply.status(400).send(
         createApiError({

@@ -93,4 +93,6 @@ export const FASTIFY_LOG_REDACT_PATHS = [
   'body.secrets',
   'body.secrets.*',
   'req.query.apiKey',
+  'req.body.apiKey',
+  'body.apiKey',
 ] as const;

@@ -2,6 +2,7 @@
   "dashboard.appName": "MétåLåyér DåshbøårdMétåLå",
   "dashboard.tagline": "Øpéråtør çøñtrøls før thîs îñståñçéØpéråtør çø",
   "dashboard.navAria": "Dåshbøård mødûlésDåshbø",
+  "dashboard.skipToMain": "Skîp tø måîñ çøñtéñtSkîp t",
   "dashboard.nav.overview": "ØvérvîéwØvé",
   "dashboard.nav.logs": "LøgsLø",
   "dashboard.nav.backups": "BåçkûpsBåç",
@@ -28,5 +29,6 @@
   "dashboard.updatesTitle": "ÛpdåtésÛpd",
   "dashboard.updatesIntro": "Çhéçk thé çûrréñt MétåLåyér vérsîøñ åñd ûpgrådé ñøtés.Çhéçk thé çûrréñt",
   "dashboard.currentVersion": "Çûrréñt vérsîøñÇûrré",
-  "dashboard.upgradeCommand": "Ûpgrådé çhéçkÛpgr"
+  "dashboard.upgradeCommand": "Ûpgrådé çhéçkÛpgr",
+  "dashboard.locale.pseudoQa": "{{locale}} (QÅ) ("
 }

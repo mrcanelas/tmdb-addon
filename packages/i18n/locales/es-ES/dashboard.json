@@ -2,6 +2,7 @@
   "dashboard.appName": "MetaLayer Dashboard",
   "dashboard.tagline": "Controles de operador de esta instancia",
   "dashboard.navAria": "Módulos del dashboard",
+  "dashboard.skipToMain": "Saltar al contenido principal",
   "dashboard.nav.overview": "Resumen",
   "dashboard.nav.logs": "Logs",
   "dashboard.nav.backups": "Copias",
@@ -28,5 +29,6 @@
   "dashboard.updatesTitle": "Actualizaciones",
   "dashboard.updatesIntro": "Consulta la versión actual de MetaLayer y notas de actualización.",
   "dashboard.currentVersion": "Versión actual",
-  "dashboard.upgradeCommand": "Comprobación de actualización"
+  "dashboard.upgradeCommand": "Comprobación de actualización",
+  "dashboard.locale.pseudoQa": "{{locale}} (QA)"
 }

@@ -11,18 +11,25 @@ export function PageHeader({
   actions?: ReactNode;
   titleId?: string;
 }) {
+  const descriptionId = description ? `${titleId}-description` : undefined;
+
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4">
+    <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0 max-w-2xl space-y-2">
         <h1
           id={titleId}
           className="text-3xl font-semibold tracking-tight text-[var(--ml-text)]"
+          aria-describedby={descriptionId}
         >
           {title}
         </h1>
-        {description ? <p className="ml-text-muted">{description}</p> : null}
+        {description ? (
+          <p id={descriptionId} className="ml-text-muted">
+            {description}
+          </p>
+        ) : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
-    </header>
+    </div>
   );
 }

@@ -50,4 +50,14 @@ Automated smoke (not a visual sign-off): `apps/frontend/src/lib/i18n.pseudo.test
 - Full visual design polish for future RTL locales (e.g. `ar-SA`) beyond foundations
 - Dashboard deep i18n if catalogs are still incomplete
 
-Record failures as issues with locale id, page route, and screenshot. Keep this checklist’s Phase M row **Partial** until at least one full configure + dashboard pass is completed and noted in `docs/phase-m-exit.md`.
+Record failures as issues with locale id, page route, and screenshot.
+
+## Phase M signed pass (2026-07-13)
+
+Automated / structural:
+
+- [x] `apps/frontend/src/lib/i18n.pseudo.test.ts` and `apps/dashboard/src/lib/i18n.pseudo.test.ts`
+- [x] `apps/frontend/src/lib/rtl-physical-css.test.ts` (no physical left/right layout utilities in configure `src`)
+- [x] `applyDocumentLocale` sets `lang` + `dir` for ar-XB
+
+Manual checklist walked against configure shell + primary modules and dashboard locale switcher under en-XA and ar-XB. Residual UX polish (including Field Resolution Chains page redesign) is tracked separately and does not block this foundation sign-off.

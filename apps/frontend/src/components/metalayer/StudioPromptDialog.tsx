@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import { Button } from '@metalayer/shared-ui';
+import { trapFocusKeyDown } from '@/lib/focus-trap';
 
 export interface StudioPromptDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ export function StudioPromptDialog({
   cancelLabel,
 }: StudioPromptDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -45,6 +47,10 @@ export function StudioPromptDialog({
       if (event.key === 'Escape') {
         event.preventDefault();
         onCancel();
+        return;
+      }
+      if (dialogRef.current) {
+        trapFocusKeyDown(event, dialogRef.current);
       }
     }
 
@@ -66,6 +72,7 @@ export function StudioPromptDialog({
       onMouseDown={onCancel}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

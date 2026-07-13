@@ -195,9 +195,12 @@ export function OverviewPage() {
               {report.needsAttention.length > 0 ? (
                 <ul className="list-disc space-y-1 ps-5 text-[var(--ml-warning)]">
                   {report.needsAttention.map((item) => (
-                    <li key={`${item.code}-${item.field ?? ''}`}>
-                      {item.code}
-                      {item.field ? ` (${item.field})` : ''}: {item.message}
+                    <li key={`${item.code}-${item.field ?? ''}-${item.params?.catalogId ?? ''}`}>
+                      {t(`overview.attention.${item.code}`, {
+                        field: item.field,
+                        catalogId: item.params?.catalogId,
+                        defaultValue: item.message,
+                      })}
                     </li>
                   ))}
                 </ul>

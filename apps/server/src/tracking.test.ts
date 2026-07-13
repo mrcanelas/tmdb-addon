@@ -164,12 +164,13 @@ describe('@metalayer/server tracking', () => {
     expect(authUrl.statusCode).toBe(200);
     expect(authUrl.json().authUrl).toContain('trakt.tv/oauth/authorize');
     expect(authUrl.json().authUrl).toContain('trakt-client');
+    const state = authUrl.json().state as string;
 
     const callback = await app.inject({
       method: 'POST',
       url: `/api/v1/configurations/${configId}/tracking/trakt/callback`,
       headers,
-      payload: { code: 'auth-code', redirectUri },
+      payload: { code: 'auth-code', redirectUri, state },
     });
     expect(callback.statusCode).toBe(200);
     expect(callback.json().connected).toBe(true);
@@ -248,6 +249,78 @@ describe('@metalayer/server tracking', () => {
     }
   });
 
+  it('rejects OAuth callback without matching state nonce', async () => {
+    const previousId = process.env.TRAKT_CLIENT_ID;
+    const previousSecret = process.env.TRAKT_CLIENT_SECRET;
+    process.env.TRAKT_CLIENT_ID = 'trakt-client';
+    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+
+    const app = await buildApp({
+      logger: false,
+      store: createMemoryConfigurationStore(Buffer.alloc(32, 39).toString('base64')),
+      providerFetch: async () =>
+        new Response(
+          JSON.stringify({
+            access_token: 'stolen-access',
+            refresh_token: 'stolen-refresh',
+            created_at: 1,
+            expires_in: 3600,
+            token_type: 'bearer',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+    });
+
+    try {
+      const created = await app.inject({
+        method: 'POST',
+        url: '/api/v1/configurations',
+        payload: {
+          editCredential: 'oauth-csrf-edit',
+          config: createDefaultMetaLayerConfig({ name: 'OAuthCsrf' }),
+        },
+      });
+      const { configId } = created.json();
+      const headers = { 'x-metalayer-edit-credential': 'oauth-csrf-edit' };
+      const redirectUri = 'http://localhost:1338/configure/oauth/trakt/callback';
+
+      const authUrl = await app.inject({
+        method: 'GET',
+        url: `/api/v1/configurations/${configId}/tracking/trakt/auth-url?redirectUri=${encodeURIComponent(redirectUri)}`,
+        headers,
+      });
+      expect(authUrl.statusCode).toBe(200);
+
+      const missingState = await app.inject({
+        method: 'POST',
+        url: `/api/v1/configurations/${configId}/tracking/trakt/callback`,
+        headers,
+        payload: { code: 'auth-code', redirectUri },
+      });
+      expect(missingState.statusCode).toBe(400);
+      expect(missingState.json().code).toBe('VALIDATION_FAILED');
+      expect(missingState.json().message).toContain('state');
+
+      const forgedState = Buffer.from(
+        JSON.stringify({ configId, nonce: 'forged-nonce' }),
+      ).toString('base64url');
+      const forged = await app.inject({
+        method: 'POST',
+        url: `/api/v1/configurations/${configId}/tracking/trakt/callback`,
+        headers,
+        payload: { code: 'auth-code', redirectUri, state: forgedState },
+      });
+      expect(forged.statusCode).toBe(400);
+      expect(forged.json().code).toBe('VALIDATION_FAILED');
+    } finally {
+      await app.close();
+      if (previousId === undefined) delete process.env.TRAKT_CLIENT_ID;
+      else process.env.TRAKT_CLIENT_ID = previousId;
+      if (previousSecret === undefined) delete process.env.TRAKT_CLIENT_SECRET;
+      else process.env.TRAKT_CLIENT_SECRET = previousSecret;
+    }
+  });
+
   it('builds SIMKL auth URL, exchanges code into vault, and disconnects', async () => {
     const previousId = process.env.SIMKL_CLIENT_ID;
     const previousSecret = process.env.SIMKL_CLIENT_SECRET;
@@ -291,12 +364,13 @@ describe('@metalayer/server tracking', () => {
     expect(authUrl.statusCode).toBe(200);
     expect(authUrl.json().authUrl).toContain('simkl.com/oauth/authorize');
     expect(authUrl.json().authUrl).toContain('simkl-client');
+    const state = authUrl.json().state as string;
 
     const callback = await app.inject({
       method: 'POST',
       url: `/api/v1/configurations/${configId}/tracking/simkl/callback`,
       headers,
-      payload: { code: 'auth-code', redirectUri },
+      payload: { code: 'auth-code', redirectUri, state },
     });
     expect(callback.statusCode).toBe(200);
     expect(callback.json().connected).toBe(true);
@@ -369,12 +443,13 @@ describe('@metalayer/server tracking', () => {
     expect(authUrl.statusCode).toBe(200);
     expect(authUrl.json().authUrl).toContain('anilist.co/api/v2/oauth/authorize');
     expect(authUrl.json().authUrl).toContain('anilist-client');
+    const state = authUrl.json().state as string;
 
     const callback = await app.inject({
       method: 'POST',
       url: `/api/v1/configurations/${configId}/tracking/anilist/callback`,
       headers,
-      payload: { code: 'auth-code', redirectUri },
+      payload: { code: 'auth-code', redirectUri, state },
     });
     expect(callback.statusCode).toBe(200);
     expect(callback.json().connected).toBe(true);

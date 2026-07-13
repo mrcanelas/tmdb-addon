@@ -13,14 +13,14 @@ Operator / contributor policy overview: root `SECURITY.md`.
 | Log redaction (edit credential, vault, OAuth, dashboard token) | Done — `@metalayer/security` |
 | OAuth `redirectUri` allowlist | Done — see below |
 | Safe default exports (no secrets) | Done |
-| Formal security review sign-off | **Open** — Phase M → N gate |
+| Formal security review sign-off | **Done (MVP)** — Phase M review closed CSRF OAuth state + log redact hardening; residual items tracked below |
 
 ## Logging and redaction
 
 Operator logs and Fastify request logs must not persist:
 
 - edit credentials (`x-metalayer-edit-credential`, body `editCredential`);
-- Secret Vault payloads and API keys;
+- Secret Vault payloads and API keys (`req.body.apiKey` / `body.apiKey` included in Fastify redact paths);
 - OAuth access / refresh tokens;
 - dashboard operator tokens (`x-metalayer-dashboard-token`).
 
@@ -38,6 +38,24 @@ Tracking OAuth `redirectUri` values (auth-url query and callback body) are allow
 Arbitrary third-party hosts are rejected with `VALIDATION_FAILED` even when the path looks like a MetaLayer callback.
 
 Self-hosted public instances should set `METALAYER_PUBLIC_BASE_URL` and/or each provider `*_REDIRECT_URI`.
+
+## OAuth callback state (CSRF)
+
+Tracking OAuth callbacks for Trakt, SIMKL, AniList, and MAL require a `state` value created at auth-url time:
+
+1. Server mints a nonce and stores it in the Secret Vault `session` secret for that provider;
+2. `state` encodes `{ configId, nonce }` (base64url JSON);
+3. Callback rejects missing, malformed, wrong-config, or nonce-mismatched `state`;
+4. Successful validation consumes the vaulted session (one-time use). MAL still carries PKCE `codeVerifier` inside that session payload.
+
+## Phase M review notes (2026-07-13)
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| OAuth callbacks accepted codes without validating `state`/nonce (Trakt/SIMKL/AniList; MAL partial) | Medium | Fixed — shared `beginOAuthSession` / `assertOAuthCallbackState` |
+| Fastify redact paths omitted `req.body.apiKey` | Low | Fixed — added to `FASTIFY_LOG_REDACT_PATHS` |
+
+Residual / follow-up (not Phase M blockers): deeper SSRF audit of custom URL artwork fetches, full operator threat model for multi-tenant Server mode, independent external pen-test before stable `1.0.0`.
 
 ## Related
 

@@ -48,5 +48,6 @@ describe('@metalayer/security redact', () => {
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('secrets');
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('x-metalayer-edit-credential');
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('x-metalayer-dashboard-token');
+    expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('req.body.apiKey');
   });
 });

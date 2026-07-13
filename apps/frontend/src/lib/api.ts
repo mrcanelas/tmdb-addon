@@ -180,7 +180,12 @@ export function clearCatalogSession(): void {
 
 export interface LegacyImportReportView {
   imported: string[];
-  needsAttention: Array<{ code: string; message: string; field?: string }>;
+  needsAttention: Array<{
+    code: string;
+    message: string;
+    field?: string;
+    params?: Record<string, string>;
+  }>;
   secretsToVault: string[];
 }
 
