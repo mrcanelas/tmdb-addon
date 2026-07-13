@@ -12,7 +12,7 @@ Implementation status: **shipped** as Phase F2 — see `docs/phase-f-exit.md`.
 
 | Surface | Fields / behavior |
 |---|---|
-| Appearance (`/configure/appearance`) | title, description, poster, background via `ResolutionChainBuilder` |
+| Appearance (`/configure/appearance`) | title, description, poster, background, **logo** via `ResolutionChainBuilder` |
 | Meta Inspector | Attempt list with localized status/reason codes |
 | Management API | `GET/PUT .../resolution`, `POST .../compile`, `POST .../test` |
 

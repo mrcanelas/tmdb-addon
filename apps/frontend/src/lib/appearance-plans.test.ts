@@ -12,9 +12,11 @@ const emptyResolution: ResolutionConfig = {
 };
 
 describe('appearance field resolution defaults', () => {
-  it('includes background among editable fields and treats it as artwork', () => {
+  it('includes background and logo among editable artwork fields', () => {
     expect(APPEARANCE_EDIT_FIELDS).toContain('background');
+    expect(APPEARANCE_EDIT_FIELDS).toContain('logo');
     expect(isArtworkField('background')).toBe(true);
+    expect(isArtworkField('logo')).toBe(true);
     expect(isArtworkField('title')).toBe(false);
   });
 
@@ -33,6 +35,12 @@ describe('appearance field resolution defaults', () => {
     const poster = ensureAppearancePlan(emptyResolution, 'poster');
     expect(poster.providers?.[0]).toBe('rpdb');
     expect(poster.locales?.some((locale) => locale.type === 'no-language')).toBe(
+      true,
+    );
+
+    const logo = ensureAppearancePlan(emptyResolution, 'logo');
+    expect(logo.providers).toEqual(['rpdb', 'fanart', 'tmdb', 'tvdb']);
+    expect(logo.locales?.some((locale) => locale.type === 'no-language')).toBe(
       true,
     );
   });

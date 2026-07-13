@@ -30,5 +30,6 @@
   "resolution.field.title": "Título",
   "resolution.field.description": "Sinopse",
   "resolution.field.poster": "Poster",
-  "resolution.field.background": "Plano de fundo"
+  "resolution.field.background": "Plano de fundo",
+  "resolution.field.logo": "Logo"
 }

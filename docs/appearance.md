@@ -2,7 +2,7 @@
 
 Appearance Studio controls how metadata and artwork are presented. Artwork and localized text use Field Resolution Chains (`AGENTS.md` §10 / §15).
 
-Configure UI: `/configure/appearance`. Shared builder: `ResolutionChainBuilder`. Canonical Field Resolution index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phase-f-exit.md`.
+Configure UI: `/configure/appearance` (title, overview, poster, background, logo). Shared builder: `ResolutionChainBuilder`. Canonical Field Resolution index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phase-f-exit.md`.
 
 ## Fields editable in beta configure
 
@@ -12,6 +12,7 @@ Configure UI: `/configure/appearance`. Shared builder: `ResolutionChainBuilder`.
 | `description` | Localized text | `locale-first` | TMDB → TVDB | pt-BR → en-US → original-language |
 | `poster` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB | pt-BR → **no-language** → en-US |
 | `background` | Artwork | `locale-first` | Fanart.tv → TMDB → RPDB | pt-BR → **no-language** → en-US |
+| `logo` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB → TVDB | pt-BR → **no-language** → en-US |
 
 Provider pickers in the UI also offer IMDb (text) and TVDB (artwork) for reordering. Defaults are applied client-side via `ensureAppearancePlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
 
@@ -43,5 +44,5 @@ Secrets must never appear in plans or diagnostics.
 
 - Profile / catalog / title inheritance UI for Appearance overrides
 - Explicit advanced step editor and episode-order chains in this page
-- Logo and remaining §15 display sections (credits, certifications, live preview)
+- Remaining §15 display sections (credits, certifications, live preview)
 - Dedicated artwork ranking polish beyond default `no-language` chains

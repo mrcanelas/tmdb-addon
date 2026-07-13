@@ -6,19 +6,20 @@ export const APPEARANCE_EDIT_FIELDS = [
   'description',
   'poster',
   'background',
+  'logo',
 ] as const;
 
 export type AppearanceEditField = (typeof APPEARANCE_EDIT_FIELDS)[number];
 
 export function isArtworkField(
   field: AppearanceEditField,
-): field is 'poster' | 'background' {
-  return field === 'poster' || field === 'background';
+): field is 'poster' | 'background' | 'logo' {
+  return field === 'poster' || field === 'background' || field === 'logo';
 }
 
 /**
  * Default Field Resolution Plan for Appearance Studio when none is stored.
- * Artwork chains include `no-language` for textless posters/backgrounds.
+ * Artwork chains include `no-language` for textless posters/backgrounds/logos.
  */
 export function ensureAppearancePlan(
   resolution: ResolutionConfig,
@@ -40,7 +41,9 @@ export function ensureAppearancePlan(
   const providers =
     field === 'background'
       ? (['fanart', 'tmdb', 'rpdb'] as const)
-      : (['rpdb', 'fanart', 'tmdb'] as const);
+      : field === 'logo'
+        ? (['rpdb', 'fanart', 'tmdb', 'tvdb'] as const)
+        : (['rpdb', 'fanart', 'tmdb'] as const);
   return planFromProviderChain(
     [...providers],
     [

@@ -28,7 +28,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
-| Field Resolution Chains inheritance/episode UX depth | beta.N (Appearance **background** + artwork `no-language` defaults landed; inheritance/episode UI still deferred) |
+| Field Resolution Chains inheritance/episode UX depth | beta.N (Appearance **background + logo** + artwork `no-language` defaults landed; inheritance/episode UI still deferred) |
 | Full i18n/RTL layout hardening | **Partial** — configure + dashboard load en-XA/ar-XB with `dir` + smoke tests; checklist `docs/rtl-layout-checklist.md`; signed visual pass remains |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | Phase M → N (migration fixture coverage landed; **security hardening MVP** — dashboard token redaction + OAuth redirect allowlist; formal review still Open) |
@@ -46,7 +46,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Security review | Partial — log redaction includes dashboard token; OAuth `redirectUri` allowlist; formal sign-off Open |
 | Translation review (en-US / pt-BR / es-ES) | Partial — Appearance/Rules/shell + Search & AI + Corrections/Tracking + Inspector + **Sources test interpolation/health labels**; full catalog review Open |
 | Pseudo-locale and RTL layout review | Partial — configure + **dashboard** load en-XA/ar-XB with `dir`; smoke tests; checklist at `docs/rtl-layout-checklist.md`; **signed visual pass Open** |
-| Field Resolution Chains review | Partial — Appearance background + Inspector localizes attempt codes; inheritance/episode UX still Open |
+| Field Resolution Chains review | Partial — Appearance background + **logo** + Inspector attempt codes; inheritance/episode UX still Open |
 | Documentation pass | Partial — §36 stubs + CHANGELOG/CONTRIBUTING + RTL checklist; major domain narratives expanded (incl. **Configuration/Profiles/Migration**); remaining §36 depth still Open |
 
 ## Exit criterion

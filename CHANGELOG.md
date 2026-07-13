@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 ### Added
 
 - Overview legacy TMDB Addon import (dry-run preview + confirm → Save & Install)
+- Appearance Field Resolution builder for **logo** (with `no-language` default chain)
 
 ### Fixed
 
