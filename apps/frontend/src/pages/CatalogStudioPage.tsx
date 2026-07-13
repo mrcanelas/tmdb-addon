@@ -43,6 +43,9 @@ export function CatalogStudioPage() {
   const [previewWarnings, setPreviewWarnings] = useState<string[]>([]);
   const [previewTitle, setPreviewTitle] = useState<string | null>(null);
   const [editDialog, setEditDialog] = useState<CatalogEditDialog | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<
+    { tone: 'ok' | 'error'; message: string } | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const applyPayload = useCallback(
@@ -101,6 +104,7 @@ export function CatalogStudioPage() {
     const session = readCatalogSession();
     if (!session) return;
     setBusyId(instanceId);
+    setActionFeedback(null);
     try {
       const result = await mutateCatalog(session.configId, session.editCredential, instanceId, {
         action,
@@ -108,8 +112,9 @@ export function CatalogStudioPage() {
       });
       setCatalogs(result.catalogs);
       setManifestOrder(result.manifestOrder);
+      setActionFeedback({ tone: 'ok', message: t('catalogs.actionOk') });
     } catch {
-      setStatus('error');
+      setActionFeedback({ tone: 'error', message: t('catalogs.actionError') });
     } finally {
       setBusyId(null);
     }
@@ -140,30 +145,42 @@ export function CatalogStudioPage() {
   async function onExport() {
     const session = readCatalogSession();
     if (!session) return;
-    const exported = await exportStudioCatalogs(session.configId, session.editCredential);
-    const blob = new Blob([JSON.stringify(exported.catalogs, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `metalayer-catalogs-${session.configId}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    setActionFeedback(null);
+    try {
+      const exported = await exportStudioCatalogs(session.configId, session.editCredential);
+      const blob = new Blob([JSON.stringify(exported.catalogs, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `metalayer-catalogs-${session.configId}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setActionFeedback({ tone: 'ok', message: t('catalogs.actionOk') });
+    } catch {
+      setActionFeedback({ tone: 'error', message: t('catalogs.actionError') });
+    }
   }
 
   async function onImportFile(file: File) {
     const session = readCatalogSession();
     if (!session) return;
-    const text = await file.text();
-    const parsed = JSON.parse(text) as unknown;
-    const result = await importStudioCatalogs(
-      session.configId,
-      session.editCredential,
-      parsed,
-      'append',
-    );
-    applyPayload(result);
+    setActionFeedback(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as unknown;
+      const result = await importStudioCatalogs(
+        session.configId,
+        session.editCredential,
+        parsed,
+        'append',
+      );
+      applyPayload(result);
+      setActionFeedback({ tone: 'ok', message: t('catalogs.actionOk') });
+    } catch {
+      setActionFeedback({ tone: 'error', message: t('catalogs.importError') });
+    }
   }
 
   async function onCreateMerged() {
@@ -174,14 +191,20 @@ export function CatalogStudioPage() {
       .slice(0, 2)
       .map((catalog) => catalog.instanceId);
     if (leafIds.length < 2) return;
-    const result = await createStudioCatalog(session.configId, session.editCredential, {
-      action: 'createMerged',
-      name: t('catalogs.mergedDefaultName'),
-      mediaType: 'movie',
-      mergeMode: 'dedupe-union',
-      sourceInstanceIds: leafIds,
-    });
-    applyPayload(result);
+    setActionFeedback(null);
+    try {
+      const result = await createStudioCatalog(session.configId, session.editCredential, {
+        action: 'createMerged',
+        name: t('catalogs.mergedDefaultName'),
+        mediaType: 'movie',
+        mergeMode: 'dedupe-union',
+        sourceInstanceIds: leafIds,
+      });
+      applyPayload(result);
+      setActionFeedback({ tone: 'ok', message: t('catalogs.actionOk') });
+    } catch {
+      setActionFeedback({ tone: 'error', message: t('catalogs.actionError') });
+    }
   }
 
   async function onCreateRotated() {
@@ -192,14 +215,20 @@ export function CatalogStudioPage() {
       .slice(0, 2)
       .map((catalog) => catalog.instanceId);
     if (leafIds.length < 2) return;
-    const result = await createStudioCatalog(session.configId, session.editCredential, {
-      action: 'createRotated',
-      name: t('catalogs.rotatedDefaultName'),
-      mediaType: 'movie',
-      rotationMode: 'daily',
-      sourceInstanceIds: leafIds,
-    });
-    applyPayload(result);
+    setActionFeedback(null);
+    try {
+      const result = await createStudioCatalog(session.configId, session.editCredential, {
+        action: 'createRotated',
+        name: t('catalogs.rotatedDefaultName'),
+        mediaType: 'movie',
+        rotationMode: 'daily',
+        sourceInstanceIds: leafIds,
+      });
+      applyPayload(result);
+      setActionFeedback({ tone: 'ok', message: t('catalogs.actionOk') });
+    } catch {
+      setActionFeedback({ tone: 'error', message: t('catalogs.actionError') });
+    }
   }
 
   function openEditDialog(
@@ -326,6 +355,17 @@ export function CatalogStudioPage() {
       {configId ? (
         <p className="font-mono text-xs ml-text-muted">
           {t('catalogs.configId', { id: configId })}
+        </p>
+      ) : null}
+
+      {actionFeedback?.tone === 'ok' ? (
+        <p className="text-sm text-[var(--ml-success)]" role="status">
+          {actionFeedback.message}
+        </p>
+      ) : null}
+      {actionFeedback?.tone === 'error' ? (
+        <p className="text-sm text-[var(--ml-error)]" role="alert">
+          {actionFeedback.message}
         </p>
       ) : null}
 
