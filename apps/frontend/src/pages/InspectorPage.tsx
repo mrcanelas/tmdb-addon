@@ -6,7 +6,11 @@ import {
   type IdentityDiagnosticsView,
   type MetaInspectorReport,
 } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button } from '@metalayer/shared-ui';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { SectionCard } from '@/components/metalayer/SectionCard';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const FIELD_KEYS = [
   'title',
@@ -47,35 +51,41 @@ const SAMPLE_CONTRIBUTIONS = {
   externalIds: [{ provider: 'tmdb', value: { tmdb: 550, imdb: 'tt0137523' } }],
 };
 
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
-}
+const INPUT_CLASS =
+  'h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]';
 
 export function InspectorPage() {
-  const { t } = useTranslation('inspector');
+  const { t } = useTranslation(['inspector', 'common']);
   const [publicId, setPublicId] = useState('tt0137523');
   const [report, setReport] = useState<MetaInspectorReport | null>(null);
   const [identity, setIdentity] = useState<IdentityDiagnosticsView | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [busy, setBusy] = useState(false);
+
+  const empty = t('common.emptyValue', { ns: 'common' });
+
+  function formatValue(value: unknown): string {
+    if (value === null || value === undefined) return empty;
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  }
+
+  async function load() {
+    setStatus('loading');
+    try {
+      await ensureStudioSession();
+      setStatus('ready');
+    } catch {
+      setStatus('error');
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await ensureStudioSession();
-        if (!cancelled) setStatus('ready');
-      } catch {
-        if (!cancelled) setStatus('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    void load();
   }, []);
 
   async function onDryRun() {
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       const result = await inspectMetadata(
@@ -92,10 +102,13 @@ export function InspectorPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function onInspectLive() {
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       const result = await inspectMetadata(
@@ -111,160 +124,195 @@ export function InspectorPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t('inspector.title')}
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">{t('inspector.intro')}</p>
-        {status === 'loading' ? (
-          <p className="text-sm text-muted-foreground">{t('inspector.bootstrapping')}</p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">{t('inspector.loadError')}</p>
-        ) : null}
-      </header>
+      <PageHeader
+        title={t('inspector.title')}
+        description={t('inspector.intro')}
+      />
 
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-sm">
-          <span>{t('inspector.idLabel')}</span>
-          <input
-            className="rounded-md border border-input bg-background px-3 py-2"
-            value={publicId}
-            onChange={(event) => setPublicId(event.target.value)}
-          />
-        </label>
-        <Button type="button" onClick={() => void onDryRun()}>
-          {t('inspector.dryRun')}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => void onInspectLive()}>
-          {t('inspector.inspect')}
-        </Button>
-      </div>
+      {status === 'loading' ? (
+        <LoadingState label={t('inspector.bootstrapping')} />
+      ) : null}
 
-      {report ? (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-lg font-medium">{t('inspector.identity')}</h2>
-            <p className="text-sm text-muted-foreground">
-              {report.identity.publicId ?? '—'} · {report.identity.mediaType ?? '—'}
-            </p>
-            <p className="font-mono text-sm">
-              {formatValue(report.identity.matches)}
-            </p>
-            <p className="text-sm">
-              {t('inspector.displayTitle')}: {report.fields.displayTitle ?? '—'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('inspector.timing', { ms: report.timingMs })}
-            </p>
-          </div>
+      {status === 'error' ? (
+        <ErrorState
+          message={t('inspector.loadError')}
+          retryLabel={t('state.retry', { ns: 'common' })}
+          onRetry={() => {
+            void load();
+          }}
+        />
+      ) : null}
 
-          {identity ? (
-            <div className="space-y-2">
-              <h2 className="text-lg font-medium">{t('inspector.graph')}</h2>
-              <p className="font-mono text-sm">{identity.canonicalId}</p>
-              <p className="text-sm text-muted-foreground">
-                {t('inspector.edges')}: {identity.edgeCount}
-              </p>
-              <ul className="space-y-1 text-sm">
-                {identity.edges.slice(0, 8).map((edge) => (
-                  <li key={`${edge.from}->${edge.to}`} className="font-mono">
-                    {edge.from} → {edge.to} · {edge.method} ·{' '}
-                    {Math.round(edge.confidence * 100)}%
-                  </li>
-                ))}
-              </ul>
-              {identity.warnings.length > 0 ? (
-                <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-400">
-                  {identity.warnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
+      {status === 'ready' ? (
+        <>
+          <SectionCard title={t('inspector.queryTitle')}>
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-sm text-[var(--ml-text)]">
+                <span>{t('inspector.idLabel')}</span>
+                <input
+                  className={INPUT_CLASS}
+                  value={publicId}
+                  onChange={(event) => setPublicId(event.target.value)}
+                />
+              </label>
+              <Button
+                type="button"
+                isDisabled={busy}
+                onPress={() => {
+                  void onDryRun();
+                }}
+              >
+                {t('inspector.dryRun')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                isDisabled={busy}
+                onPress={() => {
+                  void onInspectLive();
+                }}
+              >
+                {t('inspector.inspect')}
+              </Button>
+            </div>
+          </SectionCard>
+
+          {report ? (
+            <div className="space-y-6">
+              <SectionCard title={t('inspector.identity')}>
+                <p className="text-sm ml-text-muted">
+                  {report.identity.publicId ?? empty} ·{' '}
+                  {report.identity.mediaType ?? empty}
+                </p>
+                <p className="mt-2 font-mono text-sm text-[var(--ml-text)]">
+                  {formatValue(report.identity.matches)}
+                </p>
+                <p className="mt-2 text-sm text-[var(--ml-text)]">
+                  {t('inspector.displayTitle')}:{' '}
+                  {report.fields.displayTitle ?? empty}
+                </p>
+                <p className="mt-1 text-sm ml-text-muted" role="status">
+                  {t('inspector.timing', { ms: report.timingMs })}
+                </p>
+              </SectionCard>
+
+              {identity ? (
+                <SectionCard title={t('inspector.graph')}>
+                  <p className="font-mono text-sm text-[var(--ml-text)]">
+                    {identity.canonicalId}
+                  </p>
+                  <p className="mt-1 text-sm ml-text-muted">
+                    {t('inspector.edges')}: {identity.edgeCount}
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm text-[var(--ml-text)]">
+                    {identity.edges.slice(0, 8).map((edge) => (
+                      <li key={`${edge.from}->${edge.to}`} className="font-mono">
+                        {edge.from} → {edge.to} · {edge.method} ·{' '}
+                        {Math.round(edge.confidence * 100)}%
+                      </li>
+                    ))}
+                  </ul>
+                  {identity.warnings.length > 0 ? (
+                    <ul
+                      className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400"
+                      role="status"
+                    >
+                      {identity.warnings.map((warning) => (
+                        <li key={warning}>{warning}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </SectionCard>
               ) : null}
+
+              <SectionCard title={t('inspector.fields')}>
+                <ul className="space-y-3">
+                  {FIELD_KEYS.map((key) => {
+                    const field = report.fields[key];
+                    return (
+                      <li
+                        key={key}
+                        className="border-b border-[var(--ml-border)] pb-3 last:border-b-0"
+                      >
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="font-medium text-[var(--ml-text)]">
+                            {t(`inspector.fields.${key}`)}
+                          </span>
+                          <span className="font-mono text-sm text-[var(--ml-text)]">
+                            {formatValue(field.value)}
+                          </span>
+                        </div>
+                        <dl className="mt-1 grid gap-1 text-sm ml-text-muted sm:grid-cols-2">
+                          <div>
+                            {t('inspector.provider')}:{' '}
+                            {field.selectedProvider ?? empty}
+                          </div>
+                          <div>
+                            {t('inspector.confidence')}:{' '}
+                            {Math.round((field.confidence ?? 0) * 100)}%
+                          </div>
+                          <div>
+                            {t('inspector.locale')}:{' '}
+                            {field.selectedLocale ?? field.requestedLocale ?? empty}
+                          </div>
+                          <div>
+                            {t('inspector.fallback')}:{' '}
+                            {field.fallbackUsed
+                              ? t('inspector.yes')
+                              : t('inspector.no')}
+                          </div>
+                          <div className="sm:col-span-2">
+                            {t('inspector.attempted')}:{' '}
+                            {field.attemptedProviders.join(' → ')}
+                          </div>
+                          {field.attempts && field.attempts.length > 0 ? (
+                            <div className="sm:col-span-2">
+                              <p className="mb-1 font-medium text-[var(--ml-text)]">
+                                {t('inspector.attempts')}
+                              </p>
+                              <ol className="list-decimal space-y-1 ps-5 font-mono text-xs">
+                                {field.attempts.map((attempt) => (
+                                  <li key={`${attempt.stepId}-${attempt.index}`}>
+                                    {attempt.provider}
+                                    {attempt.resolvedLocale
+                                      ? ` · ${attempt.resolvedLocale}`
+                                      : ''}{' '}
+                                    — {attempt.status}
+                                    {attempt.reason ? ` (${attempt.reason})` : ''}
+                                  </li>
+                                ))}
+                              </ol>
+                              {field.effectivePlanHash ? (
+                                <p className="mt-1 text-xs">
+                                  {t('inspector.plan')}:{' '}
+                                  <span className="font-mono">
+                                    {field.effectivePlanHash}
+                                  </span>
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
+                          {field.exclusionReason ? (
+                            <div className="sm:col-span-2 text-amber-700 dark:text-amber-400">
+                              {t('inspector.exclusion')}: {field.exclusionReason}
+                            </div>
+                          ) : null}
+                        </dl>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </SectionCard>
             </div>
           ) : null}
-
-          <div className="space-y-3">
-            <h2 className="text-lg font-medium">{t('inspector.fields')}</h2>
-            <ul className="space-y-3">
-              {FIELD_KEYS.map((key) => {
-                const field = report.fields[key];
-                return (
-                  <li key={key} className="border-b border-border/60 pb-3">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <span className="font-medium">
-                        {t(`inspector.fields.${key}`)}
-                      </span>
-                      <span className="font-mono text-sm">
-                        {formatValue(field.value)}
-                      </span>
-                    </div>
-                    <dl className="mt-1 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-                      <div>
-                        {t('inspector.provider')}: {field.selectedProvider ?? '—'}
-                      </div>
-                      <div>
-                        {t('inspector.confidence')}:{' '}
-                        {Math.round((field.confidence ?? 0) * 100)}%
-                      </div>
-                      <div>
-                        {t('inspector.locale')}:{' '}
-                        {field.selectedLocale ?? field.requestedLocale ?? '—'}
-                      </div>
-                      <div>
-                        {t('inspector.fallback')}:{' '}
-                        {field.fallbackUsed
-                          ? t('inspector.yes')
-                          : t('inspector.no')}
-                      </div>
-                      <div className="sm:col-span-2">
-                        {t('inspector.attempted')}:{' '}
-                        {field.attemptedProviders.join(' → ')}
-                      </div>
-                      {field.attempts && field.attempts.length > 0 ? (
-                        <div className="sm:col-span-2">
-                          <p className="mb-1 font-medium text-[var(--ml-text)]">
-                            {t('inspector.attempts')}
-                          </p>
-                          <ol className="list-decimal space-y-1 ps-5 font-mono text-xs">
-                            {field.attempts.map((attempt) => (
-                              <li key={`${attempt.stepId}-${attempt.index}`}>
-                                {attempt.provider}
-                                {attempt.resolvedLocale
-                                  ? ` · ${attempt.resolvedLocale}`
-                                  : ''}{' '}
-                                — {attempt.status}
-                                {attempt.reason ? ` (${attempt.reason})` : ''}
-                              </li>
-                            ))}
-                          </ol>
-                          {field.effectivePlanHash ? (
-                            <p className="mt-1 text-xs">
-                              {t('inspector.plan')}:{' '}
-                              <span className="font-mono">
-                                {field.effectivePlanHash}
-                              </span>
-                            </p>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      {field.exclusionReason ? (
-                        <div className="sm:col-span-2 text-amber-700 dark:text-amber-400">
-                          {t('inspector.exclusion')}: {field.exclusionReason}
-                        </div>
-                      ) : null}
-                    </dl>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
+        </>
       ) : null}
     </section>
   );

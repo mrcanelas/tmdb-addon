@@ -29,7 +29,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | beta.N |
-| Full i18n/RTL layout hardening | **Partial** — shell landmarks; Appearance/Rules/Catalog Studio a11y+i18n; deeper layout audit remains |
+| Full i18n/RTL layout hardening | **Partial** — shell landmarks; Appearance/Rules/Catalog Studio/Sorting/Inspector/Search & AI layered a11y+i18n; deeper RTL layout audit remains |
 | Performance measurement against §34 objectives | Phase M tasks |
 | Security / migration review sign-off | Phase M → N |
 
@@ -38,8 +38,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Task | Status |
 |---|---|
 | Feature freeze for new major modules | Open — minimize new surface |
-| UX review of configure primary pages | Partial — Catalog Studio dialogs + layered layout; remaining pages Open |
-| Accessibility pass | Partial — Catalog Studio accessible rename/tags/group dialogs; shell + Rules + ResolutionChainBuilder |
+| UX review of configure primary pages | Partial — Sorting / Inspector / Search & AI aligned to layered layout; Catalog Studio dialogs done |
+| Accessibility pass | Partial — Advanced-mode pages use PageHeader/SectionCard/live regions; Catalog Studio dialogs |
 | Performance measurement | Open |
 | Migration testing (legacy import fixtures) | Open |
 | Provider reliability / degradation | Open |

@@ -29,6 +29,7 @@
   "overview.modeAdvancedBody": "Advanced mode exposes field-level controls, tracking, corrections, and diagnostics.",
   "overview.importHint": "Legacy TMDB Addon import will create a native MetaLayer configuration without changing your old URL.",
   "state.retry": "Retry",
+  "common.emptyValue": "—",
   "placeholder.body": "This module is scaffolded and not implemented yet.",
   "shell.configNameDefault": "Local configuration",
   "shell.unsavedIdle": "All changes saved",

@@ -2,6 +2,7 @@
   "inspector.title": "Meta Inspector",
   "inspector.intro": "Inspect field-level provenance: which provider won, locale fallbacks, and exclusion reasons.",
   "inspector.idLabel": "Public id (IMDb or TMDB)",
+  "inspector.queryTitle": "Inspect title",
   "inspector.inspect": "Inspect",
   "inspector.dryRun": "Dry-run sample",
   "inspector.loadError": "Could not load inspector from the API.",

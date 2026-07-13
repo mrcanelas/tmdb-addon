@@ -12,6 +12,7 @@
   "searchAi.ranked": "Ranked List",
   "searchAi.rankedPrompt": "Prompt de lista subjetiva",
   "searchAi.rankedRun": "Generar ranked list",
+  "searchAi.proposalTitle": "Propuesta de IA",
   "searchAi.confirmApply": "Confirmar y aplicar propuesta",
   "searchAi.requiresConfirm": "Propuesta lista — se requiere confirmación antes de guardar.",
   "searchAi.applied": "Propuesta aplicada.",

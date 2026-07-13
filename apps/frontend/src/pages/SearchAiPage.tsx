@@ -7,11 +7,19 @@ import {
   runRankedList,
   runSmartDiscovery,
 } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button } from '@metalayer/shared-ui';
+import { PageHeader } from '@/components/metalayer/PageHeader';
+import { SectionCard } from '@/components/metalayer/SectionCard';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
+
+const INPUT_CLASS =
+  'w-full max-w-xl rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 py-2 text-[var(--ml-text)]';
 
 export function SearchAiPage() {
-  const { t } = useTranslation('searchAi');
+  const { t } = useTranslation(['searchAi', 'common']);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState('Fight');
   const [hits, setHits] = useState<string[]>([]);
   const [discoveryPrompt, setDiscoveryPrompt] = useState(
@@ -27,22 +35,22 @@ export function SearchAiPage() {
   const [proposalId, setProposalId] = useState<string | null>(null);
   const [applied, setApplied] = useState(false);
 
+  async function load() {
+    setStatus('loading');
+    try {
+      await ensureStudioSession();
+      setStatus('ready');
+    } catch {
+      setStatus('error');
+    }
+  }
+
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await ensureStudioSession();
-        if (!cancelled) setStatus('ready');
-      } catch {
-        if (!cancelled) setStatus('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    void load();
   }, []);
 
   async function onCombined() {
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       const result = await runCombinedSearch(
@@ -54,10 +62,13 @@ export function SearchAiPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function onDiscovery() {
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       const result = await runSmartDiscovery(
@@ -83,10 +94,13 @@ export function SearchAiPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function onRanked() {
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       const result = await runRankedList(
@@ -102,11 +116,14 @@ export function SearchAiPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function onConfirm() {
     if (!proposalId) return;
+    setBusy(true);
     try {
       const session = await ensureStudioSession();
       await applyAiProposal(session.configId, session.editCredential, {
@@ -118,107 +135,149 @@ export function SearchAiPage() {
       setStatus('ready');
     } catch {
       setStatus('error');
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <section className="space-y-8">
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t('searchAi.title')}
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">{t('searchAi.intro')}</p>
-        {status === 'loading' ? (
-          <p className="text-sm text-muted-foreground">{t('searchAi.bootstrapping')}</p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">
-            {t('searchAi.loadError')}
-          </p>
-        ) : null}
-      </header>
+    <section className="space-y-6">
+      <PageHeader
+        title={t('searchAi.title')}
+        description={t('searchAi.intro')}
+      />
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-medium">{t('searchAi.combined')}</h2>
-        <label className="block space-y-1 text-sm">
-          <span>{t('searchAi.combinedQuery')}</span>
-          <input
-            className="w-full max-w-xl border border-border bg-background px-3 py-2"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-        <Button type="button" onClick={() => void onCombined()}>
-          {t('searchAi.combinedRun')}
-        </Button>
-        {hits.length > 0 ? (
-          <p className="text-sm">
-            {t('searchAi.hits')}: {hits.join(', ')}
-          </p>
-        ) : null}
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-lg font-medium">{t('searchAi.discovery')}</h2>
-        <label className="block space-y-1 text-sm">
-          <span>{t('searchAi.discoveryPrompt')}</span>
-          <textarea
-            className="min-h-20 w-full max-w-xl border border-border bg-background px-3 py-2"
-            value={discoveryPrompt}
-            onChange={(event) => setDiscoveryPrompt(event.target.value)}
-          />
-        </label>
-        <Button type="button" onClick={() => void onDiscovery()}>
-          {t('searchAi.discoveryRun')}
-        </Button>
-        {planSummary ? (
-          <pre className="max-w-xl overflow-auto text-xs text-muted-foreground">
-            {t('searchAi.plan')}
-            {'\n'}
-            {planSummary}
-          </pre>
-        ) : null}
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-lg font-medium">{t('searchAi.ranked')}</h2>
-        <label className="block space-y-1 text-sm">
-          <span>{t('searchAi.rankedPrompt')}</span>
-          <textarea
-            className="min-h-20 w-full max-w-xl border border-border bg-background px-3 py-2"
-            value={rankedPrompt}
-            onChange={(event) => setRankedPrompt(event.target.value)}
-          />
-        </label>
-        <Button type="button" onClick={() => void onRanked()}>
-          {t('searchAi.rankedRun')}
-        </Button>
-        {explanation ? (
-          <p className="text-sm">
-            {t('searchAi.explanation')}: {explanation}
-          </p>
-        ) : null}
-        {unresolved.length > 0 ? (
-          <p className="text-sm">
-            {t('searchAi.unresolved')}: {unresolved.join(', ')}
-          </p>
-        ) : null}
-        {duplicates > 0 ? (
-          <p className="text-sm">
-            {t('searchAi.duplicates')}: {duplicates}
-          </p>
-        ) : null}
-      </div>
-
-      {proposalId ? (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{t('searchAi.requiresConfirm')}</p>
-          <Button type="button" onClick={() => void onConfirm()}>
-            {t('searchAi.confirmApply')}
-          </Button>
-        </div>
+      {status === 'loading' ? (
+        <LoadingState label={t('searchAi.bootstrapping')} />
       ) : null}
-      {applied ? <p className="text-sm">{t('searchAi.applied')}</p> : null}
+
+      {status === 'error' ? (
+        <ErrorState
+          message={t('searchAi.loadError')}
+          retryLabel={t('state.retry', { ns: 'common' })}
+          onRetry={() => {
+            void load();
+          }}
+        />
+      ) : null}
+
+      {status === 'ready' ? (
+        <>
+          <SectionCard title={t('searchAi.combined')}>
+            <div className="space-y-3">
+              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+                <span>{t('searchAi.combinedQuery')}</span>
+                <input
+                  className={INPUT_CLASS}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+              </label>
+              <Button
+                type="button"
+                isDisabled={busy}
+                onPress={() => {
+                  void onCombined();
+                }}
+              >
+                {t('searchAi.combinedRun')}
+              </Button>
+              {hits.length > 0 ? (
+                <p className="text-sm text-[var(--ml-text)]" role="status">
+                  {t('searchAi.hits')}: {hits.join(', ')}
+                </p>
+              ) : null}
+            </div>
+          </SectionCard>
+
+          <SectionCard title={t('searchAi.discovery')}>
+            <div className="space-y-3">
+              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+                <span>{t('searchAi.discoveryPrompt')}</span>
+                <textarea
+                  className={`min-h-20 ${INPUT_CLASS}`}
+                  value={discoveryPrompt}
+                  onChange={(event) => setDiscoveryPrompt(event.target.value)}
+                />
+              </label>
+              <Button
+                type="button"
+                isDisabled={busy}
+                onPress={() => {
+                  void onDiscovery();
+                }}
+              >
+                {t('searchAi.discoveryRun')}
+              </Button>
+              {planSummary ? (
+                <pre className="max-w-xl overflow-auto text-xs ml-text-muted">
+                  {t('searchAi.plan')}
+                  {'\n'}
+                  {planSummary}
+                </pre>
+              ) : null}
+            </div>
+          </SectionCard>
+
+          <SectionCard title={t('searchAi.ranked')}>
+            <div className="space-y-3">
+              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+                <span>{t('searchAi.rankedPrompt')}</span>
+                <textarea
+                  className={`min-h-20 ${INPUT_CLASS}`}
+                  value={rankedPrompt}
+                  onChange={(event) => setRankedPrompt(event.target.value)}
+                />
+              </label>
+              <Button
+                type="button"
+                isDisabled={busy}
+                onPress={() => {
+                  void onRanked();
+                }}
+              >
+                {t('searchAi.rankedRun')}
+              </Button>
+              {explanation ? (
+                <p className="text-sm text-[var(--ml-text)]">
+                  {t('searchAi.explanation')}: {explanation}
+                </p>
+              ) : null}
+              {unresolved.length > 0 ? (
+                <p className="text-sm text-[var(--ml-text)]">
+                  {t('searchAi.unresolved')}: {unresolved.join(', ')}
+                </p>
+              ) : null}
+              {duplicates > 0 ? (
+                <p className="text-sm text-[var(--ml-text)]">
+                  {t('searchAi.duplicates')}: {duplicates}
+                </p>
+              ) : null}
+            </div>
+          </SectionCard>
+
+          {proposalId ? (
+            <SectionCard title={t('searchAi.proposalTitle')}>
+              <p className="mb-3 text-sm ml-text-muted">{t('searchAi.requiresConfirm')}</p>
+              <Button
+                type="button"
+                isDisabled={busy}
+                onPress={() => {
+                  void onConfirm();
+                }}
+              >
+                {t('searchAi.confirmApply')}
+              </Button>
+            </SectionCard>
+          ) : null}
+
+          {applied ? (
+            <p className="text-sm text-[var(--ml-success)]" role="status">
+              {t('searchAi.applied')}
+            </p>
+          ) : null}
+        </>
+      ) : null}
     </section>
   );
 }

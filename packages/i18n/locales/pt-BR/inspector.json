@@ -2,6 +2,7 @@
   "inspector.title": "Meta Inspector",
   "inspector.intro": "Inspecione a procedência campo a campo: qual provedor venceu, fallbacks de idioma e motivos de exclusão.",
   "inspector.idLabel": "Id público (IMDb ou TMDB)",
+  "inspector.queryTitle": "Inspecionar título",
   "inspector.inspect": "Inspecionar",
   "inspector.dryRun": "Amostra offline",
   "inspector.loadError": "Não foi possível carregar o inspector da API.",
