@@ -87,29 +87,32 @@ Flat opaque surfaces for dense/operational content (forms, tables, Catalog Studi
 
 Glass only for floating/temporary UI (top nav, command palette, popovers, modals, drawers, Meta Inspector, unsaved-changes bar).
 
-Dark-first tokens (owned by `@metalayer/shared-ui`):
+Dark-first tokens (owned by `@metalayer/shared-ui`). Neutrals follow Avexado surface/background vocabulary; **Accent stays MetaLayer**.
 
 ```text
-Background: #09090B
-Surface: #111114
-Elevated surface: #18181B
-Border: #27272A
-Primary text: #FAFAFA
-Muted text: #A1A1AA
+Background: #191919
+Surface (cards): #1E1E1E
+Elevated surface: #292524
+Border: #26232A
+Primary text: #F7F6F9
+Muted text: #666666
 Accent: #7C5CFC
 Success: #22C55E
 Warning: #F59E0B
 Error: #EF4444
 Info: #3B82F6
+Radius: 0.75rem
 ```
 
 Glass:
 
 ```text
-Glass background: rgba(17, 17, 20, 0.78)
+Glass background: rgba(30, 30, 30, 0.82)
 Glass border: rgba(255, 255, 255, 0.08)
 Glass blur: 18px
 ```
+
+Light neutrals: background `#F3F4F6`, surface `#FFFFFF`, elevated `#F4F4F5`, border `#E4E4E7`, text `#09090B`, muted `#71717A` — accent remains `#7C5CFC`.
 
 Support light theme via semantic CSS variables. Customize HeroUI through tokens and MetaLayer wrappers — never ship unmodified default HeroUI appearance as the product look.
 

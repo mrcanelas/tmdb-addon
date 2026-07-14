@@ -10,9 +10,6 @@
     min-height: 100dvh;
     color: var(--ml-text);
     background-color: var(--ml-bg);
-    background-image:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--ml-accent) 18%, transparent), transparent 42%),
-      linear-gradient(180deg, var(--ml-bg), color-mix(in srgb, var(--ml-bg) 92%, #000));
   }
 
   #root {
