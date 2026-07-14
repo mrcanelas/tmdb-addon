@@ -4,6 +4,10 @@
  * Brand primary (`--ml-accent`) uses legacy TMDB Addon navy `#0D253F`
  * for continuity with the predecessor product — not Avexado coral.
  * Dark-first; light overrides under [data-theme="light"].
+ *
+ * Semantic aliases below bridge `@heroui/styles` theme variables so
+ * cards (`--surface`), modals/menus (`--overlay`), and `text-muted`
+ * (`--muted` is a *text* color in HeroUI) pick up MetaLayer neutrals.
  */
 :root,
 [data-theme="dark"] {
@@ -33,23 +37,57 @@
   --ml-radius: 0.5rem;
   --ml-font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Map into common semantic aliases used by apps */
+  /* —— HeroUI theme bridge (see @heroui/styles themes/default/variables.css) —— */
   --background: var(--ml-bg);
   --foreground: var(--ml-text);
+
+  --surface: var(--ml-surface);
+  --surface-foreground: var(--ml-text);
+  --surface-secondary: var(--ml-elevated);
+  --surface-secondary-foreground: var(--ml-text);
+  --surface-tertiary: var(--ml-elevated);
+  --surface-tertiary-foreground: var(--ml-text);
+
+  /* Floating UI: modals, menus, popovers, tooltips */
+  --overlay: var(--ml-surface);
+  --overlay-foreground: var(--ml-text);
+
+  /* HeroUI `--muted` is muted *text*, not a surface fill */
+  --muted: var(--ml-muted);
+
+  --default: var(--ml-elevated);
+  --default-foreground: var(--ml-text);
+
+  --accent: var(--ml-accent);
+  --accent-foreground: var(--ml-accent-fg);
+
+  --field-background: var(--ml-elevated);
+  --field-foreground: var(--ml-text);
+  --field-placeholder: var(--ml-muted);
+  --field-border: var(--ml-border);
+
+  --success: var(--ml-success);
+  --warning: var(--ml-warning);
+  --danger: var(--ml-error);
+
+  --border: var(--ml-border);
+  --separator: var(--ml-border);
+  --focus: var(--ml-accent);
+  --link: var(--ml-text);
+  --backdrop: rgba(0, 0, 0, 0.6);
+
+  --radius: var(--ml-radius);
+
+  /* Legacy / app aliases (non-HeroUI) */
   --card: var(--ml-surface);
   --card-foreground: var(--ml-text);
   --primary: var(--ml-accent);
   --primary-foreground: var(--ml-accent-fg);
   --secondary: var(--ml-elevated);
   --secondary-foreground: var(--ml-text);
-  --muted: var(--ml-elevated);
   --muted-foreground: var(--ml-muted);
-  --accent: var(--ml-accent);
-  --accent-foreground: var(--ml-accent-fg);
-  --border: var(--ml-border);
   --input: var(--ml-border);
   --ring: var(--ml-accent);
-  --radius: var(--ml-radius);
 }
 
 [data-theme="light"] {
@@ -69,4 +107,6 @@
 
   --ml-glass-bg: rgba(255, 255, 255, 0.86);
   --ml-glass-border: rgba(9, 9, 11, 0.08);
+
+  --backdrop: rgba(0, 0, 0, 0.5);
 }

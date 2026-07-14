@@ -116,6 +116,8 @@ Light neutrals: background `#F3F4F6`, surface `#FFFFFF`, elevated `#F4F4F5`, bor
 
 Support light theme via semantic CSS variables. Customize HeroUI through tokens and MetaLayer wrappers — never ship unmodified default HeroUI appearance as the product look.
 
+Bridge notes (`packages/shared-ui/src/tokens.css`): HeroUI `--muted` is muted **text** (map to `--ml-muted`); cards use `--surface`; modals/menus/popovers use `--overlay` (map both to `--ml-surface`). Do not map `--muted` to an elevated fill.
+
 ---
 
 ## Global application shell
