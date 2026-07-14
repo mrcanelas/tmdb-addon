@@ -23,6 +23,7 @@ export function OverviewPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const mode = useConfigureUiStore((s) => s.mode);
+  const toggleMode = useConfigureUiStore((s) => s.toggleMode);
   usePageTitleWithReset();
   const empty = t('common.emptyValue');
   const [importOpen, setImportOpen] = useState(false);
@@ -120,17 +121,26 @@ export function OverviewPage() {
           }
         >
           <p className="text-sm ml-text-muted">{t('overview.importHint')}</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-3"
-            onPress={() => {
-              setImportOpen((open) => !open);
-              setFeedback(null);
-            }}
-          >
-            {t('overview.ctaImport')}
-          </Button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onPress={toggleMode}>
+              {t('shell.mode.toggle', {
+                mode:
+                  mode === 'simple'
+                    ? t('shell.mode.advanced')
+                    : t('shell.mode.simple'),
+              })}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onPress={() => {
+                setImportOpen((open) => !open);
+                setFeedback(null);
+              }}
+            >
+              {t('overview.ctaImport')}
+            </Button>
+          </div>
         </SectionCard>
       </div>
 

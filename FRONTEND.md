@@ -47,7 +47,9 @@ Do not use Next.js / Remix for these apps.
 
 Use **HeroUI v3 as the only general-purpose component library**.
 
-Use HeroUI primitives for buttons, inputs, selects, autocomplete, cards, chips, badges, tabs, accordions, dropdowns, popovers, tooltips, modals, drawers, tables, pagination, skeletons, progress, sliders, switches and alerts.
+Use HeroUI primitives for buttons, inputs, selects, autocomplete, cards, chips, badges, tabs, accordions, dropdowns, popovers, tooltips, modals, drawers, tables, pagination, skeletons, progress, sliders, switches, radios, toolbars and alerts.
+
+Prefer `@metalayer/shared-ui` re-exports (`Button`, `Modal`, `Tabs`, `Radio`, `RadioGroup`, `Toolbar`, …). Do not hand-roll equivalent controls with raw `<button>` / custom dialog markup when HeroUI already covers the pattern — customize later via tokens/slots if needed.
 
 Use **Mantine UI only as visual and layout inspiration** for dashboard composition. Do not install Mantine packages.
 

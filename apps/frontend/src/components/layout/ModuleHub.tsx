@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Tabs } from '@metalayer/shared-ui';
 
 export interface ModuleTab {
   to: string;
@@ -7,40 +8,49 @@ export interface ModuleTab {
   end?: boolean;
 }
 
-/** Shared tab rail for Sources / Catalogs / Metas / Review hubs. */
+function resolveSelectedTab(pathname: string, tabs: ModuleTab[]): string {
+  const path = pathname.replace(/\/+$/, '') || '/';
+
+  for (const tab of tabs) {
+    if (!tab.end) continue;
+    if (path === tab.to || path === `${tab.to}/`) return tab.to;
+  }
+
+  const ranked = [...tabs].sort((a, b) => b.to.length - a.to.length);
+  for (const tab of ranked) {
+    if (path === tab.to || path.startsWith(`${tab.to}/`)) return tab.to;
+  }
+
+  return tabs[0]?.to ?? path;
+}
+
+/** Shared tab rail for Sources / Catalogs / Metas / Review hubs (HeroUI Tabs). */
 export function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
+  const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const selectedKey = resolveSelectedTab(location.pathname, tabs);
 
   return (
-    <div
-      role="tablist"
-      className="mb-6 flex flex-wrap gap-1 border-b border-[var(--ml-border)] pb-px"
+    <Tabs
+      className="mb-6 w-full"
+      variant="secondary"
+      selectedKey={selectedKey}
+      onSelectionChange={(key) => {
+        navigate(String(key));
+      }}
     >
-      {tabs.map((tab) => {
-        const active = tab.end
-          ? location.pathname === tab.to ||
-            location.pathname === `${tab.to}/`
-          : location.pathname === tab.to ||
-            location.pathname.startsWith(`${tab.to}/`);
-        return (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.end}
-            role="tab"
-            aria-selected={active}
-            className={cn(
-              '-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors',
-              active
-                ? 'border-[var(--ml-accent)] text-[var(--ml-text)]'
-                : 'border-transparent text-[var(--ml-muted)] hover:text-[var(--ml-text)]',
-            )}
-          >
-            {tab.label}
-          </NavLink>
-        );
-      })}
-    </div>
+      <Tabs.ListContainer>
+        <Tabs.List aria-label={t('hub.tabs.aria')}>
+          {tabs.map((tab) => (
+            <Tabs.Tab key={tab.to} id={tab.to}>
+              {tab.label}
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs.ListContainer>
+    </Tabs>
   );
 }
 

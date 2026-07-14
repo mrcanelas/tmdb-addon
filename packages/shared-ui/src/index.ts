@@ -7,4 +7,18 @@ export {
 } from './theme.js';
 
 /** Re-export common HeroUI primitives for apps that need them directly. */
-export { Input, Spinner, Chip, Card, Tabs, Modal, Drawer } from '@heroui/react';
+export {
+  Input,
+  Spinner,
+  Chip,
+  Card,
+  Tabs,
+  Modal,
+  Drawer,
+  Radio,
+  RadioGroup,
+  ListBox,
+  Toolbar,
+  SearchField,
+  useOverlayState,
+} from '@heroui/react';

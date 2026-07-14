@@ -1,103 +1,136 @@
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@metalayer/shared-ui';
-import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
+import {
+  HiOutlineArrowLeft,
+  HiOutlineArrowRight,
+  HiOutlineLanguage,
+  HiOutlineMagnifyingGlass,
+  HiOutlineMoon,
+  HiOutlineSun,
+} from 'react-icons/hi2';
+import { Button, Toolbar } from '@metalayer/shared-ui';
+import { LanguageModal } from '@/components/layout/LanguageModal';
 import { usePageTitle } from '@/contexts/page-title';
+import { getAdjacentHubPath } from '@/navigation';
 import { useConfigureUiStore } from '@/stores/ui-store';
-import { cn } from '@/lib/utils';
 
-const SHELL_LOCALES = LOCALE_REGISTRY.filter(
-  (locale) => locale.status === 'stable' || locale.status === 'pseudo',
-);
+const CIRCLE_ICON_CLASS = 'rounded-full p-2 border-none hover:bg-black/10';
 
-/** Header pattern from Avexado: large intelligent title + right-side chrome. */
+/** Header: intelligent title + HeroUI circular Language / Search / Theme / Prev / Next. */
 export function AppHeader() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { title, subtitle } = usePageTitle();
-  const mode = useConfigureUiStore((s) => s.mode);
-  const setMode = useConfigureUiStore((s) => s.setMode);
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useConfigureUiStore((s) => s.theme);
   const toggleTheme = useConfigureUiStore((s) => s.toggleTheme);
   const openCommandPalette = useConfigureUiStore((s) => s.openCommandPalette);
+  const mode = useConfigureUiStore((s) => s.mode);
+  const [languageOpen, setLanguageOpen] = useState(false);
+
+  const prevPath = getAdjacentHubPath(location.pathname, mode, -1);
+  const nextPath = getAdjacentHubPath(location.pathname, mode, 1);
 
   return (
-    <div className="flex items-center justify-between p-6 lg:ps-10 lg:pe-14">
-      <div className="flex min-w-0 flex-col">
-        <h1
-          id="page-title"
-          className="hidden truncate text-3xl font-bold text-[var(--ml-text)] lg:block"
-        >
-          {title}
-        </h1>
-        {subtitle ? (
-          <p className="mt-1 hidden text-[var(--ml-muted)] lg:block">
-            {subtitle}
-          </p>
-        ) : null}
-      </div>
+    <>
+      <div className="flex items-center justify-between gap-4 p-6 lg:ps-10 lg:pe-14">
+        <div className="min-w-0 flex-1">
+          <h1
+            id="page-title"
+            className="hidden truncate text-3xl font-bold text-[var(--ml-text)] lg:block"
+          >
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-1 hidden truncate text-[var(--ml-muted)] lg:block">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
 
-      <div className={cn('block lg:hidden')} />
-
-      <div className="flex flex-wrap items-center gap-3">
-        <div
-          className="inline-flex rounded-md border border-[var(--ml-border)] p-0.5"
-          role="group"
-          aria-label={t('shell.mode.aria')}
+        <Toolbar
+          aria-label={t('shell.header.aria')}
+          className="flex shrink-0 items-center gap-2"
         >
           <Button
             type="button"
-            size="sm"
-            variant={mode === 'simple' ? 'primary' : 'quiet'}
-            aria-pressed={mode === 'simple'}
-            onPress={() => setMode('simple')}
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={CIRCLE_ICON_CLASS}
+            aria-label={t('shell.header.language')}
+            aria-haspopup="dialog"
+            aria-expanded={languageOpen}
+            onPress={() => setLanguageOpen(true)}
           >
-            {t('shell.mode.simple')}
+            <HiOutlineLanguage className="size-5" aria-hidden />
           </Button>
+
           <Button
             type="button"
-            size="sm"
-            variant={mode === 'advanced' ? 'primary' : 'quiet'}
-            aria-pressed={mode === 'advanced'}
-            onPress={() => setMode('advanced')}
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={CIRCLE_ICON_CLASS}
+            aria-label={t('shell.header.search')}
+            aria-haspopup="dialog"
+            onPress={openCommandPalette}
           >
-            {t('shell.mode.advanced')}
+            <HiOutlineMagnifyingGlass className="size-5" aria-hidden />
           </Button>
-        </div>
 
-        <Button type="button" size="sm" variant="outline" onPress={openCommandPalette}>
-          {t('shell.commandPalette.trigger')}
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={CIRCLE_ICON_CLASS}
+            aria-label={
+              theme === 'dark' ? t('shell.theme.light') : t('shell.theme.dark')
+            }
+            onPress={toggleTheme}
+          >
+            {theme === 'dark' ? (
+              <HiOutlineSun className="size-5" aria-hidden />
+            ) : (
+              <HiOutlineMoon className="size-5" aria-hidden />
+            )}
+          </Button>
 
-        <div
-          className="hidden flex-wrap gap-1 sm:flex"
-          role="group"
-          aria-label={t('shell.locale.aria')}
-        >
-          {SHELL_LOCALES.filter((locale) => locale.status === 'stable').map(
-            (locale) => (
-              <Button
-                key={locale.id}
-                type="button"
-                size="sm"
-                variant={i18n.language === locale.id ? 'primary' : 'outline'}
-                aria-label={t('shell.locale.switch', {
-                  locale: locale.displayName,
-                })}
-                aria-pressed={i18n.language === locale.id}
-                onPress={() => {
-                  void i18n.changeLanguage(locale.id);
-                  applyDocumentLocale(locale.id);
-                }}
-              >
-                {locale.id}
-              </Button>
-            ),
-          )}
-        </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={CIRCLE_ICON_CLASS}
+            aria-label={t('shell.header.prev')}
+            isDisabled={!prevPath}
+            onPress={() => {
+              if (prevPath) navigate(prevPath);
+            }}
+          >
+            <HiOutlineArrowLeft className="size-5" aria-hidden />
+          </Button>
 
-        <Button type="button" size="sm" variant="outline" onPress={toggleTheme}>
-          {theme === 'dark' ? t('shell.theme.light') : t('shell.theme.dark')}
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={CIRCLE_ICON_CLASS}
+            aria-label={t('shell.header.next')}
+            isDisabled={!nextPath}
+            onPress={() => {
+              if (nextPath) navigate(nextPath);
+            }}
+          >
+            <HiOutlineArrowRight className="size-5" aria-hidden />
+          </Button>
+        </Toolbar>
       </div>
-    </div>
+
+      <LanguageModal isOpen={languageOpen} onOpenChange={setLanguageOpen} />
+    </>
   );
 }

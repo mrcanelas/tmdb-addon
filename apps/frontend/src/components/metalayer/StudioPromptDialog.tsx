@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { Button } from '@metalayer/shared-ui';
-import { trapFocusKeyDown } from '@/lib/focus-trap';
+import { Button, Input, Modal } from '@metalayer/shared-ui';
 
 export interface StudioPromptDialogProps {
   open: boolean;
@@ -26,90 +25,59 @@ export function StudioPromptDialog({
   cancelLabel,
 }: StudioPromptDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
-
-    previousFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-
     const timer = window.setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.select();
     }, 0);
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onCancel();
-        return;
-      }
-      if (dialogRef.current) {
-        trapFocusKeyDown(event, dialogRef.current);
-      }
-    }
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('keydown', onKeyDown);
-      previousFocusRef.current?.focus();
-      previousFocusRef.current = null;
-    };
-  }, [open, onCancel]);
-
-  if (!open) return null;
+    return () => window.clearTimeout(timer);
+  }, [open]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      role="presentation"
-      onMouseDown={onCancel}
+    <Modal.Backdrop
+      isOpen={open}
+      onOpenChange={(next) => {
+        if (!next) onCancel();
+      }}
+      variant="blur"
+      isDismissable
     >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="ml-glass w-full max-w-md rounded-[var(--ml-radius)] p-5 shadow-xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <h2
-          id={titleId}
-          className="text-lg font-semibold tracking-tight text-[var(--ml-text)]"
-        >
-          {title}
-        </h2>
-        <label className="mt-4 grid gap-1 text-sm text-[var(--ml-text)]">
-          <span>{label}</span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                onConfirm();
-              }
-            }}
-            className="h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]"
-          />
-        </label>
-        <div className="mt-4 flex flex-wrap justify-end gap-2">
-          <Button type="button" variant="outline" onPress={onCancel}>
-            {cancelLabel}
-          </Button>
-          <Button type="button" onPress={onConfirm}>
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <Modal.Container size="sm" placement="center">
+        <Modal.Dialog aria-labelledby={titleId}>
+          <Modal.CloseTrigger />
+          <Modal.Header>
+            <Modal.Heading id={titleId}>{title}</Modal.Heading>
+          </Modal.Header>
+          <Modal.Body>
+            <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <span>{label}</span>
+              <Input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    onConfirm();
+                  }
+                }}
+              />
+            </label>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type="button" variant="outline" onPress={onCancel}>
+              {cancelLabel}
+            </Button>
+            <Button type="button" onPress={onConfirm}>
+              {confirmLabel}
+            </Button>
+          </Modal.Footer>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
   );
 }

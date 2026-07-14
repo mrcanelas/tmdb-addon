@@ -85,6 +85,159 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
   },
 ];
 
+/** Default entry path when jumping to a hub via Prev / Next. */
+export const CONFIGURE_HUB_ENTRY: Record<ConfigureModuleId, string> = {
+  home: '/',
+  sources: '/sources',
+  catalogs: '/catalogs/studio',
+  metas: '/metas/fields',
+  profiles: '/profiles',
+  review: '/review/inspector',
+  'save-install': '/save-install',
+};
+
+export interface ConfigureSearchDestination {
+  id: string;
+  path: string;
+  /** Breadcrumb label keys, e.g. Metas → Language */
+  labelKeys: string[];
+  simpleMode: boolean;
+}
+
+/** Flat destinations for the header search modal. */
+export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
+  { id: 'home', path: '/', labelKeys: ['nav.home'], simpleMode: true },
+  {
+    id: 'sources-providers',
+    path: '/sources',
+    labelKeys: ['nav.sources', 'hub.sources.tab.providers'],
+    simpleMode: true,
+  },
+  {
+    id: 'sources-tracking',
+    path: '/sources/tracking',
+    labelKeys: ['nav.sources', 'hub.sources.tab.tracking'],
+    simpleMode: true,
+  },
+  {
+    id: 'sources-search',
+    path: '/sources/search',
+    labelKeys: ['nav.sources', 'hub.sources.tab.search'],
+    simpleMode: true,
+  },
+  {
+    id: 'catalogs-studio',
+    path: '/catalogs/studio',
+    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.studio'],
+    simpleMode: true,
+  },
+  {
+    id: 'catalogs-rules',
+    path: '/catalogs/rules',
+    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.rules'],
+    simpleMode: true,
+  },
+  {
+    id: 'catalogs-order',
+    path: '/catalogs/order',
+    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.order'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-fields',
+    path: '/metas/fields',
+    labelKeys: ['nav.metas', 'hub.metas.tab.fields'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-language',
+    path: '/metas/language',
+    labelKeys: ['nav.metas', 'hub.metas.tab.language'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-appearance',
+    path: '/metas/appearance',
+    labelKeys: ['nav.metas', 'hub.metas.tab.appearance'],
+    simpleMode: true,
+  },
+  {
+    id: 'profiles',
+    path: '/profiles',
+    labelKeys: ['nav.profiles'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-inspector',
+    path: '/review/inspector',
+    labelKeys: ['nav.review', 'hub.review.tab.inspector'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-corrections',
+    path: '/review/corrections',
+    labelKeys: ['nav.review', 'hub.review.tab.corrections'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-diagnostics',
+    path: '/review/diagnostics',
+    labelKeys: ['nav.review', 'hub.review.tab.diagnostics'],
+    simpleMode: false,
+  },
+  {
+    id: 'save-install',
+    path: '/save-install',
+    labelKeys: ['nav.saveInstall'],
+    simpleMode: true,
+  },
+];
+
+function normalizePath(pathname: string): string {
+  if (!pathname || pathname === '/') return '/';
+  return pathname.replace(/\/+$/, '') || '/';
+}
+
+export function matchConfigureHub(pathname: string): ConfigureModuleId {
+  const path = normalizePath(pathname);
+  if (path === '/') return 'home';
+
+  const ranked = CONFIGURE_NAV.filter((item) => item.path !== '/').sort(
+    (a, b) => b.path.length - a.path.length,
+  );
+
+  for (const item of ranked) {
+    if (path === item.path || path.startsWith(`${item.path}/`)) {
+      return item.id;
+    }
+  }
+
+  return 'home';
+}
+
+export function getVisibleConfigureNav(
+  mode: 'simple' | 'advanced',
+): ConfigureNavItem[] {
+  return CONFIGURE_NAV.filter(
+    (item) => mode === 'advanced' || item.simpleMode,
+  );
+}
+
+/** Adjacent hub entry path for header Prev / Next (-1 | 1). */
+export function getAdjacentHubPath(
+  pathname: string,
+  mode: 'simple' | 'advanced',
+  direction: -1 | 1,
+): string | null {
+  const visible = getVisibleConfigureNav(mode);
+  const currentId = matchConfigureHub(pathname);
+  const index = visible.findIndex((item) => item.id === currentId);
+  if (index < 0) return null;
+  const next = visible[index + direction];
+  if (!next) return null;
+  return CONFIGURE_HUB_ENTRY[next.id];
+}
+
 /** Legacy paths kept as redirects for bookmarks and existing links. */
 export const CONFIGURE_LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: '/overview', to: '/' },

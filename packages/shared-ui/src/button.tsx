@@ -21,6 +21,7 @@ type ForwardedAriaProps = Pick<
   | 'aria-haspopup'
   | 'aria-current'
   | 'id'
+  | 'slot'
 >;
 
 export interface ButtonProps extends ForwardedAriaProps {
@@ -57,6 +58,7 @@ export function Button({
   fullWidth,
   isIconOnly,
   id,
+  slot,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
@@ -77,6 +79,7 @@ export function Button({
       fullWidth={fullWidth}
       isIconOnly={isIconOnly}
       id={id}
+      slot={slot}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
