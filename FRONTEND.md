@@ -191,27 +191,20 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 
 ### Configuration (`apps/frontend`, basename `/configure`)
 
+Primary IA: `docs/configure-navigation-contract.md`.
+
 ```text
-/configure
-/configure/onboarding
-/configure/overview   (alias of /configure)
-/configure/sources
-/configure/language-region
-/configure/catalogs          (Catalog Studio; may use /catalog-studio during alpha)
-/configure/rules
-/configure/sorting
-/configure/appearance
-/configure/meta-builder      (UI: Meta Builder — Field Resolution Chains)
-/configure/resolution        (alias of meta-builder)
-/configure/search-ai
-/configure/tracking
-/configure/corrections
-/configure/profiles
-/configure/advanced
+/configure                   (Home)
+/configure/sources           (+ /tracking, /search tabs)
+/configure/catalogs          (+ /studio, /rules, /order)
+/configure/metas             (+ /fields, /language, /appearance)
+/configure/profiles          (Advanced)
+/configure/review            (+ /inspector, /corrections, /diagnostics)
 /configure/save-install
-/configure/diagnostics
-/configure/inspector
 ```
+
+Legacy paths (`/catalog-studio`, `/language-region`, `/inspector`, …) redirect to the hubs above.
+
 
 ### Administration (`apps/dashboard`, basename `/admin`)
 
@@ -240,27 +233,24 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 
 ## Navigation
 
-Advanced mode: Overview, Sources, Language & Region, Catalogs, Rules, Sorting, Appearance, **Meta Builder** (Field Resolution Chains), Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install.
+Canonical contract: `docs/configure-navigation-contract.md`.
 
-Simple mode: Overview, Sources, Language & Region, Catalogs, Rules, Appearance, Save & Install (Meta Builder deep-linked from Appearance when needed).
+Simple mode: Home, Sources, Catalogs, Metas, Save & Install.
 
-Secondary: Diagnostics, Documentation, Donate.
+Advanced mode: Home, Sources, Catalogs, Metas, Profiles, Review, Save & Install.
 
-Configure chrome uses an **icon rail + tooltip** (`react-icons` / Heroicons outline). Docs keep the term Field Resolution Chains; the nav label is **Meta Builder** (`/configure/meta-builder`, alias `/configure/resolution`).
+Former top-level modules (Tracking, Rules, Sorting, Appearance, Language & Region, Search & AI, Corrections, Inspector, Diagnostics/Advanced) live as tabs under the hubs. Field Resolution Chains remain in product docs; UI under Metas → Fields may still say Meta Builder.
 
 ## Module notes
 
-| Module | UI responsibility |
+| Hub / area | UI responsibility |
 |---|---|
-| Overview | Health summary, next steps, legacy import |
-| Sources | Cards for **instance-available** providers only; connect/test; diagnostics drawer |
-| Language & Region | Interface / metadata locales, regions, title modes; live preview |
-| Catalog Studio | Catalog **definitions** order, Home/Hidden, preview drawer — not an editorial title library |
-| Rules / Sorting | Builders + estimate / explanation panels |
-| Appearance | Stremio-like display + deep-links into Resolution Chains |
-| **Meta Builder** | Primary FRC editor — field rail × plan pane (`AGENTS.md` §10.17). Nav label; docs may still say Field Resolution Chains. |
-| Search & AI | Discovery / ranked list with confirm+diff |
-| Tracking / Corrections / Profiles / Advanced | Per product docs |
+| Home | Health summary, next steps, legacy import |
+| Sources | Providers; Tracking and Search & AI as tabs |
+| Catalogs | Studio, Rules, Order (sorting) as tabs |
+| Metas | Fields (FRC / Meta Builder), Language, Appearance |
+| Profiles | Profile overrides (Advanced) |
+| Review | Inspector, Corrections, Diagnostics/Advanced |
 | Save & Install | Validation, revisions, manifest URL, install |
 
 ### Resolution Chains layout

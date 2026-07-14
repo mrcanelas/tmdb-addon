@@ -2,7 +2,7 @@
 
 MetaLayer Correction Hub (`@metalayer/corrections`) resolves metadata and identity problems that automatic provider mapping cannot solve.
 
-Configure UI: `/configure/corrections`. Canonical types and states: `AGENTS.md` §19. Phase J exit: `docs/phase-j-exit.md`. Identity precedence: `docs/identity-graph.md`.
+Configure UI: `/configure/review/corrections` (hub: `/configure/review`). Canonical types and states: `AGENTS.md` §19. Phase J exit: `docs/phase-j-exit.md`. Identity precedence: `docs/identity-graph.md`.
 
 ## Precedence
 
@@ -18,7 +18,7 @@ Corrections must not include stream URLs or copyrighted media links. Validation 
 
 ## Operator flow
 
-1. Open `/configure/corrections` with edit credential.
+1. Open `/configure/review/corrections` with edit credential.
 2. Browse community catalog and local overrides for the configuration.
 3. Create a local correction (target identity + type + payload + reason).
 4. Preview impact for a target before relying on it in meta routes.

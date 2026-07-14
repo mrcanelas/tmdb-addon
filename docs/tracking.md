@@ -2,7 +2,7 @@
 
 Tracking integrations expose watch state (and related previews) without breaking metadata when tokens fail or expire.
 
-Package: `@metalayer/tracking`. Configure UI: `/configure/tracking`.
+Package: `@metalayer/tracking`. Configure UI: `/configure/sources/tracking` (hub: `/configure/sources`).
 
 Canonical product rules: `AGENTS.md` §20. Phase foundations: `docs/phase-i-exit.md`. OAuth redirect allowlist: `docs/security.md`. Deployment refresh jobs: `docs/deployment.md`.
 
@@ -19,7 +19,7 @@ Connection states include `not_configured`, `connected`, `expired`, `invalid`, `
 
 ## Operator flow
 
-1. Open `/configure/tracking` for a persistent configuration.
+1. Open `/configure/sources/tracking` for a persistent configuration.
 2. Connect a provider (browser OAuth). Redirect URIs must pass the instance allowlist (`docs/security.md`).
 3. Tokens are stored in the Secret Vault as `oauth_access` / `oauth_refresh` kinds — never in the manifest URL or default exports.
 4. Use **Preview hide watched** to validate hide-watched against live (or degraded) watch state.

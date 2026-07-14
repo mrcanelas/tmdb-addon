@@ -8,8 +8,8 @@ Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phas
 
 | Surface | Role |
 |---|---|
-| `/configure/resolution` | **Primary** chain editor (target Advanced module) — field list × plan pane; wireframe `docs/ux-mocks/configure-resolution.html` |
-| `/configure/appearance` | Display settings + temporary/bridge host for `ResolutionChainBuilder` until Resolution Chains page ships |
+| `/configure/metas/fields` | **Primary** chain editor under Metas (Field Resolution Chains / Meta Builder) |
+| `/configure/metas/appearance` | Display settings (+ current bridge host for `ResolutionChainBuilder` where needed) |
 
 ## Fields editable in beta configure (current bridge)
 
@@ -27,7 +27,7 @@ Provider pickers must only offer **instance-available** providers (`AGENTS.md` �
 
 ## Operator flow
 
-1. Prefer `/configure/resolution` once shipped; until then open `/configure/appearance` for a persistent configuration (edit credential required).
+1. Prefer `/configure/metas/fields`; display polish lives under `/configure/metas/appearance` (edit credential required).
 2. Adjust strategy (language-first / provider-first), provider order, and locale order per field.
 3. Save — writes `PUT /api/v1/configurations/:configId/resolution`.
 4. Verify selection and fallbacks in Meta Inspector (`AGENTS.md` §11) for a sample title.

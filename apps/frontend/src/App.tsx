@@ -16,29 +16,15 @@ import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { ProfilesPage } from '@/pages/ProfilesPage';
 import { AdvancedPage } from '@/pages/AdvancedPage';
 import { TrackingOAuthCallbackPage } from '@/pages/TrackingOAuthCallbackPage';
-import { PlaceholderPage } from '@/pages/PlaceholderPage';
-import { CONFIGURE_NAV } from '@/navigation';
+import {
+  CatalogsHubPage,
+  MetasHubPage,
+  ReviewHubPage,
+  SourcesHubPage,
+} from '@/pages/HubPages';
+import { CONFIGURE_LEGACY_REDIRECTS } from '@/navigation';
 import { AppQueryProvider } from '@/providers/AppQueryProvider';
 import { useConfigureUiStore } from '@/stores/ui-store';
-
-const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
-  (item) =>
-    item.path !== '/' &&
-    item.path !== '/sources' &&
-    item.path !== '/catalog-studio' &&
-    item.path !== '/rules' &&
-    item.path !== '/sorting' &&
-    item.path !== '/inspector' &&
-    item.path !== '/tracking' &&
-    item.path !== '/corrections' &&
-    item.path !== '/search-ai' &&
-    item.path !== '/appearance' &&
-    item.path !== '/meta-builder' &&
-    item.path !== '/language-region' &&
-    item.path !== '/save-install' &&
-    item.path !== '/profiles' &&
-    item.path !== '/advanced',
-);
 
 function ThemedApp() {
   const theme = useConfigureUiStore((s) => s.theme);
@@ -50,35 +36,51 @@ function ThemedApp() {
           <Routes>
             <Route element={<AppShell />}>
               <Route index element={<OverviewPage />} />
-              <Route path="overview" element={<OverviewPage />} />
-              <Route path="sources" element={<SourcesPage />} />
-              <Route path="catalog-studio" element={<CatalogStudioPage />} />
-              <Route path="catalogs" element={<CatalogStudioPage />} />
-              <Route path="rules" element={<RulesPage />} />
-              <Route path="sorting" element={<SortingPage />} />
-              <Route path="inspector" element={<InspectorPage />} />
-              <Route path="tracking" element={<TrackingPage />} />
-              <Route path="corrections" element={<CorrectionsPage />} />
-              <Route path="search-ai" element={<SearchAiPage />} />
-              <Route path="appearance" element={<AppearancePage />} />
-              {/* Meta Builder (FRC) — hosted by Appearance until dedicated page ships */}
-              <Route path="meta-builder" element={<AppearancePage />} />
-              <Route path="resolution" element={<AppearancePage />} />
-              <Route path="language-region" element={<LanguageRegionPage />} />
-              <Route path="save-install" element={<SaveInstallPage />} />
+
+              <Route path="sources" element={<SourcesHubPage />}>
+                <Route index element={<SourcesPage />} />
+                <Route path="tracking" element={<TrackingPage />} />
+                <Route path="search" element={<SearchAiPage />} />
+              </Route>
+
+              <Route path="catalogs" element={<CatalogsHubPage />}>
+                <Route index element={<Navigate to="studio" replace />} />
+                <Route path="studio" element={<CatalogStudioPage />} />
+                <Route path="rules" element={<RulesPage />} />
+                <Route path="order" element={<SortingPage />} />
+              </Route>
+
+              <Route path="metas" element={<MetasHubPage />}>
+                <Route index element={<Navigate to="fields" replace />} />
+                <Route path="fields" element={<AppearancePage />} />
+                <Route path="language" element={<LanguageRegionPage />} />
+                <Route path="appearance" element={<AppearancePage />} />
+              </Route>
+
               <Route path="profiles" element={<ProfilesPage />} />
-              <Route path="advanced" element={<AdvancedPage />} />
+
+              <Route path="review" element={<ReviewHubPage />}>
+                <Route index element={<Navigate to="inspector" replace />} />
+                <Route path="inspector" element={<InspectorPage />} />
+                <Route path="corrections" element={<CorrectionsPage />} />
+                <Route path="diagnostics" element={<AdvancedPage />} />
+              </Route>
+
+              <Route path="save-install" element={<SaveInstallPage />} />
+
               <Route
                 path="oauth/:provider/callback"
                 element={<TrackingOAuthCallbackPage />}
               />
-              {PLACEHOLDER_ROUTES.map((item) => (
+
+              {CONFIGURE_LEGACY_REDIRECTS.map((item) => (
                 <Route
-                  key={item.id}
-                  path={item.path.slice(1)}
-                  element={<PlaceholderPage titleKey={item.labelKey} />}
+                  key={item.from}
+                  path={item.from.slice(1)}
+                  element={<Navigate to={item.to} replace />}
                 />
               ))}
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

@@ -93,12 +93,12 @@ export function OverviewPage() {
             <Link to="/sources">
               <Button type="button">{t('overview.ctaSources')}</Button>
             </Link>
-            <Link to="/language-region">
+            <Link to="/metas/language">
               <Button type="button" variant="outline">
                 {t('overview.ctaLanguage')}
               </Button>
             </Link>
-            <Link to="/catalog-studio">
+            <Link to="/catalogs/studio">
               <Button type="button" variant="outline">
                 {t('overview.ctaCatalogStudio')}
               </Button>

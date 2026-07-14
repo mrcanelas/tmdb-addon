@@ -2,7 +2,7 @@
 
 Catalog Studio manages movie, series, and anime catalogs in one ordered workspace. Manifest catalog order must match Studio order.
 
-Package: `@metalayer/catalogs`. Configure UI: `/configure/catalogs`.
+Package: `@metalayer/catalogs`. Configure UI: `/configure/catalogs/studio` (hub: `/configure/catalogs`).
 
 Canonical model, merge modes, and rotation: `AGENTS.md` §12. Phase D exit: `docs/phase-d-exit.md`. Public Stremio routes: `docs/routes.md`.
 
@@ -16,7 +16,7 @@ Canonical model, merge modes, and rotation: `AGENTS.md` §12. Phase D exit: `doc
 
 ## Operator flow
 
-1. Open `/configure/catalogs` with a persistent configuration and edit credential.
+1. Open `/configure/catalogs/studio` with a persistent configuration and edit credential.
 2. Reorder, rename, enable/disable, show/hide on Home, tag, duplicate, or delete instances.
    Duplicate accepts a localized `copySuffix` (configure sends `catalogs.copySuffix`) and optional `locale` for the base display name.
 3. Create **merged** or **rotated** catalogs from existing instance IDs when needed.

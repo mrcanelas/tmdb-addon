@@ -1,6 +1,6 @@
 # Language and region
 
-Configure UI for `LocalizationPreferences` lives at `/configure/language-region`.
+Configure UI for `LocalizationPreferences` lives at `/configure/metas/language` (hub: `/configure/metas`).
 
 Canonical product rules: `AGENTS.md` §9. Interface catalogs: `docs/internationalization.md`. RTL checklist: `docs/rtl-layout-checklist.md`.
 
@@ -26,7 +26,7 @@ Configure selectors show **localized labels** via `@metalayer/i18n` `Intl.Displa
 
 Persist via `GET/PUT /api/v1/configurations/:configId/localization` (edit credential required). Profiles may override a subset (`docs/profiles.md`).
 
-Field-level provider/locale chains are edited in **Resolution Chains** (`/configure/resolution`, `docs/field-resolution-chains.md`); this page sets global locale/region defaults those plans consume.
+Field-level provider/locale chains are edited under **Metas → Fields** (`/configure/metas/fields`, `docs/field-resolution-chains.md`); this page sets global locale/region defaults those plans consume.
 
 ## Cache impact
 

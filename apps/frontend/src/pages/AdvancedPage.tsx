@@ -221,7 +221,7 @@ export function AdvancedPage() {
                 </li>
                 <li>
                   <Link
-                    to="/inspector"
+                    to="/review/inspector"
                     className="text-[var(--ml-accent)] underline-offset-2 hover:underline"
                   >
                     {t('advanced.diagnostics.linkInspector')}

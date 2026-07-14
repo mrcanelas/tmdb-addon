@@ -22,7 +22,7 @@ Diagnostic `warnings` use **stable codes** (`INCOMPLETE_GRAPH`, `LOW_CONFIDENCE_
 
 ## Operator flow
 
-1. Set Stremio public-ID preference under `/configure/advanced` (`GET/PUT .../identity`).
+1. Set Stremio public-ID preference under `/configure/review/diagnostics` (`GET/PUT .../identity`).
 2. Resolve a title via Meta Inspector or `POST .../identity/resolve` (provider ids and/or public id).
 3. Inspect matches, confidence, and evidence (`POST .../identity/diagnostics`).
 4. Apply local corrections when automatic mapping is wrong (`docs/corrections.md`).

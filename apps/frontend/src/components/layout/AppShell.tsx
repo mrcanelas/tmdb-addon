@@ -29,7 +29,7 @@ export function AppShell() {
             id="page-main"
             tabIndex={-1}
             aria-labelledby="page-title"
-            className="flex-1 overflow-y-auto bg-[var(--ml-bg)] px-4 pb-28 sm:px-4 sm:pb-4 md:pb-4"
+            className="flex-1 overflow-y-auto bg-[var(--ml-bg)] px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
           >
             <Outlet />
           </main>

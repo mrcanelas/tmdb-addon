@@ -2,7 +2,7 @@
 
 MetaLayer Search & AI (`@metalayer/search-ai`) turns natural language and multi-provider search into **validated** configuration changes.
 
-Configure UI: `/configure/search-ai`. Canonical product rules: `AGENTS.md` §16. Phase K exit: `docs/phase-k-exit.md`.
+Configure UI: `/configure/sources/search` (hub: `/configure/sources`). Canonical product rules: `AGENTS.md` §16. Phase K exit: `docs/phase-k-exit.md`.
 
 ## Safety rules
 
@@ -21,7 +21,7 @@ Configure UI: `/configure/search-ai`. Canonical product rules: `AGENTS.md` §16.
 
 ## Operator flow
 
-1. Open `/configure/search-ai` (draft session bootstraps if needed).
+1. Open `/configure/sources/search` (draft session bootstraps if needed).
 2. Run combined search, Smart Discovery, or Ranked List.
 3. Review interpreted intent, warnings/assumptions, unresolved titles, and duplicates.
    Warnings, assumptions, intent, and proposal **summaries** use **stable codes** (`DUPLICATE_DROPPED`, `NO_EXTERNAL_IDS`, `SMART_DISCOVERY_SUMMARY`, …). The configure UI translates them via `searchAi.warning.*` / `searchAi.assumption.*` / `searchAi.intent.*` / `searchAi.summary.*`.
@@ -41,7 +41,7 @@ All routes require `X-MetaLayer-Edit-Credential`. Base path: `/api/v1`.
 
 ## Configure UI notes
 
-`/configure/search-ai` localizes demo seed prompts and result lines via the `searchAi` namespace (no hard-coded English seeds or label+value concatenation).
+`/configure/sources/search` localizes demo seed prompts and result lines via the `searchAi` namespace (no hard-coded English seeds or label+value concatenation).
 
 ## Still follow-up
 

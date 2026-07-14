@@ -12,9 +12,9 @@ Implementation status: **shipped** as Phase F2 (schema/API/builder MVP) — see 
 
 | Surface | Fields / behavior |
 |---|---|
-| **Resolution Chains** (`/configure/resolution`) | **Primary editor (target):** left rail of Stremio [meta](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/meta.md)-mapped fields → plan editor (strategy, providers, locales, Prev/Next). Independent layout pattern — do not copy third-party source. |
-| Appearance (`/configure/appearance`) | Display-oriented; may deep-link into Resolution Chains. Current beta still hosts `ResolutionChainBuilder` for title / description / poster / background / logo until the dedicated page ships. |
-| Meta Inspector | Attempt list with localized status/reason codes (`inspector.resolutionWarning.*`) |
+| **Metas → Fields** (`/configure/metas/fields`) | Primary Field Resolution Chains editor (Meta Builder UI label). |
+| **Metas → Appearance** (`/configure/metas/appearance`) | Display-oriented; may host or deep-link into chain builders. |
+| Meta Inspector (`/configure/review/inspector`) | Attempt list with localized status/reason codes (`inspector.resolutionWarning.*`) |
 | Management API | `GET/PUT .../resolution`, `POST .../compile`, `POST .../test` |
 
 Only **instance-available** providers appear in pickers (`AGENTS.md` §8.1.1, ADR 0008).
@@ -23,7 +23,7 @@ Artwork defaults include `no-language` for poster/background. See `docs/appearan
 
 ## Still follow-up
 
-- Ship dedicated `/configure/resolution` page from the HTML wireframe (field rail UX)
+- Deeper field-rail UX under `/configure/metas/fields` (wireframe `docs/ux-mocks/configure-resolution.html`)
 - Profile / catalog / title inheritance UI
 - Explicit advanced step editor and episode-order chains
 - Dedicated artwork ranking polish beyond default `no-language` chains
