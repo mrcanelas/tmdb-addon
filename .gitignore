@@ -114,3 +114,6 @@ dist
 
 # VS-Code folder
 .vscode
+
+# Local UX HTML mocks (iterate privately; not ready for the tree)
+docs/ux-mocks/

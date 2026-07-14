@@ -31,7 +31,9 @@ export default defineConfig({
         target: 'http://127.0.0.1:1338',
         changeOrigin: true,
       },
-      '/c': {
+      // Must be `/c/` (trailing slash). A bare `/c` also matches `/configure`
+      // and steals the Rsbuild SPA, serving the API static dist (or 504).
+      '/c/': {
         target: 'http://127.0.0.1:1338',
         changeOrigin: true,
       },

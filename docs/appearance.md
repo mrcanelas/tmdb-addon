@@ -8,7 +8,7 @@ Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phas
 
 | Surface | Role |
 |---|---|
-| `/configure/resolution` | **Primary** chain editor (target Advanced module) — field list × plan pane |
+| `/configure/resolution` | **Primary** chain editor (target Advanced module) — field list × plan pane; wireframe `docs/ux-mocks/configure-resolution.html` |
 | `/configure/appearance` | Display settings + temporary/bridge host for `ResolutionChainBuilder` until Resolution Chains page ships |
 
 ## Fields editable in beta configure (current bridge)

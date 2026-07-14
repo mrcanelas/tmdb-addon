@@ -6,7 +6,7 @@ Canonical product and architecture requirements for Field Resolution Chains live
 AGENTS.md §10 — Metadata Resolver and Field Resolution Chains
 ```
 
-Implementation status: **shipped** as Phase F2 (schema/API/builder MVP) — see `docs/phase-f-exit.md`. UX redesign (dedicated page) is planned — see `FRONTEND.md` and `docs/phase-m-exit.md`.
+Implementation status: **shipped** as Phase F2 (schema/API/builder MVP) — see `docs/phase-f-exit.md`. UX redesign (dedicated page) is planned — wireframe `docs/ux-mocks/configure-resolution.html`, contract `FRONTEND.md`, decisions `docs/ux-mocks/DECISIONS.md`.
 
 ## Configure surfaces
 
@@ -23,7 +23,7 @@ Artwork defaults include `no-language` for poster/background. See `docs/appearan
 
 ## Still follow-up
 
-- Ship dedicated `/configure/resolution` page (field rail UX)
+- Ship dedicated `/configure/resolution` page from the HTML wireframe (field rail UX)
 - Profile / catalog / title inheritance UI
 - Explicit advanced step editor and episode-order chains
 - Dedicated artwork ranking polish beyond default `no-language` chains

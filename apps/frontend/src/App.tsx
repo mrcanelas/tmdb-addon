@@ -33,6 +33,7 @@ const PLACEHOLDER_ROUTES = CONFIGURE_NAV.filter(
     item.path !== '/corrections' &&
     item.path !== '/search-ai' &&
     item.path !== '/appearance' &&
+    item.path !== '/meta-builder' &&
     item.path !== '/language-region' &&
     item.path !== '/save-install' &&
     item.path !== '/profiles' &&
@@ -60,6 +61,9 @@ function ThemedApp() {
               <Route path="corrections" element={<CorrectionsPage />} />
               <Route path="search-ai" element={<SearchAiPage />} />
               <Route path="appearance" element={<AppearancePage />} />
+              {/* Meta Builder (FRC) — hosted by Appearance until dedicated page ships */}
+              <Route path="meta-builder" element={<AppearancePage />} />
+              <Route path="resolution" element={<AppearancePage />} />
               <Route path="language-region" element={<LanguageRegionPage />} />
               <Route path="save-install" element={<SaveInstallPage />} />
               <Route path="profiles" element={<ProfilesPage />} />

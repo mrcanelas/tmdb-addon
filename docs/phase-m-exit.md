@@ -39,7 +39,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Task | Status |
 |---|---|
 | Feature freeze for new major modules | **Done** — no new major product modules until Phase N; beta work limited to hardening, i18n/a11y, docs, and maintainer-approved deferral closure |
-| UX review of configure primary pages | Partial — shell/core redesign planned (`FRONTEND.md`); FRC dedicated page documented; residual polish Open |
+| UX review of configure primary pages | **Planning closed (MVP)** — `docs/ux-mocks/` v1 + `DECISIONS.md`; React shell redesign gated (`FRONTEND.md`) |
 | Accessibility pass | **Done (MVP)** — live regions; token colors; skip-to-main; dialog/command-palette focus trap; PageHeader landmarks |
 | Performance measurement | **Done (MVP)** — `pnpm test:perf`; see `docs/performance.md` |
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
@@ -47,8 +47,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Security review | **Done (MVP)** — see `docs/security.md` (OAuth `state` CSRF + redact paths + allowlist) |
 | Translation review (en-US / pt-BR / es-ES) | **Done (MVP)** — attention codes + dashboard pseudo labels; per-locale catalog rename editor still Open (non-blocking) |
 | Pseudo-locale and RTL layout review | **Done (MVP)** — checklist signed 2026-07-13; `rtl-physical-css` guard + pseudo smoke tests |
-| Field Resolution Chains review | Partial — product UX contracted (dedicated page + Stremio meta field rail); implementation of new page Open |
-| Documentation pass | Partial — ADR 0008 + Admin-first + FRC/FRONTEND/AGENTS updates landed; UX mockups / deeper §36 still Open |
+| Field Resolution Chains review | **Planning closed (MVP)** — dedicated page wireframe + Stremio meta field rail; React page Open |
+| Documentation pass | Partial — ADR 0008 + Admin-first + FRC/FRONTEND/AGENTS + UX decisions/mocks; deeper §36 still Open |
 
 ## Exit criterion
 

@@ -123,6 +123,8 @@ Sidebar | Main content | Optional inspector / detail panel (~340px)
 
 Suggested widths: Sidebar 260px · Inspector 340px · Main fluid.
 
+Canonical planning wireframes: `docs/ux-mocks/` (**v1 baseline** — see `docs/ux-mocks/DECISIONS.md`).
+
 Do not cage the shell in a narrow `max-w-6xl` marketing column. Operational modules need full useful width with responsive gutters.
 
 Mobile: navigation drawer/sheet, sticky Save / Install bar, accessible alternatives to drag-and-drop.
@@ -137,9 +139,43 @@ Mobile: navigation drawer/sheet, sticky Save / Install bar, accessible alternati
 - theme;
 - account / overflow menu (stub allowed until auth exists).
 
+### Configure sidebar
+
+- Fixed module nav (Simple subset vs full Advanced list).
+- **Save & Install** separated (divider) and easy to reach.
+- Footer: product version / health footprint (e.g. `1.0.0-beta.1`).
+
+### Inspector / drawer pattern
+
+Use the optional third column (or mobile sheet) for:
+
+| Module | Inspector content |
+|---|---|
+| Sources | Provider diagnostics (health, latency, test) — never plaintext secrets |
+| Language & Region | Live metadata / formatting preview + effective locale order bridge |
+| Catalog Studio | Selected **catalog definition** preview (not an editorial title library) |
+| Rules | Estimate / explanation panel (when that mock ships) |
+| Save & Install | Prefer sticky bottom bar for validate / save / install |
+
+Dense tables stay opaque (no glass). Glass only for floating chrome (`FRONTEND.md` glass rules).
+
 ### Admin chrome
 
 Visible **Admin** badge. Operator token gate. Instance version / health footprint in sidebar footer.
+
+### Page checklist (planning)
+
+| Page | Wireframe | React redesign |
+|---|---|---|
+| Overview | `configure-overview.html` | Gated |
+| Sources | `configure-sources.html` | Gated |
+| Language & Region | `configure-language-region.html` | Gated |
+| Catalog Studio | `configure-catalog-studio.html` | Gated |
+| Resolution Chains | `configure-resolution.html` | Gated (dedicated route) |
+| Save & Install | `configure-save-install.html` | Gated |
+| Rules | Deferred | — |
+
+**Out until ADR:** editorial title grids (confidence / bulk re-resolve).
 
 ---
 
@@ -165,7 +201,8 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 /configure/rules
 /configure/sorting
 /configure/appearance
-/configure/resolution        (Field Resolution Chains — primary chain editor)
+/configure/meta-builder      (UI: Meta Builder — Field Resolution Chains)
+/configure/resolution        (alias of meta-builder)
 /configure/search-ai
 /configure/tracking
 /configure/corrections
@@ -203,11 +240,13 @@ Semantic keys only (`t('catalog.actions.create')`). No hard-coded user-facing st
 
 ## Navigation
 
-Advanced mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Sorting, Appearance, **Resolution Chains**, Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install.
+Advanced mode: Overview, Sources, Language & Region, Catalogs, Rules, Sorting, Appearance, **Meta Builder** (Field Resolution Chains), Search & AI, Tracking, Corrections, Profiles, Advanced, Save & Install.
 
-Simple mode: Overview, Sources, Language & Region, Catalog Studio, Rules, Appearance, Save & Install (Resolution Chains reduced or deep-linked from Appearance).
+Simple mode: Overview, Sources, Language & Region, Catalogs, Rules, Appearance, Save & Install (Meta Builder deep-linked from Appearance when needed).
 
 Secondary: Diagnostics, Documentation, Donate.
+
+Configure chrome uses an **icon rail + tooltip** (`react-icons` / Heroicons outline). Docs keep the term Field Resolution Chains; the nav label is **Meta Builder** (`/configure/meta-builder`, alias `/configure/resolution`).
 
 ## Module notes
 
@@ -219,7 +258,7 @@ Secondary: Diagnostics, Documentation, Donate.
 | Catalog Studio | Catalog **definitions** order, Home/Hidden, preview drawer — not an editorial title library |
 | Rules / Sorting | Builders + estimate / explanation panels |
 | Appearance | Stremio-like display + deep-links into Resolution Chains |
-| **Resolution Chains** | Primary FRC editor — field rail × plan pane (`AGENTS.md` §10.17) |
+| **Meta Builder** | Primary FRC editor — field rail × plan pane (`AGENTS.md` §10.17). Nav label; docs may still say Field Resolution Chains. |
 | Search & AI | Discovery / ranked list with confirm+diff |
 | Tracking / Corrections / Profiles / Advanced | Per product docs |
 | Save & Install | Validation, revisions, manifest URL, install |
@@ -330,7 +369,7 @@ Additional UI rules:
 6. Admin Providers + Settings (Admin-first instance config)
 7. Accessibility + responsive + visual consistency passes
 
-UX mockups (planning artifacts) may live under `docs/ux-mocks/` before React implementation.
+UX mockups (planning artifacts) live under `docs/ux-mocks/` (**v1** shell + core pages + FRC wireframe). Decisions: `docs/ux-mocks/DECISIONS.md`. Open `docs/ux-mocks/index.html` before implementing the React shell redesign — AppShell/AppHeader work stays **gated** until that packet is accepted.
 
 ---
 
