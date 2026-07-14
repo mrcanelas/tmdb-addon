@@ -1,7 +1,8 @@
 /**
  * MetaLayer Layered Minimalism tokens (FRONTEND.md / ADR 0007).
  * Surface / text / border neutrals aligned with Avexado globals.css.
- * Brand primary (`--ml-accent`) stays MetaLayer purple — not Avexado coral/primary.
+ * Brand primary (`--ml-accent`) uses legacy TMDB Addon navy `#0D253F`
+ * for continuity with the predecessor product — not Avexado coral.
  * Dark-first; light overrides under [data-theme="light"].
  */
 :root,
@@ -16,8 +17,8 @@
   --ml-text: #f7f6f9;
   --ml-muted: #666666;
 
-  /* MetaLayer brand — unchanged */
-  --ml-accent: #7c5cfc;
+  /* Legacy TMDB Addon accent (continuity with predecessor) */
+  --ml-accent: #0d253f;
   --ml-accent-fg: #fafafa;
 
   --ml-success: #22c55e;
@@ -62,8 +63,8 @@
   --ml-text: #09090b;
   --ml-muted: #71717a;
 
-  /* MetaLayer brand — unchanged */
-  --ml-accent: #7c5cfc;
+  /* Legacy TMDB Addon accent (continuity with predecessor) */
+  --ml-accent: #0d253f;
   --ml-accent-fg: #fafafa;
 
   --ml-glass-bg: rgba(255, 255, 255, 0.86);
