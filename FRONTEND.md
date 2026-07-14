@@ -101,7 +101,7 @@ Success: #22C55E
 Warning: #F59E0B
 Error: #EF4444
 Info: #3B82F6
-Radius: 0.75rem
+Radius: 0.5rem
 ```
 
 Glass:
