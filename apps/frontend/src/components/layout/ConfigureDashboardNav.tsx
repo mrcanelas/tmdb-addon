@@ -1,9 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CONFIGURE_NAV } from '@/navigation';
+import { CONFIGURE_NAV, type ConfigureNavItem } from '@/navigation';
 import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
+
+function NavItemVisual({
+  item,
+  label,
+  minimized,
+  isActive,
+}: {
+  item: ConfigureNavItem;
+  label: string;
+  minimized: boolean;
+  isActive: boolean;
+}) {
+  const Icon = item.Icon;
+  return (
+    <div
+      data-active={isActive || undefined}
+      className="group ms-3 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150"
+    >
+      <Icon className="h-6 w-6 shrink-0 text-white" aria-hidden />
+      <span
+        className={cn(
+          'me-2 overflow-hidden truncate whitespace-nowrap text-white transition-all duration-300 ease-in-out',
+          minimized ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100',
+        )}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
 
 /** Nav list + animated active rail — structure matches Avexado DashboardNav. */
 export function ConfigureDashboardNav() {
@@ -11,6 +41,7 @@ export function ConfigureDashboardNav() {
   const location = useLocation();
   const minimized = useConfigureUiStore((s) => s.sidebarMinimized);
   const mode = useConfigureUiStore((s) => s.mode);
+  const openDonateModal = useConfigureUiStore((s) => s.openDonateModal);
   const navRef = useRef<HTMLElement | null>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 });
 
@@ -66,32 +97,56 @@ export function ConfigureDashboardNav() {
     };
   }, [location.pathname, minimized, topItems.length, bottomItems.length]);
 
-  const renderItem = (item: (typeof CONFIGURE_NAV)[number]) => {
-    const Icon = item.Icon;
+  const renderItem = (item: ConfigureNavItem) => {
     const label = t(item.labelKey);
+
+    if (item.kind === 'external' && item.href) {
+      return (
+        <div className="relative" key={item.id}>
+          <a href={item.href} aria-label={label}>
+            <NavItemVisual
+              item={item}
+              label={label}
+              minimized={minimized}
+              isActive={false}
+            />
+          </a>
+        </div>
+      );
+    }
+
+    if (item.kind === 'action' && item.action === 'donate') {
+      return (
+        <div className="relative" key={item.id}>
+          <button
+            type="button"
+            aria-label={label}
+            className="w-full appearance-none border-0 bg-transparent p-0 text-start"
+            onClick={openDonateModal}
+          >
+            <NavItemVisual
+              item={item}
+              label={label}
+              minimized={minimized}
+              isActive={false}
+            />
+          </button>
+        </div>
+      );
+    }
+
+    if (item.kind !== 'route' || !item.path) return null;
 
     return (
       <div className="relative" key={item.id}>
         <NavLink to={item.path} end={item.path === '/'} aria-label={label}>
           {({ isActive }) => (
-            <div
-              data-active={isActive}
-              className={cn(
-                'group ms-3 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150',
-              )}
-            >
-              <Icon className="h-6 w-6 text-white" aria-hidden />
-              <span
-                className={cn(
-                  'me-2 overflow-hidden truncate whitespace-nowrap text-white transition-all duration-300 ease-in-out',
-                  minimized
-                    ? 'max-w-0 opacity-0'
-                    : 'max-w-[200px] opacity-100',
-                )}
-              >
-                {label}
-              </span>
-            </div>
+            <NavItemVisual
+              item={item}
+              label={label}
+              minimized={minimized}
+              isActive={isActive}
+            />
           )}
         </NavLink>
       </div>
@@ -113,7 +168,7 @@ export function ConfigureDashboardNav() {
         }}
       />
       <div className="grid items-start gap-2">{topItems.map(renderItem)}</div>
-      <div className="mb-4 grid items-start gap-2">
+      <div className="mb-2 grid items-start gap-2">
         {bottomItems.map(renderItem)}
       </div>
     </nav>

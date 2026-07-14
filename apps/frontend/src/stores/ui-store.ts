@@ -9,6 +9,7 @@ interface ConfigureUiState {
   theme: MetaLayerTheme;
   sidebarMinimized: boolean;
   commandPaletteOpen: boolean;
+  donateModalOpen: boolean;
   setMode: (mode: ConfigureUiMode) => void;
   toggleMode: () => void;
   setTheme: (theme: MetaLayerTheme) => void;
@@ -18,6 +19,9 @@ interface ConfigureUiState {
   setCommandPaletteOpen: (open: boolean) => void;
   openCommandPalette: () => void;
   closeCommandPalette: () => void;
+  setDonateModalOpen: (open: boolean) => void;
+  openDonateModal: () => void;
+  closeDonateModal: () => void;
 }
 
 export const useConfigureUiStore = create<ConfigureUiState>()(
@@ -27,6 +31,7 @@ export const useConfigureUiStore = create<ConfigureUiState>()(
       theme: 'dark',
       sidebarMinimized: true,
       commandPaletteOpen: false,
+      donateModalOpen: false,
       setMode: (mode) => set({ mode }),
       toggleMode: () =>
         set({ mode: get().mode === 'simple' ? 'advanced' : 'simple' }),
@@ -39,6 +44,9 @@ export const useConfigureUiStore = create<ConfigureUiState>()(
       setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
       openCommandPalette: () => set({ commandPaletteOpen: true }),
       closeCommandPalette: () => set({ commandPaletteOpen: false }),
+      setDonateModalOpen: (donateModalOpen) => set({ donateModalOpen }),
+      openDonateModal: () => set({ donateModalOpen: true }),
+      closeDonateModal: () => set({ donateModalOpen: false }),
     }),
     {
       name: 'metalayer.configure.ui',

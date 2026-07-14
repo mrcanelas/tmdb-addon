@@ -1,8 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Blocks,
+  Heart,
   House,
   Layers,
+  LayoutDashboard,
   LibraryBig,
   SaveAll,
   ScanSearch,
@@ -20,16 +22,31 @@ export type ConfigureModuleId =
   | 'metas'
   | 'profiles'
   | 'review'
-  | 'save-install';
+  | 'save-install'
+  | 'dashboard'
+  | 'donate';
+
+export type ConfigureNavKind = 'route' | 'external' | 'action';
 
 export interface ConfigureNavItem {
   id: ConfigureModuleId;
-  path: string;
   labelKey: string;
+  /**
+   * When false, item is Advanced-only.
+   * Utility items (`dashboard`, `donate`) stay visible in Simple for now —
+   * Dashboard can flip to `false` later if Simple should hide operator entry.
+   */
   simpleMode: boolean;
-  /** Separates primary modules from Save & Install in the rail */
+  /** Separates primary modules from bottom utilities in the rail */
   pinnedBottom?: boolean;
   Icon: LucideIcon;
+  kind: ConfigureNavKind;
+  /** Internal React Router path (kind: route) */
+  path?: string;
+  /** Absolute or host path outside configure (kind: external) */
+  href?: string;
+  /** App action id (kind: action) */
+  action?: 'donate';
 }
 
 export const CONFIGURE_NAV: ConfigureNavItem[] = [
@@ -38,6 +55,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/',
     labelKey: 'nav.home',
     simpleMode: true,
+    kind: 'route',
     Icon: House,
   },
   {
@@ -45,6 +63,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/sources',
     labelKey: 'nav.sources',
     simpleMode: true,
+    kind: 'route',
     Icon: Blocks,
   },
   {
@@ -52,6 +71,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/catalogs',
     labelKey: 'nav.catalogs',
     simpleMode: true,
+    kind: 'route',
     Icon: LibraryBig,
   },
   {
@@ -59,6 +79,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/metas',
     labelKey: 'nav.metas',
     simpleMode: true,
+    kind: 'route',
     Icon: Layers,
   },
   {
@@ -66,6 +87,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/profiles',
     labelKey: 'nav.profiles',
     simpleMode: false,
+    kind: 'route',
     Icon: UsersRound,
   },
   {
@@ -73,6 +95,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/review',
     labelKey: 'nav.review',
     simpleMode: false,
+    kind: 'route',
     Icon: ScanSearch,
   },
   {
@@ -80,13 +103,47 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/save-install',
     labelKey: 'nav.saveInstall',
     simpleMode: true,
-    pinnedBottom: true,
+    kind: 'route',
     Icon: SaveAll,
+  },
+  {
+    id: 'dashboard',
+    href: '/admin/',
+    labelKey: 'nav.dashboard',
+    simpleMode: true,
+    pinnedBottom: true,
+    kind: 'external',
+    Icon: LayoutDashboard,
+  },
+  {
+    id: 'donate',
+    labelKey: 'nav.donate',
+    simpleMode: true,
+    pinnedBottom: true,
+    kind: 'action',
+    action: 'donate',
+    Icon: Heart,
   },
 ];
 
+/** Public donation destinations (independent implementation — not AIOStreams code). */
+export const DONATE_OPTIONS = [
+  {
+    id: 'github-sponsors',
+    labelKey: 'donate.githubSponsors',
+    href: 'https://github.com/sponsors/mrcanelas',
+    Icon: Heart,
+  },
+  {
+    id: 'kofi',
+    labelKey: 'donate.kofi',
+    href: 'https://ko-fi.com/mrcanelas',
+    Icon: Heart,
+  },
+] as const;
+
 /** Default entry path when jumping to a hub via Prev / Next. */
-export const CONFIGURE_HUB_ENTRY: Record<ConfigureModuleId, string> = {
+export const CONFIGURE_HUB_ENTRY: Partial<Record<ConfigureModuleId, string>> = {
   home: '/',
   sources: '/sources',
   catalogs: '/catalogs/studio',
@@ -202,12 +259,13 @@ export function matchConfigureHub(pathname: string): ConfigureModuleId {
   const path = normalizePath(pathname);
   if (path === '/') return 'home';
 
-  const ranked = CONFIGURE_NAV.filter((item) => item.path !== '/').sort(
-    (a, b) => b.path.length - a.path.length,
-  );
+  const ranked = CONFIGURE_NAV.filter(
+    (item) => item.kind === 'route' && item.path && item.path !== '/',
+  ).sort((a, b) => (b.path?.length ?? 0) - (a.path?.length ?? 0));
 
   for (const item of ranked) {
-    if (path === item.path || path.startsWith(`${item.path}/`)) {
+    const itemPath = item.path!;
+    if (path === itemPath || path.startsWith(`${itemPath}/`)) {
       return item.id;
     }
   }
@@ -223,19 +281,26 @@ export function getVisibleConfigureNav(
   );
 }
 
+/** Route hubs only — used by header Prev / Next. */
+export function getConfigureRouteNav(
+  mode: 'simple' | 'advanced',
+): ConfigureNavItem[] {
+  return getVisibleConfigureNav(mode).filter((item) => item.kind === 'route');
+}
+
 /** Adjacent hub entry path for header Prev / Next (-1 | 1). */
 export function getAdjacentHubPath(
   pathname: string,
   mode: 'simple' | 'advanced',
   direction: -1 | 1,
 ): string | null {
-  const visible = getVisibleConfigureNav(mode);
+  const visible = getConfigureRouteNav(mode);
   const currentId = matchConfigureHub(pathname);
   const index = visible.findIndex((item) => item.id === currentId);
   if (index < 0) return null;
   const next = visible[index + direction];
-  if (!next) return null;
-  return CONFIGURE_HUB_ENTRY[next.id];
+  if (!next?.path) return null;
+  return CONFIGURE_HUB_ENTRY[next.id] ?? next.path;
 }
 
 /** Legacy paths kept as redirects for bookmarks and existing links. */

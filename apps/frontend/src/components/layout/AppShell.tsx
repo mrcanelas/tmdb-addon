@@ -4,11 +4,15 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { ConfigureMobileNav } from '@/components/layout/ConfigureMobileNav';
 import { ConfigureSidebar } from '@/components/layout/ConfigureSidebar';
+import { DonateModal } from '@/components/layout/DonateModal';
 import { PageTitleProvider } from '@/contexts/page-title';
+import { useConfigureUiStore } from '@/stores/ui-store';
 
 /** Shell layout aligned with Avexado dashboard: floating sidebar + title header. */
 export function AppShell() {
   const { t } = useTranslation();
+  const donateOpen = useConfigureUiStore((s) => s.donateModalOpen);
+  const setDonateOpen = useConfigureUiStore((s) => s.setDonateModalOpen);
 
   return (
     <PageTitleProvider displayName={t('shell.greeting.visitor')}>
@@ -36,6 +40,7 @@ export function AppShell() {
         </div>
 
         <CommandPalette />
+        <DonateModal isOpen={donateOpen} onOpenChange={setDonateOpen} />
       </div>
     </PageTitleProvider>
   );

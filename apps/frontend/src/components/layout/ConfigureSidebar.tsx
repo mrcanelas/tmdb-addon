@@ -76,7 +76,7 @@ export function ConfigureSidebar() {
           </Link>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-1 px-0 pt-12 pb-4">
+        <div className="min-h-0 flex-1 space-y-1 px-0 pt-12 pb-2">
           <ConfigureDashboardNav />
         </div>
       </nav>
