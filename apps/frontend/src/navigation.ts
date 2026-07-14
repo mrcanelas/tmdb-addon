@@ -6,7 +6,7 @@ import {
   Layers,
   LayoutDashboard,
   LibraryBig,
-  SaveAll,
+  Save,
   ScanSearch,
   UsersRound,
 } from 'lucide-react';
@@ -104,7 +104,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     labelKey: 'nav.saveInstall',
     simpleMode: true,
     kind: 'route',
-    Icon: SaveAll,
+    Icon: Save,
   },
   {
     id: 'dashboard',

@@ -20,5 +20,6 @@ export {
   ListBox,
   Toolbar,
   SearchField,
+  Tooltip,
   useOverlayState,
 } from '@heroui/react';

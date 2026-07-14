@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Tooltip } from '@metalayer/shared-ui';
 import { CONFIGURE_NAV, type ConfigureNavItem } from '@/navigation';
 import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
@@ -32,6 +33,27 @@ function NavItemVisual({
         {label}
       </span>
     </div>
+  );
+}
+
+/** Show labels to the right of icon-only items when the rail is collapsed. */
+function NavItemTooltip({
+  label,
+  minimized,
+  children,
+}: {
+  label: string;
+  minimized: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip delay={0} closeDelay={0} isDisabled={!minimized}>
+      <Tooltip.Trigger className="block w-full">{children}</Tooltip.Trigger>
+      <Tooltip.Content placement="right" offset={10} showArrow>
+        <Tooltip.Arrow />
+        {label}
+      </Tooltip.Content>
+    </Tooltip>
   );
 }
 
@@ -103,14 +125,16 @@ export function ConfigureDashboardNav() {
     if (item.kind === 'external' && item.href) {
       return (
         <div className="relative" key={item.id}>
-          <a href={item.href} aria-label={label}>
-            <NavItemVisual
-              item={item}
-              label={label}
-              minimized={minimized}
-              isActive={false}
-            />
-          </a>
+          <NavItemTooltip label={label} minimized={minimized}>
+            <a href={item.href} aria-label={label}>
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={false}
+              />
+            </a>
+          </NavItemTooltip>
         </div>
       );
     }
@@ -118,19 +142,21 @@ export function ConfigureDashboardNav() {
     if (item.kind === 'action' && item.action === 'donate') {
       return (
         <div className="relative" key={item.id}>
-          <button
-            type="button"
-            aria-label={label}
-            className="w-full appearance-none border-0 bg-transparent p-0 text-start"
-            onClick={openDonateModal}
-          >
-            <NavItemVisual
-              item={item}
-              label={label}
-              minimized={minimized}
-              isActive={false}
-            />
-          </button>
+          <NavItemTooltip label={label} minimized={minimized}>
+            <button
+              type="button"
+              aria-label={label}
+              className="w-full appearance-none border-0 bg-transparent p-0 text-start"
+              onClick={openDonateModal}
+            >
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={false}
+              />
+            </button>
+          </NavItemTooltip>
         </div>
       );
     }
@@ -139,16 +165,18 @@ export function ConfigureDashboardNav() {
 
     return (
       <div className="relative" key={item.id}>
-        <NavLink to={item.path} end={item.path === '/'} aria-label={label}>
-          {({ isActive }) => (
-            <NavItemVisual
-              item={item}
-              label={label}
-              minimized={minimized}
-              isActive={isActive}
-            />
-          )}
-        </NavLink>
+        <NavItemTooltip label={label} minimized={minimized}>
+          <NavLink to={item.path} end={item.path === '/'} aria-label={label}>
+            {({ isActive }) => (
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={isActive}
+              />
+            )}
+          </NavLink>
+        </NavItemTooltip>
       </div>
     );
   };
