@@ -11,8 +11,8 @@ import {
   type LegacyImportReportView,
 } from '@/lib/api';
 import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
-import { PageHeader } from '@/components/metalayer/PageHeader';
 import { SectionCard } from '@/components/metalayer/SectionCard';
+import { usePageTitleWithReset } from '@/contexts/page-title';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
 const TEXTAREA_CLASS =
@@ -23,6 +23,7 @@ export function OverviewPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const mode = useConfigureUiStore((s) => s.mode);
+  usePageTitleWithReset();
   const empty = t('common.emptyValue');
   const [importOpen, setImportOpen] = useState(false);
   const [legacyRaw, setLegacyRaw] = useState('');
@@ -81,7 +82,7 @@ export function OverviewPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader title={t('nav.overview')} description={t('overview.body')} />
+      <p className="max-w-2xl text-[var(--ml-muted)] lg:hidden">{t('overview.body')}</p>
 
       <div className="grid gap-4 md:grid-cols-2">
         <SectionCard

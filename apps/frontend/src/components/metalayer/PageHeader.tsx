@@ -1,5 +1,10 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { usePageTitle } from '@/contexts/page-title';
 
+/**
+ * Bridges page copy into the shell intelligent title (Avexado pattern).
+ * The visible H1 lives in AppHeader — PageHeader only syncs context + actions.
+ */
 export function PageHeader({
   title,
   description,
@@ -11,24 +16,17 @@ export function PageHeader({
   actions?: ReactNode;
   titleId?: string;
 }) {
-  const descriptionId = description ? `${titleId}-description` : undefined;
+  const { setTitle } = usePageTitle();
+
+  useEffect(() => {
+    setTitle(title, description);
+  }, [title, description, setTitle]);
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="min-w-0 max-w-2xl space-y-2">
-        <h1
-          id={titleId}
-          className="text-3xl font-semibold tracking-tight text-[var(--ml-text)]"
-          aria-describedby={descriptionId}
-        >
-          {title}
-        </h1>
-        {description ? (
-          <p id={descriptionId} className="ml-text-muted">
-            {description}
-          </p>
-        ) : null}
-      </div>
+    <div className="mb-6 flex flex-wrap items-start justify-end gap-4">
+      <h1 id={titleId} className="sr-only">
+        {title}
+      </h1>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
   );
