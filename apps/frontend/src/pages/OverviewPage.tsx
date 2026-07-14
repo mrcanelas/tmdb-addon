@@ -12,7 +12,7 @@ import {
 } from '@/lib/api';
 import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { SectionCard } from '@/components/metalayer/SectionCard';
-import { usePageTitleWithReset } from '@/contexts/page-title';
+import { PageHeader } from '@/components/metalayer/PageHeader';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
 const TEXTAREA_CLASS =
@@ -24,7 +24,6 @@ export function OverviewPage() {
   const queryClient = useQueryClient();
   const mode = useConfigureUiStore((s) => s.mode);
   const toggleMode = useConfigureUiStore((s) => s.toggleMode);
-  usePageTitleWithReset();
   const empty = t('common.emptyValue');
   const [importOpen, setImportOpen] = useState(false);
   const [legacyRaw, setLegacyRaw] = useState('');
@@ -83,7 +82,13 @@ export function OverviewPage() {
 
   return (
     <section className="space-y-6">
-      <p className="max-w-2xl text-[var(--ml-muted)] lg:hidden">{t('overview.body')}</p>
+      <PageHeader
+        title={t('common.appName')}
+        description={t('common.tagline')}
+      />
+      <p className="max-w-2xl text-[var(--ml-muted)] lg:hidden">
+        {t('common.tagline')}
+      </p>
 
       <div className="grid gap-4 md:grid-cols-2">
         <SectionCard
