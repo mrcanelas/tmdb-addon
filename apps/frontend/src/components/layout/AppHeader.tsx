@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  HiOutlineArrowLeft,
-  HiOutlineArrowRight,
-  HiOutlineLanguage,
-  HiOutlineMagnifyingGlass,
-  HiOutlineMoon,
-  HiOutlineSun,
-} from 'react-icons/hi2';
+  ArrowLeft,
+  ArrowRight,
+  Languages,
+  Moon,
+  Search,
+  Sun,
+} from 'lucide-react';
 import { Button, Toolbar } from '@metalayer/shared-ui';
 import { LanguageModal } from '@/components/layout/LanguageModal';
 import { usePageTitle } from '@/contexts/page-title';
@@ -64,7 +64,7 @@ export function AppHeader() {
             aria-expanded={languageOpen}
             onPress={() => setLanguageOpen(true)}
           >
-            <HiOutlineLanguage className="size-5" aria-hidden />
+            <Languages className="size-5" aria-hidden />
           </Button>
 
           <Button
@@ -77,7 +77,7 @@ export function AppHeader() {
             aria-haspopup="dialog"
             onPress={openCommandPalette}
           >
-            <HiOutlineMagnifyingGlass className="size-5" aria-hidden />
+            <Search className="size-5" aria-hidden />
           </Button>
 
           <Button
@@ -92,9 +92,9 @@ export function AppHeader() {
             onPress={toggleTheme}
           >
             {theme === 'dark' ? (
-              <HiOutlineSun className="size-5" aria-hidden />
+              <Sun className="size-5" aria-hidden />
             ) : (
-              <HiOutlineMoon className="size-5" aria-hidden />
+              <Moon className="size-5" aria-hidden />
             )}
           </Button>
 
@@ -110,7 +110,7 @@ export function AppHeader() {
               if (prevPath) navigate(prevPath);
             }}
           >
-            <HiOutlineArrowLeft className="size-5" aria-hidden />
+            <ArrowLeft className="size-5" aria-hidden />
           </Button>
 
           <Button
@@ -125,7 +125,7 @@ export function AppHeader() {
               if (nextPath) navigate(nextPath);
             }}
           >
-            <HiOutlineArrowRight className="size-5" aria-hidden />
+            <ArrowRight className="size-5" aria-hidden />
           </Button>
         </Toolbar>
       </div>

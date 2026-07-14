@@ -305,9 +305,6 @@ importers:
       react-i18next:
         specifier: ^15.5.2
         version: 15.7.4(i18next@25.10.10(typescript@5.9.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
-      react-icons:
-        specifier: ^5.7.0
-        version: 5.7.0(react@19.2.7)
       react-router-dom:
         specifier: ^6.30.0
         version: 6.30.4(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -4248,11 +4245,6 @@ packages:
         optional: true
       typescript:
         optional: true
-
-  react-icons@5.7.0:
-    resolution: {integrity: sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==}
-    peerDependencies:
-      react: '*'
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -8539,10 +8531,6 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.7(react@19.2.7)
       typescript: 5.9.3
-
-  react-icons@5.7.0(react@19.2.7):
-    dependencies:
-      react: 19.2.7
 
   react-is@16.13.1: {}
 

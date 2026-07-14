@@ -1,13 +1,13 @@
-import type { IconType } from 'react-icons';
+import type { LucideIcon } from 'lucide-react';
 import {
-  HiOutlineArrowDownTray,
-  HiOutlineBuildingLibrary,
-  HiOutlineCubeTransparent,
-  HiOutlineHome,
-  HiOutlineRectangleStack,
-  HiOutlineClipboardDocumentCheck,
-  HiOutlineUsers,
-} from 'react-icons/hi2';
+  Blocks,
+  House,
+  Layers,
+  LibraryBig,
+  SaveAll,
+  ScanSearch,
+  UsersRound,
+} from 'lucide-react';
 
 /**
  * Primary configure destinations (`docs/configure-navigation-contract.md`).
@@ -29,7 +29,7 @@ export interface ConfigureNavItem {
   simpleMode: boolean;
   /** Separates primary modules from Save & Install in the rail */
   pinnedBottom?: boolean;
-  Icon: IconType;
+  Icon: LucideIcon;
 }
 
 export const CONFIGURE_NAV: ConfigureNavItem[] = [
@@ -38,42 +38,42 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     path: '/',
     labelKey: 'nav.home',
     simpleMode: true,
-    Icon: HiOutlineHome,
+    Icon: House,
   },
   {
     id: 'sources',
     path: '/sources',
     labelKey: 'nav.sources',
     simpleMode: true,
-    Icon: HiOutlineBuildingLibrary,
+    Icon: Blocks,
   },
   {
     id: 'catalogs',
     path: '/catalogs',
     labelKey: 'nav.catalogs',
     simpleMode: true,
-    Icon: HiOutlineRectangleStack,
+    Icon: LibraryBig,
   },
   {
     id: 'metas',
     path: '/metas',
     labelKey: 'nav.metas',
     simpleMode: true,
-    Icon: HiOutlineCubeTransparent,
+    Icon: Layers,
   },
   {
     id: 'profiles',
     path: '/profiles',
     labelKey: 'nav.profiles',
     simpleMode: false,
-    Icon: HiOutlineUsers,
+    Icon: UsersRound,
   },
   {
     id: 'review',
     path: '/review',
     labelKey: 'nav.review',
     simpleMode: false,
-    Icon: HiOutlineClipboardDocumentCheck,
+    Icon: ScanSearch,
   },
   {
     id: 'save-install',
@@ -81,7 +81,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     labelKey: 'nav.saveInstall',
     simpleMode: true,
     pinnedBottom: true,
-    Icon: HiOutlineArrowDownTray,
+    Icon: SaveAll,
   },
 ];
 

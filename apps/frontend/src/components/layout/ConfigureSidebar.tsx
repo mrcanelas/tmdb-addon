@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LuChevronLeft } from 'react-icons/lu';
+import { ChevronLeft } from 'lucide-react';
 import { ConfigureDashboardNav } from '@/components/layout/ConfigureDashboardNav';
 import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
@@ -28,9 +28,9 @@ export function ConfigureSidebar() {
           !minimized ? 'w-60' : 'w-[72px]',
         )}
       >
-        <LuChevronLeft
+        <ChevronLeft
           className={cn(
-            'absolute -end-3 top-20 z-10 cursor-pointer rounded-full bg-white text-2xl text-black shadow-lg transition-transform duration-700 ease-in-out',
+            'absolute -end-3 top-20 z-10 size-6 cursor-pointer rounded-full bg-white p-0.5 text-black shadow-lg transition-transform duration-700 ease-in-out',
             minimized && 'rotate-180',
           )}
           aria-label={

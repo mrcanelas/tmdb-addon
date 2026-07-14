@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { Languages } from 'lucide-react';
 import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import {
   Button,
@@ -6,7 +6,7 @@ import {
   Radio,
   RadioGroup,
 } from '@metalayer/shared-ui';
-import { HiOutlineLanguage } from 'react-icons/hi2';
+import { useTranslation } from 'react-i18next';
 
 const UI_LOCALES = LOCALE_REGISTRY.filter(
   (locale) => locale.status === 'stable',
@@ -33,7 +33,7 @@ export function LanguageModal({
           <Modal.CloseTrigger />
           <Modal.Header>
             <Modal.Icon className="bg-default text-foreground">
-              <HiOutlineLanguage className="size-5" aria-hidden />
+              <Languages className="size-5" aria-hidden />
             </Modal.Icon>
             <Modal.Heading>{t('shell.languageModal.title')}</Modal.Heading>
           </Modal.Header>
