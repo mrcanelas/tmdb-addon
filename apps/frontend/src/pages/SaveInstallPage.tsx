@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@metalayer/shared-ui';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -19,6 +19,7 @@ function stremioInstallUrl(httpUrl: string): string {
 
 export function SaveInstallPage() {
   const { t } = useTranslation(['saveInstall', 'common']);
+  usePageHeader(t('saveInstall.title'), t('saveInstall.intro'));
   const sessionQuery = useStudioSessionQuery();
   const [copyState, setCopyState] = useState<'idle' | 'ok' | 'error'>('idle');
 
@@ -38,11 +39,6 @@ export function SaveInstallPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('saveInstall.title')}
-        description={t('saveInstall.intro')}
-      />
-
       {sessionQuery.isLoading ? (
         <LoadingState label={t('saveInstall.loading')} />
       ) : null}

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTrackingCallbackMutation } from '@/api/hooks/use-tracking';
 import type { TrackingOAuthProvider } from '@/lib/api';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
@@ -37,6 +37,10 @@ export function TrackingOAuthCallbackPage() {
       : 'trakt'
   ) as TrackingOAuthProvider;
   const brand = brandLabel(provider);
+  usePageHeader(
+    t('tracking.oauth.title', { provider: brand }),
+    t('tracking.oauth.intro', { provider: brand }),
+  );
   const callbackMutation = useTrackingCallbackMutation(provider);
   const [done, setDone] = useState(false);
 
@@ -66,10 +70,6 @@ export function TrackingOAuthCallbackPage() {
 
   return (
     <section className="space-y-6 p-6">
-      <PageHeader
-        title={t('tracking.oauth.title', { provider: brand })}
-        description={t('tracking.oauth.intro', { provider: brand })}
-      />
       {invalidProvider ? (
         <ErrorState message={t('tracking.oauth.error', { provider: brand })} />
       ) : null}

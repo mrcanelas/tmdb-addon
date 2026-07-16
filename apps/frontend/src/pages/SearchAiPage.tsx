@@ -8,7 +8,7 @@ import {
   runSmartDiscovery,
 } from '@/lib/api';
 import { Button } from '@metalayer/shared-ui';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -23,6 +23,7 @@ type SearchAiNotice = {
 
 export function SearchAiPage() {
   const { t } = useTranslation(['searchAi', 'common']);
+  usePageHeader(t('searchAi.title'), t('searchAi.intro'));
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -185,11 +186,6 @@ export function SearchAiPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('searchAi.title')}
-        description={t('searchAi.intro')}
-      />
-
       {status === 'loading' ? (
         <LoadingState label={t('searchAi.bootstrapping')} />
       ) : null}

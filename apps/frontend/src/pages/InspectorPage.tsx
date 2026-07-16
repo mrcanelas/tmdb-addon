@@ -7,7 +7,7 @@ import {
   type MetaInspectorReport,
 } from '@/lib/api';
 import { Button } from '@metalayer/shared-ui';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -91,6 +91,7 @@ const INPUT_CLASS =
 
 export function InspectorPage() {
   const { t } = useTranslation(['inspector', 'common']);
+  usePageHeader(t('inspector.title'), t('inspector.intro'));
   const [publicId, setPublicId] = useState('tt0137523');
   const [report, setReport] = useState<MetaInspectorReport | null>(null);
   const [identity, setIdentity] = useState<IdentityDiagnosticsView | null>(null);
@@ -168,11 +169,6 @@ export function InspectorPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('inspector.title')}
-        description={t('inspector.intro')}
-      />
-
       {status === 'loading' ? (
         <LoadingState label={t('inspector.bootstrapping')} />
       ) : null}

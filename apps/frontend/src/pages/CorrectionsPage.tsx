@@ -8,7 +8,8 @@ import {
   usePreviewCorrectionsMutation,
 } from '@/api/hooks/use-corrections';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { PageActions } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -21,6 +22,7 @@ type Feedback =
 
 export function CorrectionsPage() {
   const { t } = useTranslation(['corrections', 'common']);
+  usePageHeader(t('corrections.title'), t('corrections.intro'));
   const sessionQuery = useStudioSessionQuery();
   const correctionsQuery = useCorrectionsQuery();
   const createMutation = useCreateLocalCorrectionMutation();
@@ -82,33 +84,27 @@ export function CorrectionsPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('corrections.title')}
-        description={t('corrections.intro')}
-        actions={
-          <>
-            <Button
-              type="button"
-              onPress={() => {
-                void onCreate();
-              }}
-              isDisabled={bootstrapping || createMutation.isPending}
-            >
-              {t('corrections.addLocal')}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onPress={() => {
-                void onPreview();
-              }}
-              isDisabled={bootstrapping || previewMutation.isPending}
-            >
-              {t('corrections.preview')}
-            </Button>
-          </>
-        }
-      />
+      <PageActions>
+        <Button
+          type="button"
+          onPress={() => {
+            void onCreate();
+          }}
+          isDisabled={bootstrapping || createMutation.isPending}
+        >
+          {t('corrections.addLocal')}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onPress={() => {
+            void onPreview();
+          }}
+          isDisabled={bootstrapping || previewMutation.isPending}
+        >
+          {t('corrections.preview')}
+        </Button>
+      </PageActions>
 
       {bootstrapping ? (
         <LoadingState label={t('corrections.bootstrapping')} />

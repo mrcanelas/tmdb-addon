@@ -8,7 +8,7 @@ import {
 } from '@/api/hooks/use-tracking';
 import { useStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import type { TrackingOAuthProvider } from '@/lib/api';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -69,6 +69,7 @@ function pickPreviewProvider(
 
 export function TrackingPage() {
   const { t } = useTranslation(['tracking', 'common']);
+  usePageHeader(t('tracking.title'), t('tracking.intro'));
   const sessionQuery = useStudioSessionQuery();
   const statusQuery = useTrackingStatusQuery();
   const providers = statusQuery.data?.providers ?? [];
@@ -134,11 +135,6 @@ export function TrackingPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('tracking.title')}
-        description={t('tracking.intro')}
-      />
-
       {bootstrapping ? (
         <LoadingState label={t('tracking.bootstrapping')} />
       ) : null}

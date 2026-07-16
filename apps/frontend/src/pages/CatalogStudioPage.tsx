@@ -21,7 +21,8 @@ import {
 import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { Button } from '@metalayer/shared-ui';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { PageActions } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -38,6 +39,7 @@ type CatalogEditDialog =
 
 export function CatalogStudioPage() {
   const { t, i18n } = useTranslation(['catalogs', 'common']);
+  usePageHeader(t('catalogs.title'), t('catalogs.intro'));
   const queryClient = useQueryClient();
   const [catalogs, setCatalogs] = useState<CatalogListItem[]>([]);
   const [manifestOrder, setManifestOrder] = useState<ManifestCatalogEntry[]>([]);
@@ -319,56 +321,50 @@ export function CatalogStudioPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('catalogs.title')}
-        description={t('catalogs.intro')}
-        actions={
-          <>
-            <Button type="button" variant="outline" size="sm" onPress={() => void load(true)}>
-              {t('catalogs.actions.resetDraft')}
-            </Button>
-            <Button type="button" variant="outline" size="sm" onPress={() => void onExport()}>
-              {t('catalogs.actions.export')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onPress={() => fileInputRef.current?.click()}
-            >
-              {t('catalogs.actions.import')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onPress={() => void onCreateMerged()}
-            >
-              {t('catalogs.actions.createMerged')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onPress={() => void onCreateRotated()}
-            >
-              {t('catalogs.actions.createRotated')}
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              aria-label={t('catalogs.actions.importFileAria')}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void onImportFile(file);
-                event.target.value = '';
-              }}
-            />
-          </>
-        }
-      />
+      <PageActions>
+        <Button type="button" variant="outline" size="sm" onPress={() => void load(true)}>
+          {t('catalogs.actions.resetDraft')}
+        </Button>
+        <Button type="button" variant="outline" size="sm" onPress={() => void onExport()}>
+          {t('catalogs.actions.export')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onPress={() => fileInputRef.current?.click()}
+        >
+          {t('catalogs.actions.import')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onPress={() => void onCreateMerged()}
+        >
+          {t('catalogs.actions.createMerged')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onPress={() => void onCreateRotated()}
+        >
+          {t('catalogs.actions.createRotated')}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          aria-label={t('catalogs.actions.importFileAria')}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void onImportFile(file);
+            event.target.value = '';
+          }}
+        />
+      </PageActions>
 
       <p className="max-w-2xl text-sm ml-text-muted">{t('catalogs.syncHint')}</p>
       {configId ? (

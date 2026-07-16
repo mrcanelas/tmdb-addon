@@ -7,7 +7,7 @@ import {
   fetchProfiles,
   saveProfiles,
 } from '@/lib/api';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -27,6 +27,7 @@ function profileManifestUrl(configId: string, profileId: string): string {
 
 export function ProfilesPage() {
   const { t } = useTranslation(['profiles', 'common']);
+  usePageHeader(t('profiles.title'), t('profiles.intro'));
   const [configId, setConfigId] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<ProfileDefinition[]>([]);
   const [draftName, setDraftName] = useState('');
@@ -106,11 +107,6 @@ export function ProfilesPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('profiles.title')}
-        description={t('profiles.intro')}
-      />
-
       {status === 'loading' ? (
         <LoadingState label={t('profiles.loading')} />
       ) : null}

@@ -13,13 +13,15 @@ import {
   isArtworkField,
   type AppearanceEditField,
 } from '@/lib/appearance-plans';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { PageActions } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { ResolutionChainBuilder } from '@/components/metalayer/ResolutionChainBuilder';
 
 export function AppearancePage() {
   const { t } = useTranslation(['resolution', 'common']);
+  usePageHeader(t('nav.appearance', { ns: 'common' }), t('resolution.intro'));
   const [resolution, setResolution] = useState<ResolutionConfig | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'ok' | 'error'>(
@@ -87,21 +89,17 @@ export function AppearancePage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('nav.appearance', { ns: 'common' })}
-        description={t('resolution.intro')}
-        actions={
-          <Button
-            type="button"
-            onPress={() => {
-              void onSave();
-            }}
-            isDisabled={!resolution || saveState === 'saving'}
-          >
-            {saveState === 'saving' ? t('resolution.saving') : t('resolution.save')}
-          </Button>
-        }
-      />
+      <PageActions>
+        <Button
+          type="button"
+          onPress={() => {
+            void onSave();
+          }}
+          isDisabled={!resolution || saveState === 'saving'}
+        >
+          {saveState === 'saving' ? t('resolution.saving') : t('resolution.save')}
+        </Button>
+      </PageActions>
 
       {status === 'loading' ? (
         <LoadingState label={t('resolution.loading')} />

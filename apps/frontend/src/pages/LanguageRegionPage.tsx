@@ -18,7 +18,7 @@ import {
 } from '@/lib/api';
 import { i18n } from '@/lib/i18n';
 import { useConfigureUiStore } from '@/stores/ui-store';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -94,6 +94,7 @@ function syncRegionsFromCountry(
 
 export function LanguageRegionPage() {
   const { t } = useTranslation(['languageRegion', 'common']);
+  usePageHeader(t('languageRegion.title'), t('languageRegion.intro'));
   const displayLocale = i18n.language || 'en-US';
   const mode = useConfigureUiStore((s) => s.mode);
   const isAdvanced = mode === 'advanced';
@@ -171,11 +172,6 @@ export function LanguageRegionPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('languageRegion.title')}
-        description={t('languageRegion.intro')}
-      />
-
       {status === 'loading' ? (
         <LoadingState label={t('languageRegion.loading')} />
       ) : null}

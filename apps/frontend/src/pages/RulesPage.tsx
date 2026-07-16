@@ -8,7 +8,8 @@ import {
   type RuleSetDraft,
 } from '@/lib/api';
 import { Button } from '@metalayer/shared-ui';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { PageActions } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -41,6 +42,7 @@ function buildSampleItems(t: (key: string) => string) {
 
 export function RulesPage() {
   const { t } = useTranslation(['rules', 'common']);
+  usePageHeader(t('rules.title'), t('rules.intro'));
   const [rules, setRules] = useState<RuleSetDraft>({
     excludeAdult: true,
     minimumRating: 7,
@@ -114,33 +116,27 @@ export function RulesPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('rules.title')}
-        description={t('rules.intro')}
-        actions={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onPress={() => {
-                void onPreview();
-              }}
-              isDisabled={status !== 'ready'}
-            >
-              {t('rules.preview')}
-            </Button>
-            <Button
-              type="button"
-              onPress={() => {
-                void onSave();
-              }}
-              isDisabled={status !== 'ready' || saveState === 'saving'}
-            >
-              {saveState === 'saving' ? t('rules.saving') : t('rules.save')}
-            </Button>
-          </>
-        }
-      />
+      <PageActions>
+        <Button
+          type="button"
+          variant="outline"
+          onPress={() => {
+            void onPreview();
+          }}
+          isDisabled={status !== 'ready'}
+        >
+          {t('rules.preview')}
+        </Button>
+        <Button
+          type="button"
+          onPress={() => {
+            void onSave();
+          }}
+          isDisabled={status !== 'ready' || saveState === 'saving'}
+        >
+          {saveState === 'saving' ? t('rules.saving') : t('rules.save')}
+        </Button>
+      </PageActions>
 
       {status === 'loading' ? (
         <LoadingState label={t('rules.bootstrapping')} />

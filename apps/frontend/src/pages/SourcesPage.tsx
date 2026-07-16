@@ -1,23 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { useSourcesQuery } from '@/api/hooks/use-sources';
 import { SourceCard } from '@/components/sources/SourceCard';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 
 export function SourcesPage() {
   const { t } = useTranslation(['sources', 'common']);
+  usePageHeader(t('sources.title'), t('sources.intro'));
   const { data: sources = [], isLoading, isError, refetch, isFetching } =
     useSourcesQuery();
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('sources.title')}
-        description={t('sources.intro')}
-      />
-
       {isLoading ? <LoadingState label={t('sources.loading')} /> : null}
 
       {isError ? (

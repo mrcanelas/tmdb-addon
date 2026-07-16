@@ -10,7 +10,7 @@ import {
   fetchIdentityPreferences,
   saveIdentityPreferences,
 } from '@/lib/api';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -28,6 +28,7 @@ function manifestHttpUrl(configId: string): string {
 
 export function AdvancedPage() {
   const { t } = useTranslation(['advanced', 'common']);
+  usePageHeader(t('advanced.title'), t('advanced.intro'));
   const [identity, setIdentity] = useState<IdentityPreferences | null>(null);
   const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>({});
   const [configId, setConfigId] = useState<string | null>(null);
@@ -88,11 +89,6 @@ export function AdvancedPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('advanced.title')}
-        description={t('advanced.intro')}
-      />
-
       {status === 'loading' ? (
         <LoadingState label={t('advanced.loading')} />
       ) : null}

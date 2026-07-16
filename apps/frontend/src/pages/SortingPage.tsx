@@ -8,7 +8,8 @@ import {
   type SortingPlanDraft,
 } from '@/lib/api';
 import { Button } from '@metalayer/shared-ui';
-import { PageHeader } from '@/components/metalayer/PageHeader';
+import { PageActions } from '@/components/metalayer/PageHeader';
+import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
@@ -36,6 +37,7 @@ const SELECT_CLASS =
 
 export function SortingPage() {
   const { t } = useTranslation(['sorting', 'common']);
+  usePageHeader(t('sorting.title'), t('sorting.intro'));
   const [plan, setPlan] = useState<SortingPlanDraft>({
     criteria: [{ field: 'rating', direction: 'desc' }],
     stable: true,
@@ -105,33 +107,27 @@ export function SortingPage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        title={t('sorting.title')}
-        description={t('sorting.intro')}
-        actions={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onPress={() => {
-                void onPreview();
-              }}
-              isDisabled={status !== 'ready'}
-            >
-              {t('sorting.preview')}
-            </Button>
-            <Button
-              type="button"
-              onPress={() => {
-                void onSave();
-              }}
-              isDisabled={status !== 'ready' || saveState === 'saving'}
-            >
-              {saveState === 'saving' ? t('sorting.saving') : t('sorting.save')}
-            </Button>
-          </>
-        }
-      />
+      <PageActions>
+        <Button
+          type="button"
+          variant="outline"
+          onPress={() => {
+            void onPreview();
+          }}
+          isDisabled={status !== 'ready'}
+        >
+          {t('sorting.preview')}
+        </Button>
+        <Button
+          type="button"
+          onPress={() => {
+            void onSave();
+          }}
+          isDisabled={status !== 'ready' || saveState === 'saving'}
+        >
+          {saveState === 'saving' ? t('sorting.saving') : t('sorting.save')}
+        </Button>
+      </PageActions>
 
       {status === 'loading' ? (
         <LoadingState label={t('sorting.bootstrapping')} />
