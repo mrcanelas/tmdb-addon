@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ScrollShadow } from '@metalayer/shared-ui';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { ConfigureMobileNav } from '@/components/layout/ConfigureMobileNav';
@@ -27,15 +28,21 @@ export function AppShell() {
         <ConfigureSidebar />
         <ConfigureMobileNav />
 
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <AppHeader />
           <main
             id="page-main"
             tabIndex={-1}
             aria-labelledby="page-title"
-            className="flex-1 overflow-y-auto bg-[var(--background)] px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
+            className="flex min-h-0 flex-1 flex-col bg-[var(--background)]"
           >
-            <Outlet />
+            <ScrollShadow
+              orientation="vertical"
+              size={40}
+              className="min-h-0 flex-1 px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
+            >
+              <Outlet />
+            </ScrollShadow>
           </main>
         </div>
 
