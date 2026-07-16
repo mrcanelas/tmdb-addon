@@ -88,6 +88,21 @@ export function usePageTitle() {
   return ctx;
 }
 
+/**
+ * Syncs the shell AppHeader title (Avexado pattern).
+ * Call from the page — no layout component required.
+ */
+export function usePageHeader(title: string, subtitle?: string) {
+  const { setTitle, resetTitle } = usePageTitle();
+
+  useEffect(() => {
+    setTitle(title, subtitle);
+    return () => {
+      resetTitle();
+    };
+  }, [title, subtitle, setTitle, resetTitle]);
+}
+
 /** Resets to the time-of-day greeting when the page mounts / unmounts. */
 export function usePageTitleWithReset() {
   const ctx = usePageTitle();

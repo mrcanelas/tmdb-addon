@@ -174,7 +174,7 @@ Visible **Admin** badge. Operator token gate. Instance version / health footprin
 
 | Page | Wireframe | React redesign |
 |---|---|---|
-| Overview | `configure-overview.html` | Gated |
+| Overview / Home | `configure-home-empty.png` + `configure-home-configured.png` (`docs/ux-mocks/`) | Dual-state: Get Started + Resources (2B) + presets; What’s New right rail (GitHub Releases for `mrcanelas/tmdb-addon` only); empty vs session (1A) |
 | Sources | `configure-sources.html` | Gated |
 | Language & Region | `configure-language-region.html` | Gated |
 | Catalog Studio | `configure-catalog-studio.html` | Gated |

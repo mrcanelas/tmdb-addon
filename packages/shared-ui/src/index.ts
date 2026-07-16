@@ -21,5 +21,6 @@ export {
   Toolbar,
   SearchField,
   Tooltip,
+  ScrollShadow,
   useOverlayState,
 } from '@heroui/react';

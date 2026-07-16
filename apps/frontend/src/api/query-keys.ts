@@ -10,4 +10,7 @@ export const queryKeys = {
   corrections: {
     list: (configId: string) => ['corrections', 'list', configId] as const,
   },
+  githubReleases: {
+    list: () => ['github-releases', 'list'] as const,
+  },
 };
