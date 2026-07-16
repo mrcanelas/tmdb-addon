@@ -6,6 +6,7 @@ import { useSourcesQuery } from '@/api/hooks/use-sources';
 import { ConnectedSourcesPanel } from '@/components/sources/ConnectedSourcesPanel';
 import { SourceCatalogCard } from '@/components/sources/SourceCatalogCard';
 import { SourceConfigureModal } from '@/components/sources/SourceConfigureModal';
+import { PublicMetaDBConfigureModal } from '@/components/sources/PublicMetaDBConfigureModal';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { LoadingState } from '@/components/metalayer/LoadingState';
@@ -180,13 +181,23 @@ export function SourcesPage() {
         </aside>
       </div>
 
-      <SourceConfigureModal
-        source={configureSource}
-        isOpen={configureSource !== null}
-        onOpenChange={(open) => {
-          if (!open) setConfigureSource(null);
-        }}
-      />
+      {configureSource?.id === 'publicmetadb' ? (
+        <PublicMetaDBConfigureModal
+          source={configureSource}
+          isOpen={configureSource !== null}
+          onOpenChange={(open) => {
+            if (!open) setConfigureSource(null);
+          }}
+        />
+      ) : (
+        <SourceConfigureModal
+          source={configureSource}
+          isOpen={configureSource !== null}
+          onOpenChange={(open) => {
+            if (!open) setConfigureSource(null);
+          }}
+        />
+      )}
     </section>
   );
 }

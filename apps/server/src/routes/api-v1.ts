@@ -4,6 +4,7 @@ import { pingRoutes } from './ping.js';
 import { configurationsRoutes } from './configurations.js';
 import { sourcesRoutes } from './sources.js';
 import { previewRoutes } from './preview.js';
+import { publicMetaDBSourcesRoutes } from './publicmetadb-sources.js';
 import { catalogsRoutes } from './catalogs.js';
 import { rulesSortingRoutes } from './rules-sorting.js';
 import { inspectRoutes } from './inspect.js';
@@ -37,5 +38,6 @@ export const apiV1Routes: FastifyPluginAsync = async (app) => {
   await app.register(searchAiRoutes);
   await app.register(dashboardRoutes);
   await app.register(sourcesRoutes);
+  await app.register(publicMetaDBSourcesRoutes);
   await app.register(previewRoutes);
 };

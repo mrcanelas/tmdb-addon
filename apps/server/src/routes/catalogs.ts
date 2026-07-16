@@ -26,6 +26,7 @@ import {
   AnilistProviderAdapter,
   MalJikanProviderAdapter,
   KitsuProviderAdapter,
+  PublicMetaDBAdapter,
 } from '@metalayer/providers';
 import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
@@ -420,6 +421,42 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
                 name: item.name,
                 poster: item.posterUrl ?? undefined,
                 provider: catalog.provider,
+              }),
+            );
+          }
+
+          if (catalog.provider === 'publicmetadb') {
+            const pmdbKey =
+              await app.configStore.getSecretPlaintext(
+                request.params.configId,
+                'publicmetadb',
+              ) || request.body?.apiKey;
+            if (!pmdbKey) {
+              throw new ProviderError({
+                code: 'auth',
+                providerId: 'publicmetadb',
+                message: 'PublicMetaDB API key is missing',
+                retryable: false,
+              });
+            }
+            const adapter = createAppProviderAdapter(app, 'publicmetadb', {
+              apiKey: pmdbKey,
+              cache: app.providerCache,
+            });
+            if (!(adapter instanceof PublicMetaDBAdapter)) {
+              throw new Error('PublicMetaDB adapter unavailable');
+            }
+            const items = await adapter.getCatalogPage(ctx, {
+              providerCatalogId: catalog.providerCatalogId,
+              mediaType: catalog.mediaType,
+              page: request.body?.page ?? 1,
+            });
+            return items.map(
+              (item): CatalogMetaPreview => ({
+                id: item.publicId,
+                type: item.mediaType,
+                name: item.name,
+                provider: 'publicmetadb',
               }),
             );
           }

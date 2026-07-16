@@ -32,9 +32,12 @@ const SECRET_TO_PROVIDER: Record<string, string> = {
   tmdbApiKey: 'tmdb',
   sessionId: 'tmdb_session',
   rpdbkey: 'rpdb',
+  topposterskey: 'topposters',
   mdblistkey: 'mdblist',
+  publicmetadbkey: 'publicmetadb',
   geminikey: 'gemini',
   groqkey: 'groq',
+  openrouterkey: 'openrouter',
   traktAccessToken: 'trakt',
   traktRefreshToken: 'trakt_refresh',
 };

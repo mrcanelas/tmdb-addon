@@ -10,7 +10,7 @@ src/
   core/                      # errors, health, timeout/retry, cache keys
   locale/                    # ProviderLocaleAdapter implementations
   tmdb/                      # TMDB metadata adapter (Phase C)
-  artwork/                   # Fanart + RPDB artwork adapters
+  artwork/                   # Fanart + rated-poster hosts (RPDB, Top Posters, AIORatings, OpenPosterDB)
   ratings/                   # rating stubs until fetchers land
 ```
 
@@ -38,15 +38,32 @@ const movie = await tmdb.getMovie({ correlationId: '…', locale: 'pt-BR' }, 550
 ## Artwork adapters
 
 ```ts
-import { FanartArtworkAdapter, RpdbArtworkAdapter } from '@metalayer/providers';
+import {
+  FanartArtworkAdapter,
+  RpdbArtworkAdapter,
+  TopPostersArtworkAdapter,
+  AioRatingsArtworkAdapter,
+  OpenPosterDbArtworkAdapter,
+  buildRatedPosterUrl,
+  RATED_POSTER_PROFILES,
+} from '@metalayer/providers';
 
 const fanart = new FanartArtworkAdapter({ apiKey: process.env.FANART_API });
 const art = await fanart.getMovieArtwork({ correlationId: '…', locale: 'pt-BR' }, 550);
 
 const rpdb = new RpdbArtworkAdapter({ apiKey: process.env.RPDB_API });
 const posters = rpdb.getMovieArtwork({ correlationId: '…', locale: 'pt-BR' }, 550);
+
+// Shared RPDB-compatible URL builder (also used by AIORatings / OpenPosterDB / Top Posters)
+const url = buildRatedPosterUrl({
+  profile: RATED_POSTER_PROFILES.aioratings,
+  apiKey: '…',
+  mediaType: 'movie',
+  tmdbId: 550,
+});
 ```
 
-RPDB poster URLs embed the provider key by design of that service; MetaLayer should prefer a server-side image proxy before exposing them in public Stremio responses.
+Rated-poster hosts embed the provider key in the image URL by design of those services;
+MetaLayer should prefer a server-side image proxy before exposing them in public Stremio responses.
 
 HTTP is injectable for tests (`fetchImpl`). Live smoke calls stay out of default CI.

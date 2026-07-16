@@ -23,6 +23,7 @@ import {
   KitsuProviderAdapter,
   MalJikanProviderAdapter,
   ProviderError,
+  PublicMetaDBAdapter,
   TmdbProviderAdapter,
   type ProviderHealthRegistry,
   type TmdbFetch,
@@ -201,6 +202,30 @@ async function loadCatalogMetas(
             name: item.name,
             poster: item.posterUrl ?? undefined,
             provider: source.provider,
+          }),
+        );
+      }
+
+      if (source.provider === 'publicmetadb') {
+        const pmdbKey =
+          await app.configStore.getSecretPlaintext(configId, 'publicmetadb');
+        if (!pmdbKey) return [];
+        const adapter = createAppProviderAdapter(app, 'publicmetadb', {
+          apiKey: pmdbKey,
+          cache: app.providerCache,
+        });
+        if (!(adapter instanceof PublicMetaDBAdapter)) return [];
+        const items = await adapter.getCatalogPage(ctx, {
+          providerCatalogId: source.providerCatalogId,
+          mediaType: source.mediaType,
+          page,
+        });
+        return items.map(
+          (item): CatalogMetaPreview => ({
+            id: item.publicId,
+            type: item.mediaType,
+            name: item.name,
+            provider: 'publicmetadb',
           }),
         );
       }

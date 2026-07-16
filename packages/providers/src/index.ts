@@ -62,8 +62,32 @@ export type {
 
 export { FanartArtworkAdapter } from './artwork/fanart.js';
 export type { FanartAdapterOptions } from './artwork/fanart.js';
-export { RpdbArtworkAdapter } from './artwork/rpdb.js';
+export {
+  AioRatingsArtworkAdapter,
+  OpenPosterDbArtworkAdapter,
+  RpdbArtworkAdapter,
+  TopPostersArtworkAdapter,
+} from './artwork/rpdb.js';
 export type { RpdbAdapterOptions, RpdbMediaType } from './artwork/rpdb.js';
+export {
+  RatedPosterArtworkAdapter,
+} from './artwork/rated-poster-adapter.js';
+export type { RatedPosterAdapterOptions } from './artwork/rated-poster-adapter.js';
+export {
+  RATED_POSTER_PROFILES,
+  buildRatedPosterUrl,
+  buildTmdbMediaPath,
+  artworkKindToPathSegment,
+  isEnglishLocale,
+  toRatedPosterLang,
+} from './artwork/rated-poster.js';
+export type {
+  RatedPosterExtension,
+  RatedPosterIdType,
+  RatedPosterMediaType,
+  RatedPosterProviderId,
+  RatedPosterServiceProfile,
+} from './artwork/rated-poster.js';
 export type {
   ArtworkAsset,
   ArtworkBundle,
@@ -76,6 +100,30 @@ export type {
   ImdbRating,
   ImdbRatingsAdapterOptions,
 } from './ratings/imdb.js';
+
+export { GeminiAiAdapter } from './ai/gemini.js';
+export type { GeminiAdapterOptions } from './ai/gemini.js';
+export { GroqAiAdapter } from './ai/groq.js';
+export type { GroqAdapterOptions } from './ai/groq.js';
+export { OpenRouterAiAdapter } from './ai/openrouter.js';
+export type { OpenRouterAdapterOptions } from './ai/openrouter.js';
+export { AiProviderAdapter } from './ai/ai-adapter.js';
+export type { AiAdapterOptions } from './ai/ai-adapter.js';
+export {
+  AI_SERVICE_PROFILES,
+  OPENAI_COMPATIBLE_CHAT_PROFILES,
+} from './ai/ai-profiles.js';
+export type { AiProviderId, AiServiceProfile } from './ai/ai-profiles.js';
+export {
+  buildTitleSearchPrompt,
+  fetchOpenAiCompatibleChatCompletion,
+  parseCommaSeparatedTitles,
+  searchTitlesWithOpenAiCompatible,
+} from './ai/openai-compatible.js';
+export type {
+  OpenAiCompatibleChatProfile,
+  OpenAiCompatibleMediaType,
+} from './ai/openai-compatible.js';
 
 export type {
   AnimeCatalogItem,
@@ -126,6 +174,32 @@ export type {
   SimklOAuthTokens,
   SimklWatchStateFixture,
 } from './simkl/adapter.js';
+
+export { PublicMetaDBAdapter } from './publicmetadb/adapter.js';
+export type {
+  PublicMetaDBAdapterOptions,
+  PublicMetaDBCatalogItem,
+} from './publicmetadb/adapter.js';
+export {
+  PUBLIC_METADB_BASE_URL,
+  buildPublicMetaDBUrl,
+  fetchPublicMetaDBListItems,
+  fetchPublicMetaDBLists,
+  fetchPublicMetaDBPickItems,
+  fetchPublicMetaDBPicks,
+  fetchPublicMetaDBResume,
+  isPublicMetaDBApiKey,
+  markPublicMetaDBWatched,
+  publicMetaDBRequest,
+  validatePublicMetaDBKey,
+} from './publicmetadb/client.js';
+export type {
+  PublicMetaDBListSummary,
+  PublicMetaDBMediaRef,
+  PublicMetaDBMediaType,
+  PublicMetaDBPaginated,
+  PublicMetaDBPickSummary,
+} from './publicmetadb/client.js';
 
 export {
   createProviderAdapter,

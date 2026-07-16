@@ -40,10 +40,25 @@ export function ensureAppearancePlan(
   }
   const providers =
     field === 'background'
-      ? (['fanart', 'tmdb', 'rpdb'] as const)
+      ? (['fanart', 'tmdb', 'rpdb', 'aioratings', 'openposterdb'] as const)
       : field === 'logo'
-        ? (['rpdb', 'fanart', 'tmdb', 'tvdb'] as const)
-        : (['rpdb', 'fanart', 'tmdb'] as const);
+        ? ([
+            'rpdb',
+            'topposters',
+            'aioratings',
+            'openposterdb',
+            'fanart',
+            'tmdb',
+            'tvdb',
+          ] as const)
+        : ([
+            'rpdb',
+            'topposters',
+            'aioratings',
+            'openposterdb',
+            'fanart',
+            'tmdb',
+          ] as const);
   return planFromProviderChain(
     [...providers],
     [

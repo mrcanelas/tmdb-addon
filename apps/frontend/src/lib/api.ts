@@ -98,6 +98,125 @@ export async function testSource(
   return body;
 }
 
+export interface PublicMetaDBListSummary {
+  id: string;
+  name: string;
+  type?: string;
+  description?: string;
+}
+
+export interface PublicMetaDBPickSummary {
+  id: string;
+  name: string;
+  seed_type?: string;
+  description?: string;
+  filters?: { media_types?: string[] };
+}
+
+export type PublicMetaDBImportSelection =
+  | { kind: 'upnext' }
+  | { kind: 'list'; listId: string; name: string }
+  | {
+      kind: 'pick';
+      pickId: string;
+      name: string;
+      mediaTypes?: string[];
+    };
+
+function withEditCredential(
+  configId: string,
+  editCredential: string,
+  init?: RequestInit,
+): RequestInit {
+  return {
+    ...init,
+    headers: {
+      ...(init?.headers ?? {}),
+      'x-metalayer-edit-credential': editCredential,
+    },
+  };
+}
+
+export async function fetchPublicMetaDBStatus(
+  configId: string,
+  editCredential: string,
+): Promise<{ connected: boolean }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/status`,
+    withEditCredential(configId, editCredential),
+  );
+}
+
+export async function fetchPublicMetaDBLists(
+  configId: string,
+  editCredential: string,
+  apiKey?: string,
+): Promise<{ items: PublicMetaDBListSummary[] }> {
+  const query = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/lists${query}`,
+    withEditCredential(configId, editCredential),
+  );
+}
+
+export async function fetchPublicMetaDBPicks(
+  configId: string,
+  editCredential: string,
+  apiKey?: string,
+): Promise<{ items: PublicMetaDBPickSummary[] }> {
+  const query = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/picks${query}`,
+    withEditCredential(configId, editCredential),
+  );
+}
+
+export async function connectPublicMetaDB(
+  configId: string,
+  editCredential: string,
+  apiKey: string,
+): Promise<{ connected: boolean }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/connect`,
+    withEditCredential(configId, editCredential, {
+      method: 'POST',
+      body: JSON.stringify({ apiKey }),
+    }),
+  );
+}
+
+export async function disconnectPublicMetaDB(
+  configId: string,
+  editCredential: string,
+): Promise<{ connected: boolean; removedCatalogs: number }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/disconnect`,
+    withEditCredential(configId, editCredential, { method: 'DELETE' }),
+  );
+}
+
+export async function importPublicMetaDBCatalogs(
+  configId: string,
+  editCredential: string,
+  input: {
+    apiKey?: string;
+    selections: PublicMetaDBImportSelection[];
+  },
+): Promise<{
+  imported: number;
+  skipped: number;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/sources/publicmetadb/import`,
+    withEditCredential(configId, editCredential, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
 const SESSION_KEY = 'metalayer.catalogStudio.session';
 
 export interface CatalogListItem {

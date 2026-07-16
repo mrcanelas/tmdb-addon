@@ -30,3 +30,12 @@ export {
   type CatalogPreviewWarning,
   type CatalogPreviewWarningCode,
 } from './resolve.js';
+export {
+  createPublicMetaDBListCatalogDrafts,
+  createPublicMetaDBPickCatalogDrafts,
+  createPublicMetaDBUpNextCatalogDraft,
+  detectPublicMetaDBListMediaTypes,
+  filterNewPublicMetaDBCatalogs,
+  type PublicMetaDBCatalogDraft,
+  type PublicMetaDBCatalogMediaType,
+} from './publicmetadb-catalogs.js';

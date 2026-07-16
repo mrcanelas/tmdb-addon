@@ -6,7 +6,15 @@ import { DEFAULT_PROVIDER_HTTP_POLICY } from './core/health.js';
 import type { TmdbFetch } from './tmdb/adapter.js';
 import { TmdbProviderAdapter } from './tmdb/adapter.js';
 import { FanartArtworkAdapter } from './artwork/fanart.js';
-import { RpdbArtworkAdapter } from './artwork/rpdb.js';
+import {
+  AioRatingsArtworkAdapter,
+  OpenPosterDbArtworkAdapter,
+  RpdbArtworkAdapter,
+  TopPostersArtworkAdapter,
+} from './artwork/rpdb.js';
+import { GeminiAiAdapter } from './ai/gemini.js';
+import { GroqAiAdapter } from './ai/groq.js';
+import { OpenRouterAiAdapter } from './ai/openrouter.js';
 import { ImdbRatingsAdapter } from './ratings/imdb.js';
 import { AnilistProviderAdapter } from './anilist/adapter.js';
 import { AnilistTrackingAdapter } from './anilist/tracking.js';
@@ -15,6 +23,7 @@ import { MalTrackingAdapter } from './mal/tracking.js';
 import { KitsuProviderAdapter } from './kitsu/adapter.js';
 import { TraktTrackingAdapter } from './trakt/adapter.js';
 import { SimklTrackingAdapter } from './simkl/adapter.js';
+import { PublicMetaDBAdapter } from './publicmetadb/adapter.js';
 import { getProvider } from './registry.js';
 
 export { listAdapterProviderIds } from './adapter-ids.js';
@@ -85,6 +94,48 @@ export function createProviderAdapter(
         policy: options.policy,
         health,
       });
+    case 'topposters':
+      return new TopPostersArtworkAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'aioratings':
+      return new AioRatingsArtworkAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'openposterdb':
+      return new OpenPosterDbArtworkAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'gemini':
+      return new GeminiAiAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'groq':
+      return new GroqAiAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'openrouter':
+      return new OpenRouterAiAdapter({
+        apiKey: options.apiKey,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
     case 'imdb':
       return new ImdbRatingsAdapter({
         fetchImpl: options.fetchImpl,
@@ -141,6 +192,13 @@ export function createProviderAdapter(
       return new SimklTrackingAdapter({
         accessToken: options.accessToken ?? options.apiKey,
         clientId: process.env.SIMKL_CLIENT_ID,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'publicmetadb':
+      return new PublicMetaDBAdapter({
+        apiKey: options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
         health,

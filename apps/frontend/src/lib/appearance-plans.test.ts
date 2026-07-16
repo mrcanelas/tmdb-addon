@@ -40,7 +40,15 @@ describe('appearance field resolution defaults', () => {
     );
 
     const logo = ensureAppearancePlan(emptyResolution, 'logo');
-    expect(logo.providers).toEqual(['rpdb', 'fanart', 'tmdb', 'tvdb']);
+    expect(logo.providers).toEqual([
+      'rpdb',
+      'topposters',
+      'aioratings',
+      'openposterdb',
+      'fanart',
+      'tmdb',
+      'tvdb',
+    ]);
     expect(logo.locales?.some((locale) => locale.type === 'no-language')).toBe(
       true,
     );

@@ -135,7 +135,15 @@ export function AppearancePage() {
               onChange={(plan) => updateField(field, plan)}
               providerOptions={
                 isArtworkField(field)
-                  ? ['rpdb', 'fanart', 'tmdb', 'tvdb']
+                  ? [
+                      'rpdb',
+                      'topposters',
+                      'aioratings',
+                      'openposterdb',
+                      'fanart',
+                      'tmdb',
+                      'tvdb',
+                    ]
                   : ['tmdb', 'tvdb', 'imdb']
               }
               allowLocales

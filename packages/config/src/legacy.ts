@@ -8,9 +8,12 @@ export const LegacyAddonConfigSchema = z
   .object({
     language: z.string().optional(),
     rpdbkey: z.string().optional(),
+    topposterskey: z.string().optional(),
     geminikey: z.string().optional(),
     groqkey: z.string().optional(),
+    openrouterkey: z.string().optional(),
     mdblistkey: z.string().optional(),
+    publicmetadbkey: z.string().optional(),
     traktAccessToken: z.string().optional(),
     traktRefreshToken: z.string().optional(),
     tmdbApiKey: z.string().optional(),
@@ -51,9 +54,12 @@ export function parseLegacyAddonConfig(input: unknown): LegacyAddonConfig {
 /** Secret-bearing keys that must move to Secret Vault on migration. */
 export const LEGACY_SECRET_KEYS = [
   'rpdbkey',
+  'topposterskey',
   'geminikey',
   'groqkey',
+  'openrouterkey',
   'mdblistkey',
+  'publicmetadbkey',
   'traktAccessToken',
   'traktRefreshToken',
   'tmdbApiKey',
