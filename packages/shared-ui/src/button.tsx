@@ -7,6 +7,7 @@ export type MetaLayerButtonVariant =
   | 'primary'
   | 'secondary'
   | 'destructive'
+  | 'danger-soft'
   | 'quiet'
   | 'outline';
 
@@ -40,6 +41,7 @@ const VARIANT_MAP: Record<MetaLayerButtonVariant, HeroButtonProps['variant']> = 
   primary: 'primary',
   secondary: 'secondary',
   destructive: 'danger',
+  'danger-soft': 'danger-soft',
   quiet: 'ghost',
   outline: 'outline',
 };

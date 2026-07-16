@@ -15,7 +15,7 @@ import {
   Rocket,
   Server,
 } from 'lucide-react';
-import { Button, Card, Chip, Modal, Tabs } from '@metalayer/shared-ui';
+import { Button, Card, Chip, Modal, Tabs } from '@heroui/react';
 import {
   dryRunLegacyImport,
   ensureStudioSession,
@@ -29,11 +29,10 @@ import { WhatsNewPanel } from '@/components/home/WhatsNewPanel';
 import { usePageHeader } from '@/contexts/page-title';
 import { HOME_PRESETS, PENDING_PRESET_KEY, type HomePresetId } from '@/lib/home-presets';
 import { HOME_RESOURCES } from '@/lib/home-resources';
-import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
 const TEXTAREA_CLASS =
-  'mt-3 min-h-28 w-full rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 py-2 font-mono text-xs text-[var(--ml-text)]';
+  'mt-3 min-h-28 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-xs text-[var(--foreground)]';
 
 const RESOURCE_ICONS: Record<string, typeof BookOpen> = {
   docs: BookOpen,
@@ -151,12 +150,12 @@ export function OverviewPage() {
   return (
     <section className="space-y-6">
       {feedback?.tone === 'ok' ? (
-        <p className="text-sm text-[var(--ml-success)]" role="status">
+        <p className="text-sm text-[var(--success)]" role="status">
           {feedback.message}
         </p>
       ) : null}
       {feedback?.tone === 'error' ? (
-        <p className="text-sm text-[var(--ml-error)]" role="alert">
+        <p className="text-sm text-[var(--danger)]" role="alert">
           {feedback.message}
         </p>
       ) : null}
@@ -198,6 +197,7 @@ export function OverviewPage() {
                 <div className="flex flex-col gap-2">
                   <Button
                     type="button"
+                    size="lg"
                     fullWidth
                     isDisabled={busy}
                     onPress={() => {
@@ -209,7 +209,8 @@ export function OverviewPage() {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    size="lg"
+                    variant="tertiary"
                     fullWidth
                     onPress={() => {
                       setImportOpen(true);
@@ -226,7 +227,7 @@ export function OverviewPage() {
                   {t('overview.getStarted.existingHint')}{' '}
                   <Link
                     to="/save-install"
-                    className="font-medium text-[var(--ml-info)] underline-offset-4 hover:underline"
+                    className="font-medium text-[var(--accent)] underline-offset-4 hover:underline"
                   >
                     {t('overview.ctaSave')}
                   </Link>
@@ -239,43 +240,55 @@ export function OverviewPage() {
                 <Card.Title className='text-xl'>{t('overview.resources.title')}</Card.Title>
               </Card.Header>
               <Card.Content>
-                <div className="grid gap-2 h-full sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid h-full gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {HOME_RESOURCES.map((resource) => {
                     const Icon = RESOURCE_ICONS[resource.id] ?? BookOpen;
+                    const tileClass =
+                      '!flex h-full min-h-24 w-full !flex-col !items-start !justify-between gap-3 whitespace-normal rounded-[var(--radius)] px-3 py-3 text-start font-normal';
+                    const label = (
+                      <>
+                        <Icon className="size-5 shrink-0 self-start" aria-hidden />
+                        <span className="flex w-full items-center justify-between gap-2 text-sm font-medium">
+                          {t(resource.labelKey)}
+                          <ChevronRight className="size-4 shrink-0 opacity-60" aria-hidden />
+                        </span>
+                      </>
+                    );
+
                     if (resource.kind === 'donate') {
                       return (
-                        <button
+                        <Button
                           key={resource.id}
                           type="button"
-                          onClick={openDonateModal}
-                          className={cn(
-                            'flex min-h-24 flex-col justify-between rounded-xl border border-[var(--ml-border)] bg-[var(--ml-elevated)] p-3 text-start transition-colors hover:border-[var(--ml-accent)]',
-                            resource.emphasize &&
-                              'border-[var(--ml-accent)] bg-[color-mix(in_oklab,var(--ml-accent)_28%,var(--ml-elevated))]',
-                          )}
+                          variant="danger-soft"
+                          fullWidth
+                          className={tileClass}
+                          onPress={openDonateModal}
                         >
-                          <Icon className="size-5 text-[var(--ml-text)]" aria-hidden />
-                          <span className="flex items-center justify-between gap-2 text-sm font-medium">
-                            {t(resource.labelKey)}
-                            <ChevronRight className="size-4 opacity-60" aria-hidden />
-                          </span>
-                        </button>
+                          {label}
+                        </Button>
                       );
                     }
+
                     return (
-                      <a
+                      <Button
                         key={resource.id}
-                        href={resource.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex min-h-24 flex-col justify-between rounded-xl border border-[var(--ml-border)] bg-[var(--ml-elevated)] p-3 text-start transition-colors hover:border-[var(--ml-text)]/30"
+                        type="button"
+                        variant="outline"
+                        fullWidth
+                        className={tileClass}
+                        onPress={() => {
+                          if (resource.href) {
+                            window.open(
+                              resource.href,
+                              '_blank',
+                              'noopener,noreferrer',
+                            );
+                          }
+                        }}
                       >
-                        <Icon className="size-5 text-[var(--ml-text)]" aria-hidden />
-                        <span className="flex items-center justify-between gap-2 text-sm font-medium text-[var(--ml-text)]">
-                          {t(resource.labelKey)}
-                          <ChevronRight className="size-4 opacity-60" aria-hidden />
-                        </span>
-                      </a>
+                        {label}
+                      </Button>
                     );
                   })}
                 </div>
@@ -285,7 +298,7 @@ export function OverviewPage() {
 
           <div className="space-y-3">
             <div>
-              <h2 className="text-lg font-semibold text-[var(--ml-text)]">
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">
                 {t('overview.presets.title')}
               </h2>
               <p className="text-sm ml-text-muted">{t('overview.presets.body')}</p>
@@ -297,10 +310,10 @@ export function OverviewPage() {
                   <Card key={preset.id} className="w-full">
                     <Card.Header className="items-center text-center">
                       <span
-                        className="mx-auto flex size-10 items-center justify-center rounded-full bg-[var(--ml-elevated)]"
+                        className="mx-auto flex size-10 items-center justify-center rounded-full bg-[var(--surface-secondary)]"
                         aria-hidden
                       >
-                        <Icon className="size-5 text-[var(--ml-text)]" />
+                        <Icon className="size-5 text-[var(--foreground)]" />
                       </span>
                       <Card.Title className="mt-2 text-base">
                         {t(preset.nameKey)}
@@ -356,7 +369,7 @@ export function OverviewPage() {
             </Modal.Header>
             <Modal.Body className="gap-3">
               <p className="text-sm ml-text-muted">{t('overview.importBody')}</p>
-              <label className="block text-sm text-[var(--ml-text)]">
+              <label className="block text-sm text-[var(--foreground)]">
                 <span>{t('overview.importPayloadLabel')}</span>
                 <textarea
                   className={TEXTAREA_CLASS}
@@ -370,7 +383,7 @@ export function OverviewPage() {
                 {t('overview.importPayloadHint')}
               </p>
               {report ? (
-                <div className="space-y-2 text-sm text-[var(--ml-text)]" role="status">
+                <div className="space-y-2 text-sm text-[var(--foreground)]" role="status">
                   <p>
                     {t('overview.importImported', {
                       list: report.imported.join(', ') || empty,
@@ -382,7 +395,7 @@ export function OverviewPage() {
                     })}
                   </p>
                   {report.needsAttention.length > 0 ? (
-                    <ul className="list-disc space-y-1 ps-5 text-[var(--ml-warning)]">
+                    <ul className="list-disc space-y-1 ps-5 text-[var(--warning)]">
                       {report.needsAttention.map((item) => (
                         <li
                           key={`${item.code}-${item.field ?? ''}-${item.params?.catalogId ?? ''}`}
