@@ -19,7 +19,7 @@ export function UpdatesPage() {
 
   return (
     <section className="ml-surface p-6">
-      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">
         {t('dashboard.updatesTitle')}
       </h1>
       <p className="ml-text-muted mt-2 text-sm">{t('dashboard.updatesIntro')}</p>

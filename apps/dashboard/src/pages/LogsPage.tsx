@@ -22,12 +22,12 @@ export function LogsPage() {
 
   return (
     <section className="ml-surface p-6">
-      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">{t('dashboard.logsTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">{t('dashboard.logsTitle')}</h1>
       <p className="ml-text-muted mt-2 text-sm">{t('dashboard.logsIntro')}</p>
       {error ? <p className="mt-4">{t('dashboard.loadError')}</p> : null}
       <ul className="mt-4 list-none space-y-2 p-0">
         {logs.map((log) => (
-          <li key={log.id} className="border-b border-[var(--ml-border)] pb-2">
+          <li key={log.id} className="border-b border-[var(--border)] pb-2">
             <strong>{log.level}</strong> · <span className="ml-text-muted text-sm">{log.at}</span>
             <div>{log.message}</div>
           </li>

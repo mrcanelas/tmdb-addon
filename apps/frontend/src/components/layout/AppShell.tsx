@@ -16,10 +16,10 @@ export function AppShell() {
 
   return (
     <PageTitleProvider displayName={t('shell.greeting.visitor')}>
-      <div className="flex h-dvh overflow-hidden bg-[var(--ml-bg)] text-[var(--ml-text)]">
+      <div className="flex h-dvh overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
         <a
           href="#page-main"
-          className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-[var(--ml-elevated)] px-3 py-2 text-sm font-medium text-[var(--ml-text)] shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-[var(--ml-accent)]"
+          className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-[var(--surface-secondary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-[var(--accent)]"
         >
           {t('shell.skipToMain')}
         </a>
@@ -33,7 +33,7 @@ export function AppShell() {
             id="page-main"
             tabIndex={-1}
             aria-labelledby="page-title"
-            className="flex-1 overflow-y-auto bg-[var(--ml-bg)] px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
+            className="flex-1 overflow-y-auto bg-[var(--background)] px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
           >
             <Outlet />
           </main>

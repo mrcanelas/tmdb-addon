@@ -29,7 +29,7 @@ export function BackupsPage() {
 
   return (
     <section className="ml-surface p-6">
-      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">
         {t('dashboard.backupsTitle')}
       </h1>
       <p className="ml-text-muted mt-2 text-sm">{t('dashboard.backupsIntro')}</p>

@@ -16,7 +16,7 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const SELECT_CLASS =
-  'h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]';
+  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
 
 const PUBLIC_ID_OPTIONS = ['imdb', 'tmdb'] as const;
 
@@ -142,12 +142,12 @@ export function AdvancedPage() {
                   : t('advanced.identity.save')}
               </Button>
               {saveState === 'ok' ? (
-                <p className="text-sm text-[var(--ml-success)]" role="status">
+                <p className="text-sm text-[var(--success)]" role="status">
                   {t('advanced.identity.saveOk')}
                 </p>
               ) : null}
               {saveState === 'error' ? (
-                <p className="text-sm text-[var(--ml-error)]" role="alert">
+                <p className="text-sm text-[var(--danger)]" role="alert">
                   {t('advanced.identity.saveError')}
                 </p>
               ) : null}
@@ -210,7 +210,7 @@ export function AdvancedPage() {
                 <li>
                   <Link
                     to="/sources"
-                    className="text-[var(--ml-accent)] underline-offset-2 hover:underline"
+                    className="text-[var(--accent)] underline-offset-2 hover:underline"
                   >
                     {t('advanced.diagnostics.linkSources')}
                   </Link>
@@ -218,7 +218,7 @@ export function AdvancedPage() {
                 <li>
                   <Link
                     to="/review/inspector"
-                    className="text-[var(--ml-accent)] underline-offset-2 hover:underline"
+                    className="text-[var(--accent)] underline-offset-2 hover:underline"
                   >
                     {t('advanced.diagnostics.linkInspector')}
                   </Link>
@@ -226,7 +226,7 @@ export function AdvancedPage() {
                 <li>
                   <Link
                     to="/save-install"
-                    className="text-[var(--ml-accent)] underline-offset-2 hover:underline"
+                    className="text-[var(--accent)] underline-offset-2 hover:underline"
                   >
                     {t('advanced.diagnostics.linkSave')}
                   </Link>
@@ -248,7 +248,7 @@ export function AdvancedPage() {
                 {flagEntries.map(([key, enabled]) => (
                   <li
                     key={key}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--ml-border)] px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] px-3 py-2"
                   >
                     <span className="font-mono">{key}</span>
                     <span className="ml-text-muted">

@@ -116,12 +116,12 @@ export function AppearancePage() {
       ) : null}
 
       {saveState === 'ok' ? (
-        <p className="text-sm text-[var(--ml-success)]" role="status">
+        <p className="text-sm text-[var(--success)]" role="status">
           {t('resolution.saveOk')}
         </p>
       ) : null}
       {saveState === 'error' ? (
-        <p className="text-sm text-[var(--ml-error)]" role="alert">
+        <p className="text-sm text-[var(--danger)]" role="alert">
           {t('resolution.saveError')}
         </p>
       ) : null}

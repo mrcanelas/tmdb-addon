@@ -27,7 +27,7 @@ export function OverviewPage() {
 
   return (
     <section className="ml-surface p-6">
-      <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">
         {t('dashboard.overviewTitle')}
       </h1>
       <p className="ml-text-muted mt-2 text-sm">{t('dashboard.overviewIntro')}</p>
@@ -48,7 +48,7 @@ export function OverviewPage() {
           ).map(([labelKey, value]) => (
             <div key={labelKey} className="ml-elevated p-3">
               <span className="ml-text-muted text-sm">{t(labelKey)}</span>
-              <strong className="mt-1 block text-lg text-[var(--ml-text)]">{value}</strong>
+              <strong className="mt-1 block text-lg text-[var(--foreground)]">{value}</strong>
             </div>
           ))}
         </div>

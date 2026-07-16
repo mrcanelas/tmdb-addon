@@ -374,12 +374,12 @@ export function CatalogStudioPage() {
       ) : null}
 
       {actionFeedback?.tone === 'ok' ? (
-        <p className="text-sm text-[var(--ml-success)]" role="status">
+        <p className="text-sm text-[var(--success)]" role="status">
           {actionFeedback.message}
         </p>
       ) : null}
       {actionFeedback?.tone === 'error' ? (
-        <p className="text-sm text-[var(--ml-error)]" role="alert">
+        <p className="text-sm text-[var(--danger)]" role="alert">
           {actionFeedback.message}
         </p>
       ) : null}
@@ -412,11 +412,11 @@ export function CatalogStudioPage() {
                 return (
                   <li
                     key={catalog.instanceId}
-                    className="border-b border-[var(--ml-border)] pb-3 last:border-b-0"
+                    className="border-b border-[var(--border)] pb-3 last:border-b-0"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <div>
-                        <p className="font-medium text-[var(--ml-text)]">
+                        <p className="font-medium text-[var(--foreground)]">
                           <span className="me-2 font-mono text-xs ml-text-muted">
                             {catalog.position + 1}.
                           </span>
@@ -564,9 +564,9 @@ export function CatalogStudioPage() {
 
           <div className="space-y-6">
             <SectionCard title={t('catalogs.manifestPreview')}>
-              <ol className="space-y-2 border-s border-[var(--ml-border)] ps-4">
+              <ol className="space-y-2 border-s border-[var(--border)] ps-4">
                 {manifestOrder.map((entry, index) => (
-                  <li key={entry.instanceId} className="text-sm text-[var(--ml-text)]">
+                  <li key={entry.instanceId} className="text-sm text-[var(--foreground)]">
                     <span className="me-2 font-mono text-xs ml-text-muted">
                       {index + 1}.
                     </span>
@@ -588,7 +588,7 @@ export function CatalogStudioPage() {
             >
               {previewWarnings.length > 0 ? (
                 <ul
-                  className="mb-3 space-y-1 text-sm text-[var(--ml-warning)]"
+                  className="mb-3 space-y-1 text-sm text-[var(--warning)]"
                   role="status"
                 >
                   {previewWarnings.map((warning) => (
@@ -609,7 +609,7 @@ export function CatalogStudioPage() {
                 <ol className="space-y-2">
                   {previewMetas.slice(0, 12).map((meta) => (
                     <li key={`${meta.id}-${meta.sourceInstanceId ?? ''}`} className="text-sm">
-                      <span className="font-medium text-[var(--ml-text)]">{meta.name}</span>
+                      <span className="font-medium text-[var(--foreground)]">{meta.name}</span>
                       <span className="ms-2 font-mono text-xs ml-text-muted">
                         {meta.id}
                       </span>

@@ -22,12 +22,12 @@ export function App() {
           <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 md:grid-cols-[14rem_1fr] md:px-6 md:py-10">
             <a
               href="#page-main"
-              className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-[var(--ml-elevated)] px-3 py-2 text-sm font-medium text-[var(--ml-text)] shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-[var(--ml-accent)]"
+              className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-[var(--surface-secondary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-[var(--accent)]"
             >
               {t('dashboard.skipToMain')}
             </a>
-            <aside className="ml-glass rounded-[var(--ml-radius)] p-4">
-              <p className="m-0 text-2xl font-bold text-[var(--ml-text)]">
+            <aside className="ml-glass rounded-[var(--radius)] p-4">
+              <p className="m-0 text-2xl font-bold text-[var(--foreground)]">
                 {t('dashboard.appName')}
               </p>
               <p className="ml-text-muted mt-1 text-sm">{t('dashboard.tagline')}</p>
@@ -35,16 +35,16 @@ export function App() {
                 aria-label={t('dashboard.navAria')}
                 className="mt-5 flex flex-wrap gap-2 md:flex-col"
               >
-                <NavLink to="/" end className={({ isActive }) => (isActive ? 'font-semibold text-[var(--ml-accent)]' : 'ml-text-muted')}>
+                <NavLink to="/" end className={({ isActive }) => (isActive ? 'font-semibold text-[var(--accent)]' : 'ml-text-muted')}>
                   {t('dashboard.nav.overview')}
                 </NavLink>
-                <NavLink to="/logs" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--ml-accent)]' : 'ml-text-muted')}>
+                <NavLink to="/logs" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--accent)]' : 'ml-text-muted')}>
                   {t('dashboard.nav.logs')}
                 </NavLink>
-                <NavLink to="/backups" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--ml-accent)]' : 'ml-text-muted')}>
+                <NavLink to="/backups" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--accent)]' : 'ml-text-muted')}>
                   {t('dashboard.nav.backups')}
                 </NavLink>
-                <NavLink to="/updates" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--ml-accent)]' : 'ml-text-muted')}>
+                <NavLink to="/updates" className={({ isActive }) => (isActive ? 'font-semibold text-[var(--accent)]' : 'ml-text-muted')}>
                   {t('dashboard.nav.updates')}
                 </NavLink>
               </nav>

@@ -1,112 +1,92 @@
 /**
- * MetaLayer Layered Minimalism tokens (FRONTEND.md / ADR 0007).
- * Surface / text / border neutrals aligned with Avexado globals.css.
- * Brand primary (`--ml-accent`) uses legacy TMDB Addon navy `#0D253F`
- * for continuity with the predecessor product — not Avexado coral.
- * Dark-first; light overrides under [data-theme="light"].
+ * MetaLayer HeroUI theme tokens (FRONTEND.md / ADR 0007).
+ * Accent is legacy TMDB Addon navy (oklch ~252°) — not Avexado coral.
+ * Light defaults on `:root` / `.light`; dark via `.dark` / `[data-theme="dark"]`.
+ * `--muted` is muted *text* in HeroUI (not a surface fill).
  *
- * Semantic aliases below bridge `@heroui/styles` theme variables so
- * cards (`--surface`), modals/menus (`--overlay`), and `text-muted`
- * (`--muted` is a *text* color in HeroUI) pick up MetaLayer neutrals.
+ * @see https://heroui.com/docs/react/getting-started/theming
  */
+
 :root,
-[data-theme="dark"] {
-  color-scheme: dark;
+.light,
+.default,
+[data-theme="light"],
+[data-theme="default"] {
+  /* Theme Colors (Light Mode) */
+  --accent: oklch(26.05% 0.0575 252.49);
+  --accent-foreground: oklch(99.11% 0 0);
+  --background: oklch(96.7% 0.0029 264.54);
+  --border: oklch(90.00% 0.0015 252.49);
+  --danger: oklch(65.32% 0.2335 25.58);
+  --danger-foreground: oklch(99.11% 0 0);
+  --default: oklch(94.00% 0.0015 252.49);
+  --default-foreground: oklch(21.03% 0.0059 252.49);
+  --field-background: oklch(100.00% 0.0008 252.49);
+  --field-border: transparent;
+  --field-foreground: oklch(21.03% 0.0015 252.49);
+  --field-placeholder: oklch(55.17% 0.0030 252.49);
+  --focus: oklch(26.05% 0.0575 252.49);
+  --foreground: oklch(21.03% 0.0015 252.49);
+  --muted: oklch(55.17% 0.0030 252.49);
+  --overlay: oklch(100.00% 0.0004 252.49);
+  --overlay-foreground: oklch(21.03% 0.0015 252.49);
+  --scrollbar: oklch(87.10% 0.0015 252.49);
+  --segment: oklch(100.00% 0.0015 252.49);
+  --segment-foreground: oklch(21.03% 0.0015 252.49);
+  --separator: oklch(92.00% 0.0015 252.49);
+  --success: oklch(73.29% 0.1941 150.65);
+  --success-foreground: oklch(21.03% 0.0059 150.65);
+  --surface: oklch(100% 0 0);
+  --surface-foreground: oklch(21.03% 0.0015 252.49);
+  --surface-secondary: oklch(95.24% 0.0012 252.49);
+  --surface-secondary-foreground: oklch(21.03% 0.0015 252.49);
+  --surface-tertiary: oklch(93.73% 0.0012 252.49);
+  --surface-tertiary-foreground: oklch(21.03% 0.0015 252.49);
+  --warning: oklch(78.19% 0.1590 72.17);
+  --warning-foreground: oklch(21.03% 0.0059 72.17);
 
-  /* Avexado .dark — background / card / muted / border / foreground */
-  --ml-bg: #191919;
-  --ml-surface: #1e1e1e;
-  --ml-elevated: #292524;
-  --ml-border: #26232a;
-  --ml-text: #f7f6f9;
-  --ml-muted: #666666;
+  /* Border Radius */
+  --radius: 0.5rem;
+  --field-radius: 0.75rem;
 
-  /* Legacy TMDB Addon accent (continuity with predecessor) */
-  --ml-accent: #0d253f;
-  --ml-accent-fg: #fafafa;
-
-  --ml-success: #22c55e;
-  --ml-warning: #f59e0b;
-  --ml-error: #ef4444;
-  --ml-info: #3b82f6;
-
-  --ml-glass-bg: rgba(30, 30, 30, 0.82);
-  --ml-glass-border: rgba(255, 255, 255, 0.08);
-  --ml-glass-blur: 18px;
-
-  --ml-radius: 0.5rem;
-  --ml-font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-
-  /* —— HeroUI theme bridge (see @heroui/styles themes/default/variables.css) —— */
-  --background: var(--ml-bg);
-  --foreground: var(--ml-text);
-
-  --surface: var(--ml-surface);
-  --surface-foreground: var(--ml-text);
-  --surface-secondary: var(--ml-elevated);
-  --surface-secondary-foreground: var(--ml-text);
-  --surface-tertiary: var(--ml-elevated);
-  --surface-tertiary-foreground: var(--ml-text);
-
-  /* Floating UI: modals, menus, popovers, tooltips */
-  --overlay: var(--ml-surface);
-  --overlay-foreground: var(--ml-text);
-
-  /* HeroUI `--muted` is muted *text*, not a surface fill */
-  --muted: var(--ml-muted);
-
-  --default: var(--ml-elevated);
-  --default-foreground: var(--ml-text);
-
-  --accent: var(--ml-accent);
-  --accent-foreground: var(--ml-accent-fg);
-
-  --field-background: var(--ml-elevated);
-  --field-foreground: var(--ml-text);
-  --field-placeholder: var(--ml-muted);
-  --field-border: var(--ml-border);
-
-  --success: var(--ml-success);
-  --warning: var(--ml-warning);
-  --danger: var(--ml-error);
-
-  --border: var(--ml-border);
-  --separator: var(--ml-border);
-  --focus: var(--ml-accent);
-  --link: var(--ml-text);
-  --backdrop: rgba(0, 0, 0, 0.6);
-
-  --radius: var(--ml-radius);
-
-  /* Legacy / app aliases (non-HeroUI) */
-  --card: var(--ml-surface);
-  --card-foreground: var(--ml-text);
-  --primary: var(--ml-accent);
-  --primary-foreground: var(--ml-accent-fg);
-  --secondary: var(--ml-elevated);
-  --secondary-foreground: var(--ml-text);
-  --muted-foreground: var(--ml-muted);
-  --input: var(--ml-border);
-  --ring: var(--ml-accent);
+  /* Font Family */
+  /* Make sure to load Inter font in your app */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-
-  /* Avexado :root — background / card / secondary / border / foreground */
-  --ml-bg: #f3f4f6;
-  --ml-surface: #ffffff;
-  --ml-elevated: #f4f4f5;
-  --ml-border: #e4e4e7;
-  --ml-text: #09090b;
-  --ml-muted: #71717a;
-
-  /* Legacy TMDB Addon accent (continuity with predecessor) */
-  --ml-accent: #0d253f;
-  --ml-accent-fg: #fafafa;
-
-  --ml-glass-bg: rgba(255, 255, 255, 0.86);
-  --ml-glass-border: rgba(9, 9, 11, 0.08);
-
-  --backdrop: rgba(0, 0, 0, 0.5);
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* Theme Colors (Dark Mode) */
+  --accent: oklch(26.05% 0.0575 252.49);
+  --accent-foreground: oklch(99.11% 0 0);
+  --background: oklch(21.34% 0 0);
+  --border: oklch(28.00% 0.0015 252.49);
+  --danger: oklch(59.40% 0.1973 24.47);
+  --danger-foreground: oklch(99.11% 0 0);
+  --default: oklch(27.40% 0.0015 252.49);
+  --default-foreground: oklch(99.11% 0 0);
+  --field-background: oklch(21.03% 0.0030 252.49);
+  --field-border: transparent;
+  --field-foreground: oklch(99.11% 0.0015 252.49);
+  --field-placeholder: oklch(70.50% 0.0030 252.49);
+  --focus: oklch(26.05% 0.0575 252.49);
+  --foreground: oklch(99.11% 0.0015 252.49);
+  --muted: oklch(70.50% 0.0030 252.49);
+  --overlay: oklch(21.03% 0.0030 252.49);
+  --overlay-foreground: oklch(99.11% 0.0015 252.49);
+  --scrollbar: oklch(70.50% 0.0015 252.49);
+  --segment: oklch(39.64% 0.0015 252.49);
+  --segment-foreground: oklch(99.11% 0.0015 252.49);
+  --separator: oklch(25.00% 0.0015 252.49);
+  --success: oklch(73.29% 0.1941 150.65);
+  --success-foreground: oklch(21.03% 0.0059 150.65);
+  --surface: oklch(23.50% 0 0);
+  --surface-foreground: oklch(99.11% 0.0015 252.49);
+  --surface-secondary: oklch(25.70% 0.0023 252.49);
+  --surface-secondary-foreground: oklch(99.11% 0.0015 252.49);
+  --surface-tertiary: oklch(27.21% 0.0023 252.49);
+  --surface-tertiary-foreground: oklch(99.11% 0.0015 252.49);
+  --warning: oklch(82.03% 0.1392 76.18);
+  --warning-foreground: oklch(21.03% 0.0059 76.18);
 }

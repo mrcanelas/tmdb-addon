@@ -55,11 +55,11 @@ export function CommandPalette() {
               className="w-full outline-none"
               label={t('shell.searchModal.label')}
             >
-              <div className="border-b border-[var(--ml-border)] px-3 py-2">
+              <div className="border-b border-[var(--border)] px-3 py-2">
                 <Command.Input
                   autoFocus
                   placeholder={t('shell.searchModal.placeholder')}
-                  className="w-full bg-transparent text-[var(--ml-text)] outline-none placeholder:text-[var(--ml-muted)]"
+                  className="w-full bg-transparent text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
                 />
               </div>
               <Command.List className="max-h-80 overflow-y-auto p-2">
@@ -71,7 +71,7 @@ export function CommandPalette() {
                     <Command.Item
                       key={item.id}
                       value={`${item.id} ${item.label}`}
-                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-[var(--ml-text)] aria-selected:bg-[var(--ml-elevated)]"
+                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-[var(--foreground)] aria-selected:bg-[var(--surface-secondary)]"
                       onSelect={() => {
                         navigate(item.path);
                         setOpen(false);
@@ -84,7 +84,7 @@ export function CommandPalette() {
                 <Command.Group heading={t('shell.commandPalette.groupActions')}>
                   <Command.Item
                     value="toggle-mode"
-                    className="cursor-pointer rounded-md px-3 py-2 text-sm text-[var(--ml-text)] aria-selected:bg-[var(--ml-elevated)]"
+                    className="cursor-pointer rounded-md px-3 py-2 text-sm text-[var(--foreground)] aria-selected:bg-[var(--surface-secondary)]"
                     onSelect={() => {
                       toggleMode();
                       setOpen(false);

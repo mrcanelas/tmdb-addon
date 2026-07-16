@@ -33,7 +33,7 @@ const FIELDS = [
 ] as const;
 
 const SELECT_CLASS =
-  'h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]';
+  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
 
 export function SortingPage() {
   const { t } = useTranslation(['sorting', 'common']);
@@ -152,7 +152,7 @@ export function SortingPage() {
                   key={`${criterion.field}-${index}`}
                   className="flex flex-wrap items-end gap-3"
                 >
-                  <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+                  <label className="grid gap-1 text-sm text-[var(--foreground)]">
                     <span>{t('sorting.field')}</span>
                     <select
                       className={SELECT_CLASS}
@@ -175,7 +175,7 @@ export function SortingPage() {
                       ))}
                     </select>
                   </label>
-                  <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+                  <label className="grid gap-1 text-sm text-[var(--foreground)]">
                     <span>{t('sorting.direction')}</span>
                     <select
                       className={SELECT_CLASS}
@@ -235,7 +235,7 @@ export function SortingPage() {
                 {t('sorting.addCriterion')}
               </Button>
 
-              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+              <label className="flex items-center gap-3 text-sm text-[var(--foreground)]">
                 <input
                   type="checkbox"
                   checked={plan.stable}
@@ -250,7 +250,7 @@ export function SortingPage() {
                 {t('sorting.stable')}
               </label>
 
-              <label className="grid max-w-xs gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid max-w-xs gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('sorting.seedWindow')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -274,17 +274,17 @@ export function SortingPage() {
           </SectionCard>
 
           {saveState === 'ok' ? (
-            <p className="text-sm text-[var(--ml-success)]" role="status">
+            <p className="text-sm text-[var(--success)]" role="status">
               {t('sorting.saved')}
             </p>
           ) : null}
           {saveState === 'error' ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {t('sorting.saveError')}
             </p>
           ) : null}
           {previewError ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {previewError}
             </p>
           ) : null}
@@ -294,7 +294,7 @@ export function SortingPage() {
               {seedWindow ? (
                 <p className="mb-2 font-mono text-xs ml-text-muted">{seedWindow}</p>
               ) : null}
-              <ol className="space-y-1 text-sm text-[var(--ml-text)]">
+              <ol className="space-y-1 text-sm text-[var(--foreground)]">
                 {order.map((id, index) => (
                   <li key={id}>
                     {index + 1}.{' '}

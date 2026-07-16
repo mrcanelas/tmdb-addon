@@ -31,7 +31,7 @@ export function DonateModal({
           <Modal.CloseTrigger />
           <Modal.Header>
             <Modal.Icon className="bg-default text-foreground">
-              <Sparkles className="size-5 text-[var(--ml-accent)]" aria-hidden />
+              <Sparkles className="size-5 text-[var(--accent)]" aria-hidden />
             </Modal.Icon>
             <Modal.Heading>{t('donate.title')}</Modal.Heading>
           </Modal.Header>

@@ -25,7 +25,7 @@ export function ConfigureSidebar() {
       <nav
         aria-label={t('shell.sidebar.aria')}
         className={cn(
-          'relative hidden h-[calc(100vh-2.5rem)] flex-col rounded-2xl bg-[var(--ml-accent)] transition-[width] duration-300 ease-in-out md:flex',
+          'relative hidden h-[calc(100vh-2.5rem)] flex-col rounded-2xl bg-[var(--accent)] transition-[width] duration-300 ease-in-out md:flex',
           status && 'duration-500',
           !minimized ? 'w-60' : 'w-[72px]',
         )}
@@ -55,7 +55,7 @@ export function ConfigureSidebar() {
           <Link
             to="/"
             aria-label={t('common.appName')}
-            className="flex min-w-0 items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ml-accent)]"
+            className="flex min-w-0 items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--accent)]"
           >
             {/* Fixed 72px slot keeps the mark centered when the rail collapses/expands */}
             <span className="flex w-[72px] shrink-0 items-center justify-center">

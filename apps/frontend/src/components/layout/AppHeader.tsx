@@ -38,12 +38,12 @@ export function AppHeader() {
         <div className="min-w-0 flex-1">
           <h1
             id="page-title"
-            className="hidden truncate text-3xl font-bold text-[var(--ml-text)] lg:block"
+            className="hidden truncate text-3xl font-bold text-[var(--foreground)] lg:block"
           >
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-1 hidden truncate text-[var(--ml-muted)] lg:block">
+            <p className="mt-1 hidden truncate text-[var(--muted)] lg:block">
               {subtitle}
             </p>
           ) : null}

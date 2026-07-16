@@ -52,7 +52,7 @@ export function StudioPromptDialog({
             <Modal.Heading id={titleId}>{title}</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+            <label className="grid gap-1 text-sm text-[var(--foreground)]">
               <span>{label}</span>
               <Input
                 ref={inputRef}

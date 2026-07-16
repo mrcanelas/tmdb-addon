@@ -82,7 +82,7 @@ export function TrackingOAuthCallbackPage() {
         <ErrorState message={t('tracking.oauth.error', { provider: brand })} />
       ) : null}
       {!invalidProvider && callbackMutation.isSuccess ? (
-        <p className="text-sm text-[var(--ml-text)]" role="status">
+        <p className="text-sm text-[var(--foreground)]" role="status">
           {t('tracking.oauth.success', { provider: brand })}
         </p>
       ) : null}

@@ -161,7 +161,7 @@ export function RulesPage() {
               <legend className="absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]">
                 {t('rules.filtersLegend')}
               </legend>
-              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+              <label className="flex items-center gap-3 text-sm text-[var(--foreground)]">
                 <input
                   type="checkbox"
                   checked={Boolean(rules.excludeAdult)}
@@ -175,7 +175,7 @@ export function RulesPage() {
                 />
                 {t('rules.excludeAdult')}
               </label>
-              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+              <label className="flex items-center gap-3 text-sm text-[var(--foreground)]">
                 <input
                   type="checkbox"
                   checked={Boolean(rules.digitallyReleasedOnly)}
@@ -189,7 +189,7 @@ export function RulesPage() {
                 />
                 {t('rules.digitallyReleasedOnly')}
               </label>
-              <label className="flex items-center gap-3 text-sm text-[var(--ml-text)]">
+              <label className="flex items-center gap-3 text-sm text-[var(--foreground)]">
                 <input
                   type="checkbox"
                   checked={Boolean(rules.releasedOnly)}
@@ -203,7 +203,7 @@ export function RulesPage() {
                 />
                 {t('rules.releasedOnly')}
               </label>
-              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('rules.minimumRating')}</span>
                 <input
                   type="number"
@@ -211,7 +211,7 @@ export function RulesPage() {
                   max={10}
                   step={0.1}
                   aria-describedby="rules-rating-hint"
-                  className="h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]"
+                  className="h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]"
                   value={rules.minimumRating ?? ''}
                   onChange={(event) => {
                     setRules((current) => ({
@@ -227,13 +227,13 @@ export function RulesPage() {
                   {t('rules.minimumRatingHint')}
                 </span>
               </label>
-              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('rules.minimumVotes')}</span>
                 <input
                   type="number"
                   min={0}
                   aria-describedby="rules-votes-hint"
-                  className="h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]"
+                  className="h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]"
                   value={rules.minimumVotes ?? ''}
                   onChange={(event) => {
                     setRules((current) => ({
@@ -253,17 +253,17 @@ export function RulesPage() {
           </SectionCard>
 
           {saveState === 'ok' ? (
-            <p className="text-sm text-[var(--ml-success)]" role="status">
+            <p className="text-sm text-[var(--success)]" role="status">
               {t('rules.saved')}
             </p>
           ) : null}
           {saveState === 'error' ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {t('rules.saveError')}
             </p>
           ) : null}
           {previewError ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {previewError}
             </p>
           ) : null}
@@ -271,7 +271,7 @@ export function RulesPage() {
           {(included.length > 0 || excluded.length > 0) && (
             <div className="grid gap-4 sm:grid-cols-2">
               <SectionCard title={t('rules.included')}>
-                <ul className="space-y-1 text-sm text-[var(--ml-text)]">
+                <ul className="space-y-1 text-sm text-[var(--foreground)]">
                   {included.map((id) => (
                     <li key={id}>
                       {t(`rules.sample.${id}`, { defaultValue: id })}
@@ -280,7 +280,7 @@ export function RulesPage() {
                 </ul>
               </SectionCard>
               <SectionCard title={t('rules.excluded')}>
-                <ul className="space-y-1 text-sm text-[var(--ml-text)]">
+                <ul className="space-y-1 text-sm text-[var(--foreground)]">
                   {excluded.map((id) => (
                     <li key={id}>
                       {t(`rules.sample.${id}`, { defaultValue: id })}
@@ -294,7 +294,7 @@ export function RulesPage() {
           {warnings.length > 0 ? (
             <SectionCard title={t('rules.warnings')}>
               <ul
-                className="space-y-1 text-sm text-[var(--ml-warning)]"
+                className="space-y-1 text-sm text-[var(--warning)]"
                 role="status"
               >
                 {warnings.map((warning) => {

@@ -13,7 +13,7 @@ const PHYSICAL_PATTERNS: Array<{ id: string; pattern: RegExp }> = [
   { id: 'padding-right', pattern: /padding-right\s*:/ },
   {
     id: 'tailwind-margin-x',
-    // MetaLayer tokens use ml-glass / ml-text-*; ban numeric ml-/mr- utilities only.
+    // MetaLayer keeps ml-glass / ml-text-* utilities; ban numeric ml-/mr- only.
     pattern: /(?:^|[\s"'`])m[lr]-(?:\[|[0-9])/m,
   },
   {

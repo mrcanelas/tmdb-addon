@@ -87,36 +87,27 @@ Flat opaque surfaces for dense/operational content (forms, tables, Catalog Studi
 
 Glass only for floating/temporary UI (top nav, command palette, popovers, modals, drawers, Meta Inspector, unsaved-changes bar).
 
-Dark-first tokens (owned by `@metalayer/shared-ui`). Neutrals follow Avexado surface/background vocabulary; **Accent** uses legacy TMDB Addon navy for product continuity.
+Dark-first UX with light/dark HeroUI tokens in `@metalayer/shared-ui` (`tokens.css`). Accent stays navy (legacy TMDB Addon continuity).
+
+Canonical variables (oklch in CSS):
 
 ```text
-Background: #191919
-Surface (cards): #1E1E1E
-Elevated surface: #292524
-Border: #26232A
-Primary text: #F7F6F9
-Muted text: #666666
-Accent: #0D253F
-Success: #22C55E
-Warning: #F59E0B
-Error: #EF4444
-Info: #3B82F6
-Radius: 0.5rem
+--background / --foreground
+--surface / --surface-secondary / --surface-tertiary (+ *-foreground)
+--overlay (+ --overlay-foreground) — modals, menus, popovers
+--border / --separator
+--muted — muted *text* (not a fill)
+--accent / --accent-foreground
+--success / --warning / --danger (+ *-foreground)
+--default / --field-* / --segment / --scrollbar
+--radius / --field-radius / --font-sans
 ```
 
-Glass:
+Glass utility (`.ml-glass`) derives from `--surface` / `--foreground` with blur — no separate glass tokens.
 
-```text
-Glass background: rgba(30, 30, 30, 0.82)
-Glass border: rgba(255, 255, 255, 0.08)
-Glass blur: 18px
-```
+Customize HeroUI only through these tokens and MetaLayer wrappers — never ship unmodified default HeroUI appearance as the product look.
 
-Light neutrals: background `#F3F4F6`, surface `#FFFFFF`, elevated `#F4F4F5`, border `#E4E4E7`, text `#09090B`, muted `#71717A` — accent remains `#0D253F`.
-
-Support light theme via semantic CSS variables. Customize HeroUI through tokens and MetaLayer wrappers — never ship unmodified default HeroUI appearance as the product look.
-
-Bridge notes (`packages/shared-ui/src/tokens.css`): HeroUI `--muted` is muted **text** (map to `--ml-muted`); cards use `--surface`; modals/menus/popovers use `--overlay` (map both to `--ml-surface`). Do not map `--muted` to an elevated fill.
+`--muted` is muted **text**. Cards use `--surface`; floating UI uses `--overlay`. Do not treat `--muted` as an elevated fill.
 
 ---
 

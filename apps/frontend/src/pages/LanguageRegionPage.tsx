@@ -24,7 +24,7 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const SELECT_CLASS =
-  'h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]';
+  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
 
 const REGION_OPTIONS = [
   'US',
@@ -196,7 +196,7 @@ export function LanguageRegionPage() {
 
           <SectionCard title={t('languageRegion.section.language')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('languageRegion.interface')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -226,7 +226,7 @@ export function LanguageRegionPage() {
               </label>
 
               {isAdvanced ? (
-                <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+                <label className="grid gap-1 text-sm text-[var(--foreground)]">
                   <span>{t('languageRegion.metadata')}</span>
                   <select
                     className={SELECT_CLASS}
@@ -254,7 +254,7 @@ export function LanguageRegionPage() {
             </div>
 
             {isAdvanced ? (
-              <label className="mt-4 grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="mt-4 grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('languageRegion.fallbacks')}</span>
                 <input
                   className={`${SELECT_CLASS} w-full`}
@@ -274,7 +274,7 @@ export function LanguageRegionPage() {
 
           <SectionCard title={t('languageRegion.section.region')}>
             {!isAdvanced ? (
-              <label className="grid max-w-xs gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid max-w-xs gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('languageRegion.country')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -312,7 +312,7 @@ export function LanguageRegionPage() {
                 ).map(([field, labelKey]) => (
                   <label
                     key={field}
-                    className="grid gap-1 text-sm text-[var(--ml-text)]"
+                    className="grid gap-1 text-sm text-[var(--foreground)]"
                   >
                     <span>{t(labelKey)}</span>
                     <select
@@ -354,7 +354,7 @@ export function LanguageRegionPage() {
               </div>
             )}
 
-            <label className="mt-4 grid max-w-md gap-1 text-sm text-[var(--ml-text)]">
+            <label className="mt-4 grid max-w-md gap-1 text-sm text-[var(--foreground)]">
               <span>{t('languageRegion.timezone')}</span>
               <select
                 className={SELECT_CLASS}
@@ -377,7 +377,7 @@ export function LanguageRegionPage() {
 
           <SectionCard title={t('languageRegion.section.display')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('languageRegion.titleMode')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -396,7 +396,7 @@ export function LanguageRegionPage() {
                   ))}
                 </select>
               </label>
-              <label className="grid gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('languageRegion.descriptionMode')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -431,12 +431,12 @@ export function LanguageRegionPage() {
                 : t('languageRegion.save')}
             </Button>
             {saveState === 'ok' ? (
-              <p className="text-sm text-[var(--ml-success)]" role="status">
+              <p className="text-sm text-[var(--success)]" role="status">
                 {t('languageRegion.saveOk')}
               </p>
             ) : null}
             {saveState === 'error' ? (
-              <p className="text-sm text-[var(--ml-error)]" role="alert">
+              <p className="text-sm text-[var(--danger)]" role="alert">
                 {t('languageRegion.saveError')}
               </p>
             ) : null}

@@ -101,7 +101,7 @@ export function ResolutionChainBuilder({
     <SectionCard title={fieldLabel} description={t('resolution.builderIntro')}>
       <div className="space-y-4">
         <div
-          className="inline-flex rounded-md border border-[var(--ml-border)] p-0.5"
+          className="inline-flex rounded-md border border-[var(--border)] p-0.5"
           role="group"
           aria-label={t('resolution.strategyAria')}
         >
@@ -127,7 +127,7 @@ export function ResolutionChainBuilder({
 
         {allowLocales && value.strategy !== 'explicit' ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-[var(--ml-text)]">
+            <p className="text-sm font-medium text-[var(--foreground)]">
               {t('resolution.locales')}
             </p>
             <ul className="space-y-1">
@@ -138,7 +138,7 @@ export function ResolutionChainBuilder({
                     key={`${locale.type}-${'value' in locale ? locale.value : index}`}
                     className="flex items-center justify-between gap-2 text-sm"
                   >
-                    <span className="text-[var(--ml-text)]">{label}</span>
+                    <span className="text-[var(--foreground)]">{label}</span>
                     <div className="flex gap-1">
                       <Button
                         type="button"
@@ -226,7 +226,7 @@ export function ResolutionChainBuilder({
 
         {value.strategy !== 'explicit' ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-[var(--ml-text)]">
+            <p className="text-sm font-medium text-[var(--foreground)]">
               {t('resolution.providers')}
             </p>
             <ul className="space-y-1">
@@ -235,7 +235,7 @@ export function ResolutionChainBuilder({
                   key={provider}
                   className="flex items-center justify-between gap-2 text-sm"
                 >
-                  <span className="text-[var(--ml-text)]">{provider}</span>
+                  <span className="text-[var(--foreground)]">{provider}</span>
                   <div className="flex gap-1">
                     <Button
                       type="button"
@@ -292,7 +292,7 @@ export function ResolutionChainBuilder({
         )}
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-[var(--ml-text)]">
+          <p className="text-sm font-medium text-[var(--foreground)]">
             {t('resolution.effectiveOrder')}
           </p>
           <ol className="list-decimal space-y-1 ps-5 text-sm ml-text-muted">

@@ -39,7 +39,7 @@ export function WhatsNewPanel() {
             href={latestRelease.html_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-mono text-sm font-medium text-[var(--ml-text)] underline-offset-4 hover:underline"
+            className="font-mono text-sm font-medium text-[var(--foreground)] underline-offset-4 hover:underline"
           >
             <Chip size="sm" variant="soft" color="accent">
               {latestRelease.tag_name}
@@ -80,7 +80,7 @@ export function WhatsNewPanel() {
                           href={href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-medium text-[var(--ml-text)] underline-offset-2 hover:underline"
+                          className="font-medium text-[var(--foreground)] underline-offset-2 hover:underline"
                         >
                           {children}
                         </a>
@@ -99,36 +99,36 @@ export function WhatsNewPanel() {
                         <li className="leading-relaxed">{children}</li>
                       ),
                       h1: ({ children }) => (
-                        <h3 className="mt-3 mb-1 text-sm font-semibold text-[var(--ml-text)]">
+                        <h3 className="mt-3 mb-1 text-sm font-semibold text-[var(--foreground)]">
                           {children}
                         </h3>
                       ),
                       h2: ({ children }) => (
-                        <h3 className="mt-3 mb-1 text-sm font-semibold text-[var(--ml-text)]">
+                        <h3 className="mt-3 mb-1 text-sm font-semibold text-[var(--foreground)]">
                           {children}
                         </h3>
                       ),
                       h3: ({ children }) => (
-                        <h4 className="mt-2 mb-1 text-sm font-medium text-[var(--ml-text)]">
+                        <h4 className="mt-2 mb-1 text-sm font-medium text-[var(--foreground)]">
                           {children}
                         </h4>
                       ),
                       p: ({ children }) => <p className="my-2">{children}</p>,
                       code: ({ children }) => (
-                        <code className="rounded bg-[var(--ml-elevated)] px-1 py-0.5 font-mono text-[0.8em] text-[var(--ml-text)]">
+                        <code className="rounded bg-[var(--surface-secondary)] px-1 py-0.5 font-mono text-[0.8em] text-[var(--foreground)]">
                           {children}
                         </code>
                       ),
                       pre: ({ children }) => (
-                        <pre className="my-2 overflow-x-auto rounded-md bg-[var(--ml-elevated)] p-2 font-mono text-xs text-[var(--ml-text)]">
+                        <pre className="my-2 overflow-x-auto rounded-md bg-[var(--surface-secondary)] p-2 font-mono text-xs text-[var(--foreground)]">
                           {children}
                         </pre>
                       ),
                       hr: () => (
-                        <hr className="my-3 border-[var(--ml-border)]" />
+                        <hr className="my-3 border-[var(--border)]" />
                       ),
                       strong: ({ children }) => (
-                        <strong className="font-semibold text-[var(--ml-text)]">
+                        <strong className="font-semibold text-[var(--foreground)]">
                           {children}
                         </strong>
                       ),
@@ -151,7 +151,7 @@ export function WhatsNewPanel() {
           href={WHATS_NEW_RELEASES_HREF}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm font-medium text-[var(--ml-text)] underline-offset-4 hover:underline"
+          className="inline-flex items-center gap-1 text-sm font-medium text-[var(--foreground)] underline-offset-4 hover:underline"
         >
           {t("overview.whatsNew.fullChangelog")}
           <ArrowRight className="size-3.5" aria-hidden />

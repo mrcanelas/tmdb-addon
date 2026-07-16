@@ -7,14 +7,17 @@ export interface MetaLayerThemeProviderProps {
   children: ReactNode;
 }
 
-/** Applies `data-theme` for Layered Minimalism CSS tokens. */
+/** Applies HeroUI theme selectors (`data-theme` + `.dark` / `.light`). */
 export function MetaLayerThemeProvider({
   theme = 'dark',
   children,
 }: MetaLayerThemeProviderProps) {
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
+    const root = document.documentElement;
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+    root.classList.toggle('dark', theme === 'dark');
+    root.classList.toggle('light', theme === 'light');
   }, [theme]);
 
   return children;

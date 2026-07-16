@@ -162,9 +162,9 @@ export function TrackingPage() {
                 return (
                   <li
                     key={provider.provider}
-                    className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
+                    className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3 last:border-b-0 last:pb-0"
                   >
-                    <span className="font-medium text-[var(--ml-text)]">
+                    <span className="font-medium text-[var(--foreground)]">
                       {supportsOauth
                         ? brandLabel(oauthProvider)
                         : provider.provider}
@@ -217,7 +217,7 @@ export function TrackingPage() {
             </ul>
           )}
           {connectError ? (
-            <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
+            <p className="mt-3 text-sm text-[var(--danger)]" role="alert">
               {t('tracking.oauth.error', { provider: failedConnectBrand })}
             </p>
           ) : null}
@@ -247,12 +247,12 @@ export function TrackingPage() {
           </p>
         ) : null}
         {previewMutation.isError ? (
-          <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
+          <p className="mt-3 text-sm text-[var(--danger)]" role="alert">
             {t('tracking.loadError')}
           </p>
         ) : null}
         {previewMutation.data ? (
-          <div className="mt-3 space-y-1 text-sm text-[var(--ml-text)]" role="status">
+          <div className="mt-3 space-y-1 text-sm text-[var(--foreground)]" role="status">
             <p>
               {t('tracking.previewOk', {
                 degraded: previewMutation.data.degraded

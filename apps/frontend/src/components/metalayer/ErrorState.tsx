@@ -11,10 +11,10 @@ export function ErrorState({
 }) {
   return (
     <div
-      className="ml-surface border-[color-mix(in_srgb,var(--ml-warning)_35%,var(--ml-border))] p-4"
+      className="ml-surface border-[color-mix(in_srgb,var(--warning)_35%,var(--border))] p-4"
       role="alert"
     >
-      <p className="text-sm text-[var(--ml-warning)]">{message}</p>
+      <p className="text-sm text-[var(--warning)]">{message}</p>
       {onRetry && retryLabel ? (
         <Button
           type="button"

@@ -122,19 +122,19 @@ export function CorrectionsPage() {
       ) : null}
 
       {feedback?.kind === 'ok' ? (
-        <p className="text-sm text-[var(--ml-success)]" role="status">
+        <p className="text-sm text-[var(--success)]" role="status">
           {t(feedback.messageKey)}
         </p>
       ) : null}
       {feedback?.kind === 'error' ? (
-        <p className="text-sm text-[var(--ml-error)]" role="alert">
+        <p className="text-sm text-[var(--danger)]" role="alert">
           {t(feedback.messageKey)}
         </p>
       ) : null}
 
       {previewMutation.data ? (
         <SectionCard>
-          <p className="text-sm text-[var(--ml-text)]" role="status">
+          <p className="text-sm text-[var(--foreground)]" role="status">
             {t('corrections.previewResultLine', {
               title: String(previewMutation.data.applied.title ?? ''),
               count: previewMutation.data.overlays.length,
@@ -207,10 +207,10 @@ function CorrectionList(props: {
           {props.items.map((item) => (
             <li
               key={item.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ml-border)] pb-3 last:border-b-0 last:pb-0"
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3 last:border-b-0 last:pb-0"
             >
               <div className="space-y-1">
-                <p className="font-medium text-[var(--ml-text)]">
+                <p className="font-medium text-[var(--foreground)]">
                   {item.type} · {item.target.provider}:{item.target.id}
                 </p>
                 <p className="text-sm ml-text-muted">{item.reason}</p>

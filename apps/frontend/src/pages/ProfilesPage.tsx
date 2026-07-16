@@ -14,7 +14,7 @@ import { ErrorState } from '@/components/metalayer/ErrorState';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 
 const SELECT_CLASS =
-  'h-10 rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 text-[var(--ml-text)]';
+  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
 
 function newProfileId(): string {
   return `prf_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
@@ -125,7 +125,7 @@ export function ProfilesPage() {
         <>
           <SectionCard title={t('profiles.create')}>
             <div className="flex flex-wrap items-end gap-3">
-              <label className="grid min-w-[12rem] flex-1 gap-1 text-sm text-[var(--ml-text)]">
+              <label className="grid min-w-[12rem] flex-1 gap-1 text-sm text-[var(--foreground)]">
                 <span>{t('profiles.name')}</span>
                 <input
                   className={`${SELECT_CLASS} w-full`}
@@ -159,10 +159,10 @@ export function ProfilesPage() {
                   return (
                     <li
                       key={profile.profileId}
-                      className="space-y-2 border-b border-[var(--ml-border)] pb-4 last:border-b-0 last:pb-0"
+                      className="space-y-2 border-b border-[var(--border)] pb-4 last:border-b-0 last:pb-0"
                     >
                       <div className="flex flex-wrap items-end gap-3">
-                        <label className="grid min-w-[12rem] flex-1 gap-1 text-sm text-[var(--ml-text)]">
+                        <label className="grid min-w-[12rem] flex-1 gap-1 text-sm text-[var(--foreground)]">
                           <span>{t('profiles.name')}</span>
                           <input
                             className={`${SELECT_CLASS} w-full`}
@@ -207,22 +207,22 @@ export function ProfilesPage() {
           </SectionCard>
 
           {saveState === 'ok' ? (
-            <p className="text-sm text-[var(--ml-text)]" role="status">
+            <p className="text-sm text-[var(--foreground)]" role="status">
               {t('profiles.saveOk')}
             </p>
           ) : null}
           {saveState === 'error' ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {t('profiles.saveError')}
             </p>
           ) : null}
           {copyState === 'ok' ? (
-            <p className="text-sm text-[var(--ml-text)]" role="status">
+            <p className="text-sm text-[var(--foreground)]" role="status">
               {t('profiles.copyOk')}
             </p>
           ) : null}
           {copyState === 'error' ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {t('profiles.copyError')}
             </p>
           ) : null}

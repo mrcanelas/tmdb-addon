@@ -99,7 +99,7 @@ export function SourceCard({ source }: SourceCardProps) {
     <article className="ml-surface flex h-full flex-col p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold tracking-tight text-[var(--ml-text)]">
+          <h2 className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
             {source.name}
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -170,14 +170,14 @@ export function SourceCard({ source }: SourceCardProps) {
       </form>
 
       {status.kind === 'success' ? (
-        <p className="mt-3 text-sm text-[var(--ml-success)]" role="status">
+        <p className="mt-3 text-sm text-[var(--success)]" role="status">
           {t('sources.test.success', {
             state: healthLabel(status.result.health?.state),
           })}
         </p>
       ) : null}
       {status.kind === 'failure' ? (
-        <p className="mt-3 text-sm text-[var(--ml-error)]" role="alert">
+        <p className="mt-3 text-sm text-[var(--danger)]" role="alert">
           {t(status.messageKey, { code: status.code ?? 'ERROR' })}
         </p>
       ) : null}

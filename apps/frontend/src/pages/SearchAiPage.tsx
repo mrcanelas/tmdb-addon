@@ -14,7 +14,7 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const INPUT_CLASS =
-  'w-full max-w-xl rounded-md border border-[var(--ml-border)] bg-[var(--ml-surface)] px-3 py-2 text-[var(--ml-text)]';
+  'w-full max-w-xl rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--foreground)]';
 
 type SearchAiNotice = {
   code: string;
@@ -203,14 +203,14 @@ export function SearchAiPage() {
       {status === 'ready' ? (
         <>
           {actionError ? (
-            <p className="text-sm text-[var(--ml-error)]" role="alert">
+            <p className="text-sm text-[var(--danger)]" role="alert">
               {actionError}
             </p>
           ) : null}
 
           <SectionCard title={t('searchAi.combined')}>
             <div className="space-y-3">
-              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+              <label className="block space-y-1 text-sm text-[var(--foreground)]">
                 <span>{t('searchAi.combinedQuery')}</span>
                 <input
                   className={INPUT_CLASS}
@@ -228,13 +228,13 @@ export function SearchAiPage() {
                 {t('searchAi.combinedRun')}
               </Button>
               {hits.length > 0 ? (
-                <p className="text-sm text-[var(--ml-text)]" role="status">
+                <p className="text-sm text-[var(--foreground)]" role="status">
                   {t('searchAi.hitsLine', { list: hits.join(', ') })}
                 </p>
               ) : null}
               {combinedWarnings.length > 0 ? (
                 <ul
-                  className="space-y-1 text-sm text-[var(--ml-warning)]"
+                  className="space-y-1 text-sm text-[var(--warning)]"
                   role="status"
                 >
                   {combinedWarnings.map((warning) => (
@@ -251,7 +251,7 @@ export function SearchAiPage() {
 
           <SectionCard title={t('searchAi.discovery')}>
             <div className="space-y-3">
-              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+              <label className="block space-y-1 text-sm text-[var(--foreground)]">
                 <span>{t('searchAi.discoveryPrompt')}</span>
                 <textarea
                   className={`min-h-20 ${INPUT_CLASS}`}
@@ -278,7 +278,7 @@ export function SearchAiPage() {
 
           <SectionCard title={t('searchAi.ranked')}>
             <div className="space-y-3">
-              <label className="block space-y-1 text-sm text-[var(--ml-text)]">
+              <label className="block space-y-1 text-sm text-[var(--foreground)]">
                 <span>{t('searchAi.rankedPrompt')}</span>
                 <textarea
                   className={`min-h-20 ${INPUT_CLASS}`}
@@ -296,7 +296,7 @@ export function SearchAiPage() {
                 {t('searchAi.rankedRun')}
               </Button>
               {explanation ? (
-                <p className="text-sm text-[var(--ml-text)]">
+                <p className="text-sm text-[var(--foreground)]">
                   {t('searchAi.explanationLine', {
                     text: translateNotice('searchAi.intent', explanation),
                   })}
@@ -313,7 +313,7 @@ export function SearchAiPage() {
               ) : null}
               {noticeWarnings.length > 0 ? (
                 <ul
-                  className="space-y-1 text-sm text-[var(--ml-warning)]"
+                  className="space-y-1 text-sm text-[var(--warning)]"
                   role="status"
                 >
                   {noticeWarnings.map((warning, index) => (
@@ -326,14 +326,14 @@ export function SearchAiPage() {
                 </ul>
               ) : null}
               {unresolved.length > 0 ? (
-                <p className="text-sm text-[var(--ml-text)]">
+                <p className="text-sm text-[var(--foreground)]">
                   {t('searchAi.unresolvedLine', {
                     list: unresolved.join(', '),
                   })}
                 </p>
               ) : null}
               {duplicates > 0 ? (
-                <p className="text-sm text-[var(--ml-text)]">
+                <p className="text-sm text-[var(--foreground)]">
                   {t('searchAi.duplicatesLine', { count: duplicates })}
                 </p>
               ) : null}
@@ -343,7 +343,7 @@ export function SearchAiPage() {
           {proposalId ? (
             <SectionCard title={t('searchAi.proposalTitle')}>
               {proposalSummary ? (
-                <p className="mb-2 text-sm text-[var(--ml-text)]" role="status">
+                <p className="mb-2 text-sm text-[var(--foreground)]" role="status">
                   {translateNotice('searchAi.summary', proposalSummary)}
                 </p>
               ) : null}
@@ -361,7 +361,7 @@ export function SearchAiPage() {
           ) : null}
 
           {applied ? (
-            <p className="text-sm text-[var(--ml-success)]" role="status">
+            <p className="text-sm text-[var(--success)]" role="status">
               {t('searchAi.applied')}
             </p>
           ) : null}

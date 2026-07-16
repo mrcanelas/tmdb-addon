@@ -17,7 +17,7 @@ export function SectionCard({
       {title || description ? (
         <div className="mb-4 space-y-1">
           {title ? (
-            <h2 className="text-lg font-medium text-[var(--ml-text)]">{title}</h2>
+            <h2 className="text-lg font-medium text-[var(--foreground)]">{title}</h2>
           ) : null}
           {description ? (
             <p className="text-sm ml-text-muted">{description}</p>

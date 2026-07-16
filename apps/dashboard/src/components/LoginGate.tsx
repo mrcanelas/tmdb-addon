@@ -12,7 +12,7 @@ export function LoginGate({ children }: { children: ReactNode }) {
     return (
       <div className="mx-auto max-w-md px-4 py-16">
         <section className="ml-surface p-6">
-          <h1 className="text-2xl font-semibold text-[var(--ml-text)]">
+          <h1 className="text-2xl font-semibold text-[var(--foreground)]">
             {t('dashboard.loginTitle')}
           </h1>
           <p className="ml-text-muted mt-2 text-sm">{t('dashboard.loginIntro')}</p>

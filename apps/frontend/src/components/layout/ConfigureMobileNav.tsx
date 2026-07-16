@@ -111,7 +111,7 @@ export function ConfigureMobileNav() {
       )}
     >
       <div
-        className="scrollbar-hide flex justify-start gap-6 overflow-x-auto rounded-2xl bg-[var(--ml-accent)] px-5 py-6 shadow-lg"
+        className="scrollbar-hide flex justify-start gap-6 overflow-x-auto rounded-2xl bg-[var(--accent)] px-5 py-6 shadow-lg"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {items.map((item) => (
