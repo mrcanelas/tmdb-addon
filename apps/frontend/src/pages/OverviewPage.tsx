@@ -15,7 +15,7 @@ import {
   Rocket,
   Server,
 } from 'lucide-react';
-import { Button, Card, Chip, Modal, Tabs } from '@heroui/react';
+import { Button, Card, Chip, Modal, Tabs } from '@metalayer/shared-ui';
 import {
   dryRunLegacyImport,
   ensureStudioSession,

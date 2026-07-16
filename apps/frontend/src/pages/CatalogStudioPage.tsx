@@ -19,8 +19,7 @@ import {
   type StudioCatalogAction,
 } from '@/lib/api';
 import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
-import { Button } from '@metalayer/shared-ui';
-import { Badge } from '@/components/ui/badge';
+import { Button, Chip } from '@metalayer/shared-ui';
 import { PageActions } from '@/components/metalayer/PageHeader';
 import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
@@ -431,25 +430,25 @@ export function CatalogStudioPage() {
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary">
+                        <Chip size="sm" variant="soft" color="default">
                           {t(`catalogs.type.${catalog.mediaType}`)}
-                        </Badge>
+                        </Chip>
                         {catalog.merge ? (
-                          <Badge variant="outline">{t('catalogs.badge.merged')}</Badge>
+                          <Chip size="sm" variant="soft" color="default">{t('catalogs.badge.merged')}</Chip>
                         ) : null}
                         {catalog.rotation ? (
-                          <Badge variant="outline">{t('catalogs.badge.rotated')}</Badge>
+                          <Chip size="sm" variant="soft" color="default">{t('catalogs.badge.rotated')}</Chip>
                         ) : null}
                         {catalog.tags.map((tag) => (
-                          <Badge key={tag} variant="outline">
+                          <Chip key={tag} size="sm" variant="soft" color="default">
                             {tag}
-                          </Badge>
+                          </Chip>
                         ))}
                         {!catalog.enabled ? (
-                          <Badge variant="outline">{t('catalogs.actions.disable')}</Badge>
+                          <Chip size="sm" variant="soft" color="default">{t('catalogs.actions.disable')}</Chip>
                         ) : null}
                         {catalog.showInHome ? (
-                          <Badge variant="outline">{t('catalogs.field.home')}</Badge>
+                          <Chip size="sm" variant="soft" color="default">{t('catalogs.field.home')}</Chip>
                         ) : null}
                       </div>
                     </div>
@@ -481,7 +480,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() => void onPreview(catalog)}
                       >
@@ -490,7 +489,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() => openEditDialog('rename', catalog)}
                       >
@@ -499,7 +498,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() => openEditDialog('tags', catalog)}
                       >
@@ -508,7 +507,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() => openEditDialog('group', catalog)}
                       >
@@ -517,7 +516,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() =>
                           void runAction(catalog.instanceId, 'duplicate', {
@@ -531,7 +530,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() =>
                           void runAction(
@@ -549,7 +548,7 @@ export function CatalogStudioPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         isDisabled={busy}
                         onPress={() => void runAction(catalog.instanceId, 'delete')}
                       >

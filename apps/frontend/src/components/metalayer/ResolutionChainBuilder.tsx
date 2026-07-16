@@ -116,7 +116,7 @@ export function ResolutionChainBuilder({
               key={strategy}
               type="button"
               size="sm"
-              variant={value.strategy === strategy ? 'primary' : 'quiet'}
+              variant={value.strategy === strategy ? 'primary' : 'ghost'}
               aria-pressed={value.strategy === strategy}
               onPress={() => setStrategy(strategy)}
             >

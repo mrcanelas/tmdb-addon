@@ -198,7 +198,7 @@ export function SortingPage() {
                   <Button
                     type="button"
                     size="sm"
-                    variant="quiet"
+                    variant="ghost"
                     aria-label={t('sorting.removeCriterionNamed', {
                       field: t(`sorting.fields.${criterion.field}`),
                     })}

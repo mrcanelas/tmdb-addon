@@ -1,7 +1,7 @@
 {
   "name": "@metalayer/shared-ui",
   "version": "1.0.0-beta.1",
-  "description": "HeroUI v3 wrappers and Layered Minimalism tokens for MetaLayer apps",
+  "description": "HeroUI re-exports and Layered Minimalism tokens for MetaLayer apps",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",

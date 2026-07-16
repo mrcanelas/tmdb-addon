@@ -192,7 +192,7 @@ export function ProfilesPage() {
                       <Button
                         type="button"
                         size="sm"
-                        variant="quiet"
+                        variant="ghost"
                         onPress={() => {
                           void copyUrl(url);
                         }}

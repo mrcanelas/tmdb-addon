@@ -49,7 +49,7 @@ Use **HeroUI v3 as the only general-purpose component library**.
 
 Use HeroUI primitives for buttons, inputs, selects, autocomplete, cards, chips, badges, tabs, accordions, dropdowns, popovers, tooltips, modals, drawers, tables, pagination, skeletons, progress, sliders, switches, radios, toolbars and alerts.
 
-Prefer `@metalayer/shared-ui` re-exports (`Button`, `Modal`, `Tabs`, `Radio`, `RadioGroup`, `Toolbar`, …). Do not hand-roll equivalent controls with raw `<button>` / custom dialog markup when HeroUI already covers the pattern — customize later via tokens/slots if needed.
+Prefer `@metalayer/shared-ui` re-exports (`Button`, `Chip`, `Modal`, `Tabs`, `Radio`, `RadioGroup`, `Toolbar`, …). Do not hand-roll equivalent controls with raw `<button>` / custom dialog markup when HeroUI already covers the pattern — customize later via tokens/slots if needed.
 
 Use **Mantine UI only as visual and layout inspiration** for dashboard composition. Do not install Mantine packages.
 
@@ -299,9 +299,9 @@ When a provider is not configured/enabled in Admin, Configure must not offer it.
 
 ## Shared components
 
-Prefer `@metalayer/shared-ui` exports, then app-local `components/metalayer/`.
+Prefer `@metalayer/shared-ui` exports (HeroUI re-exports + tokens), then app-local `components/metalayer/`.
 
-Target set: AppShell, Sidebar, CommandPalette, PageHeader, SectionCard, StatusBadge, ProviderCard, MetricCard, EmptyState, ErrorState, LoadingState, FormSection, UnsavedChangesBar, InspectorPanel, DataTable, ConfirmDialog, SecretField, LocaleSelect, CatalogCard, RuleBuilder, SortingBuilder, ResolutionChainBuilder, ResolutionFieldRail, StremioPreview, CodeViewer, JsonDiff, LogViewer.
+Target set: AppShell, Sidebar, CommandPalette, PageHeader, SectionCard, ProviderCard, MetricCard, EmptyState, ErrorState, LoadingState, FormSection, UnsavedChangesBar, InspectorPanel, DataTable, ConfirmDialog, SecretField, LocaleSelect, CatalogCard, RuleBuilder, SortingBuilder, ResolutionChainBuilder, ResolutionFieldRail, StremioPreview, CodeViewer, JsonDiff, LogViewer.
 
 ---
 

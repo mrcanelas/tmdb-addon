@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button, StatusBadge } from '@metalayer/shared-ui';
+import { Button, Chip } from '@metalayer/shared-ui';
 import {
   useHideWatchedPreviewMutation,
   useTrackingConnectMutation,
@@ -28,9 +28,9 @@ const OAUTH_ORDER: TrackingOAuthProvider[] = [
   'mal',
 ];
 
-function trackingTone(
+function trackingChipColor(
   state: string,
-): 'neutral' | 'success' | 'warning' | 'error' | 'info' {
+): 'default' | 'success' | 'warning' | 'danger' | 'accent' {
   switch (state) {
     case 'connected':
       return 'success';
@@ -39,9 +39,9 @@ function trackingTone(
     case 'reconnect_required':
       return 'warning';
     case 'invalid':
-      return 'error';
+      return 'danger';
     default:
-      return 'neutral';
+      return 'default';
   }
 }
 
@@ -170,9 +170,13 @@ export function TrackingPage() {
                         : provider.provider}
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={trackingTone(provider.state)}>
+                      <Chip
+                        size="sm"
+                        variant="soft"
+                        color={trackingChipColor(provider.state)}
+                      >
                         {t(`tracking.state.${provider.state}`)}
-                      </StatusBadge>
+                      </Chip>
                       <span className="text-sm ml-text-muted">
                         {provider.adapterAvailable
                           ? t('tracking.adapterReady')

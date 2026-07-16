@@ -2,15 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input, StatusBadge } from '@metalayer/shared-ui';
+import { Button, Chip, Input } from '@metalayer/shared-ui';
 import type { PublicSource, SourceTestResult } from '@/lib/api';
 import { useTestSourceMutation } from '@/api/hooks/use-sources';
 import {
   sourceTestFormSchema,
   type SourceTestFormValues,
 } from '@/api/schemas/source-test';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface SourceCardProps {
   source: PublicSource;
@@ -21,9 +19,9 @@ type TestStatus =
   | { kind: 'success'; result: SourceTestResult }
   | { kind: 'failure'; result?: SourceTestResult; messageKey: string; code?: string };
 
-function connectionTone(
+function connectionChipColor(
   state: PublicSource['connectionState'],
-): 'neutral' | 'success' | 'warning' | 'error' | 'info' | 'accent' {
+): 'default' | 'success' | 'warning' | 'danger' | 'accent' {
   switch (state) {
     case 'connected':
       return 'success';
@@ -31,11 +29,11 @@ function connectionTone(
     case 'expired':
       return 'warning';
     case 'invalid':
-      return 'error';
+      return 'danger';
     case 'coming_soon':
-      return 'info';
+      return 'accent';
     default:
-      return 'neutral';
+      return 'default';
   }
 }
 
@@ -104,27 +102,33 @@ export function SourceCard({ source }: SourceCardProps) {
           </h2>
           <div className="flex flex-wrap gap-1.5">
             {source.categories.map((category) => (
-              <Badge key={category} variant="outline">
+              <Chip key={category} size="sm" variant="soft" color="default">
                 {t(`sources.category.${category}`)}
-              </Badge>
+              </Chip>
             ))}
-            <Badge variant="muted">
+            <Chip size="sm" variant="soft" color="default">
               {source.adapterAvailable
                 ? t('sources.adapter.available')
                 : t('sources.adapter.unavailable')}
-            </Badge>
+            </Chip>
           </div>
         </div>
-        <StatusBadge tone={connectionTone(source.connectionState)}>
+        <Chip
+          size="sm"
+          variant="soft"
+          color={connectionChipColor(source.connectionState)}
+        >
           {t(`sources.state.${source.connectionState}`)}
-        </StatusBadge>
+        </Chip>
       </div>
 
       {capabilityLabels.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {capabilityLabels.map((label) => (
             <li key={label}>
-              <Badge variant="muted">{label}</Badge>
+              <Chip size="sm" variant="soft" color="default">
+                {label}
+              </Chip>
             </li>
           ))}
         </ul>
@@ -148,7 +152,7 @@ export function SourceCard({ source }: SourceCardProps) {
         ) : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" disabled>
+          <Button type="button" size="sm" isDisabled>
             {source.requiresOAuth || source.requiresCredential
               ? t('sources.actions.connect')
               : t('sources.actions.test')}
@@ -157,13 +161,13 @@ export function SourceCard({ source }: SourceCardProps) {
             type="submit"
             size="sm"
             variant="outline"
-            disabled={!canTest || testMutation.isPending}
+            isDisabled={!canTest || testMutation.isPending}
           >
             {testMutation.isPending
               ? t('sources.test.running')
               : t('sources.actions.test')}
           </Button>
-          <Button type="button" size="sm" variant="ghost" disabled>
+          <Button type="button" size="sm" variant="ghost" isDisabled>
             {t('sources.actions.disconnect')}
           </Button>
         </div>
