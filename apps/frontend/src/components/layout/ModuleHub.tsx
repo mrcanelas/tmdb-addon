@@ -34,7 +34,6 @@ export function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
   return (
     <Tabs
       className="mb-6 w-full"
-      variant="secondary"
       selectedKey={selectedKey}
       onSelectionChange={(key) => {
         navigate(String(key));

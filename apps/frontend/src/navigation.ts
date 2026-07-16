@@ -167,19 +167,19 @@ export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
   {
     id: 'sources-providers',
     path: '/sources',
-    labelKeys: ['nav.sources', 'hub.sources.tab.providers'],
+    labelKeys: ['nav.sources'],
     simpleMode: true,
   },
   {
     id: 'sources-tracking',
     path: '/sources/tracking',
-    labelKeys: ['nav.sources', 'hub.sources.tab.tracking'],
+    labelKeys: ['nav.sources', 'nav.tracking'],
     simpleMode: true,
   },
   {
     id: 'sources-search',
     path: '/sources/search',
-    labelKeys: ['nav.sources', 'hub.sources.tab.search'],
+    labelKeys: ['nav.sources', 'nav.searchAi'],
     simpleMode: true,
   },
   {

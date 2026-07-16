@@ -1,17 +1,10 @@
+import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ModuleHub } from '@/components/layout/ModuleHub';
 
+/** Sources hub — no Providers/Tracking/Search rail; pages own their own UI. */
 export function SourcesHubPage() {
-  const { t } = useTranslation();
-  return (
-    <ModuleHub
-      tabs={[
-        { to: '/sources', label: t('hub.sources.tab.providers'), end: true },
-        { to: '/sources/tracking', label: t('hub.sources.tab.tracking') },
-        { to: '/sources/search', label: t('hub.sources.tab.search') },
-      ]}
-    />
-  );
+  return <Outlet />;
 }
 
 export function CatalogsHubPage() {
