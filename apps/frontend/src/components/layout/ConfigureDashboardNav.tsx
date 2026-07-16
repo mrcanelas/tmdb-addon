@@ -58,10 +58,17 @@ function NavItemTooltip({
 }
 
 /** Nav list + animated active rail — structure matches Avexado DashboardNav. */
-export function ConfigureDashboardNav() {
+export function ConfigureDashboardNav({
+  forceExpanded = false,
+  onNavigate,
+}: {
+  forceExpanded?: boolean;
+  onNavigate?: () => void;
+} = {}) {
   const { t } = useTranslation();
   const location = useLocation();
-  const minimized = useConfigureUiStore((s) => s.sidebarMinimized);
+  const sidebarMinimized = useConfigureUiStore((s) => s.sidebarMinimized);
+  const minimized = forceExpanded ? false : sidebarMinimized;
   const mode = useConfigureUiStore((s) => s.mode);
   const openDonateModal = useConfigureUiStore((s) => s.openDonateModal);
   const navRef = useRef<HTMLElement | null>(null);
@@ -126,7 +133,11 @@ export function ConfigureDashboardNav() {
       return (
         <div className="relative" key={item.id}>
           <NavItemTooltip label={label} minimized={minimized}>
-            <a href={item.href} aria-label={label}>
+            <a
+              href={item.href}
+              aria-label={label}
+              onClick={() => onNavigate?.()}
+            >
               <NavItemVisual
                 item={item}
                 label={label}
@@ -147,7 +158,10 @@ export function ConfigureDashboardNav() {
               type="button"
               aria-label={label}
               className="w-full appearance-none border-0 bg-transparent p-0 text-start"
-              onClick={openDonateModal}
+              onClick={() => {
+                openDonateModal();
+                onNavigate?.();
+              }}
             >
               <NavItemVisual
                 item={item}
@@ -166,7 +180,12 @@ export function ConfigureDashboardNav() {
     return (
       <div className="relative" key={item.id}>
         <NavItemTooltip label={label} minimized={minimized}>
-          <NavLink to={item.path} end={item.path === '/'} aria-label={label}>
+          <NavLink
+            to={item.path}
+            end={item.path === '/'}
+            aria-label={label}
+            onClick={() => onNavigate?.()}
+          >
             {({ isActive }) => (
               <NavItemVisual
                 item={item}

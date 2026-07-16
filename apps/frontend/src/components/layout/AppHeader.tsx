@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Languages,
+  Menu,
   Moon,
   Search,
   Sun,
@@ -26,6 +27,8 @@ export function AppHeader() {
   const theme = useConfigureUiStore((s) => s.theme);
   const toggleTheme = useConfigureUiStore((s) => s.toggleTheme);
   const openCommandPalette = useConfigureUiStore((s) => s.openCommandPalette);
+  const openMobileNav = useConfigureUiStore((s) => s.openMobileNav);
+  const mobileNavOpen = useConfigureUiStore((s) => s.mobileNavOpen);
   const mode = useConfigureUiStore((s) => s.mode);
   const [languageOpen, setLanguageOpen] = useState(false);
 
@@ -35,18 +38,34 @@ export function AppHeader() {
   return (
     <>
       <div className="flex items-center justify-between gap-4 p-6 lg:ps-10 lg:pe-14">
-        <div className="min-w-0 flex-1">
-          <h1
-            id="page-title"
-            className="hidden truncate text-3xl font-bold text-[var(--foreground)] lg:block"
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            isIconOnly
+            className={`${CIRCLE_ICON_CLASS} md:hidden`}
+            aria-label={t('shell.header.menu')}
+            aria-expanded={mobileNavOpen}
+            aria-controls="configure-mobile-nav"
+            onPress={openMobileNav}
           >
-            {title}
-          </h1>
-          {subtitle ? (
-            <p className="mt-1 hidden truncate text-[var(--muted)] lg:block">
-              {subtitle}
-            </p>
-          ) : null}
+            <Menu className="size-5" aria-hidden />
+          </Button>
+
+          <div className="min-w-0 flex-1">
+            <h1
+              id="page-title"
+              className="hidden truncate text-3xl font-bold text-[var(--foreground)] lg:block"
+            >
+              {title}
+            </h1>
+            {subtitle ? (
+              <p className="mt-1 hidden truncate text-[var(--muted)] lg:block">
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <Toolbar

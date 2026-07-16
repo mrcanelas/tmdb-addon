@@ -39,7 +39,7 @@ export function AppShell() {
             <ScrollShadow
               orientation="vertical"
               size={40}
-              className="min-h-0 flex-1 px-4 pb-28 sm:px-10 sm:pb-4 md:pb-4"
+              className="min-h-0 flex-1 px-4 pb-4 sm:px-10"
             >
               <Outlet />
             </ScrollShadow>

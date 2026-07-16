@@ -10,6 +10,7 @@ interface ConfigureUiState {
   sidebarMinimized: boolean;
   commandPaletteOpen: boolean;
   donateModalOpen: boolean;
+  mobileNavOpen: boolean;
   setMode: (mode: ConfigureUiMode) => void;
   toggleMode: () => void;
   setTheme: (theme: MetaLayerTheme) => void;
@@ -22,6 +23,9 @@ interface ConfigureUiState {
   setDonateModalOpen: (open: boolean) => void;
   openDonateModal: () => void;
   closeDonateModal: () => void;
+  setMobileNavOpen: (open: boolean) => void;
+  openMobileNav: () => void;
+  closeMobileNav: () => void;
 }
 
 export const useConfigureUiStore = create<ConfigureUiState>()(
@@ -32,6 +36,7 @@ export const useConfigureUiStore = create<ConfigureUiState>()(
       sidebarMinimized: true,
       commandPaletteOpen: false,
       donateModalOpen: false,
+      mobileNavOpen: false,
       setMode: (mode) => set({ mode }),
       toggleMode: () =>
         set({ mode: get().mode === 'simple' ? 'advanced' : 'simple' }),
@@ -47,6 +52,9 @@ export const useConfigureUiStore = create<ConfigureUiState>()(
       setDonateModalOpen: (donateModalOpen) => set({ donateModalOpen }),
       openDonateModal: () => set({ donateModalOpen: true }),
       closeDonateModal: () => set({ donateModalOpen: false }),
+      setMobileNavOpen: (mobileNavOpen) => set({ mobileNavOpen }),
+      openMobileNav: () => set({ mobileNavOpen: true }),
+      closeMobileNav: () => set({ mobileNavOpen: false }),
     }),
     {
       name: 'metalayer.configure.ui',

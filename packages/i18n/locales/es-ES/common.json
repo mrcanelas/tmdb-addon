@@ -141,6 +141,7 @@
   "shell.theme.dark": "Tema oscuro",
   "shell.theme.light": "Tema claro",
   "shell.header.aria": "Barra de configure",
+  "shell.header.menu": "Abrir menú de navegación",
   "shell.header.language": "Idioma de la interfaz",
   "shell.header.search": "Buscar ajustes",
   "shell.header.prev": "Módulo anterior",
