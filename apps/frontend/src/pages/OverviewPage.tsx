@@ -240,7 +240,7 @@ export function OverviewPage() {
                 <Card.Title className='text-xl'>{t('overview.resources.title')}</Card.Title>
               </Card.Header>
               <Card.Content>
-                <div className="grid h-full gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid h-full gap-2 grid-cols-2 lg:grid-cols-3">
                   {HOME_RESOURCES.map((resource) => {
                     const Icon = RESOURCE_ICONS[resource.id] ?? BookOpen;
                     const tileClass =
@@ -303,7 +303,7 @@ export function OverviewPage() {
               </h2>
               <p className="text-sm ml-text-muted">{t('overview.presets.body')}</p>
             </div>
-            <div className="flex min-w-0 gap-3 overflow-x-auto pb-1">
+            <div className="flex flex-col lg:flex-row min-w-0 gap-3 pb-1">
               {HOME_PRESETS.map((preset) => {
                 const Icon = preset.Icon;
                 return (
