@@ -171,7 +171,7 @@ export function SourcesPage() {
           Same rail width as Overview What’s New (340px). On xl, absolute fill
           matches the catalog column height.
         */}
-        <aside className="relative z-10 w-full shrink-0 xl:w-[340px]">
+        <aside className="relative z-10 w-full shrink-0 xl:h-[calc(100dvh-8.25rem)] xl:w-[340px]">
           <div className="xl:absolute xl:inset-0 xl:flex xl:min-h-0">
             <ConnectedSourcesPanel
               sources={connectedSources}
