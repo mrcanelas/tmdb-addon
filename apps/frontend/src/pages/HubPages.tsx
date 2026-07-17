@@ -7,17 +7,9 @@ export function SourcesHubPage() {
   return <Outlet />;
 }
 
+/** Catalogs hub — Studio is the only surface; rules live in the catalog edit modal. */
 export function CatalogsHubPage() {
-  const { t } = useTranslation();
-  return (
-    <ModuleHub
-      tabs={[
-        { to: '/catalogs/studio', label: t('hub.catalogs.tab.studio') },
-        { to: '/catalogs/rules', label: t('hub.catalogs.tab.rules') },
-        { to: '/catalogs/order', label: t('hub.catalogs.tab.order') },
-      ]}
-    />
-  );
+  return <Outlet />;
 }
 
 export function MetasHubPage() {

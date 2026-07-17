@@ -20,6 +20,9 @@ export {
   Toolbar,
   SearchField,
   Tooltip,
+  Table,
+  Toast,
+  toast,
   ScrollShadow,
   useOverlayState,
 } from '@heroui/react';

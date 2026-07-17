@@ -1,11 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { MetaLayerThemeProvider } from '@metalayer/shared-ui';
+import { MetaLayerThemeProvider, Toast } from '@metalayer/shared-ui';
 import { AppShell } from '@/components/layout/AppShell';
 import { OverviewPage } from '@/pages/OverviewPage';
 import { SourcesPage } from '@/pages/SourcesPage';
 import { CatalogStudioPage } from '@/pages/CatalogStudioPage';
-import { RulesPage } from '@/pages/RulesPage';
-import { SortingPage } from '@/pages/SortingPage';
 import { InspectorPage } from '@/pages/InspectorPage';
 import { TrackingPage } from '@/pages/TrackingPage';
 import { CorrectionsPage } from '@/pages/CorrectionsPage';
@@ -31,6 +29,7 @@ function ThemedApp() {
 
   return (
     <MetaLayerThemeProvider theme={theme}>
+      <Toast.Provider placement="bottom end" />
       <AppQueryProvider>
         <BrowserRouter basename="/configure">
           <Routes>
@@ -44,10 +43,10 @@ function ThemedApp() {
               </Route>
 
               <Route path="catalogs" element={<CatalogsHubPage />}>
-                <Route index element={<Navigate to="studio" replace />} />
-                <Route path="studio" element={<CatalogStudioPage />} />
-                <Route path="rules" element={<RulesPage />} />
-                <Route path="order" element={<SortingPage />} />
+                <Route index element={<CatalogStudioPage />} />
+                <Route path="studio" element={<Navigate to="/catalogs" replace />} />
+                <Route path="rules" element={<Navigate to="/catalogs" replace />} />
+                <Route path="order" element={<Navigate to="/catalogs" replace />} />
               </Route>
 
               <Route path="metas" element={<MetasHubPage />}>

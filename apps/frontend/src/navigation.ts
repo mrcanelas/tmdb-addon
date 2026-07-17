@@ -146,7 +146,7 @@ export const DONATE_OPTIONS = [
 export const CONFIGURE_HUB_ENTRY: Partial<Record<ConfigureModuleId, string>> = {
   home: '/',
   sources: '/sources',
-  catalogs: '/catalogs/studio',
+  catalogs: '/catalogs',
   metas: '/metas/fields',
   profiles: '/profiles',
   review: '/review/inspector',
@@ -183,21 +183,9 @@ export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
     simpleMode: true,
   },
   {
-    id: 'catalogs-studio',
-    path: '/catalogs/studio',
-    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.studio'],
-    simpleMode: true,
-  },
-  {
-    id: 'catalogs-rules',
-    path: '/catalogs/rules',
-    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.rules'],
-    simpleMode: true,
-  },
-  {
-    id: 'catalogs-order',
-    path: '/catalogs/order',
-    labelKeys: ['nav.catalogs', 'hub.catalogs.tab.order'],
+    id: 'catalogs',
+    path: '/catalogs',
+    labelKeys: ['nav.catalogs'],
     simpleMode: true,
   },
   {
@@ -307,9 +295,9 @@ export function getAdjacentHubPath(
 export const CONFIGURE_LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: '/overview', to: '/' },
   { from: '/home', to: '/' },
-  { from: '/catalog-studio', to: '/catalogs/studio' },
-  { from: '/rules', to: '/catalogs/rules' },
-  { from: '/sorting', to: '/catalogs/order' },
+  { from: '/catalog-studio', to: '/catalogs' },
+  { from: '/rules', to: '/catalogs' },
+  { from: '/sorting', to: '/catalogs' },
   { from: '/meta-builder', to: '/metas/fields' },
   { from: '/resolution', to: '/metas/fields' },
   { from: '/language-region', to: '/metas/language' },
