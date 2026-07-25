@@ -51,7 +51,7 @@ export function parseCommaSeparatedTitles(content: string | undefined | null): s
 
   return content
     .split(',')
-    .map((title) => title.trim().replace(/^\d+[\.\-\)]\s*/, ''))
+    .map((title) => title.trim().replace(/^\d+[.\-)]\s*/, ''))
     .filter(
       (title) =>
         title.length > 0 &&
