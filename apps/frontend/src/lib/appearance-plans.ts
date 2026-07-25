@@ -1,71 +1,8 @@
-import type { FieldResolutionPlan, ResolutionConfig } from '@metalayer/config';
-import { planFromProviderChain } from '@metalayer/config';
-
-export const APPEARANCE_EDIT_FIELDS = [
-  'title',
-  'description',
-  'poster',
-  'background',
-  'logo',
-] as const;
-
-export type AppearanceEditField = (typeof APPEARANCE_EDIT_FIELDS)[number];
-
-export function isArtworkField(
-  field: AppearanceEditField,
-): field is 'poster' | 'background' | 'logo' {
-  return field === 'poster' || field === 'background' || field === 'logo';
-}
-
-/**
- * Default Field Resolution Plan for Appearance Studio when none is stored.
- * Artwork chains include `no-language` for textless posters/backgrounds/logos.
- */
-export function ensureAppearancePlan(
-  resolution: ResolutionConfig,
-  field: AppearanceEditField,
-): FieldResolutionPlan {
-  const existing = resolution.defaults.fields[field];
-  if (existing) return existing;
-  if (field === 'title' || field === 'description') {
-    return planFromProviderChain(
-      ['tmdb', 'tvdb'],
-      [
-        { type: 'locale', value: 'pt-BR' },
-        { type: 'locale', value: 'en-US' },
-        { type: 'original-language' },
-      ],
-      'locale-first',
-    );
-  }
-  const providers =
-    field === 'background'
-      ? (['fanart', 'tmdb', 'rpdb', 'aioratings', 'openposterdb'] as const)
-      : field === 'logo'
-        ? ([
-            'rpdb',
-            'topposters',
-            'aioratings',
-            'openposterdb',
-            'fanart',
-            'tmdb',
-            'tvdb',
-          ] as const)
-        : ([
-            'rpdb',
-            'topposters',
-            'aioratings',
-            'openposterdb',
-            'fanart',
-            'tmdb',
-          ] as const);
-  return planFromProviderChain(
-    [...providers],
-    [
-      { type: 'locale', value: 'pt-BR' },
-      { type: 'no-language' },
-      { type: 'locale', value: 'en-US' },
-    ],
-    'locale-first',
-  );
-}
+/** @deprecated Import from `@/lib/field-plans` instead. */
+export {
+  APPEARANCE_EDIT_FIELDS,
+  ensureAppearancePlan,
+  ensureFieldPlan,
+  isArtworkField,
+  type AppearanceEditField,
+} from './field-plans.js';
