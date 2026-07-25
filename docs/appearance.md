@@ -8,10 +8,10 @@ Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phas
 
 | Surface | Role |
 |---|---|
-| `/configure/metas/fields` | **Primary** chain editor under Metas (Field Resolution Chains / Meta Builder) |
-| `/configure/metas/appearance` | Display settings (+ current bridge host for `ResolutionChainBuilder` where needed) |
+| `/configure/metas/fields` | **Primary** chain editor: field rail, Simple/Explicit builder, draft preview |
+| `/configure/metas/appearance` | Display-oriented stack of title/artwork builders |
 
-## Fields editable in beta configure (current bridge)
+## Fields editable in beta configure
 
 | Field | Kind | Default strategy | Default providers (when unset) | Default locales |
 |---|---|---|---|---|
@@ -21,7 +21,7 @@ Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phas
 | `background` | Artwork | `locale-first` | Fanart.tv → TMDB → RPDB | pt-BR → **no-language** → en-US |
 | `logo` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB → TVDB | pt-BR → **no-language** → en-US |
 
-Provider pickers must only offer **instance-available** providers (`AGENTS.md` §8.1.1). Defaults are applied client-side via `ensureAppearancePlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
+Provider pickers must only offer **instance-available** providers (`AGENTS.md` §8.1.1). Defaults are applied client-side via `ensureFieldPlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
 
 `no-language` is a first-class locale preference for artwork (textless posters/backgrounds). It is not treated as missing metadata.
 
