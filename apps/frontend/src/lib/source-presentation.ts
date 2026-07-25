@@ -74,6 +74,32 @@ export function sourceIconUrl(providerId: string): string | undefined {
   return SOURCE_PRESENTATION[providerId]?.iconUrl;
 }
 
+/** Human-facing brand labels for provider ids used across chains and previews. */
+export const SOURCE_LABELS: Record<string, string> = {
+  tmdb: 'TMDB',
+  tvdb: 'TVDB',
+  imdb: 'IMDb',
+  fanart: 'Fanart.tv',
+  rpdb: 'RPDB',
+  topposters: 'Top Posters',
+  aioratings: 'AIORatings',
+  openposterdb: 'OpenPosterDB',
+  trakt: 'Trakt',
+  simkl: 'SIMKL',
+  mdblist: 'MDBList',
+  publicmetadb: 'PublicMetaDB',
+  anilist: 'AniList',
+  mal: 'MyAnimeList',
+  kitsu: 'Kitsu',
+  gemini: 'Gemini',
+  groq: 'Groq',
+  openrouter: 'OpenRouter',
+};
+
+export function sourceLabel(providerId: string): string {
+  return SOURCE_LABELS[providerId] ?? providerId.toUpperCase();
+}
+
 export function sourceDescriptionKey(providerId: string): string {
   return `sources.providers.${providerId}.description`;
 }

@@ -28,6 +28,7 @@
     "i18next": "^25.2.1",
     "lucide-react": "^0.511.0",
     "react": "^19.2.7",
+    "react-circle-flags": "^0.0.30",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.81.0",
     "react-i18next": "^15.5.2",
