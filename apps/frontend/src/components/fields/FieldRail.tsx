@@ -88,8 +88,8 @@ export function FieldRail({
         </label>
       </Card.Header>
 
-      <Card.Content className="min-h-0 flex-1 overflow-hidden p-0 ml-2">
-<ScrollShadow
+      <Card.Content className="min-h-0 flex-1 overflow-hidden p-0 ms-2">
+        <ScrollShadow
           className="h-full min-h-0 overflow-y-auto"
           orientation="vertical"
           size={32}
