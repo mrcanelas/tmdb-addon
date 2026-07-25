@@ -9,6 +9,7 @@ import { TrackingPage } from '@/pages/TrackingPage';
 import { CorrectionsPage } from '@/pages/CorrectionsPage';
 import { SearchAiPage } from '@/pages/SearchAiPage';
 import { AppearancePage } from '@/pages/AppearancePage';
+import { FieldsPage } from '@/pages/FieldsPage';
 import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
 import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { ProfilesPage } from '@/pages/ProfilesPage';
@@ -51,7 +52,7 @@ function ThemedApp() {
 
               <Route path="metas" element={<MetasHubPage />}>
                 <Route index element={<Navigate to="fields" replace />} />
-                <Route path="fields" element={<AppearancePage />} />
+                <Route path="fields" element={<FieldsPage />} />
                 <Route path="language" element={<LanguageRegionPage />} />
                 <Route path="appearance" element={<AppearancePage />} />
               </Route>

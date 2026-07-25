@@ -33,7 +33,7 @@ export function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
 
   return (
     <Tabs
-      className="mb-6 w-full"
+      className="tabs min-w-0 flex-1 lg:w-fit lg:flex-none"
       selectedKey={selectedKey}
       onSelectionChange={(key) => {
         navigate(String(key));
@@ -55,7 +55,7 @@ export function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
 
 export function ModuleHub({ tabs }: { tabs: ModuleTab[] }) {
   return (
-    <div>
+    <div className="space-y-6">
       <ModuleTabs tabs={tabs} />
       <Outlet />
     </div>
