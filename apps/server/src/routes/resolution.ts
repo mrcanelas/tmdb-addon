@@ -1,9 +1,11 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { createApiError } from '@metalayer/api-errors';
 import {
+  FieldResolutionPlanSchema,
   ResolvableFieldSchema,
   parseResolutionConfig,
   resolutionConfigFromFieldProviders,
+  type FieldResolutionPlan,
   type MetaLayerConfig,
   type ResolutionConfig,
 } from '@metalayer/config';
@@ -198,6 +200,8 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
         confidence?: number;
       }>;
       originalLanguage?: string;
+      /** Unsaved draft plan for Fields preview — never persisted. */
+      plan?: FieldResolutionPlan;
     };
   }>('/configurations/:configId/resolution/test', async (request, reply) => {
     const access = await requireEdit(app, request, request.params.configId);
@@ -215,8 +219,37 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
+    let temporaryPlan: FieldResolutionPlan | undefined;
+    if (request.body?.plan !== undefined) {
+      const parsedPlan = FieldResolutionPlanSchema.safeParse(request.body.plan);
+      if (!parsedPlan.success) {
+        return reply.status(400).send(
+          createApiError({
+            code: 'VALIDATION_FAILED',
+            message: 'Invalid resolution plan',
+            correlationId: request.correlationId,
+            params: { field: 'plan' },
+          }),
+        );
+      }
+      temporaryPlan = parsedPlan.data;
+    }
+
     const view = (await app.configStore.getPublic(request.params.configId))!;
-    const resolution = resolveStoredResolution(view.config);
+    const stored = resolveStoredResolution(view.config);
+    const resolution: ResolutionConfig = temporaryPlan
+      ? {
+          ...stored,
+          defaults: {
+            ...stored.defaults,
+            fields: {
+              ...stored.defaults.fields,
+              [field.data]: temporaryPlan,
+            },
+          },
+        }
+      : stored;
+
     const effective = compileResolutionPlan({
       field: field.data,
       mediaType: request.body?.mediaType,
@@ -238,9 +271,11 @@ export const resolutionRoutes: FastifyPluginAsync = async (app) => {
       selectedProvider: result.selectedProvider,
       selectedLocale: result.selectedLocale,
       fallbackUsed: result.fallbackUsed,
+      confidence: result.confidence,
       attempts: result.attempts,
       effectivePlanHash: result.effectivePlanHash,
       warnings: result.warnings,
+      temporary: Boolean(temporaryPlan),
       correlationId: request.correlationId,
     };
   });

@@ -1070,6 +1070,87 @@ export async function saveResolutionConfig(
   });
 }
 
+export interface ResolutionCompileResult {
+  effective: {
+    field: string;
+    strategy: string;
+    generatedSteps: Array<{
+      id: string;
+      provider: string;
+      locale?: { type: string; value?: string };
+    }>;
+    effectivePlanHash: string;
+    warnings: Array<{ code: string; params?: Record<string, unknown> }>;
+  };
+  correlationId: string;
+}
+
+export async function compileResolutionPlanApi(
+  configId: string,
+  editCredential: string,
+  body: {
+    field: string;
+    mediaType?: 'movie' | 'series' | 'anime';
+    profileId?: string;
+    catalogId?: string;
+  },
+): Promise<ResolutionCompileResult> {
+  return apiFetch(`/api/v1/configurations/${configId}/resolution/compile`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}
+
+export interface ResolutionTestResult {
+  status: 'resolved' | 'unresolved';
+  field: string;
+  value: unknown;
+  selectedProvider: string | null;
+  selectedLocale?: string;
+  fallbackUsed: boolean;
+  confidence?: number;
+  attempts?: Array<{
+    index: number;
+    stepId: string;
+    provider: string;
+    status: string;
+    resolvedLocale?: string;
+    reason?: string;
+    reasonParams?: Record<string, string | number>;
+  }>;
+  effectivePlanHash?: string;
+  warnings: Array<{
+    code: string;
+    params?: Record<string, string | number | undefined>;
+  }>;
+  temporary?: boolean;
+  correlationId: string;
+}
+
+export async function testResolutionPlan(
+  configId: string,
+  editCredential: string,
+  body: {
+    field: string;
+    mediaType?: 'movie' | 'series' | 'anime';
+    contributions?: Array<{
+      provider: string;
+      value?: unknown;
+      locale?: string;
+      confidence?: number;
+    }>;
+    originalLanguage?: string;
+    plan?: import('@metalayer/config').FieldResolutionPlan;
+  },
+): Promise<ResolutionTestResult> {
+  return apiFetch(`/api/v1/configurations/${configId}/resolution/test`, {
+    method: 'POST',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify(body),
+  });
+}
+
 export async function fetchLocalization(
   configId: string,
   editCredential: string,
