@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus, X } from 'lucide-react';
+import { GripVertical, Plus, TriangleAlert, X } from 'lucide-react';
 import { Button, Card, Tabs } from '@metalayer/shared-ui';
 import type {
   FieldResolutionPlan,
@@ -27,6 +27,11 @@ import type {
 } from '@metalayer/config';
 import { cn } from '@/lib/utils';
 import { sourceLabel } from '@/lib/source-presentation';
+import {
+  availabilityOf,
+  filterAvailableProviders,
+  type ProviderAvailability,
+} from '@/lib/provider-availability';
 import { LocaleFlag, ProviderGlyph } from './field-icons';
 
 export interface ResolutionChainBuilderProps {
@@ -38,6 +43,11 @@ export interface ResolutionChainBuilderProps {
   allowLocales?: boolean;
   disabled?: boolean;
   showEffectiveOrder?: boolean;
+  /**
+   * Instance availability per provider (AGENTS.md §8.1.1).
+   * Omit while loading — pickers must not hide providers on missing data.
+   */
+  availability?: Record<string, ProviderAvailability>;
   footer?: ReactNode;
 }
 
@@ -72,6 +82,7 @@ function SortableChipRow({
   id,
   label,
   leading,
+  warning,
   disabled,
   onRemove,
   removeLabel,
@@ -79,6 +90,8 @@ function SortableChipRow({
   id: string;
   label: string;
   leading?: ReactNode;
+  /** Explains why the entry cannot resolve; renders a visible warning mark. */
+  warning?: string;
   disabled?: boolean;
   onRemove: () => void;
   removeLabel: string;
@@ -101,6 +114,7 @@ function SortableChipRow({
       }}
       className={cn(
         'inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1.5',
+        warning && 'border-[var(--warning)]',
         isDragging && 'z-20 opacity-90 shadow-md',
       )}
     >
@@ -118,6 +132,15 @@ function SortableChipRow({
       <span className="max-w-40 truncate text-sm font-medium text-[var(--foreground)]">
         {label}
       </span>
+      {warning ? (
+        <span
+          className="inline-flex shrink-0 items-center text-[var(--warning)]"
+          title={warning}
+        >
+          <TriangleAlert className="size-3.5" aria-hidden />
+          <span className="sr-only">{warning}</span>
+        </span>
+      ) : null}
       <Button
         type="button"
         variant="ghost"
@@ -175,6 +198,7 @@ export function ResolutionChainBuilder({
   allowLocales = true,
   disabled = false,
   showEffectiveOrder = true,
+  availability,
   footer,
 }: ResolutionChainBuilderProps) {
   const { t } = useTranslation('resolution');
@@ -207,8 +231,22 @@ export function ResolutionChainBuilder({
     }));
   }, [value]);
 
-  const availableProviders = providerOptions.filter(
-    (provider) => !providers.includes(provider),
+  // Only instance-available providers can be added (§8.1.1). Providers already
+  // in the chain stay visible with a warning instead of vanishing (§4.3).
+  const availableProviders = filterAvailableProviders(
+    providerOptions.filter((provider) => !providers.includes(provider)),
+    availability,
+  );
+
+  const blockedProviders = useMemo(
+    () =>
+      providers
+        .map((provider) => ({
+          provider,
+          state: availabilityOf(availability, provider),
+        }))
+        .filter((entry) => !entry.state.available),
+    [providers, availability],
   );
 
   const localeChoices: LocalePreference[] = [
@@ -293,7 +331,9 @@ export function ResolutionChainBuilder({
         <div className="overflow-hidden rounded-xl border border-[var(--border)]">
           <table className="w-full border-collapse text-sm">
             <tbody>
-              {effectivePreview.slice(0, 10).map((row, index) => (
+              {effectivePreview.slice(0, 10).map((row, index) => {
+                const state = availabilityOf(availability, row.provider);
+                return (
                 <tr
                   key={`${row.provider}-${index}`}
                   className="border-b border-[var(--border)] last:border-b-0"
@@ -304,9 +344,23 @@ export function ResolutionChainBuilder({
                   <td className="px-1 py-2">
                     <span className="flex items-center gap-2">
                       <ProviderGlyph provider={row.provider} />
-                      <span className="font-medium text-[var(--foreground)]">
+                      <span
+                        className={cn(
+                          'font-medium text-[var(--foreground)]',
+                          !state.available && 'line-through opacity-60',
+                        )}
+                      >
                         {sourceLabel(row.provider)}
                       </span>
+                      {!state.available ? (
+                        <TriangleAlert
+                          className="size-3.5 shrink-0 text-[var(--warning)]"
+                          aria-label={t(
+                            `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
+                            { provider: sourceLabel(row.provider) },
+                          )}
+                        />
+                      ) : null}
                     </span>
                   </td>
                   <td className="px-3 py-2">
@@ -320,7 +374,8 @@ export function ResolutionChainBuilder({
                     </span>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -434,12 +489,22 @@ export function ResolutionChainBuilder({
                   strategy={horizontalListSortingStrategy}
                 >
                   <ul className="flex flex-wrap items-center gap-2">
-                    {providers.map((provider) => (
+                    {providers.map((provider) => {
+                      const state = availabilityOf(availability, provider);
+                      return (
                       <SortableChipRow
                         key={provider}
                         id={provider}
                         label={sourceLabel(provider)}
                         leading={<ProviderGlyph provider={provider} />}
+                        warning={
+                          state.available
+                            ? undefined
+                            : t(
+                                `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
+                                { provider: sourceLabel(provider) },
+                              )
+                        }
                         disabled={disabled}
                         removeLabel={t('resolution.removeNamed', {
                           item: sourceLabel(provider),
@@ -453,10 +518,28 @@ export function ResolutionChainBuilder({
                           })
                         }
                       />
-                    ))}
+                      );
+                    })}
                   </ul>
                 </SortableContext>
               </DndContext>
+              {blockedProviders.length > 0 ? (
+                <p
+                  className="text-xs text-[var(--warning)]"
+                  role="status"
+                >
+                  {t('resolution.availability.blockedProviders', {
+                    providers: blockedProviders
+                      .map((entry) => sourceLabel(entry.provider))
+                      .join(', '),
+                  })}
+                </p>
+              ) : null}
+              {availability && availableProviders.length === 0 ? (
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.availability.noneAvailable')}
+                </p>
+              ) : null}
             </div>
 
             {allowLocales ? (
@@ -676,12 +759,21 @@ export function ResolutionChainBuilder({
                         ? localeLabel(step.locale, t)
                         : t('resolution.locale.any')
                     }`;
+                    const state = availabilityOf(availability, step.provider);
                     return (
                       <SortableChipRow
                         key={step.id}
                         id={step.id}
                         label={label}
                         leading={<ProviderGlyph provider={step.provider} />}
+                        warning={
+                          state.available
+                            ? undefined
+                            : t(
+                                `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
+                                { provider: sourceLabel(step.provider) },
+                              )
+                        }
                         disabled={disabled}
                         removeLabel={t('resolution.removeNamed', {
                           item: label,
@@ -699,7 +791,7 @@ export function ResolutionChainBuilder({
               </SortableContext>
             </DndContext>
             <div className="flex flex-wrap gap-2">
-              {providerOptions.map((provider) => (
+              {filterAvailableProviders(providerOptions, availability).map((provider) => (
                 <Button
                   key={provider}
                   type="button"

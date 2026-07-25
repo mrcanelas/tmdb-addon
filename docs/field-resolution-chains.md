@@ -40,11 +40,29 @@ Deep links: `/configure/metas/fields?field=language`, `?field=appearance`, `?fie
 
 Artwork defaults include `no-language` for poster/background/logo. See `docs/appearance.md`.
 
+## Instance availability gate
+
+Provider pickers derive from `GET /api/v1/sources` instead of a static list (`AGENTS.md` §8.1.1, ADR 0008).
+
+A provider can be **added** to a chain only when all hold:
+
+- `connectionState` is not `coming_soon`;
+- `adapterAvailable` is true;
+- the provider declares the field in `capabilities.metadataFields`.
+
+Behavior rules:
+
+- Providers already in a saved chain are **never silently removed**. They keep their position, gain a warning mark, and the section explains that they are skipped during resolution (`AGENTS.md` §4.3).
+- The effective-order table strikes through unavailable steps so the skipped attempts stay visible.
+- Fields the capability model cannot express (runtime, certification, directors, writers, release dates) are **not** filtered — hiding providers for an undeclared constraint would be a false negative.
+- While `/api/v1/sources` is loading or unreachable, availability is `undefined` and nothing is filtered.
+
 ## Still follow-up
 
 - Profile / catalog / title inheritance UI
 - Episode-order chains and credits/facts field persistence
-- Instance-available provider filtering in pickers
+- Server-side `resolution/compile` should also mark unavailable providers (the UI gate is client-side today)
+- Capability model lacks fields for runtime / certification / release dates / writers
 - Dedicated artwork ranking polish beyond default `no-language` chains
 
 Related:

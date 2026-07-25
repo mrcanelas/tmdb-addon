@@ -7,10 +7,13 @@ import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import {
   ensureStudioSession,
   fetchResolutionConfig,
+  fetchSources,
   saveResolutionConfig,
   testResolutionPlan,
+  type PublicSource,
   type ResolutionTestResult,
 } from '@/lib/api';
+import { buildProviderAvailability } from '@/lib/provider-availability';
 import {
   ensureFieldPlan,
   resetFieldPlan,
@@ -64,6 +67,13 @@ export function FieldsPage() {
   const previewGenerationRef = useRef<
     Partial<Record<EditableFieldId, number>>
   >({});
+  /** Undefined until sources load, so pickers never hide providers early. */
+  const [sources, setSources] = useState<PublicSource[] | undefined>(undefined);
+
+  const fieldAvailability = useMemo(() => {
+    if (!sources || !editableSelected) return undefined;
+    return buildProviderAvailability(sources, editableSelected);
+  }, [sources, editableSelected]);
 
   const currentPlan = useMemo(() => {
     if (!resolution || !editableSelected) return null;
@@ -137,6 +147,22 @@ export function FieldsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Instance availability gates the provider pickers (AGENTS.md §8.1.1).
+  // A failure leaves availability undefined so the chain stays editable.
+  useEffect(() => {
+    let cancelled = false;
+    void fetchSources()
+      .then((list) => {
+        if (!cancelled) setSources(list);
+      })
+      .catch(() => {
+        if (!cancelled) setSources(undefined);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!searchParams.get('field')) {
@@ -353,6 +379,7 @@ export function FieldsPage() {
                   onChange={(plan) => updateField(editableSelected, plan)}
                   providerOptions={selectedEntry.providerOptions}
                   allowLocales={selectedEntry.allowLocales}
+                  availability={fieldAvailability}
                   footer={
                     <>
                       <div className="flex flex-wrap items-center gap-2">
