@@ -35,6 +35,7 @@
   "hub.catalogs.tab.order": "Ordem",
   "hub.metas.description": "Resolução por campo, idioma, região e como os metadados aparecem.",
   "hub.metas.tab.fields": "Campos",
+  "hub.metas.tab.general": "Geral",
   "hub.metas.tab.language": "Idioma",
   "hub.metas.tab.appearance": "Aparência",
   "hub.review.description": "Inspecione resultados, gerencie correções e rode diagnósticos.",

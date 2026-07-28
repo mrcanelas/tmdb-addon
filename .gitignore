@@ -76,6 +76,8 @@ yarn.lock
 
 # MetaLayer Lite local database
 data/
+!packages/config/src/data/
+!packages/config/src/data/**
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal

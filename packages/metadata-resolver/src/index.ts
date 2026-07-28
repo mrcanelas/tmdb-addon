@@ -30,3 +30,10 @@ export {
   type TitleMode,
   type DescriptionMode,
 } from './resolve.js';
+
+export {
+  applyPresentation,
+  localePreferencesFromLocalization,
+  type PresentableMeta,
+  type ApplyPresentationResult,
+} from './presentation.js';

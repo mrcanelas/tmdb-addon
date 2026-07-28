@@ -1,10 +1,23 @@
 import { z } from 'zod';
+import {
+  DEFAULT_PRESENTATION,
+  PresentationConfigSchema,
+} from './presentation.js';
 
 /**
  * MetaLayer configuration schema version.
  * Increment with every incompatible stored-config change and add a migration.
  */
 export const METALAYER_CONFIG_VERSION = 1 as const;
+
+export {
+  PresentationConfigSchema,
+  DEFAULT_PRESENTATION,
+  CATALOG_NAME_PREFIX,
+  applyCatalogNamePrefix,
+  parsePresentationConfig,
+  type PresentationConfig,
+} from './presentation.js';
 
 export const LocalizationPreferencesSchema = z.object({
   interfaceLocale: z.string().min(2),
@@ -206,6 +219,8 @@ export const MetaLayerConfigSchema = z.object({
     })
     .passthrough()
     .optional(),
+  /** Display / presentation preferences (AGENTS.md §15). */
+  presentation: PresentationConfigSchema.default(DEFAULT_PRESENTATION),
   featureFlags: z.record(z.boolean()).default({}),
   legacyImport: z
     .object({
@@ -233,6 +248,7 @@ export type FieldProviders = z.infer<typeof FieldProvidersSchema>;
 export type ProfileDefinition = z.infer<typeof ProfileDefinitionSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
+// PresentationConfig re-exported from ./presentation.js above.
 
 export function createDefaultMetaLayerConfig(
   overrides: Partial<MetaLayerConfig> = {},
@@ -257,6 +273,7 @@ export function createDefaultMetaLayerConfig(
     profiles: [],
     globalRules: {},
     fieldProviders: DEFAULT_FIELD_PROVIDERS,
+    presentation: DEFAULT_PRESENTATION,
     featureFlags: {},
     createdAt: now,
     updatedAt: now,

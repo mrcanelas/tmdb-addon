@@ -73,6 +73,8 @@
   "resolution.group.credits": "Créditos",
   "resolution.group.ratings": "Notas",
   "resolution.group.episodeStructure": "Estrutura de episódios",
+  "resolution.field.general": "Geral",
+  "resolution.fieldDescription.general": "Idioma, região e como os metadados são apresentados no Stremio.",
   "resolution.field.language": "Idioma",
   "resolution.field.appearance": "Aparência",
   "resolution.field.title": "Título",

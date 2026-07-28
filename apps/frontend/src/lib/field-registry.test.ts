@@ -12,12 +12,13 @@ import {
 } from './field-registry.js';
 
 describe('field registry', () => {
-  it('places Language and Appearance in General as settings panels', () => {
-    expect(getFieldEntry('language')?.group).toBe('general');
-    expect(getFieldEntry('appearance')?.group).toBe('general');
-    expect(isSettingsFieldId('language')).toBe(true);
+  it('places a single General settings panel in the General group', () => {
+    expect(getFieldEntry('general')?.group).toBe('general');
+    expect(isSettingsFieldId('general')).toBe(true);
     expect(isResolutionFieldId('title')).toBe(true);
-    expect(isResolutionFieldId('language')).toBe(false);
+    expect(isResolutionFieldId('general')).toBe(false);
+    expect(getFieldEntry('language')).toBeUndefined();
+    expect(getFieldEntry('appearance')).toBeUndefined();
   });
 
   it('marks core fields editable and upcoming fields as coming soon', () => {
@@ -28,11 +29,12 @@ describe('field registry', () => {
     expect(listEditableFields().every((entry) => entry.editable)).toBe(true);
   });
 
-  it('parses deep-link field query with a safe default', () => {
+  it('parses deep-link field query with redirects from former settings panels', () => {
     expect(parseFieldQueryParam('poster')).toBe('poster');
-    expect(parseFieldQueryParam('language')).toBe('language');
-    expect(parseFieldQueryParam('unknown')).toBe('language');
-    expect(parseFieldQueryParam(null)).toBe('language');
+    expect(parseFieldQueryParam('language')).toBe('general');
+    expect(parseFieldQueryParam('appearance')).toBe('general');
+    expect(parseFieldQueryParam('unknown')).toBe('general');
+    expect(parseFieldQueryParam(null)).toBe('general');
   });
 
   it('filters and groups rail entries for search', () => {
@@ -46,9 +48,9 @@ describe('field registry', () => {
   });
 
   it('navigates between editable fields including General', () => {
-    expect(adjacentEditableField('language', 1)).toBe('appearance');
-    expect(adjacentEditableField('appearance', 1)).toBe('title');
-    expect(adjacentEditableField('language', -1)).toBeNull();
+    expect(adjacentEditableField('general', 1)).toBe('title');
+    expect(adjacentEditableField('title', -1)).toBe('general');
+    expect(adjacentEditableField('general', -1)).toBeNull();
     expect(getFieldEntry('poster')?.category).toBe('artwork');
   });
 });

@@ -15,6 +15,11 @@ export {
   DEFAULT_FIELD_PROVIDERS,
   CatalogDefinitionSchema,
   ProfileDefinitionSchema,
+  PresentationConfigSchema,
+  DEFAULT_PRESENTATION,
+  CATALOG_NAME_PREFIX,
+  applyCatalogNamePrefix,
+  parsePresentationConfig,
   createDefaultMetaLayerConfig,
   parseMetaLayerConfig,
   findProfile,
@@ -35,6 +40,7 @@ export {
   type FieldProviders,
   type CatalogDefinition,
   type ProfileDefinition,
+  type PresentationConfig,
 } from './schema.js';
 
 export {
@@ -96,3 +102,12 @@ export {
   type MediaResolutionConfig,
   type ResolutionConfig,
 } from './resolution.js';
+
+export {
+  listMetadataLanguages,
+  findMetadataLanguage,
+  METADATA_LANGUAGE_OPTIONS,
+  type MetadataLanguageOption,
+} from './metadata-languages.js';
+
+export { localePreferencesFromLocalization } from './locale-preferences.js';

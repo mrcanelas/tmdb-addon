@@ -73,6 +73,8 @@
   "resolution.group.credits": "‏Credits‎",
   "resolution.group.ratings": "‏Ratings‎",
   "resolution.group.episodeStructure": "‏Episode structure‎",
+  "resolution.field.general": "‏General‎",
+  "resolution.fieldDescription.general": "‏Language, region, and how metadata is presented in Stremio.‎",
   "resolution.field.language": "‏Language‎",
   "resolution.field.appearance": "‏Appearance‎",
   "resolution.field.title": "‏Title‎",

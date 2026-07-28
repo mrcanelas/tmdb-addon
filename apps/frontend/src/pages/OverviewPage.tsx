@@ -24,6 +24,7 @@ import {
   writeCatalogSession,
   type LegacyImportReportView,
 } from '@/lib/api';
+import { randomId } from '@/lib/random-id';
 import { syncStudioSessionQuery } from '@/api/hooks/use-studio-session';
 import { WhatsNewPanel } from '@/components/home/WhatsNewPanel';
 import { usePageHeader } from '@/contexts/page-title';
@@ -84,7 +85,7 @@ export function OverviewPage() {
     setBusy(true);
     setFeedback(null);
     try {
-      const editCredential = `import-${crypto.randomUUID().replace(/-/g, '')}`;
+      const editCredential = `import-${randomId(16)}`;
       const result = await persistLegacyImport(pendingLegacy, editCredential);
       const nextSession = {
         configId: result.configId,

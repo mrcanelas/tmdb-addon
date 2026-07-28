@@ -22,7 +22,10 @@ describe('appearance field resolution defaults', () => {
   });
 
   it('defaults artwork chains with no-language after the primary locale', () => {
-    const background = ensureAppearancePlan(emptyResolution, 'background');
+    const background = ensureAppearancePlan(emptyResolution, 'background', {
+      metadataLocale: 'pt-BR',
+      metadataFallbackLocales: ['en-US'],
+    });
     expect(background.strategy).toBe('locale-first');
     expect(background.providers?.[0]).toBe('fanart');
     expect(background.locales).toEqual(
@@ -33,13 +36,19 @@ describe('appearance field resolution defaults', () => {
       ]),
     );
 
-    const poster = ensureAppearancePlan(emptyResolution, 'poster');
+    const poster = ensureAppearancePlan(emptyResolution, 'poster', {
+      metadataLocale: 'en-US',
+      metadataFallbackLocales: [],
+    });
     expect(poster.providers?.[0]).toBe('rpdb');
     expect(poster.locales?.some((locale) => locale.type === 'no-language')).toBe(
       true,
     );
 
-    const logo = ensureAppearancePlan(emptyResolution, 'logo');
+    const logo = ensureAppearancePlan(emptyResolution, 'logo', {
+      metadataLocale: 'en-US',
+      metadataFallbackLocales: [],
+    });
     expect(logo.providers).toEqual([
       'rpdb',
       'topposters',

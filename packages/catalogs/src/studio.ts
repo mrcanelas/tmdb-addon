@@ -1,4 +1,5 @@
-import type { CatalogDefinition } from '@metalayer/config';
+import type { CatalogDefinition, PresentationConfig } from '@metalayer/config';
+import { applyCatalogNamePrefix } from '@metalayer/config';
 
 function newCatalogInstanceId(): string {
   const uuid = globalThis.crypto.randomUUID().replace(/-/g, '');
@@ -55,6 +56,7 @@ export function resolveCatalogDisplayName(
 export function toManifestCatalogEntries(
   catalogs: CatalogDefinition[],
   locale?: string,
+  presentation?: Pick<PresentationConfig, 'catalogNamePrefix'>,
 ): Array<{
   instanceId: string;
   id: string;
@@ -68,7 +70,10 @@ export function toManifestCatalogEntries(
       instanceId: catalog.instanceId,
       id: `${catalog.provider}.${catalog.providerCatalogId}`,
       type: catalog.mediaType,
-      name: resolveCatalogDisplayName(catalog, locale),
+      name: applyCatalogNamePrefix(
+        resolveCatalogDisplayName(catalog, locale),
+        presentation ?? { catalogNamePrefix: false },
+      ),
       showInHome: catalog.showInHome,
     }));
 }

@@ -117,4 +117,19 @@ describe('@metalayer/catalogs studio', () => {
     expect(resolveCatalogDisplayName(localized, 'en-US')).toBe('Trending Movies');
     expect(resolveCatalogDisplayName(localized)).toBe('Trending Movies');
   });
+
+  it('applies MetaLayer catalog name prefix when presentation asks for it', () => {
+    const catalogs = [
+      catalog({
+        instanceId: 'a',
+        position: 0,
+        mediaType: 'movie',
+        originalName: 'Trending Movies',
+      }),
+    ];
+    const entries = toManifestCatalogEntries(catalogs, 'en-US', {
+      catalogNamePrefix: true,
+    });
+    expect(entries[0]?.name).toBe('MetaLayer - Trending Movies');
+  });
 });

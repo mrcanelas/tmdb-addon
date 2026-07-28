@@ -53,6 +53,11 @@ import ptBRLanguageRegion from '@metalayer/i18n/locales/pt-BR/languageRegion.jso
 import esESLanguageRegion from '@metalayer/i18n/locales/es-ES/languageRegion.json';
 import enXALanguageRegion from '@metalayer/i18n/locales/en-XA/languageRegion.json';
 import arXBLanguageRegion from '@metalayer/i18n/locales/ar-XB/languageRegion.json';
+import enUSPresentation from '@metalayer/i18n/locales/en-US/presentation.json';
+import ptBRPresentation from '@metalayer/i18n/locales/pt-BR/presentation.json';
+import esESPresentation from '@metalayer/i18n/locales/es-ES/presentation.json';
+import enXAPresentation from '@metalayer/i18n/locales/en-XA/presentation.json';
+import arXBPresentation from '@metalayer/i18n/locales/ar-XB/presentation.json';
 import enUSSaveInstall from '@metalayer/i18n/locales/en-US/saveInstall.json';
 import ptBRSaveInstall from '@metalayer/i18n/locales/pt-BR/saveInstall.json';
 import esESSaveInstall from '@metalayer/i18n/locales/es-ES/saveInstall.json';
@@ -81,6 +86,7 @@ type LocaleBundle = {
   searchAi: typeof enUSSearchAi;
   resolution: typeof enUSResolution;
   languageRegion: typeof enUSLanguageRegion;
+  presentation: typeof enUSPresentation;
   saveInstall: typeof enUSSaveInstall;
   profiles: typeof enUSProfiles;
   advanced: typeof enUSAdvanced;
@@ -104,6 +110,7 @@ export const configureI18nResources = {
     searchAi: enUSSearchAi,
     resolution: enUSResolution,
     languageRegion: enUSLanguageRegion,
+    presentation: enUSPresentation,
     saveInstall: enUSSaveInstall,
     profiles: enUSProfiles,
     advanced: enUSAdvanced,
@@ -120,6 +127,7 @@ export const configureI18nResources = {
     searchAi: ptBRSearchAi,
     resolution: ptBRResolution,
     languageRegion: ptBRLanguageRegion,
+    presentation: ptBRPresentation,
     saveInstall: ptBRSaveInstall,
     profiles: ptBRProfiles,
     advanced: ptBRAdvanced,
@@ -136,6 +144,7 @@ export const configureI18nResources = {
     searchAi: esESSearchAi,
     resolution: esESResolution,
     languageRegion: esESLanguageRegion,
+    presentation: esESPresentation,
     saveInstall: esESSaveInstall,
     profiles: esESProfiles,
     advanced: esESAdvanced,
@@ -152,6 +161,7 @@ export const configureI18nResources = {
     searchAi: enXASearchAi,
     resolution: enXAResolution,
     languageRegion: enXALanguageRegion,
+    presentation: enXAPresentation,
     saveInstall: enXASaveInstall,
     profiles: enXAProfiles,
     advanced: enXAAdvanced,
@@ -168,6 +178,7 @@ export const configureI18nResources = {
     searchAi: arXBSearchAi,
     resolution: arXBResolution,
     languageRegion: arXBLanguageRegion,
+    presentation: arXBPresentation,
     saveInstall: arXBSaveInstall,
     profiles: arXBProfiles,
     advanced: arXBAdvanced,
@@ -186,6 +197,7 @@ export const configureI18nNamespaces = [
   'searchAi',
   'resolution',
   'languageRegion',
+  'presentation',
   'saveInstall',
   'profiles',
   'advanced',

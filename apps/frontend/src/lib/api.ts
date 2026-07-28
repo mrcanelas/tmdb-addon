@@ -1,3 +1,5 @@
+import { randomId } from '@/lib/random-id';
+
 export type ProviderCategory =
   | 'metadata'
   | 'artwork'
@@ -355,7 +357,7 @@ export async function persistLegacyImport(
 }
 
 function sampleCatalogs() {
-  const id = () => `cat_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+  const id = () => `cat_${randomId(8)}`;
   return [
     {
       instanceId: id(),
@@ -419,7 +421,7 @@ export async function bootstrapCatalogDraft(): Promise<{
   catalogs: CatalogListItem[];
   manifestOrder: ManifestCatalogEntry[];
 }> {
-  const editCredential = `draft-${crypto.randomUUID().replace(/-/g, '')}`;
+  const editCredential = `draft-${randomId(16)}`;
   const now = new Date().toISOString();
   const created = await apiFetch<{
     configId: string;
@@ -1170,6 +1172,36 @@ export async function saveLocalization(
     headers: { 'x-metalayer-edit-credential': editCredential },
     body: JSON.stringify({ localization }),
   });
+}
+
+export async function fetchPresentation(
+  configId: string,
+  editCredential: string,
+): Promise<{ presentation: import('@metalayer/config').PresentationConfig }> {
+  return apiFetch(`/api/v1/configurations/${configId}/presentation`, {
+    headers: { 'x-metalayer-edit-credential': editCredential },
+  });
+}
+
+export async function savePresentation(
+  configId: string,
+  editCredential: string,
+  presentation: import('@metalayer/config').PresentationConfig,
+): Promise<{ presentation: import('@metalayer/config').PresentationConfig }> {
+  return apiFetch(`/api/v1/configurations/${configId}/presentation`, {
+    method: 'PUT',
+    headers: { 'x-metalayer-edit-credential': editCredential },
+    body: JSON.stringify({ presentation }),
+  });
+}
+
+export async function fetchMetadataLanguages(): Promise<
+  Array<{ value: string; name: string }>
+> {
+  const body = await apiFetch<{
+    languages: Array<{ value: string; name: string }>;
+  }>('/api/v1/languages');
+  return body.languages;
 }
 
 export async function fetchIdentityPreferences(

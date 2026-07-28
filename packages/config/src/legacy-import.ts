@@ -1,5 +1,10 @@
 import { decompressFromEncodedURIComponent } from './lz-string.js';
-import { createDefaultMetaLayerConfig, type CatalogDefinition, type MetaLayerConfig } from './schema.js';
+import {
+  createDefaultMetaLayerConfig,
+  type CatalogDefinition,
+  type MetaLayerConfig,
+  type PresentationConfig,
+} from './schema.js';
 import {
   listLegacySecretsPresent,
   parseLegacyAddonConfig,
@@ -42,6 +47,8 @@ const SECRET_TO_PROVIDER: Record<string, string> = {
   traktRefreshToken: 'trakt_refresh',
 };
 
+const CAST_COUNT_OPTIONS = new Set([0, 5, 10, 15]);
+
 function asBoolean(value: unknown): boolean | undefined {
   if (typeof value === 'boolean') return value;
   if (value === 'true') return true;
@@ -55,6 +62,22 @@ function asNumber(value: unknown): number | undefined {
     return Number(value);
   }
   return undefined;
+}
+
+function coerceCastCount(
+  value: number | undefined,
+): PresentationConfig['castCount'] | undefined {
+  if (value === undefined) return undefined;
+  if (CAST_COUNT_OPTIONS.has(value)) {
+    return value as PresentationConfig['castCount'];
+  }
+  // Legacy "Unlimited" and non-standard values → omit (unlimited).
+  if (value < 0) return undefined;
+  // Snap to nearest supported positive option.
+  if (value < 5) return 0;
+  if (value < 10) return 5;
+  if (value < 15) return 10;
+  return 15;
 }
 
 function localeToRegion(locale: string): string | undefined {
@@ -156,16 +179,21 @@ export function planLegacyImport(
   if (catalogs.length > 0) imported.push('catalogs');
 
   const featureFlags: Record<string, boolean> = {};
+  const presentation: PresentationConfig = {
+    catalogNamePrefix: false,
+    showAgeRatingInGenres: false,
+    hideEpisodeSpoilers: false,
+    ratingPostersForLibrary: false,
+  };
+
+  // Flags that remain as opaque featureFlags (no typed presentation home yet).
   const flagMap: Array<[keyof LegacyAddonConfig, string]> = [
     ['includeAdult', 'includeAdult'],
     ['provideImdbId', 'provideImdbId'],
     ['returnImdbId', 'returnImdbId'],
-    ['tmdbPrefix', 'tmdbPrefix'],
-    ['hideEpisodeThumbnails', 'hideEpisodeThumbnails'],
     ['searchEnabled', 'searchEnabled'],
     ['hideInCinemaTag', 'hideInCinemaTag'],
     ['enableAgeRating', 'enableAgeRating'],
-    ['showAgeRatingInGenres', 'showAgeRatingInGenres'],
     ['showAgeRatingWithImdbRating', 'showAgeRatingWithImdbRating'],
     ['strictRegionFilter', 'strictRegionFilter'],
   ];
@@ -175,6 +203,31 @@ export function planLegacyImport(
       featureFlags[flagKey] = parsed;
       imported.push(flagKey);
     }
+  }
+
+  const tmdbPrefix = asBoolean(legacy.tmdbPrefix);
+  if (tmdbPrefix !== undefined) {
+    presentation.catalogNamePrefix = tmdbPrefix;
+    // Keep legacy flag for Advanced diagnostics until fully retired.
+    featureFlags.tmdbPrefix = tmdbPrefix;
+    imported.push('tmdbPrefix');
+    imported.push('presentation.catalogNamePrefix');
+  }
+
+  const hideThumbs = asBoolean(legacy.hideEpisodeThumbnails);
+  if (hideThumbs !== undefined) {
+    presentation.hideEpisodeSpoilers = hideThumbs;
+    featureFlags.hideEpisodeThumbnails = hideThumbs;
+    imported.push('hideEpisodeThumbnails');
+    imported.push('presentation.hideEpisodeSpoilers');
+  }
+
+  const ageInGenres = asBoolean(legacy.showAgeRatingInGenres);
+  if (ageInGenres !== undefined) {
+    presentation.showAgeRatingInGenres = ageInGenres;
+    featureFlags.showAgeRatingInGenres = ageInGenres;
+    imported.push('showAgeRatingInGenres');
+    imported.push('presentation.showAgeRatingInGenres');
   }
 
   // ADR 0006: MetaLayer defaults to IMDb public ids; honor explicit legacy false.
@@ -212,7 +265,14 @@ export function planLegacyImport(
   }
 
   const castCount = asNumber(legacy.castCount);
-  if (castCount !== undefined) imported.push('castCount');
+  const presentationCastCount = coerceCastCount(castCount);
+  if (castCount !== undefined) {
+    imported.push('castCount');
+    if (presentationCastCount !== undefined) {
+      presentation.castCount = presentationCastCount;
+      imported.push('presentation.castCount');
+    }
+  }
 
   const config = createDefaultMetaLayerConfig({
     name: options.name || 'Imported from TMDB Addon',
@@ -232,6 +292,7 @@ export function planLegacyImport(
       stremioPublicId,
     },
     catalogs,
+    presentation,
     featureFlags,
     legacyImport: {
       source: 'tmdb-addon',

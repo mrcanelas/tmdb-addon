@@ -196,14 +196,20 @@ export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
   },
   {
     id: 'metas-language',
-    path: '/metas/fields?field=language',
+    path: '/metas/fields?field=general',
     labelKeys: ['nav.metas', 'hub.metas.tab.language'],
     simpleMode: true,
   },
   {
     id: 'metas-appearance',
-    path: '/metas/fields?field=appearance',
+    path: '/metas/fields?field=general',
     labelKeys: ['nav.metas', 'hub.metas.tab.appearance'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-general',
+    path: '/metas/fields?field=general',
+    labelKeys: ['nav.metas', 'hub.metas.tab.general'],
     simpleMode: true,
   },
   {
@@ -300,8 +306,8 @@ export const CONFIGURE_LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: '/sorting', to: '/catalogs' },
   { from: '/meta-builder', to: '/metas/fields' },
   { from: '/resolution', to: '/metas/fields' },
-  { from: '/language-region', to: '/metas/fields?field=language' },
-  { from: '/appearance', to: '/metas/fields?field=appearance' },
+  { from: '/language-region', to: '/metas/fields?field=general' },
+  { from: '/appearance', to: '/metas/fields?field=general' },
   { from: '/inspector', to: '/review/inspector' },
   { from: '/corrections', to: '/review/corrections' },
   { from: '/advanced', to: '/review/diagnostics' },

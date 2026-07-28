@@ -1,55 +1,43 @@
 # Appearance
 
-Appearance Studio controls how metadata and artwork are **presented** in Stremio-like previews. Artwork and localized text **resolution** use Field Resolution Chains (`AGENTS.md` §10 / §15).
+Appearance / presentation controls how metadata is **shown** in Stremio. Artwork and localized text **resolution** use Field Resolution Chains (`AGENTS.md` §10 / §15).
 
 Canonical FRC index: `docs/field-resolution-chains.md`. Phase F exit: `docs/phase-f-exit.md`. Frontend targets: `FRONTEND.md`.
 
-## Primary vs bridge surfaces
+## Primary surface
 
 | Surface | Role |
 |---|---|
-| `/configure/metas/fields` | **Primary** chain editor: field rail, Simple/Explicit builder, draft preview |
-| `/configure/metas/appearance` | Display-oriented stack of title/artwork builders |
+| `/configure/metas/fields?field=general` | **General** settings: language/region + presentation toggles |
+| `/configure/metas/fields?field=poster` (etc.) | Field Resolution Chains for each metadata field |
 
-## Fields editable in beta configure
+Legacy `/configure/metas/appearance` and `?field=appearance` redirect to `?field=general`.
 
-| Field | Kind | Default strategy | Default providers (when unset) | Default locales |
-|---|---|---|---|---|
-| `title` | Localized text | `locale-first` | TMDB → TVDB | pt-BR → en-US → original-language |
-| `description` | Localized text | `locale-first` | TMDB → TVDB | pt-BR → en-US → original-language |
-| `poster` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB | pt-BR → **no-language** → en-US |
-| `background` | Artwork | `locale-first` | Fanart.tv → TMDB → RPDB | pt-BR → **no-language** → en-US |
-| `logo` | Artwork | `locale-first` | RPDB → Fanart.tv → TMDB → TVDB | pt-BR → **no-language** → en-US |
+## Presentation preferences (`config.presentation`)
 
-Provider pickers must only offer **instance-available** providers (`AGENTS.md` §8.1.1). Defaults are applied client-side via `ensureFieldPlan` when a stored plan is missing; saving persists the full `ResolutionConfig`.
+Typed block (not `featureFlags`):
 
-`no-language` is a first-class locale preference for artwork (textless posters/backgrounds). It is not treated as missing metadata.
+| Field | Effect |
+|---|---|
+| `castCount` | Truncate cast on details (`0` / `5` / `10` / `15`; omit = unlimited) |
+| `catalogNamePrefix` | Prefix catalog names in the native manifest with `MetaLayer - ` |
+| `showAgeRatingInGenres` | Prepend certification to `genres` via `applyPresentation` once meta emits genres/certification |
+| `hideEpisodeSpoilers` | Saved; blur proxy is a follow-up (SSRF-safe) |
+| `ratingPostersForLibrary` | Saved; applies rated posters to Library/Continue Watching once public meta uses rated chains |
 
-## Operator flow
+API: `GET/PUT /api/v1/configurations/:configId/presentation`.
 
-1. Prefer `/configure/metas/fields`; display polish lives under `/configure/metas/appearance` (edit credential required).
-2. Adjust strategy (language-first / provider-first), provider order, and locale order per field.
-3. Save — writes `PUT /api/v1/configurations/:configId/resolution`.
-4. Verify selection and fallbacks in Meta Inspector (`AGENTS.md` §11) for a sample title.
+Pure helper: `applyPresentation` in `@metalayer/metadata-resolver` (cast truncate + age-in-genres; deferred warnings for spoilers/library posters).
 
-Live Stremio-like previews for catalog/movie/series cards remain a follow-up; resolution compile/test APIs already exist for diagnostics.
+## Field chains
 
-## Management API
+Artwork and title chains are edited per field on Metas → Fields. Defaults seed locales from `localization.metadataLocale` + `metadataFallbackLocales` (`ensureFieldPlan`). Artwork includes `no-language`.
 
-All routes require a valid edit credential (`X-MetaLayer-Edit-Credential`). Base path: `/api/v1`.
+Provider pickers honor instance availability (`AGENTS.md` §8.1.1).
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/configurations/:configId/resolution` | Load versioned `ResolutionConfig` |
-| PUT | `/configurations/:configId/resolution` | Persist Field Resolution plans |
-| POST | `/configurations/:configId/resolution/compile` | Expand inheritance into an effective plan |
-| POST | `/configurations/:configId/resolution/test` | Resolve a sample identity and return attempts |
+## Still follow-up
 
-Secrets must never appear in plans or diagnostics.
-
-## Still follow-up (not blocking Phase F exit)
-
-- Dedicated Resolution Chains page (move builders out of Appearance)
-- Profile / catalog / title inheritance UI for Appearance overrides
-- Remaining §15 display sections (credits, certifications, live preview)
-- Dedicated artwork ranking polish beyond default `no-language` chains
+- Wire `resolveMetadata` + `applyPresentation` into public `/c/:configId/meta` routes
+- SSRF-safe episode thumbnail blur
+- Rated posters on Library / Continue Watching surfaces
+- Live Stremio-like previews beyond the Fields draft panel

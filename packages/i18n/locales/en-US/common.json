@@ -35,6 +35,7 @@
   "hub.catalogs.tab.order": "Order",
   "hub.metas.description": "Field resolution, language, region, and how metadata appears.",
   "hub.metas.tab.fields": "Fields",
+  "hub.metas.tab.general": "General",
   "hub.metas.tab.language": "Language",
   "hub.metas.tab.appearance": "Appearance",
   "hub.review.description": "Inspect results, manage corrections, and run diagnostics.",

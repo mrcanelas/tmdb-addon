@@ -1,6 +1,6 @@
 # Language and region
 
-Configure UI for `LocalizationPreferences` lives at `/configure/metas/language` (hub: `/configure/metas`).
+Configure UI for `LocalizationPreferences` (and presentation) lives at `/configure/metas/fields?field=general`.
 
 Canonical product rules: `AGENTS.md` §9. Interface catalogs: `docs/internationalization.md`. RTL checklist: `docs/rtl-layout-checklist.md`.
 
@@ -9,7 +9,7 @@ Canonical product rules: `AGENTS.md` §9. Interface catalogs: `docs/internationa
 | Mode | Behavior |
 |---|---|
 | **Simple** | Interface locale aligns metadata locale; one country drives content, availability, certification, and release regions |
-| **Advanced** | Interface locale, metadata locale, fallback list, timezone, title/description modes, and each region are independent |
+| **Advanced** | Interface locale, metadata locale order, timezone, title/description modes, and each region are independent |
 
 Changing interface language must not silently change content region.
 
@@ -17,16 +17,18 @@ Changing interface language must not silently change content region.
 
 Typical fields on `LocalizationPreferences`:
 
-- `interfaceLocale`, `metadataLocale`, `metadataFallbackLocales`
+- `interfaceLocale`, `metadataLocale`, `metadataFallbackLocales` (ordered display languages)
 - `titleMode`, `descriptionMode`
 - `contentRegion`, `availabilityRegion`, `certificationRegion`, `releaseRegion`
-- `timezone`, optional date/time/number formatting styles
+- `timezone` (calendar / episode premiere semantics — callers still follow-up)
 
-Configure selectors show **localized labels** via `@metalayer/i18n` `Intl.DisplayNames` helpers (`formatLanguageDisplayName`, `formatRegionDisplayName`, `formatTimezoneDisplayName`) while keeping stable codes in the option value.
+General UI uses a multi-select ordered list for display languages. The first entry is `metadataLocale`; the rest are `metadataFallbackLocales`. Options come from `GET /api/v1/languages` (legacy TMDB Addon fallback catalog).
+
+**Apply languages to field chains** updates non-explicit field plans so their locale priority matches this order.
 
 Persist via `GET/PUT /api/v1/configurations/:configId/localization` (edit credential required). Profiles may override a subset (`docs/profiles.md`).
 
-Field-level provider/locale chains are edited under **Metas → Fields** (`/configure/metas/fields`, `docs/field-resolution-chains.md`); this page sets global locale/region defaults those plans consume.
+Field-level provider/locale chains are edited under **Metas → Fields** (`docs/field-resolution-chains.md`).
 
 ## Cache impact
 
@@ -34,9 +36,10 @@ Response caches must include every locale/region value that affects output (meta
 
 ## Pseudo-locales (layout QA)
 
-The configure shell (and dashboard) can switch to `en-XA` (expanded LTR) and `ar-XB` (RTL + `dir=rtl`). Catalogs load from `apps/frontend/src/lib/i18n-resources.ts` / dashboard resources so QA exercises overflow and direction without falling back to en-US copy.
+The configure shell (and dashboard) can switch to `en-XA` (expanded LTR) and `ar-XB` (RTL + `dir=rtl`).
 
 ## Still follow-up
 
 - End-to-end localized catalog display-name editing in UI
-- Live metadata preview wired to real resolve (Language & Region right rail)
+- Consume timezone in Trakt Calendar / episode air-date formatting
+- Apply `titleMode` / `descriptionMode` on the public meta route (today Inspector-only)

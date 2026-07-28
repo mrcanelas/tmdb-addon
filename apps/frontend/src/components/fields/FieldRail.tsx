@@ -3,10 +3,9 @@ import { useTranslation } from 'react-i18next';
 import {
   Clapperboard,
   Image,
-  Languages,
   ListOrdered,
-  Palette,
   Search,
+  Settings2,
   Star,
   Type,
   Users,
@@ -23,10 +22,10 @@ import { cn } from '@/lib/utils';
 function FieldIcon({ entry }: { entry: FieldRailEntry }) {
   const className = 'size-3.5';
   switch (entry.icon) {
+    case 'general':
     case 'language':
-      return <Languages className={className} aria-hidden />;
     case 'appearance':
-      return <Palette className={className} aria-hidden />;
+      return <Settings2 className={className} aria-hidden />;
     case 'image':
       return <Image className={className} aria-hidden />;
     case 'fact':

@@ -176,6 +176,27 @@ describe('legacy import planner', () => {
     },
   );
 
+  it('maps age-rating display and castCount into typed presentation', () => {
+    const plan = planLegacyImport(loadFixture('age-rating-options.json'));
+    expect(plan.config.presentation.showAgeRatingInGenres).toBe(true);
+    expect(plan.config.presentation.castCount).toBe(5);
+    expect(plan.config.featureFlags.showAgeRatingInGenres).toBe(true);
+    expect(plan.report.imported).toEqual(
+      expect.arrayContaining([
+        'presentation.showAgeRatingInGenres',
+        'presentation.castCount',
+      ]),
+    );
+  });
+
+  it('maps tmdbPrefix into presentation.catalogNamePrefix', () => {
+    const plan = planLegacyImport(loadFixture('rpdb-posters.json'));
+    expect(plan.config.presentation.catalogNamePrefix).toBe(true);
+    expect(plan.report.imported).toEqual(
+      expect.arrayContaining(['presentation.catalogNamePrefix', 'tmdbPrefix']),
+    );
+  });
+
   it('rejects malformed catalogs shape', () => {
     expect(() => planLegacyImport(loadFixture('malformed-catalogs.json'))).toThrow();
   });

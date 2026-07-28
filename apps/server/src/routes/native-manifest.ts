@@ -24,6 +24,7 @@ function buildManifest(config: MetaLayerConfig, description: string) {
   const catalogs = toManifestCatalogEntries(
     config.catalogs,
     config.localization.metadataLocale,
+    config.presentation,
   ).map(({ id, type, name }) => ({
     id,
     type,

@@ -10,8 +10,7 @@ export type FieldGroupId =
   | 'episodeStructure';
 
 export type FieldRailId =
-  | 'language'
-  | 'appearance'
+  | 'general'
   | 'title'
   | 'originalTitle'
   | 'description'
@@ -54,7 +53,16 @@ export interface FieldRailEntry {
   allowLocales: boolean;
   providerOptions: string[];
   /** Lucide-ish glyph key for the rail icon. */
-  icon: 'text' | 'image' | 'fact' | 'people' | 'star' | 'list' | 'language' | 'appearance';
+  icon:
+    | 'text'
+    | 'image'
+    | 'fact'
+    | 'people'
+    | 'star'
+    | 'list'
+    | 'general'
+    | 'language'
+    | 'appearance';
 }
 
 export const FIELD_GROUPS: FieldGroupId[] = [
@@ -69,24 +77,14 @@ export const FIELD_GROUPS: FieldGroupId[] = [
 
 export const FIELD_REGISTRY: FieldRailEntry[] = [
   {
-    id: 'language',
+    id: 'general',
     group: 'general',
     category: 'settings',
     kind: 'settings',
     editable: true,
     allowLocales: false,
     providerOptions: [],
-    icon: 'language',
-  },
-  {
-    id: 'appearance',
-    group: 'general',
-    category: 'settings',
-    kind: 'settings',
-    editable: true,
-    allowLocales: false,
-    providerOptions: [],
-    icon: 'appearance',
+    icon: 'general',
   },
   {
     id: 'title',
@@ -326,11 +324,13 @@ export function isResolutionFieldId(id: string): boolean {
 }
 
 export function defaultSelectedFieldId(): FieldRailId {
-  return 'language';
+  return 'general';
 }
 
 export function parseFieldQueryParam(value: string | null): FieldRailId {
   if (!value) return defaultSelectedFieldId();
+  // Former Language / Appearance settings panels now live under General.
+  if (value === 'language' || value === 'appearance') return 'general';
   return BY_ID.has(value as FieldRailId)
     ? (value as FieldRailId)
     : defaultSelectedFieldId();

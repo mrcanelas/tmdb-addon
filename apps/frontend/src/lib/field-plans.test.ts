@@ -22,18 +22,37 @@ describe('field resolution defaults', () => {
   });
 
   it('defaults artwork chains with no-language after the primary locale', () => {
-    const background = ensureFieldPlan(emptyResolution, 'background');
+    const background = ensureFieldPlan(emptyResolution, 'background', {
+      metadataLocale: 'pt-BR',
+      metadataFallbackLocales: ['en-US'],
+    });
     expect(background.strategy).toBe('locale-first');
     expect(background.providers?.[0]).toBe('fanart');
+    expect(background.locales?.[0]).toEqual({ type: 'locale', value: 'pt-BR' });
     expect(background.locales?.some((locale) => locale.type === 'no-language')).toBe(
       true,
     );
 
-    const logo = ensureFieldPlan(emptyResolution, 'logo');
+    const logo = ensureFieldPlan(emptyResolution, 'logo', {
+      metadataLocale: 'en-US',
+      metadataFallbackLocales: [],
+    });
     expect(logo.providers).toContain('rpdb');
     expect(logo.locales?.some((locale) => locale.type === 'no-language')).toBe(
       true,
     );
+  });
+
+  it('seeds localized title chains from localization preferences', () => {
+    const title = ensureFieldPlan(emptyResolution, 'title', {
+      metadataLocale: 'es-ES',
+      metadataFallbackLocales: ['en-US'],
+    });
+    expect(title.locales).toEqual([
+      { type: 'locale', value: 'es-ES' },
+      { type: 'locale', value: 'en-US' },
+      { type: 'original-language' },
+    ]);
   });
 
   it('defaults factual fields to provider-first without language lists', () => {

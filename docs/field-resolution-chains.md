@@ -13,7 +13,7 @@ Implementation status: **shipped** as Phase F2 (schema/API/builder) with a dedic
 | Surface | Fields / behavior |
 |---|---|
 | **Metas → Fields** (`/configure/metas/fields`) | Primary Field Resolution Chains editor: searchable field rail, Simple/Explicit plan editor, live draft preview. Deep link: `?field=title`. |
-| **Metas → Appearance** (`/configure/metas/appearance`) | Display-oriented stack of artwork/title builders; deep-links into Fields remain supported via navigation. |
+| **Metas → General** (`?field=general`) | Language/region + presentation; seeds locale order for field chains |
 | Meta Inspector (`/configure/review/inspector`) | Attempt list with localized status/reason codes (`inspector.resolutionWarning.*`) |
 | Management API | `GET/PUT .../resolution`, `POST .../compile`, `POST .../test` |
 
@@ -21,14 +21,15 @@ Implementation status: **shipped** as Phase F2 (schema/API/builder) with a dedic
 
 The Fields rail lists settings and metadata fields in one sidebar:
 
-1. **General** — `language`, `appearance` (settings panels embedded in Fields; not separate pages)
+1. **General** — single `general` settings panel (language, region, presentation)
 2. **Localized text / Artwork / Facts / Credits / Ratings / Episode structure**
 
-- **Editable now:** `language`, `appearance`, `title`, `originalTitle`, `description`, `poster`, `background`, `logo`, `rating`, `voteCount`, `releaseDate`, `externalIds`
+- **Editable now:** `general`, `title`, `originalTitle`, `description`, `poster`, `background`, `logo`, `rating`, `voteCount`, `releaseDate`, `externalIds`
 - **Visible, coming soon:** `tagline`, `genres`, `runtime`, `certification`, `cast`, `directors`, `writers`, `episodes`, `episodeOrder`
 
-Deep links: `/configure/metas/fields?field=language`, `?field=appearance`, `?field=title`, etc. Legacy `/metas/language` and `/metas/appearance` redirect into those query params.
+Deep links: `/configure/metas/fields?field=general`, `?field=title`, etc. Legacy `?field=language` / `?field=appearance` and `/metas/language` / `/metas/appearance` redirect to `?field=general`.
 
+Default field plan locales seed from General display languages (`metadataLocale` + fallbacks), not a hardcoded `pt-BR`.
 ## Draft preview
 
 `POST /api/v1/configurations/:configId/resolution/test` accepts an optional `plan` body.

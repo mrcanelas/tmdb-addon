@@ -1,11 +1,18 @@
-import type { FieldResolutionPlan, ResolutionConfig } from '@metalayer/config';
-import { planFromProviderChain } from '@metalayer/config';
+import type {
+  FieldResolutionPlan,
+  LocalePreference,
+  LocalizationPreferences,
+  ResolutionConfig,
+} from '@metalayer/config';
+import {
+  localePreferencesFromLocalization,
+  planFromProviderChain,
+} from '@metalayer/config';
 import {
   getFieldEntry,
   listResolutionFields,
   type FieldRailId,
 } from './field-registry.js';
-
 export type EditableFieldId = Extract<
   FieldRailId,
   | 'title'
@@ -51,19 +58,53 @@ export function isLocalizedField(field: string): boolean {
   );
 }
 
+export function defaultLocalesForField(
+  field: string,
+  localization?: Pick<
+    LocalizationPreferences,
+    'metadataLocale' | 'metadataFallbackLocales'
+  >,
+): LocalePreference[] {
+  const localizationOrDefault = localization ?? {
+    metadataLocale: 'en-US',
+    metadataFallbackLocales: localization ? [] : ['en-US'],
+  };
+
+  if (isArtworkField(field)) {
+    return localePreferencesFromLocalization(localizationOrDefault, {
+      includeNoLanguage: true,
+      includeOriginal: true,
+    });
+  }
+
+  if (isLocalizedField(field)) {
+    return localePreferencesFromLocalization(localizationOrDefault, {
+      includeOriginal: true,
+    });
+  }
+
+  return [{ type: 'provider-default' }];
+}
+
 /**
  * Default Field Resolution Plan when none is stored.
  * Artwork chains include `no-language` for textless assets.
+ * Locales seed from localization preferences when provided.
  */
 export function ensureFieldPlan(
   resolution: ResolutionConfig,
   field: EditableFieldId | AppearanceEditField,
+  localization?: Pick<
+    LocalizationPreferences,
+    'metadataLocale' | 'metadataFallbackLocales'
+  >,
 ): FieldResolutionPlan {
   const existing = resolution.defaults.fields[field];
   if (existing) return existing;
 
   const entry = getFieldEntry(field);
   const providers = entry?.providerOptions ?? ['tmdb'];
+  const locales = defaultLocalesForField(field, localization);
 
   if (isArtworkField(field)) {
     const artworkProviders =
@@ -89,11 +130,7 @@ export function ensureFieldPlan(
             ] as const);
     return planFromProviderChain(
       [...artworkProviders],
-      [
-        { type: 'locale', value: 'pt-BR' },
-        { type: 'no-language' },
-        { type: 'locale', value: 'en-US' },
-      ],
+      locales,
       'locale-first',
     );
   }
@@ -101,18 +138,14 @@ export function ensureFieldPlan(
   if (isLocalizedField(field)) {
     return planFromProviderChain(
       providers.slice(0, 3),
-      [
-        { type: 'locale', value: 'pt-BR' },
-        { type: 'locale', value: 'en-US' },
-        { type: 'original-language' },
-      ],
+      locales,
       'locale-first',
     );
   }
 
   return planFromProviderChain(
     providers.slice(0, 3),
-    [{ type: 'provider-default' }],
+    locales,
     'provider-first',
   );
 }
@@ -121,15 +154,55 @@ export function ensureFieldPlan(
 export function ensureAppearancePlan(
   resolution: ResolutionConfig,
   field: AppearanceEditField,
+  localization?: Pick<
+    LocalizationPreferences,
+    'metadataLocale' | 'metadataFallbackLocales'
+  >,
 ): FieldResolutionPlan {
-  return ensureFieldPlan(resolution, field);
+  return ensureFieldPlan(resolution, field, localization);
 }
 
 export function resetFieldPlan(
   field: EditableFieldId | AppearanceEditField,
+  localization?: Pick<
+    LocalizationPreferences,
+    'metadataLocale' | 'metadataFallbackLocales'
+  >,
 ): FieldResolutionPlan {
   return ensureFieldPlan(
     { version: 1, defaults: { fields: {} }, mediaTypes: {} },
     field,
+    localization,
   );
+}
+
+/**
+ * Apply localization language order onto every default field plan that still
+ * uses the simple strategy (locale-first / provider-first). Explicit plans are
+ * left untouched.
+ */
+export function applyLocalizationLocalesToResolution(
+  resolution: ResolutionConfig,
+  localization: Pick<
+    LocalizationPreferences,
+    'metadataLocale' | 'metadataFallbackLocales'
+  >,
+): ResolutionConfig {
+  const fields = { ...resolution.defaults.fields };
+  for (const entry of listResolutionFields()) {
+    const field = entry.id as EditableFieldId;
+    const current = fields[field];
+    if (!current || current.strategy === 'explicit') continue;
+    fields[field] = {
+      ...current,
+      locales: defaultLocalesForField(field, localization),
+    };
+  }
+  return {
+    ...resolution,
+    defaults: {
+      ...resolution.defaults,
+      fields,
+    },
+  };
 }

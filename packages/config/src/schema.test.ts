@@ -14,6 +14,7 @@ describe('@metalayer/config', () => {
     expect(config.name).toBe('Family');
     expect(config.localization.interfaceLocale).toBe('en-US');
     expect(config.identity.stremioPublicId).toBe('imdb');
+    expect(config.presentation.catalogNamePrefix).toBe(false);
     expect(config.profiles).toEqual([]);
     expect(() => parseMetaLayerConfig(config)).not.toThrow();
   });

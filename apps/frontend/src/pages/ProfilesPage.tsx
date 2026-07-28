@@ -7,6 +7,7 @@ import {
   fetchProfiles,
   saveProfiles,
 } from '@/lib/api';
+import { randomId } from '@/lib/random-id';
 import { usePageHeader } from '@/contexts/page-title';
 import { SectionCard } from '@/components/metalayer/SectionCard';
 import { LoadingState } from '@/components/metalayer/LoadingState';
@@ -17,7 +18,7 @@ const SELECT_CLASS =
   'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
 
 function newProfileId(): string {
-  return `prf_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
+  return `prf_${randomId(6)}`;
 }
 
 function profileManifestUrl(configId: string, profileId: string): string {

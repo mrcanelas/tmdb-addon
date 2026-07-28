@@ -39,8 +39,7 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { FieldPreviewPanel } from '@/components/fields/FieldPreviewPanel';
 import { ResolutionChainBuilder } from '@/components/fields/ResolutionChainBuilder';
-import { LanguageRegionEditor } from '@/components/fields/LanguageRegionEditor';
-import { AppearanceEditor } from '@/components/fields/AppearanceEditor';
+import { GeneralEditor } from '@/components/fields/GeneralEditor';
 import { cn } from '@/lib/utils';
 
 export function FieldsPage() {
@@ -307,8 +306,7 @@ export function FieldsPage() {
             <ChevronRight className="size-4" aria-hidden />
           </Button>
         </div>
-        {selectedId === 'language' ? <LanguageRegionEditor /> : null}
-        {selectedId === 'appearance' ? <AppearanceEditor /> : null}
+        {selectedId === 'general' ? <GeneralEditor /> : null}
       </section>
     );
   }
