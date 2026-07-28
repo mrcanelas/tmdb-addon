@@ -317,7 +317,7 @@ export function ResolutionChainBuilder({
                 {t('resolution.addProviderShort')}
               </Button>
               {addMenu === 'provider' ? (
-                <div className="absolute end-0 top-full z-30 mt-1 grid min-w-40 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-40 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   {availableProviders.map((provider) => (
                     <button
                       key={provider}
@@ -426,7 +426,7 @@ export function ResolutionChainBuilder({
                   {t('resolution.addLocaleShort')}
                 </Button>
                 {addMenu === 'locale' ? (
-                  <div className="absolute end-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                  <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                     {localeChoices.map((locale, index) => {
                       const label = localeLabel(locale, t);
                       const key = localeKey(locale, index);

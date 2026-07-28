@@ -30,7 +30,7 @@ export function ProviderGlyph({
         loading="lazy"
         decoding="async"
         className={cn(
-          'size-5 shrink-0 rounded-[4px] object-cover',
+          'size-5 shrink-0 rounded-lg object-cover',
           className,
         )}
         onError={() => setFailed(true)}
@@ -42,7 +42,7 @@ export function ProviderGlyph({
     <span
       aria-hidden
       className={cn(
-        'flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-default text-[10px] font-semibold text-foreground',
+        'flex size-5 shrink-0 items-center justify-center rounded-lg bg-default text-[10px] font-semibold text-foreground',
         className,
       )}
     >

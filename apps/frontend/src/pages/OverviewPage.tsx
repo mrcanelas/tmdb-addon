@@ -349,7 +349,7 @@ export function OverviewPage() {
           On xl, take the rail out of height calculation so the row follows
           Get Started + Resources + Presets; absolute fill matches that height.
         */}
-        <aside className="relative z-10 w-full shrink-0 xl:h-[calc(100dvh-8.25rem)] xl:w-[340px]">
+        <aside className="relative z-10 w-full shrink-0 xl:h-[calc(100dvh-8.25rem)] xl:w-85">
           <div className="xl:absolute xl:inset-0 xl:flex xl:min-h-0">
             <WhatsNewPanel />
           </div>
