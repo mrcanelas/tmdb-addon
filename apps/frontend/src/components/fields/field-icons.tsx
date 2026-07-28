@@ -30,7 +30,7 @@ export function ProviderGlyph({
         loading="lazy"
         decoding="async"
         className={cn(
-          'size-5 shrink-0 rounded-[4px] object-contain',
+          'size-5 shrink-0 rounded-[4px] object-cover',
           className,
         )}
         onError={() => setFailed(true)}
