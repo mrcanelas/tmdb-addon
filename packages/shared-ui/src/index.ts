@@ -16,6 +16,8 @@ export {
   Drawer,
   Radio,
   RadioGroup,
+  Checkbox,
+  Select,
   ListBox,
   Toolbar,
   SearchField,
