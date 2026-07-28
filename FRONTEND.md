@@ -107,7 +107,7 @@ Glass utility (`.ml-glass`) derives from `--surface` / `--foreground` with blur 
 
 Customize HeroUI only through these tokens and MetaLayer wrappers — never ship unmodified default HeroUI appearance as the product look.
 
-`--muted` is muted **text**. Cards use `--surface`; floating UI uses `--overlay`. Do not treat `--muted` as an elevated fill.
+`--muted` is muted **text**. Cards use `--surface`; floating UI (modals, menus, popovers) uses `--overlay`, which matches `--surface` so panels and cards share the same fill.
 
 ---
 

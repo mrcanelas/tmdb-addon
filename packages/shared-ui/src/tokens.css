@@ -28,7 +28,8 @@
   --focus: oklch(26.05% 0.0575 252.49);
   --foreground: oklch(21.03% 0.0015 252.49);
   --muted: oklch(55.17% 0.0030 252.49);
-  --overlay: oklch(100.00% 0.0004 252.49);
+  /* Match card surfaces so modals/menus don't look like a different plane. */
+  --overlay: oklch(100% 0 0);
   --overlay-foreground: oklch(21.03% 0.0015 252.49);
   --scrollbar: oklch(87.10% 0.0015 252.49);
   --segment: oklch(100.00% 0.0015 252.49);
@@ -73,7 +74,8 @@
   --focus: oklch(26.05% 0.0575 252.49);
   --foreground: oklch(99.11% 0.0015 252.49);
   --muted: oklch(70.50% 0.0030 252.49);
-  --overlay: oklch(21.03% 0.0030 252.49);
+  /* Match card surfaces so modals/menus don't look like a different plane. */
+  --overlay: oklch(23.50% 0 0);
   --overlay-foreground: oklch(99.11% 0.0015 252.49);
   --scrollbar: oklch(70.50% 0.0015 252.49);
   --segment: oklch(39.64% 0.0015 252.49);
