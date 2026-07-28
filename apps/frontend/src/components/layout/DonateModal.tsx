@@ -1,4 +1,4 @@
-import { Coffee, Heart, Sparkles } from 'lucide-react';
+import { Coffee, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal } from '@metalayer/shared-ui';
 import { DONATE_OPTIONS } from '@/navigation';
@@ -30,12 +30,9 @@ export function DonateModal({
         <Modal.Dialog>
           <Modal.CloseTrigger />
           <Modal.Header>
-            <Modal.Icon className="bg-default text-foreground">
-              <Sparkles className="size-5 text-accent" aria-hidden />
-            </Modal.Icon>
             <Modal.Heading>{t('donate.title')}</Modal.Heading>
           </Modal.Header>
-          <Modal.Body className="gap-4">
+          <Modal.Body className="space-y-4">
             <p className="text-sm text-muted">{t('donate.body')}</p>
             <div className="grid gap-2">
               {DONATE_OPTIONS.map((option) => (
@@ -44,7 +41,7 @@ export function DonateModal({
                   type="button"
                   variant="outline"
                   fullWidth
-                  className="justify-start gap-2"
+                  className="justify-center gap-2"
                   onPress={() => {
                     window.open(option.href, '_blank', 'noopener,noreferrer');
                   }}
