@@ -16,7 +16,9 @@ import {
 } from 'lucide-react';
 import { Button, Chip, Table, Tooltip } from '@metalayer/shared-ui';
 import type { CatalogListItem } from '@/lib/api';
+import { sourceLabel } from '@/lib/source-presentation';
 import { cn } from '@/lib/utils';
+import { ProviderGlyph } from '@/components/fields/field-icons';
 
 function IconTip({
   label,
@@ -172,9 +174,12 @@ export function CatalogStudioRow({
       </Table.Cell>
 
       <Table.Cell className="hidden sm:table-cell">
-        <Chip size="sm" variant="soft" color="accent">
-          {catalog.provider}
-        </Chip>
+        <span className="inline-flex items-center gap-2">
+          <ProviderGlyph provider={catalog.provider} />
+          <span className="text-sm font-medium text-[var(--foreground)]">
+            {sourceLabel(catalog.provider)}
+          </span>
+        </span>
       </Table.Cell>
 
       <Table.Cell className="hidden sm:table-cell">

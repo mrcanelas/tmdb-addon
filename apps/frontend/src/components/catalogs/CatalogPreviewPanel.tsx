@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Card, Chip, ScrollShadow } from "@metalayer/shared-ui";
 import { X } from "lucide-react";
 import type { CatalogListItem, CatalogMetaPreview } from "@/lib/api";
+import { sourceLabel } from "@/lib/source-presentation";
 import { CatalogTitleCard } from "@/components/catalogs/CatalogTitleCard";
 import { LoadingState } from "@/components/metalayer/LoadingState";
 import { SourceProviderIcon } from "@/components/sources/SourceProviderIcon";
@@ -109,8 +110,8 @@ export function CatalogPreviewPanel({
                 <dt className="text-xs ml-text-muted">
                   {t("catalogs.field.provider")}: 
                 </dt>
-                <dd className="font-medium text-[var(--foreground)]">
-                  {catalog.provider}
+                <dd className="inline-flex items-center gap-2 font-medium text-[var(--foreground)]">
+                  <span>{sourceLabel(catalog.provider)}</span>
                 </dd>
               </div>
               <div className="flex gap-2 items-center">
