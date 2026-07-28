@@ -48,7 +48,7 @@ export const SOURCE_PRESENTATION: Record<string, SourcePresentation> = {
     iconUrl: 'https://publicmetadb.com/favicon.ico',
   },
   imdb: {
-    iconUrl: 'https://www.branch.io/wp-content/uploads/2024/06/Template_CS_featureimage-7.png',
+    iconUrl: 'https://cdn.iconscout.com/icon/free/png-256/free-imdb-logo-icon-svg-download-png-461804.png?f=webp',
   },
   anilist: {
     iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1280px-AniList_logo.svg.png',
