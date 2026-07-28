@@ -61,7 +61,7 @@ describe('field resolution defaults', () => {
     expect(rating.providers?.[0]).toBe('imdb');
   });
 
-  it('resets a field to the category default', () => {
+  it('coerces explicit plans to simple when loading for edit', () => {
     const dirty: ResolutionConfig = {
       version: 1,
       defaults: {
@@ -69,7 +69,20 @@ describe('field resolution defaults', () => {
           title: {
             version: 1,
             strategy: 'explicit',
-            steps: [{ id: 's1', provider: 'imdb', enabled: true }],
+            steps: [
+              {
+                id: 's1',
+                provider: 'tmdb',
+                locale: { type: 'locale', value: 'pt-BR' },
+                enabled: true,
+              },
+              {
+                id: 's2',
+                provider: 'imdb',
+                locale: { type: 'original-language' },
+                enabled: true,
+              },
+            ],
             skipEmpty: true,
             skipInvalid: true,
             stopAfterFirstValid: true,
@@ -78,7 +91,13 @@ describe('field resolution defaults', () => {
       },
       mediaTypes: {},
     };
-    expect(ensureFieldPlan(dirty, 'title').strategy).toBe('explicit');
+    const plan = ensureFieldPlan(dirty, 'title');
+    expect(plan.strategy).toBe('locale-first');
+    expect(plan.providers).toEqual(['tmdb', 'imdb']);
+    expect(plan.locales).toEqual([
+      { type: 'locale', value: 'pt-BR' },
+      { type: 'original-language' },
+    ]);
     expect(resetFieldPlan('title').strategy).toBe('locale-first');
   });
 });

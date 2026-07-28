@@ -100,7 +100,7 @@ export function ensureFieldPlan(
   >,
 ): FieldResolutionPlan {
   const existing = resolution.defaults.fields[field];
-  if (existing) return existing;
+  if (existing) return coerceToSimplePlan(existing);
 
   const entry = getFieldEntry(field);
   const providers = entry?.providerOptions ?? ['tmdb'];
@@ -178,8 +178,7 @@ export function resetFieldPlan(
 
 /**
  * Apply localization language order onto every default field plan that still
- * uses the simple strategy (locale-first / provider-first). Explicit plans are
- * left untouched.
+ * uses the simple strategy (locale-first / provider-first).
  */
 export function applyLocalizationLocalesToResolution(
   resolution: ResolutionConfig,
@@ -192,9 +191,10 @@ export function applyLocalizationLocalesToResolution(
   for (const entry of listResolutionFields()) {
     const field = entry.id as EditableFieldId;
     const current = fields[field];
-    if (!current || current.strategy === 'explicit') continue;
+    if (!current) continue;
+    const simple = coerceToSimplePlan(current);
     fields[field] = {
-      ...current,
+      ...simple,
       locales: defaultLocalesForField(field, localization),
     };
   }
@@ -204,5 +204,61 @@ export function applyLocalizationLocalesToResolution(
       ...resolution.defaults,
       fields,
     },
+  };
+}
+
+function localePreferenceEquals(
+  left: LocalePreference,
+  right: LocalePreference,
+): boolean {
+  if (left.type !== right.type) return false;
+  if (left.type === 'locale' && right.type === 'locale') {
+    return left.value === right.value;
+  }
+  return true;
+}
+
+/**
+ * Fields UI only edits simple plans. Explicit attempt lists are collapsed into
+ * provider + locale order (locale-first) so the chain remains editable.
+ */
+export function coerceToSimplePlan(
+  plan: FieldResolutionPlan,
+): FieldResolutionPlan {
+  if (plan.strategy === 'locale-first' || plan.strategy === 'provider-first') {
+    return plan;
+  }
+
+  const providers =
+    plan.providers && plan.providers.length > 0
+      ? [...plan.providers]
+      : [
+          ...new Set(
+            (plan.steps ?? [])
+              .map((step) => step.provider)
+              .filter((provider) => provider.length > 0),
+          ),
+        ];
+
+  const locales: LocalePreference[] = [];
+  const sourceLocales =
+    plan.locales && plan.locales.length > 0
+      ? plan.locales
+      : (plan.steps ?? [])
+          .map((step) => step.locale)
+          .filter((locale): locale is LocalePreference => locale != null);
+
+  for (const locale of sourceLocales) {
+    if (!locales.some((item) => localePreferenceEquals(item, locale))) {
+      locales.push(locale);
+    }
+  }
+
+  return {
+    ...plan,
+    strategy: 'locale-first',
+    providers,
+    locales: locales.length > 0 ? locales : [{ type: 'any-language' }],
+    steps: undefined,
   };
 }
