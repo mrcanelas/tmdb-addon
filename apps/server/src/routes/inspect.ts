@@ -19,7 +19,7 @@ import {
 import {
   ProviderError,
   TmdbProviderAdapter,
-  ImdbRatingsAdapter,
+  ImdbProviderAdapter,
   FanartArtworkAdapter,
   RpdbArtworkAdapter,
 } from '@metalayer/providers';
@@ -158,6 +158,7 @@ async function gatherLiveBag(
         value: tmdbImageUrl(movie.backdropPath, 'w1280'),
       },
     ],
+    logo: [],
     rating: [
       {
         provider: 'tmdb',
@@ -201,20 +202,75 @@ async function gatherLiveBag(
       const imdb = createAppProviderAdapter(app, 'imdb', {
         cache: app.providerCache,
       });
-      if (imdb instanceof ImdbRatingsAdapter) {
-        const rating = await imdb.getRating(
+      if (imdb instanceof ImdbProviderAdapter) {
+        const meta = await imdb.getMeta(
           { correlationId: input.correlationId },
           movie.imdbId,
           input.mediaType === 'series' ? 'series' : 'movie',
         );
+        // Cinemeta has no locale negotiation — omit locale on text fields.
+        if (meta.title) {
+          bag.title!.push({
+            provider: 'imdb',
+            value: meta.title,
+            confidence: 0.8,
+          });
+        }
+        if (meta.originalTitle) {
+          bag.originalTitle!.push({
+            provider: 'imdb',
+            value: meta.originalTitle,
+            confidence: 0.75,
+          });
+        }
+        if (meta.description) {
+          bag.description!.push({
+            provider: 'imdb',
+            value: meta.description,
+            confidence: 0.75,
+          });
+        }
+        if (meta.poster) {
+          bag.poster!.push({
+            provider: 'imdb',
+            value: meta.poster,
+            confidence: 0.85,
+          });
+        }
+        if (meta.background) {
+          bag.background!.push({
+            provider: 'imdb',
+            value: meta.background,
+            confidence: 0.85,
+          });
+        }
+        if (meta.logo) {
+          bag.logo!.push({
+            provider: 'imdb',
+            value: meta.logo,
+            confidence: 0.85,
+          });
+        }
         bag.rating!.push({
           provider: 'imdb',
-          value: rating.rating ?? null,
+          value: meta.rating ?? null,
+          confidence: 0.95,
+        });
+        if (meta.releaseDate || meta.releaseYear) {
+          bag.releaseDate!.push({
+            provider: 'imdb',
+            value: meta.releaseDate ?? meta.releaseYear ?? null,
+            confidence: 0.8,
+          });
+        }
+        bag.externalIds!.push({
+          provider: 'imdb',
+          value: meta.externalIds,
           confidence: 0.95,
         });
       }
     } catch {
-      // rating optional
+      // Cinemeta metadata optional
     }
   }
 

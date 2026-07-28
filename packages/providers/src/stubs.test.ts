@@ -8,7 +8,9 @@ import {
 
 describe('@metalayer/providers artwork and ratings adapters', () => {
   it('registers IMDb and exposes runnable adapters', async () => {
-    expect(getProvider('imdb')?.categories).toContain('ratings');
+    expect(getProvider('imdb')?.categories).toEqual(
+      expect.arrayContaining(['metadata', 'artwork', 'ratings']),
+    );
 
     const fanart = new FanartArtworkAdapter({
       fetchImpl: async () =>

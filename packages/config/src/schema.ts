@@ -165,16 +165,16 @@ export const ResolvableFieldSchema = z.enum([
 ]);
 
 export const DEFAULT_FIELD_PROVIDERS: Record<string, string[]> = {
-  title: ['tmdb'],
-  originalTitle: ['tmdb'],
-  description: ['tmdb'],
-  poster: ['rpdb', 'fanart', 'tmdb'],
-  background: ['fanart', 'tmdb'],
-  logo: ['rpdb', 'fanart', 'tmdb', 'tvdb'],
+  title: ['tmdb', 'imdb'],
+  originalTitle: ['tmdb', 'imdb'],
+  description: ['tmdb', 'imdb'],
+  poster: ['rpdb', 'fanart', 'tmdb', 'imdb'],
+  background: ['fanart', 'tmdb', 'imdb'],
+  logo: ['rpdb', 'fanart', 'tmdb', 'tvdb', 'imdb'],
   rating: ['imdb', 'tmdb'],
   voteCount: ['tmdb'],
-  releaseDate: ['tmdb'],
-  externalIds: ['tmdb'],
+  releaseDate: ['tmdb', 'imdb'],
+  externalIds: ['tmdb', 'imdb'],
 };
 
 /** Ordered provider chains per resolvable field (AGENTS.md §10.3). */

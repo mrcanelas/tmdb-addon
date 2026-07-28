@@ -1,46 +1,100 @@
 import { describe, expect, it } from 'vitest';
-import { ImdbRatingsAdapter } from './imdb.js';
+import { ImdbProviderAdapter } from './imdb.js';
 
-describe('@metalayer/providers imdb ratings', () => {
-  it('fetches IMDb ratings through Cinemeta with injectable HTTP', async () => {
+const CINEMETA_FIXTURE = {
+  meta: {
+    imdb_id: 'tt12042730',
+    name: 'Project Hail Mary',
+    type: 'movie',
+    cast: ['Ryan Gosling', 'Sandra Hüller'],
+    description: 'A science teacher wakes up alone on a spaceship.',
+    director: ['Phil Lord', 'Christopher Miller'],
+    genre: ['Adventure', 'Comedy', 'Drama'],
+    genres: ['Adventure', 'Comedy', 'Drama'],
+    imdbRating: '8.2',
+    released: '2026-03-20T00:00:00.000Z',
+    writer: ['Drew Goddard', 'Andy Weir'],
+    year: '2026',
+    moviedb_id: 687163,
+    poster: 'https://images.metahub.space/poster/small/tt12042730/img',
+    background: 'https://images.metahub.space/background/medium/tt12042730/img',
+    logo: 'https://images.metahub.space/logo/medium/tt12042730/img',
+    runtime: '157 min',
+    trailers: [{ source: 'NKYea63tQmI', type: 'Trailer' }],
+    id: 'tt12042730',
+  },
+};
+
+describe('@metalayer/providers imdb / cinemeta metadata', () => {
+  it('parses full Cinemeta meta through getMeta', async () => {
     const urls: string[] = [];
-    const adapter = new ImdbRatingsAdapter({
+    const adapter = new ImdbProviderAdapter({
       fetchImpl: async (url) => {
         urls.push(String(url));
-        return new Response(
-          JSON.stringify({ meta: { imdbRating: '8.8', id: 'tt0137523' } }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        );
+        return new Response(JSON.stringify(CINEMETA_FIXTURE), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
       },
+    });
+
+    const meta = await adapter.getMeta(
+      { correlationId: 'm1' },
+      'tt12042730',
+      'movie',
+    );
+
+    expect(meta.title).toBe('Project Hail Mary');
+    expect(meta.description).toContain('spaceship');
+    expect(meta.poster).toContain('poster');
+    expect(meta.background).toContain('background');
+    expect(meta.logo).toContain('logo');
+    expect(meta.rating).toBe(8.2);
+    expect(meta.runtimeMinutes).toBe(157);
+    expect(meta.cast).toEqual(['Ryan Gosling', 'Sandra Hüller']);
+    expect(meta.directors).toEqual(['Phil Lord', 'Christopher Miller']);
+    expect(meta.writers).toEqual(['Drew Goddard', 'Andy Weir']);
+    expect(meta.genres).toEqual(['Adventure', 'Comedy', 'Drama']);
+    expect(meta.externalIds).toEqual({ imdb: 'tt12042730', tmdb: 687163 });
+    expect(meta.source).toBe('cinemeta');
+    expect(urls[0]).toContain('/meta/movie/tt12042730.json');
+    expect(adapter.getHealth().state).toBe('healthy');
+  });
+
+  it('keeps getRating as a thin wrapper over getMeta', async () => {
+    const adapter = new ImdbProviderAdapter({
+      fetchImpl: async () =>
+        new Response(JSON.stringify(CINEMETA_FIXTURE), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
     });
 
     const rating = await adapter.getRating(
       { correlationId: 'r1' },
-      'tt0137523',
+      'tt12042730',
       'movie',
     );
 
     expect(rating).toEqual({
-      imdbId: 'tt0137523',
+      imdbId: 'tt12042730',
       mediaType: 'movie',
-      rating: 8.8,
-      ratingRaw: '8.8',
+      rating: 8.2,
+      ratingRaw: '8.2',
       source: 'cinemeta',
     });
-    expect(urls[0]).toContain('/meta/movie/tt0137523.json');
-    expect(adapter.getHealth().state).toBe('healthy');
   });
 
   it('rejects invalid IMDb ids', async () => {
-    const adapter = new ImdbRatingsAdapter({
+    const adapter = new ImdbProviderAdapter({
       fetchImpl: async () => new Response('{}', { status: 200 }),
     });
     await expect(
-      adapter.getRating({ correlationId: 'r2' }, 'not-an-id'),
+      adapter.getMeta({ correlationId: 'r2' }, 'not-an-id'),
     ).rejects.toMatchObject({ code: 'validation' });
   });
 
-  it('caches ratings without embedding secrets', async () => {
+  it('caches meta without embedding secrets', async () => {
     const store = new Map<string, { value: unknown }>();
     const cache = {
       async get<T>(key: string) {
@@ -53,21 +107,22 @@ describe('@metalayer/providers imdb ratings', () => {
       },
     };
     let calls = 0;
-    const adapter = new ImdbRatingsAdapter({
+    const adapter = new ImdbProviderAdapter({
       cache,
       fetchImpl: async () => {
         calls += 1;
-        return new Response(JSON.stringify({ meta: { imdbRating: '9.0' } }), {
+        return new Response(JSON.stringify(CINEMETA_FIXTURE), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
       },
     });
 
-    await adapter.getRating({ correlationId: 'c' }, 'tt0111161');
-    await adapter.getRating({ correlationId: 'c' }, 'tt0111161');
+    await adapter.getMeta({ correlationId: 'c' }, 'tt12042730');
+    await adapter.getMeta({ correlationId: 'c' }, 'tt12042730');
     expect(calls).toBe(1);
     expect(adapter.lastCacheStatus).toBe('hit');
-    expect([...store.keys()][0]).toContain('tt0111161');
+    expect([...store.keys()][0]).toContain('tt12042730');
+    expect([...store.keys()][0]).toContain('meta');
   });
 });

@@ -29,6 +29,7 @@ export type ProviderFieldBag = {
   description?: FieldContribution<string>[];
   poster?: FieldContribution<string>[];
   background?: FieldContribution<string>[];
+  logo?: FieldContribution<string>[];
   rating?: FieldContribution<number>[];
   voteCount?: FieldContribution<number>[];
   releaseDate?: FieldContribution<string>[];
@@ -41,6 +42,7 @@ export interface ResolvedMetadata {
   description: FieldResolution<string>;
   poster: FieldResolution<string>;
   background: FieldResolution<string>;
+  logo: FieldResolution<string>;
   rating: FieldResolution<number>;
   voteCount: FieldResolution<number>;
   releaseDate: FieldResolution<string>;
@@ -199,6 +201,7 @@ export function resolveMetadata(
   const description = resolveOne('description', bag.description ?? [], options);
   const poster = resolveOne('poster', bag.poster ?? [], options);
   const background = resolveOne('background', bag.background ?? [], options);
+  const logo = resolveOne('logo', bag.logo ?? [], options);
   const rating = resolveOne('rating', bag.rating ?? [], options);
   const voteCount = resolveOne('voteCount', bag.voteCount ?? [], options);
   const releaseDate = resolveOne('releaseDate', bag.releaseDate ?? [], options);
@@ -210,6 +213,7 @@ export function resolveMetadata(
     description,
     poster,
     background,
+    logo,
     rating,
     voteCount,
     releaseDate,

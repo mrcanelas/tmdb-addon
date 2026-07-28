@@ -130,6 +130,7 @@ describe('resolveMetadata + Meta Inspector', () => {
           { provider: 'tmdb', value: 'https://image.tmdb.org/p.jpg' },
         ],
         background: [{ provider: 'tmdb', value: 'https://image.tmdb.org/b.jpg' }],
+        logo: [{ provider: 'tmdb', value: 'https://image.tmdb.org/logo.png' }],
         rating: [
           { provider: 'imdb', value: 8.8, confidence: 0.95 },
           { provider: 'tmdb', value: 8.4, confidence: 0.6 },
@@ -156,6 +157,7 @@ describe('resolveMetadata + Meta Inspector', () => {
         description: ['tmdb'],
         poster: ['rpdb', 'fanart', 'tmdb'],
         background: ['fanart', 'tmdb'],
+        logo: ['tmdb'],
         rating: ['imdb', 'tmdb'],
         voteCount: ['tmdb'],
         releaseDate: ['tmdb'],
@@ -176,6 +178,7 @@ describe('resolveMetadata + Meta Inspector', () => {
       'description',
       'poster',
       'background',
+      'logo',
       'rating',
       'voteCount',
       'releaseDate',

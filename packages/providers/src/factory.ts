@@ -15,7 +15,7 @@ import {
 import { GeminiAiAdapter } from './ai/gemini.js';
 import { GroqAiAdapter } from './ai/groq.js';
 import { OpenRouterAiAdapter } from './ai/openrouter.js';
-import { ImdbRatingsAdapter } from './ratings/imdb.js';
+import { ImdbProviderAdapter } from './ratings/imdb.js';
 import { AnilistProviderAdapter } from './anilist/adapter.js';
 import { AnilistTrackingAdapter } from './anilist/tracking.js';
 import { MalJikanProviderAdapter } from './mal/adapter.js';
@@ -137,7 +137,7 @@ export function createProviderAdapter(
         health,
       });
     case 'imdb':
-      return new ImdbRatingsAdapter({
+      return new ImdbProviderAdapter({
         fetchImpl: options.fetchImpl,
         policy: options.policy,
         cache: options.cache,

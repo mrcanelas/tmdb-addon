@@ -19,13 +19,20 @@ export type ConnectionState =
 
 export type MetadataField =
   | 'title'
+  | 'originalTitle'
   | 'description'
   | 'poster'
   | 'background'
   | 'logo'
   | 'rating'
+  | 'voteCount'
+  | 'releaseDate'
+  | 'runtime'
   | 'genres'
   | 'cast'
+  | 'directors'
+  | 'writers'
+  | 'trailers'
   | 'episodes'
   | 'externalIds';
 

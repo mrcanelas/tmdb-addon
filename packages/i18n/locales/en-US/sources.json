@@ -64,7 +64,7 @@
   "sources.providers.simkl.description": "Track movies, series, and anime with SIMKL lists and history.",
   "sources.providers.mdblist.description": "Import MDBList catalogs and ratings into your library.",
   "sources.providers.publicmetadb.description": "Personal lists, Up Next, picks, and watch tracking synced with PublicMetaDB.",
-  "sources.providers.imdb.description": "Use IMDb ratings and identifiers in your metadata chain.",
+  "sources.providers.imdb.description": "Full metadata via Cinemeta — titles, artwork, credits, ratings, and IMDb identifiers.",
   "sources.providers.anilist.description": "Anime metadata, catalogs, and tracking powered by AniList.",
   "sources.providers.mal.description": "Anime lists and tracking through MyAnimeList.",
   "sources.providers.kitsu.description": "Anime metadata and catalogs from Kitsu.",

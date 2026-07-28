@@ -4,7 +4,7 @@ import { MemoryCache, RedisCache, type CacheStore } from '@metalayer/cache';
 import {
   ProviderError,
   TmdbProviderAdapter,
-  ImdbRatingsAdapter,
+  ImdbProviderAdapter,
 } from '@metalayer/providers';
 import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 
@@ -107,11 +107,11 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
       cache: app.providerCache,
     });
 
-    if (!(adapter instanceof ImdbRatingsAdapter)) {
+    if (!(adapter instanceof ImdbProviderAdapter)) {
       return reply.status(500).send(
         createApiError({
           code: 'INTERNAL_ERROR',
-          message: 'IMDb ratings adapter unavailable',
+          message: 'IMDb / Cinemeta adapter unavailable',
           correlationId: request.correlationId,
         }),
       );
