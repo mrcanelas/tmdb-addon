@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, TriangleAlert, X } from 'lucide-react';
-import { Button, Card } from '@metalayer/shared-ui';
+import { Button, Card, Checkbox } from '@metalayer/shared-ui';
 import type {
   FieldResolutionPlan,
   LocalePreference,
@@ -510,83 +510,87 @@ export function ResolutionChainBuilder({
             </p>
             {allowLocales ? (
               <>
-                <label className="flex items-start gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={preferLocalized}
-                    disabled={disabled}
-                    onChange={(event) =>
+                <Checkbox
+                  isSelected={preferLocalized}
+                  isDisabled={disabled}
+                  onChange={(isSelected) =>
+                    commit({
+                      ...plan,
+                      strategy: isSelected ? 'locale-first' : 'provider-first',
+                    })
+                  }
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <span>
+                      <span className="font-medium text-foreground">
+                        {t('resolution.options.preferLocalized')}
+                      </span>
+                      <span className="mt-0.5 block text-xs ml-text-muted">
+                        {t('resolution.options.preferLocalizedHint')}
+                      </span>
+                    </span>
+                  </Checkbox.Content>
+                </Checkbox>
+                <Checkbox
+                  isSelected={fallbackOriginal}
+                  isDisabled={disabled}
+                  onChange={(isSelected) => {
+                    if (isSelected) {
+                      if (fallbackOriginal) return;
                       commit({
                         ...plan,
-                        strategy: event.target.checked
-                          ? 'locale-first'
-                          : 'provider-first',
-                      })
-                    }
-                  />
-                  <span>
-                    <span className="font-medium text-foreground">
-                      {t('resolution.options.preferLocalized')}
-                    </span>
-                    <span className="mt-0.5 block text-xs ml-text-muted">
-                      {t('resolution.options.preferLocalizedHint')}
-                    </span>
-                  </span>
-                </label>
-                <label className="flex items-start gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={fallbackOriginal}
-                    disabled={disabled}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        if (fallbackOriginal) return;
-                        commit({
-                          ...plan,
-                          locales: [...locales, { type: 'original-language' }],
-                        });
-                        return;
-                      }
-                      commit({
-                        ...plan,
-                        locales: locales.filter(
-                          (locale) => locale.type !== 'original-language',
-                        ),
+                        locales: [...locales, { type: 'original-language' }],
                       });
-                    }}
-                  />
-                  <span>
-                    <span className="font-medium text-foreground">
-                      {t('resolution.options.fallbackOriginal')}
+                      return;
+                    }
+                    commit({
+                      ...plan,
+                      locales: locales.filter(
+                        (locale) => locale.type !== 'original-language',
+                      ),
+                    });
+                  }}
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <span>
+                      <span className="font-medium text-foreground">
+                        {t('resolution.options.fallbackOriginal')}
+                      </span>
+                      <span className="mt-0.5 block text-xs ml-text-muted">
+                        {t('resolution.options.fallbackOriginalHint')}
+                      </span>
                     </span>
-                    <span className="mt-0.5 block text-xs ml-text-muted">
-                      {t('resolution.options.fallbackOriginalHint')}
-                    </span>
-                  </span>
-                </label>
+                  </Checkbox.Content>
+                </Checkbox>
               </>
             ) : null}
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={plan.skipEmpty}
-                disabled={disabled}
-                onChange={(event) =>
-                  commit({ ...plan, skipEmpty: event.target.checked })
-                }
-              />
-              <span>
-                <span className="font-medium text-foreground">
-                  {t('resolution.options.requireNonEmpty')}
+            <Checkbox
+              isSelected={plan.skipEmpty}
+              isDisabled={disabled}
+              onChange={(isSelected) =>
+                commit({ ...plan, skipEmpty: isSelected })
+              }
+            >
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <span>
+                  <span className="font-medium text-foreground">
+                    {t('resolution.options.requireNonEmpty')}
+                  </span>
+                  <span className="mt-0.5 block text-xs ml-text-muted">
+                    {t('resolution.options.requireNonEmptyHint')}
+                  </span>
                 </span>
-                <span className="mt-0.5 block text-xs ml-text-muted">
-                  {t('resolution.options.requireNonEmptyHint')}
-                </span>
-              </span>
-            </label>
+              </Checkbox.Content>
+            </Checkbox>
           </div>
 
           {showEffectiveOrder ? (
