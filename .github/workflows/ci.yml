@@ -36,11 +36,5 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Build
+      - name: Build MetaLayer
         run: pnpm build
-
-      - name: Build MetaLayer frontend
-        run: pnpm build:frontend
-
-      - name: Build MetaLayer server
-        run: pnpm build:server

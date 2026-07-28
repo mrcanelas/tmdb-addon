@@ -1,48 +1,52 @@
-# Current public routes (legacy TMDB Addon)
+# Public routes (MetaLayer)
 
-This document records the routes that must remain compatible during the MetaLayer migration.
-Native MetaLayer routes (`/c/:configId/...`) are planned and must not replace these until migration tooling and a documented support window exist.
+Base URL example: `http://localhost:1338` (`METALAYER_API_PORT`).
 
-Base URL example: `http://localhost:1337`
+All Stremio and management routes are served by `apps/server`. The Express TMDB Addon process (port 1337) is archived on branch `legacy/tmdb-addon-3.1.7`.
 
-## Stremio protocol (public contracts)
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/manifest.json` | Default manifest |
-| GET | `/:catalogChoices/manifest.json` | Manifest for compressed config |
-| GET | `/catalog/:type/:id/:extra?.json` | Catalog |
-| GET | `/:catalogChoices/catalog/:type/:id/:extra?.json` | Catalog with config |
-| GET | `/meta/:type/:id.json` | Metadata |
-| GET | `/:catalogChoices/meta/:type/:id.json` | Metadata with config |
-
-`catalogChoices` is an lz-string compressed JSON configuration (legacy). Secrets may still appear in this segment today; MetaLayer persistent configs must move secrets to the Secret Vault.
-
-## Configuration UI
+## Native MetaLayer Stremio routes
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/` and SPA routes | Configure UI (`dist/`) |
-| GET | static assets under `/public` | Logos, favicon, background |
-
-## Auth / integration helpers (non-Stremio)
-
-Documented in `docs/api.md`, including TMDB session helpers and Trakt OAuth callbacks.
-
-## Native MetaLayer routes (Phase B+ / beta)
-
-Implemented by `apps/server` (port `1338` by default):
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/c/:configId/manifest.json` | Native manifest (no secrets in URL) |
-| GET | `/c/:configId/catalog/:type/:id.json` | Native catalog (empty `{ metas: [] }` when unknown) |
+| GET | `/c/:configId/manifest.json` | Native manifest (identity `community.metalayer`; no secrets in URL) |
+| GET | `/c/:configId/catalog/:type/:id.json` | Native catalog (`{ metas: [] }` when unknown) |
 | GET | `/c/:configId/catalog/:type/:id/:extra.json` | Native catalog with `skip=` pagination |
 | GET | `/c/:configId/meta/:type/:id.json` | Native meta (movie/series via TMDB; anime via AniList) |
 | GET | `/c/:configId/p/:profileId/manifest.json` | Profile-scoped native manifest |
 | GET | `/c/:configId/p/:profileId/catalog/:type/:id.json` | Profile-scoped catalog |
 | GET | `/c/:configId/p/:profileId/catalog/:type/:id/:extra.json` | Profile-scoped catalog with `skip=` |
 | GET | `/c/:configId/p/:profileId/meta/:type/:id.json` | Profile-scoped meta |
+
+Profile Stremio paths are documented in `docs/profiles.md`.
+
+## Legacy URL compatibility (same server)
+
+Compressed TMDB Addon installs keep working through these paths. Manifest identity is **`tmdb-addon` / `3.1.7`**. Secrets in the URL segment are request-scoped only (not persisted). Prefer `import-legacy` for native configs.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/manifest.json` | Default legacy-identity manifest |
+| GET | `/:catalogChoices/manifest.json` | Manifest for compressed / language-only config |
+| GET | `/catalog/:type/:id/:extra?.json` | Catalog without blob |
+| GET | `/:catalogChoices/catalog/:type/:id/:extra?.json` | Catalog with config blob |
+| GET | `/meta/:type/:id.json` | Metadata without blob |
+| GET | `/:catalogChoices/meta/:type/:id.json` | Metadata with config blob |
+
+`catalogChoices` may be an lz-string compressed JSON configuration or a language tag (e.g. `pt-BR`). Unsupported catalog providers (MDBList, Trakt lists, streaming ids without adapters) return `{ "metas": [] }`.
+
+Reserved first segments (`c`, `api`, `configure`, `admin`, …) are never treated as `catalogChoices`.
+
+## Configuration UI
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/configure`, `/configure/*` | MetaLayer Configure SPA (`apps/frontend`) |
+| GET | `/admin`, `/admin/*` | MetaLayer Admin SPA (`apps/dashboard`) |
+
+## Management API (selected)
+
+| Method | Path | Purpose |
+|---|---|---|
 | POST | `/api/v1/configurations` | Create persistent configuration |
 | POST | `/api/v1/configurations/import-legacy` | Import TMDB Addon config (`dryRun` supported) |
 | GET | `/api/v1/configurations/:configId` | Read config (edit credential header) |
@@ -55,17 +59,17 @@ Implemented by `apps/server` (port `1338` by default):
 | GET | `/api/v1/sources/:providerId` | Provider details + locale example |
 | POST | `/api/v1/sources/:providerId/test` | Ping provider (body apiKey, env, or vault) |
 | GET | `/api/v1/preview/movie/:id` | Cached movie preview (`tt…`, `tmdb:`, or bare TMDB id) |
-| GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb/Cinemeta metadata preview (rating wrapper over full meta) |
+| GET | `/api/v1/preview/rating/:imdbId` | Cached IMDb/Cinemeta metadata preview |
 | GET | `/api/v1/cache/stats` | In-process provider cache stats |
-| GET | `/api/v1/configurations/:configId/localization` | Read localization preferences (edit credential) |
+| GET | `/api/v1/configurations/:configId/localization` | Read localization preferences |
 | PUT | `/api/v1/configurations/:configId/localization` | Update localization preferences |
 | GET | `/api/v1/configurations/:configId/identity` | Read identity preferences + feature flags |
 | PUT | `/api/v1/configurations/:configId/identity` | Update `stremioPublicId` preference (ADR 0006) |
-
-Profile Stremio paths are documented in `docs/profiles.md`.
+| GET | `/api/v1/health` | Health |
 
 ## Compatibility rules
 
-- Do not remove legacy routes before a stable MetaLayer release and documented support window.
 - Empty catalogs must return `{ "metas": [] }` — never fake media cards as errors.
 - Only advertise Stremio resources that are actually enabled.
+- Do not remove legacy-identity URL support before a stable MetaLayer release and documented support window (`AGENTS.md` §6.5, `docs/deprecations.md`).
+- The archived Express app on `legacy/tmdb-addon-3.1.7` is not part of this branch.

@@ -38,6 +38,7 @@ import { spaStaticPlugin } from './plugins/spa-static.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
 import { nativeStremioRoutes } from './routes/native-stremio.js';
+import { legacyStremioRoutes } from './routes/legacy-stremio.js';
 
 export interface BuildAppOptions {
   logger?: boolean;
@@ -125,6 +126,10 @@ function buildLoggerOption(enabled: boolean) {
 export async function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
     logger: buildLoggerOption(options.logger ?? true),
+    routerOptions: {
+      // Legacy compressed configs live in a path segment (can exceed Fastify's default 100).
+      maxParamLength: 32_768,
+    },
   });
 
   const store = await resolveStore(options);
@@ -185,6 +190,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
   await app.register(nativeStremioRoutes);
+  await app.register(legacyStremioRoutes);
   await app.register(spaStaticPlugin, {
     configureRoot: options.configureDist,
     adminRoot: options.adminDist,

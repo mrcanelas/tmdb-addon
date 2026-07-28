@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { createRequire } from 'node:module';
 import { createApiError } from '@metalayer/api-errors';
-import { toManifestCatalogEntries } from '@metalayer/catalogs';
 import {
   applyProfileToConfig,
   findProfile,
   type MetaLayerConfig,
 } from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
+import { buildStremioManifest } from '../stremio/build-manifest.js';
 
 const require = createRequire(import.meta.url);
 const { METALAYER } = require('@metalayer/identity') as {
@@ -18,36 +18,6 @@ declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
   }
-}
-
-function buildManifest(config: MetaLayerConfig, description: string) {
-  const catalogs = toManifestCatalogEntries(
-    config.catalogs,
-    config.localization.metadataLocale,
-    config.presentation,
-  ).map(({ id, type, name }) => ({
-    id,
-    type,
-    name,
-    extra: [{ name: 'skip', isRequired: false }],
-  }));
-
-  const types = [...new Set(catalogs.map((catalog) => catalog.type))];
-
-  return {
-    id: METALAYER.manifestId,
-    version: METALAYER.version,
-    name: METALAYER.manifestName,
-    description,
-    resources: catalogs.length > 0 ? ['catalog', 'meta'] : ['meta'],
-    types: types.length > 0 ? types : ['movie', 'series'],
-    idPrefixes: ['tt', 'tmdb:', 'anilist:'],
-    catalogs,
-    behaviorHints: {
-      configurable: true,
-      configurationRequired: false,
-    },
-  };
 }
 
 /**
@@ -69,8 +39,13 @@ export const nativeManifestRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
-      return buildManifest(
+      return buildStremioManifest(
         view.config,
+        {
+          manifestId: METALAYER.manifestId,
+          manifestName: METALAYER.manifestName,
+          version: METALAYER.version,
+        },
         `MetaLayer configuration "${view.config.name}". Secrets are stored server-side.`,
       );
     },
@@ -109,9 +84,17 @@ export const nativeManifestRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
-      const effective = applyProfileToConfig(view.config, profile);
-      return buildManifest(
+      const effective: MetaLayerConfig = applyProfileToConfig(
+        view.config,
+        profile,
+      );
+      return buildStremioManifest(
         effective,
+        {
+          manifestId: METALAYER.manifestId,
+          manifestName: METALAYER.manifestName,
+          version: METALAYER.version,
+        },
         `MetaLayer profile "${profile.name}" on configuration "${view.config.name}". Secrets are stored server-side.`,
       );
     },

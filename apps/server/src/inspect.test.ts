@@ -85,6 +85,7 @@ describe('@metalayer/server Meta Inspector', () => {
       'rpdb',
       'fanart',
       'tmdb',
+      'imdb',
     ]);
     expect(inspect.json().identity.diagnostics.canonicalId).toMatch(
       /^metalayer:movie:/,

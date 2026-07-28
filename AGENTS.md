@@ -526,7 +526,9 @@ Needs attention:
 
 ## 6.5 Legacy route lifetime
 
-Legacy routes must not be removed before:
+Legacy Stremio URL compatibility (`/:catalogChoices/...` with identity `tmdb-addon`) is hosted by the MetaLayer server. The historical Express addon runtime is archived on branch `legacy/tmdb-addon-3.1.7` and is not maintained on the MetaLayer line.
+
+Those compatibility routes must not be removed before:
 
 - a stable MetaLayer release exists;
 - migration tooling is proven;

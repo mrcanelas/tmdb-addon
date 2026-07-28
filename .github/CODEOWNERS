@@ -1,12 +1,13 @@
 # Code owners
 
-Default reviewers for MetaLayer / TMDB Addon migration work.
+Default reviewers for MetaLayer work.
 Update GitHub usernames as the team grows.
 
 *       @mrcanelas
 
-/apps/api/              @mrcanelas
-/apps/configure/        @mrcanelas
+/apps/server/           @mrcanelas
+/apps/frontend/         @mrcanelas
+/apps/dashboard/        @mrcanelas
 /packages/              @mrcanelas
 /docs/adr/              @mrcanelas
 /tests/                 @mrcanelas

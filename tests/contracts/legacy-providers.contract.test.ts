@@ -1,16 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import {
   compressToEncodedURIComponent,
   listLegacySecretsPresent,
   parseLegacyAddonConfig,
+  parseLegacyImportSource,
 } from '../../packages/config/src/index.ts';
-
-const require = createRequire(import.meta.url);
-const { parseConfig } = require('../../addon/utils/parseProps.js');
 
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), '../fixtures/legacy');
 
@@ -50,7 +47,7 @@ describe('legacy provider fixtures', () => {
   it('round-trips trakt fixture through lz-string like a legacy URL segment', () => {
     const fixture = loadFixture('trakt-lists.json');
     const compressed = compressToEncodedURIComponent(JSON.stringify(fixture));
-    const parsed = parseConfig(compressed);
+    const parsed = parseLegacyImportSource(compressed);
     expect(parsed.traktAccessToken).toBe('REDACTED_TRAKT_ACCESS');
     expect(parsed.catalogs).toHaveLength(2);
   });

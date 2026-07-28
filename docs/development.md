@@ -1,157 +1,64 @@
 # Development Guide
 
-This guide will help you set up your development environment and understand the project structure.
-
 ## Prerequisites
 
 - Node.js 22.13+ (required by pnpm 11 / `node:sqlite`)
 - pnpm 11.x (see `packageManager` in root `package.json`)
 - Git
-- MongoDB (local or Atlas) — legacy addon only
 - Basic knowledge of TypeScript and React
 
-## Project Structure
+## Project structure
 
+```text
+tmdb-addon/   # monorepo root (package name retained during migration)
+├── apps/
+│   ├── server/      # Fastify API + Stremio routes
+│   ├── frontend/    # Configure SPA
+│   ├── dashboard/   # Admin SPA
+│   └── worker/      # reserved
+├── packages/        # @metalayer/* libraries
+├── docker/          # Lite / Server images
+├── docs/
+├── scripts/
+└── tests/
 ```
-tmdb-addon/
-├── addon/           # Backend server code
-├── configure/       # Frontend configuration UI
-├── docs/           # Documentation
-├── node_modules/   # Dependencies
-└── package.json    # Project configuration
-```
 
-## Setting Up Development Environment
+The Express addon + Vite configure UI are archived on `legacy/tmdb-addon-3.1.7`.
 
-1. Clone the repository:
+## Setup
+
 ```bash
 git clone https://github.com/mrcanelas/tmdb-addon.git
 cd tmdb-addon
-```
-
-2. Install dependencies:
-```bash
 pnpm install
-```
-
-3. Set up environment variables:
-```bash
 cp .env.example .env
-```
-
-Edit `.env` with your development credentials:
-```env
-MONGODB_URI=your_mongodb_uri
-FANART_API=your_fanart_key
-TMDB_API=your_tmdb_key
-HOST_NAME=http://localhost:1337
-PORT=1337
-TRAKT_CLIENT_ID=your_trakt_client_id
-TRAKT_CLIENT_SECRET=your_trakt_client_secret
-```
-
-4. Start development servers:
-```bash
-# MetaLayer (recommended)
 pnpm dev
-
-# Legacy TMDB Addon (optional)
-pnpm dev:legacy-addon
-pnpm dev:legacy
 ```
 
-## Development Workflow
+- API: `http://localhost:1338`
+- Frontend configure (dev): typically `http://localhost:5174/configure`
 
-1. **Create a new branch**:
+Generate an encryption key if needed:
+
 ```bash
-git checkout -b feature/your-feature-name
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-2. **Make your changes**:
-- Backend changes go in the `addon/` directory
-- Frontend changes go in the `configure/` directory
+## Scripts
 
-3. **Testing**:
-```bash
-# Run tests
-pnpm test
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Core + server + frontend in parallel |
+| `pnpm build` | Build MetaLayer apps |
+| `pnpm test` | Vitest |
+| `pnpm typecheck` | Workspace TypeScript |
+| `pnpm i18n:check` | Locale validation |
+| `pnpm start` | Start MetaLayer server |
 
-# Run linter
-pnpm lint
-```
+## Docs
 
-4. **Building**:
-```bash
-pnpm build
-```
-
-## Code Style
-
-We use ESLint and Prettier for code formatting. Configuration can be found in:
-- `.eslintrc.js`
-- `.prettierrc`
-
-## Hot Reload
-
-- Backend uses `nodemon` for automatic reloading
-- Frontend uses Vite's hot module replacement
-
-## Debugging
-
-### Backend Debugging
-
-1. Using VS Code:
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Server",
-      "program": "${workspaceFolder}/addon/server.js",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
-    }
-  ]
-}
-```
-
-2. Using Chrome DevTools:
-```bash
-node --inspect addon/server.js
-```
-
-### Frontend Debugging
-
-1. Use React Developer Tools browser extension
-2. Vite's development server includes source maps
-
-## Common Development Tasks
-
-### Adding New UI Components
-
-1. Create component in `configure/components/`
-2. Add styles using Tailwind CSS
-3. Import and use in relevant pages
-
-## Best Practices
-
-1. **Code Organization**:
-   - Keep components small and focused
-   - Use TypeScript interfaces for type safety
-   - Follow the Single Responsibility Principle
-
-2. **Performance**:
-   - Implement caching where appropriate
-   - Use pagination for large datasets
-   - Optimize API calls
-
-3. **Security**:
-   - Validate all user inputs
-   - Use environment variables for secrets
-   - Implement rate limiting
-
-4. **Testing**:
-   - Write unit tests for critical functions
-   - Test edge cases
-   - Use meaningful test descriptions 
+- `AGENTS.md` — product rules
+- `FRONTEND.md` — configure UX
+- `docs/architecture.md`
+- `docs/routes.md`
+- `CONTRIBUTING.md`

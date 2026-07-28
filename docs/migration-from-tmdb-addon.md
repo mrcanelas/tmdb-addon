@@ -29,4 +29,4 @@ Legacy fixtures live under `tests/fixtures/legacy/`. Coverage is exercised by `a
 
 ## Compatibility window
 
-Legacy routes remain supported for the documented migration window (`AGENTS.md` §6.5). Native MetaLayer mode uses server-side configuration IDs and does not put secrets in URLs. Removal requires a stable release, proven migration tooling, a support window, and a major-version announcement (`docs/deprecations.md`).
+Legacy compressed Stremio URLs remain supported on the MetaLayer server (`/:catalogChoices/...` with identity `tmdb-addon`) for the documented migration window (`AGENTS.md` §6.5). Native MetaLayer mode uses server-side configuration IDs and does not put secrets in URLs. The historical Express addon process is archived on branch `legacy/tmdb-addon-3.1.7`. Removal of legacy-identity URL support requires a stable release, proven migration tooling, a support window, and a major-version announcement (`docs/deprecations.md`).
