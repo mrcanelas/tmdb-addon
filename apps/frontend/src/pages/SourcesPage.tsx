@@ -103,7 +103,7 @@ export function SourcesPage() {
             <label className="relative block min-w-0 flex-1">
               <span className="sr-only">{t('sources.search.label')}</span>
               <Search
-                className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-[var(--muted)]"
+                className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted"
                 aria-hidden
               />
               <Input
@@ -149,7 +149,7 @@ export function SourcesPage() {
 
               {grouped.map((group) => (
                 <div key={group.category} className="space-y-3">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--foreground)]">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">
                     {t(`sources.category.${group.category}`)}
                   </h2>
                   <div className="grid gap-4 sm:grid-cols-1 xl:grid-cols-4">

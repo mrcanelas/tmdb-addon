@@ -21,7 +21,7 @@ export function SourceCatalogCard({
   return (
     <Card className="relative flex h-full flex-col overflow-hidden">
       {source.adapterAvailable && !comingSoon ? (
-        <span className="pointer-events-none absolute end-0 top-0 z-10 origin-top-right translate-x-[28%] translate-y-[40%] rotate-45 bg-[var(--accent)] px-8 py-0.5 text-[10px] font-semibold tracking-wide text-[var(--accent-foreground)]">
+        <span className="pointer-events-none absolute end-0 top-0 z-10 origin-top-right translate-x-[28%] translate-y-[40%] rotate-45 bg-accent px-8 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground">
           {t('sources.badge.ready')}
         </span>
       ) : null}

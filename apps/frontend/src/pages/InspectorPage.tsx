@@ -87,7 +87,7 @@ const SAMPLE_CONTRIBUTIONS = {
 };
 
 const INPUT_CLASS =
-  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
+  'h-10 rounded-md border border-border bg-surface px-3 text-foreground';
 
 export function InspectorPage() {
   const { t } = useTranslation(['inspector', 'common']);
@@ -186,14 +186,14 @@ export function InspectorPage() {
       {status === 'ready' ? (
         <>
           {actionError ? (
-            <p className="text-sm text-[var(--danger)]" role="alert">
+            <p className="text-sm text-danger" role="alert">
               {actionError}
             </p>
           ) : null}
 
           <SectionCard title={t('inspector.queryTitle')}>
             <div className="flex flex-wrap items-end gap-3">
-              <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-sm text-[var(--foreground)]">
+              <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-sm text-foreground">
                 <span>{t('inspector.idLabel')}</span>
                 <input
                   className={INPUT_CLASS}
@@ -230,10 +230,10 @@ export function InspectorPage() {
                   {report.identity.publicId ?? empty} ·{' '}
                   {report.identity.mediaType ?? empty}
                 </p>
-                <p className="mt-2 font-mono text-sm text-[var(--foreground)]">
+                <p className="mt-2 font-mono text-sm text-foreground">
                   {formatValue(report.identity.matches)}
                 </p>
-                <p className="mt-2 text-sm text-[var(--foreground)]">
+                <p className="mt-2 text-sm text-foreground">
                   {t('inspector.displayTitle')}:{' '}
                   {report.fields.displayTitle ?? empty}
                 </p>
@@ -244,13 +244,13 @@ export function InspectorPage() {
 
               {identity ? (
                 <SectionCard title={t('inspector.graph')}>
-                  <p className="font-mono text-sm text-[var(--foreground)]">
+                  <p className="font-mono text-sm text-foreground">
                     {identity.canonicalId}
                   </p>
                   <p className="mt-1 text-sm ml-text-muted">
                     {t('inspector.edges')}: {identity.edgeCount}
                   </p>
-                  <ul className="mt-2 space-y-1 text-sm text-[var(--foreground)]">
+                  <ul className="mt-2 space-y-1 text-sm text-foreground">
                     {identity.edges.slice(0, 8).map((edge) => (
                       <li key={`${edge.from}->${edge.to}`} className="font-mono">
                         {edge.from} → {edge.to} · {edge.method} ·{' '}
@@ -260,7 +260,7 @@ export function InspectorPage() {
                   </ul>
                   {identity.warnings.length > 0 ? (
                     <ul
-                      className="mt-2 space-y-1 text-sm text-[var(--warning)]"
+                      className="mt-2 space-y-1 text-sm text-warning"
                       role="status"
                     >
                       {identity.warnings.map((warning) => (
@@ -284,13 +284,13 @@ export function InspectorPage() {
                     return (
                       <li
                         key={key}
-                        className="border-b border-[var(--border)] pb-3 last:border-b-0"
+                        className="border-b border-border pb-3 last:border-b-0"
                       >
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
-                          <span className="font-medium text-[var(--foreground)]">
+                          <span className="font-medium text-foreground">
                             {t(`inspector.fields.${key}`)}
                           </span>
-                          <span className="font-mono text-sm text-[var(--foreground)]">
+                          <span className="font-mono text-sm text-foreground">
                             {formatValue(field.value)}
                           </span>
                         </div>
@@ -319,7 +319,7 @@ export function InspectorPage() {
                           </div>
                           {field.attempts && field.attempts.length > 0 ? (
                             <div className="sm:col-span-2">
-                              <p className="mb-1 font-medium text-[var(--foreground)]">
+                              <p className="mb-1 font-medium text-foreground">
                                 {t('inspector.attempts')}
                               </p>
                               <ol className="list-decimal space-y-1 ps-5 font-mono text-xs">
@@ -356,7 +356,7 @@ export function InspectorPage() {
                             </div>
                           ) : null}
                           {field.exclusionReason ? (
-                            <div className="sm:col-span-2 text-[var(--warning)]">
+                            <div className="sm:col-span-2 text-warning">
                               {t('inspector.exclusionLine', {
                                 reason:
                                   translateReasonCode(field.exclusionReason, t) ??
@@ -366,7 +366,7 @@ export function InspectorPage() {
                           ) : null}
                           {field.warnings.length > 0 ? (
                             <ul
-                              className="sm:col-span-2 space-y-1 text-[var(--warning)]"
+                              className="sm:col-span-2 space-y-1 text-warning"
                               role="status"
                             >
                               {field.warnings.map((warning) => (

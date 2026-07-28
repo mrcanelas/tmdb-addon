@@ -70,7 +70,7 @@ export function MetasHubPage() {
           >
             <Drawer.Dialog
               aria-label={t('resolution.sidebar.aria')}
-              className="flex h-dvh flex-col rounded-none border-0 bg-[var(--background)] p-0 shadow-xl outline-none"
+              className="flex h-dvh flex-col rounded-none border-0 bg-background p-0 shadow-xl outline-none"
             >
               <Drawer.CloseTrigger className="absolute end-3 top-3 z-20" />
               <Drawer.Body className="min-h-0 flex-1 p-3">

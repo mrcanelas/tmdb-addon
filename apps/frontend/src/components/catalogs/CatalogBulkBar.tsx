@@ -37,11 +37,11 @@ export function CatalogBulkBar({
 
   return (
     <div
-      className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-sm"
+      className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm"
       role="toolbar"
       aria-label={t('catalogs.bulk.aria')}
     >
-      <span className="me-1 text-sm font-medium text-[var(--foreground)]">
+      <span className="me-1 text-sm font-medium text-foreground">
         {t('catalogs.bulk.selected', { count })}
       </span>
       <Button
@@ -109,7 +109,7 @@ export function CatalogBulkBar({
         size="sm"
         variant="outline"
         isDisabled={busy}
-        className="text-[var(--danger)]"
+        className="text-danger"
         onPress={onDelete}
       >
         <Trash2 className="size-4" aria-hidden />

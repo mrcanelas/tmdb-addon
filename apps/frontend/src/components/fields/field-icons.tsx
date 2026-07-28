@@ -42,7 +42,7 @@ export function ProviderGlyph({
     <span
       aria-hidden
       className={cn(
-        'flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-[var(--default)] text-[10px] font-semibold text-[var(--foreground)]',
+        'flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-default text-[10px] font-semibold text-foreground',
         className,
       )}
     >
@@ -108,7 +108,7 @@ export function LocaleFlag({
 
   return (
     <Globe
-      className={cn('size-5 shrink-0 text-[var(--muted-foreground)]', className)}
+      className={cn('size-5 shrink-0 text-muted', className)}
       aria-hidden
     />
   );

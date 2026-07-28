@@ -13,7 +13,7 @@ export function ConfigureSidebar() {
       <nav
         aria-label={t('shell.sidebar.aria')}
         className={cn(
-          'relative hidden h-[calc(100vh-2.5rem)] flex-col rounded-2xl bg-[var(--accent)] transition-[width] duration-300 ease-in-out md:flex',
+          'relative hidden h-[calc(100vh-2.5rem)] flex-col rounded-2xl bg-accent transition-[width] duration-300 ease-in-out md:flex',
           !minimized ? 'w-60' : 'w-[72px]',
         )}
       >

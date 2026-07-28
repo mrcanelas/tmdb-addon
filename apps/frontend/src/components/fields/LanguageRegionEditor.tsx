@@ -23,7 +23,7 @@ import { LoadingState } from '@/components/metalayer/LoadingState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 
 const SELECT_CLASS =
-  'h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--foreground)]';
+  'h-10 rounded-md border border-border bg-surface px-3 text-foreground';
 
 const REGION_OPTIONS = [
   'US',
@@ -194,7 +194,7 @@ export function LanguageRegionEditor() {
 
           <SectionCard title={t('languageRegion.section.language')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm text-[var(--foreground)]">
+              <label className="grid gap-1 text-sm text-foreground">
                 <span>{t('languageRegion.interface')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -224,7 +224,7 @@ export function LanguageRegionEditor() {
               </label>
 
               {isAdvanced ? (
-                <label className="grid gap-1 text-sm text-[var(--foreground)]">
+                <label className="grid gap-1 text-sm text-foreground">
                   <span>{t('languageRegion.metadata')}</span>
                   <select
                     className={SELECT_CLASS}
@@ -252,7 +252,7 @@ export function LanguageRegionEditor() {
             </div>
 
             {isAdvanced ? (
-              <label className="mt-4 grid gap-1 text-sm text-[var(--foreground)]">
+              <label className="mt-4 grid gap-1 text-sm text-foreground">
                 <span>{t('languageRegion.fallbacks')}</span>
                 <input
                   className={`${SELECT_CLASS} w-full`}
@@ -271,7 +271,7 @@ export function LanguageRegionEditor() {
 
           <SectionCard title={t('languageRegion.section.region')}>
             {!isAdvanced ? (
-              <label className="grid max-w-xs gap-1 text-sm text-[var(--foreground)]">
+              <label className="grid max-w-xs gap-1 text-sm text-foreground">
                 <span>{t('languageRegion.country')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -308,7 +308,7 @@ export function LanguageRegionEditor() {
                 ).map(([field, labelKey]) => (
                   <label
                     key={field}
-                    className="grid gap-1 text-sm text-[var(--foreground)]"
+                    className="grid gap-1 text-sm text-foreground"
                   >
                     <span>{t(labelKey)}</span>
                     <select
@@ -350,7 +350,7 @@ export function LanguageRegionEditor() {
               </div>
             )}
 
-            <label className="mt-4 grid max-w-md gap-1 text-sm text-[var(--foreground)]">
+            <label className="mt-4 grid max-w-md gap-1 text-sm text-foreground">
               <span>{t('languageRegion.timezone')}</span>
               <select
                 className={SELECT_CLASS}
@@ -373,7 +373,7 @@ export function LanguageRegionEditor() {
 
           <SectionCard title={t('languageRegion.section.display')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm text-[var(--foreground)]">
+              <label className="grid gap-1 text-sm text-foreground">
                 <span>{t('languageRegion.titleMode')}</span>
                 <select
                   className={SELECT_CLASS}
@@ -392,7 +392,7 @@ export function LanguageRegionEditor() {
                   ))}
                 </select>
               </label>
-              <label className="grid gap-1 text-sm text-[var(--foreground)]">
+              <label className="grid gap-1 text-sm text-foreground">
                 <span>{t('languageRegion.descriptionMode')}</span>
                 <select
                   className={SELECT_CLASS}

@@ -433,7 +433,7 @@ export function FieldsPage() {
                 />
               </div>
             ) : (
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
+              <div className="rounded-2xl border border-border bg-surface p-6">
                 <p className="text-sm ml-text-muted">
                   {isEditableFieldId(selectedId)
                     ? t('resolution.rail.selectHint')

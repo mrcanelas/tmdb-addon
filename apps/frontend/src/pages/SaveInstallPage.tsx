@@ -59,7 +59,7 @@ export function SaveInstallPage() {
             title={t('saveInstall.section.manifest')}
             description={t('saveInstall.manifestHint')}
           >
-            <p className="break-all font-mono text-sm text-[var(--foreground)]">
+            <p className="break-all font-mono text-sm text-foreground">
               {httpUrl}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -82,19 +82,19 @@ export function SaveInstallPage() {
               </Button>
             </div>
             {copyState === 'ok' ? (
-              <p className="mt-3 text-sm text-[var(--foreground)]" role="status">
+              <p className="mt-3 text-sm text-foreground" role="status">
                 {t('saveInstall.copyOk')}
               </p>
             ) : null}
             {copyState === 'error' ? (
-              <p className="mt-3 text-sm text-[var(--danger)]" role="alert">
+              <p className="mt-3 text-sm text-danger" role="alert">
                 {t('saveInstall.copyError')}
               </p>
             ) : null}
           </SectionCard>
 
           <SectionCard title={t('saveInstall.section.config')}>
-            <dl className="grid gap-2 text-sm text-[var(--foreground)]">
+            <dl className="grid gap-2 text-sm text-foreground">
               <div className="flex flex-wrap gap-2">
                 <dt className="ml-text-muted">{t('saveInstall.configId')}</dt>
                 <dd className="font-mono">{configId}</dd>

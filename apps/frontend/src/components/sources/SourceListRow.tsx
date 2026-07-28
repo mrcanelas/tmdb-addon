@@ -14,10 +14,10 @@ export function SourceListRow({
   const { t } = useTranslation('sources');
 
   return (
-    <div className="flex items-center gap-3 border-b border-[var(--border)] px-3 py-3 last:border-b-0">
+    <div className="flex items-center gap-3 border-b border-border px-3 py-3 last:border-b-0">
       <SourceProviderIcon providerId={source.id} name={source.name} size="sm" />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-[var(--foreground)]">
+        <p className="truncate font-medium text-foreground">
           {source.name}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">

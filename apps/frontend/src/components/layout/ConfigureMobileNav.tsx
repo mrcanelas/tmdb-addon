@@ -26,7 +26,7 @@ export function ConfigureMobileNav() {
           <Drawer.Dialog
             id="configure-mobile-nav"
             aria-label={t('shell.sidebar.aria')}
-            className="flex h-dvh flex-col rounded-none border-0 bg-[var(--accent)] p-0 shadow-xl outline-none"
+            className="flex h-dvh flex-col rounded-none border-0 bg-accent p-0 shadow-xl outline-none"
           >
             <Drawer.CloseTrigger className="absolute end-3 top-3 z-10 text-white" />
             <Drawer.Body className="relative flex min-h-0 flex-1 flex-col overflow-y-auto p-0">

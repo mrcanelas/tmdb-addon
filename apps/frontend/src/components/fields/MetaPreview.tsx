@@ -91,7 +91,7 @@ export function MetaPreview({
   return (
     <div
       className={cn(
-        'relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0b0d12] text-white',
+        'relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-[#0b0d12] text-white',
         className,
       )}
     >
@@ -121,7 +121,7 @@ export function MetaPreview({
               className={cn(
                 'mx-auto mb-5 block h-16 max-w-full object-contain object-center drop-shadow-md sm:h-20',
                 highlightField === 'logo' &&
-                  'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-transparent',
+                  'ring-2 ring-accent ring-offset-2 ring-offset-transparent',
               )}
               loading="lazy"
               decoding="async"
@@ -132,7 +132,7 @@ export function MetaPreview({
               className={cn(
                 'mb-5 text-balance text-center text-2xl font-bold leading-tight text-white/95',
                 editingTitle &&
-                  'underline decoration-[var(--accent)] decoration-2 underline-offset-4',
+                  'underline decoration-accent decoration-2 underline-offset-4',
               )}
             >
               {meta.name}
@@ -146,7 +146,7 @@ export function MetaPreview({
               <span
                 className={cn(
                   'inline-flex items-center gap-1.5',
-                  highlightField === 'rating' && 'text-[var(--accent)]',
+                  highlightField === 'rating' && 'text-accent',
                 )}
               >
                 <span>{meta.imdbRating}</span>

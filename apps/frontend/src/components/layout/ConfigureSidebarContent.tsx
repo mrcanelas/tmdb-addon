@@ -56,7 +56,7 @@ export function ConfigureSidebarContent({
           to="/"
           aria-label={t('common.appName')}
           onClick={onNavigate}
-          className="flex min-w-0 items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--accent)]"
+          className="flex min-w-0 items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
         >
           <span className="flex w-[72px] shrink-0 items-center justify-center">
             <LogoMark className="size-9 text-white" />

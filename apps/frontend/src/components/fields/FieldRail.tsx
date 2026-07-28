@@ -75,7 +75,7 @@ export function FieldRail({
         <label className="relative block">
           <span className="sr-only">{t('resolution.rail.searchLabel')}</span>
           <Search
-            className="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-[var(--muted)]"
+            className="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted"
             aria-hidden
           />
           <Input
@@ -96,7 +96,7 @@ export function FieldRail({
           <nav aria-label={t('resolution.rail.aria')} className="space-y-5">
             {visibleGroups.map((block) => (
               <div key={block.group} className="space-y-1">
-                <p className="px-3 pb-1 text-xs font-medium text-[var(--muted)] ml-text-muted">
+                <p className="px-3 pb-1 text-xs font-medium text-muted ml-text-muted">
                   {t(`resolution.group.${block.group}`)}
                 </p>
                 <ul className="space-y-0.5 px-1.5">
@@ -113,8 +113,8 @@ export function FieldRail({
                             // Reduzido o padding vertical (py-1.5) e arredondamento mais sutil (rounded-lg)
                             'flex w-full items-center gap-2.5 rounded-lg px-2 py-0.5 text-start text-sm transition-colors',
                             selected
-                              ? 'bg-[var(--accent)] text-[var(--foreground)]'
-                              : 'text-[var(--muted)] hover:bg-[var(--default)] hover:text-[var(--foreground)]',
+                              ? 'bg-accent text-foreground'
+                              : 'text-muted hover:bg-default hover:text-foreground',
                             !entry.editable && 'cursor-not-allowed opacity-55',
                           )}
                           onClick={() => {
@@ -128,7 +128,7 @@ export function FieldRail({
                           <span
                             className={cn(
                               'flex shrink-0 items-center justify-center',
-                              selected ? 'text-[var(--foreground)]' : 'opacity-70'
+                              selected ? 'text-foreground' : 'opacity-70'
                             )}
                           >
                             <FieldIcon entry={entry} />

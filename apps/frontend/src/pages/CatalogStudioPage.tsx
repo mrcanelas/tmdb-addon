@@ -629,7 +629,7 @@ export function CatalogStudioPage() {
               <label className="relative block min-w-0 flex-1">
                 <span className="sr-only">{t("catalogs.search.label")}</span>
                 <Search
-                  className="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-[var(--muted)]"
+                  className="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted"
                   aria-hidden
                 />
                 <Input

@@ -11,7 +11,7 @@ export function CatalogTitleCard({ meta }: { meta: CatalogMetaPreview }) {
 
   return (
     <Card className="flex h-full rounded-none p-0 flex-col gap-0 overflow-hidden shadow-none">
-      <div className="relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-md bg-[var(--default)]">
+      <div className="relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-md bg-default">
         {showPoster ? (
           <img
             src={meta.poster}
@@ -22,7 +22,7 @@ export function CatalogTitleCard({ meta }: { meta: CatalogMetaPreview }) {
           />
         ) : (
           <div
-            className="flex size-full flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+            className="flex size-full flex-col items-center justify-center gap-2 text-muted"
             aria-label={t('catalogs.titleCard.noPoster')}
           >
             <ImageOff className="size-8 opacity-50" aria-hidden />

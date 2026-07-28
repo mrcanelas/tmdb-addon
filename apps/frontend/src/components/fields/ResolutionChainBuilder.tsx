@@ -111,14 +111,14 @@ function SortableChipRow({
         transition,
       }}
       className={cn(
-        'inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1.5',
-        warning && 'border-[var(--warning)]',
+        'inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2 py-1.5',
+        warning && 'border-warning',
         isDragging && 'z-20 opacity-90 shadow-md',
       )}
     >
       <button
         type="button"
-        className="cursor-grab touch-none p-0.5 text-[var(--muted-foreground)] active:cursor-grabbing"
+        className="cursor-grab touch-none p-0.5 text-muted active:cursor-grabbing"
         aria-label={label}
         disabled={disabled}
         {...attributes}
@@ -127,12 +127,12 @@ function SortableChipRow({
         <GripVertical className="size-4" aria-hidden />
       </button>
       {leading ? <span className="shrink-0">{leading}</span> : null}
-      <span className="max-w-40 truncate text-sm font-medium text-[var(--foreground)]">
+      <span className="max-w-40 truncate text-sm font-medium text-foreground">
         {label}
       </span>
       {warning ? (
         <span
-          className="inline-flex shrink-0 items-center text-[var(--warning)]"
+          className="inline-flex shrink-0 items-center text-warning"
           title={warning}
         >
           <TriangleAlert className="size-3.5" aria-hidden />
@@ -294,7 +294,7 @@ export function ResolutionChainBuilder({
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-medium text-[var(--foreground)]">
+              <p className="text-sm font-medium text-foreground">
                 {t('resolution.providers')}
               </p>
               <p className="text-xs ml-text-muted">
@@ -317,12 +317,12 @@ export function ResolutionChainBuilder({
                 {t('resolution.addProviderShort')}
               </Button>
               {addMenu === 'provider' ? (
-                <div className="absolute end-0 top-full z-30 mt-1 grid min-w-40 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 shadow-lg">
+                <div className="absolute end-0 top-full z-30 mt-1 grid min-w-40 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   {availableProviders.map((provider) => (
                     <button
                       key={provider}
                       type="button"
-                      className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-[var(--default)]"
+                      className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default"
                       onClick={() => {
                         commit({
                           ...plan,
@@ -384,7 +384,7 @@ export function ResolutionChainBuilder({
             </SortableContext>
           </DndContext>
           {blockedProviders.length > 0 ? (
-            <p className="text-xs text-[var(--warning)]" role="status">
+            <p className="text-xs text-warning" role="status">
               {t('resolution.availability.blockedProviders', {
                 providers: blockedProviders
                   .map((entry) => sourceLabel(entry.provider))
@@ -403,7 +403,7 @@ export function ResolutionChainBuilder({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <p className="text-sm font-medium text-[var(--foreground)]">
+                <p className="text-sm font-medium text-foreground">
                   {t('resolution.locales')}
                 </p>
                 <p className="text-xs ml-text-muted">
@@ -426,7 +426,7 @@ export function ResolutionChainBuilder({
                   {t('resolution.addLocaleShort')}
                 </Button>
                 {addMenu === 'locale' ? (
-                  <div className="absolute end-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 shadow-lg">
+                  <div className="absolute end-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
                     {localeChoices.map((locale, index) => {
                       const label = localeLabel(locale, t);
                       const key = localeKey(locale, index);
@@ -443,7 +443,7 @@ export function ResolutionChainBuilder({
                           key={key}
                           type="button"
                           disabled={exists}
-                          className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-[var(--default)] disabled:opacity-40"
+                          className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default disabled:opacity-40"
                           onClick={() => {
                             commit({
                               ...plan,
@@ -505,7 +505,7 @@ export function ResolutionChainBuilder({
 
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="space-y-3">
-            <p className="text-sm font-medium text-[var(--foreground)]">
+            <p className="text-sm font-medium text-foreground">
               {t('resolution.options.label')}
             </p>
             {allowLocales ? (
@@ -526,7 +526,7 @@ export function ResolutionChainBuilder({
                     }
                   />
                   <span>
-                    <span className="font-medium text-[var(--foreground)]">
+                    <span className="font-medium text-foreground">
                       {t('resolution.options.preferLocalized')}
                     </span>
                     <span className="mt-0.5 block text-xs ml-text-muted">
@@ -558,7 +558,7 @@ export function ResolutionChainBuilder({
                     }}
                   />
                   <span>
-                    <span className="font-medium text-[var(--foreground)]">
+                    <span className="font-medium text-foreground">
                       {t('resolution.options.fallbackOriginal')}
                     </span>
                     <span className="mt-0.5 block text-xs ml-text-muted">
@@ -579,7 +579,7 @@ export function ResolutionChainBuilder({
                 }
               />
               <span>
-                <span className="font-medium text-[var(--foreground)]">
+                <span className="font-medium text-foreground">
                   {t('resolution.options.requireNonEmpty')}
                 </span>
                 <span className="mt-0.5 block text-xs ml-text-muted">
@@ -591,7 +591,7 @@ export function ResolutionChainBuilder({
 
           {showEffectiveOrder ? (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-[var(--foreground)]">
+              <p className="text-sm font-medium text-foreground">
                 {t('resolution.effectiveOrder')}
               </p>
               {effectivePreview.length === 0 ? (
@@ -599,7 +599,7 @@ export function ResolutionChainBuilder({
                   {t('resolution.effectiveOrderEmpty')}
                 </p>
               ) : (
-                <div className="overflow-hidden rounded-xl border border-[var(--border)]">
+                <div className="overflow-hidden rounded-xl border border-border">
                   <table className="w-full border-collapse text-sm">
                     <tbody>
                       {effectivePreview.slice(0, 10).map((row, index) => {
@@ -607,7 +607,7 @@ export function ResolutionChainBuilder({
                         return (
                           <tr
                             key={`${row.provider}-${index}`}
-                            className="border-b border-[var(--border)] last:border-b-0"
+                            className="border-b border-border last:border-b-0"
                           >
                             <td className="w-8 px-3 py-2 text-xs tabular-nums ml-text-muted">
                               {index + 1}
@@ -617,7 +617,7 @@ export function ResolutionChainBuilder({
                                 <ProviderGlyph provider={row.provider} />
                                 <span
                                   className={cn(
-                                    'font-medium text-[var(--foreground)]',
+                                    'font-medium text-foreground',
                                     !state.available &&
                                       'line-through opacity-60',
                                   )}
@@ -626,7 +626,7 @@ export function ResolutionChainBuilder({
                                 </span>
                                 {!state.available ? (
                                   <TriangleAlert
-                                    className="size-3.5 shrink-0 text-[var(--warning)]"
+                                    className="size-3.5 shrink-0 text-warning"
                                     aria-label={t(
                                       `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
                                       { provider: sourceLabel(row.provider) },
@@ -665,7 +665,7 @@ export function ResolutionChainBuilder({
       </Card.Content>
 
       {footer ? (
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-3">
           {footer}
         </div>
       ) : null}

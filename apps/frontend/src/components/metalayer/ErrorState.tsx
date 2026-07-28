@@ -14,7 +14,7 @@ export function ErrorState({
       className="ml-surface border-[color-mix(in_srgb,var(--warning)_35%,var(--border))] p-4"
       role="alert"
     >
-      <p className="text-sm text-[var(--warning)]">{message}</p>
+      <p className="text-sm text-warning">{message}</p>
       {onRetry && retryLabel ? (
         <Button
           type="button"

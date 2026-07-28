@@ -263,7 +263,7 @@ export function PublicMetaDBConfigureModal({
               </p>
             ) : null}
 
-            <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+            <section className="space-y-3 rounded-xl border border-border p-4">
               <h3 className="text-sm font-medium">
                 {t('sources.publicmetadb.apiKeyTitle')}
               </h3>
@@ -313,7 +313,7 @@ export function PublicMetaDBConfigureModal({
 
             {connected ? (
               <>
-                <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+                <section className="space-y-3 rounded-xl border border-border p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-medium">
@@ -334,7 +334,7 @@ export function PublicMetaDBConfigureModal({
                   </label>
                 </section>
 
-                <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+                <section className="space-y-3 rounded-xl border border-border p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-medium">
@@ -361,7 +361,7 @@ export function PublicMetaDBConfigureModal({
                       {lists.map((list) => (
                         <li
                           key={list.id}
-                          className="flex items-start gap-2 rounded-lg border border-[var(--border)] px-3 py-2"
+                          className="flex items-start gap-2 rounded-lg border border-border px-3 py-2"
                         >
                           <input
                             type="checkbox"
@@ -384,7 +384,7 @@ export function PublicMetaDBConfigureModal({
                   ) : null}
                 </section>
 
-                <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+                <section className="space-y-3 rounded-xl border border-border p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-medium">
@@ -411,7 +411,7 @@ export function PublicMetaDBConfigureModal({
                       {picks.map((pick) => (
                         <li
                           key={pick.id}
-                          className="flex items-start gap-2 rounded-lg border border-[var(--border)] px-3 py-2"
+                          className="flex items-start gap-2 rounded-lg border border-border px-3 py-2"
                         >
                           <input
                             type="checkbox"
@@ -437,12 +437,12 @@ export function PublicMetaDBConfigureModal({
             ) : null}
 
             {feedback.kind === 'success' ? (
-              <p className="text-sm text-[var(--success)]" role="status">
+              <p className="text-sm text-success" role="status">
                 {t(feedback.messageKey, feedback.params)}
               </p>
             ) : null}
             {feedback.kind === 'error' ? (
-              <p className="text-sm text-[var(--danger)]" role="alert">
+              <p className="text-sm text-danger" role="alert">
                 {t(feedback.messageKey)}
               </p>
             ) : null}

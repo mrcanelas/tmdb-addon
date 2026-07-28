@@ -33,7 +33,7 @@ import { HOME_RESOURCES } from '@/lib/home-resources';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
 const TEXTAREA_CLASS =
-  'mt-3 min-h-28 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-xs text-[var(--foreground)]';
+  'mt-3 min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 font-mono text-xs text-foreground';
 
 const RESOURCE_ICONS: Record<string, typeof BookOpen> = {
   docs: BookOpen,
@@ -151,12 +151,12 @@ export function OverviewPage() {
   return (
     <section className="space-y-6">
       {feedback?.tone === 'ok' ? (
-        <p className="text-sm text-[var(--success)]" role="status">
+        <p className="text-sm text-success" role="status">
           {feedback.message}
         </p>
       ) : null}
       {feedback?.tone === 'error' ? (
-        <p className="text-sm text-[var(--danger)]" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {feedback.message}
         </p>
       ) : null}
@@ -228,7 +228,7 @@ export function OverviewPage() {
                   {t('overview.getStarted.existingHint')}{' '}
                   <Link
                     to="/save-install"
-                    className="font-medium text-[var(--accent)] underline-offset-4 hover:underline"
+                    className="font-medium text-accent underline-offset-4 hover:underline"
                   >
                     {t('overview.ctaSave')}
                   </Link>
@@ -245,7 +245,7 @@ export function OverviewPage() {
                   {HOME_RESOURCES.map((resource) => {
                     const Icon = RESOURCE_ICONS[resource.id] ?? BookOpen;
                     const tileClass =
-                      '!flex h-full min-h-24 w-full !flex-col !items-start !justify-between gap-3 whitespace-normal rounded-[var(--radius)] px-3 py-3 text-start font-normal';
+                      '!flex h-full min-h-24 w-full !flex-col !items-start !justify-between gap-3 whitespace-normal rounded px-3 py-3 text-start font-normal';
                     const label = (
                       <>
                         <Icon className="size-5 shrink-0 self-start" aria-hidden />
@@ -299,7 +299,7 @@ export function OverviewPage() {
 
           <div className="space-y-3">
             <div>
-              <h2 className="text-lg font-semibold text-[var(--foreground)]">
+              <h2 className="text-lg font-semibold text-foreground">
                 {t('overview.presets.title')}
               </h2>
               <p className="text-sm ml-text-muted">{t('overview.presets.body')}</p>
@@ -311,10 +311,10 @@ export function OverviewPage() {
                   <Card key={preset.id} className="w-full">
                     <Card.Header className="items-center text-center">
                       <span
-                        className="mx-auto flex size-10 items-center justify-center rounded-full bg-[var(--surface-secondary)]"
+                        className="mx-auto flex size-10 items-center justify-center rounded-full bg-surface-secondary"
                         aria-hidden
                       >
-                        <Icon className="size-5 text-[var(--foreground)]" />
+                        <Icon className="size-5 text-foreground" />
                       </span>
                       <Card.Title className="mt-2 text-base">
                         {t(preset.nameKey)}
@@ -370,7 +370,7 @@ export function OverviewPage() {
             </Modal.Header>
             <Modal.Body className="gap-3">
               <p className="text-sm ml-text-muted">{t('overview.importBody')}</p>
-              <label className="block text-sm text-[var(--foreground)]">
+              <label className="block text-sm text-foreground">
                 <span>{t('overview.importPayloadLabel')}</span>
                 <textarea
                   className={TEXTAREA_CLASS}
@@ -384,7 +384,7 @@ export function OverviewPage() {
                 {t('overview.importPayloadHint')}
               </p>
               {report ? (
-                <div className="space-y-2 text-sm text-[var(--foreground)]" role="status">
+                <div className="space-y-2 text-sm text-foreground" role="status">
                   <p>
                     {t('overview.importImported', {
                       list: report.imported.join(', ') || empty,
@@ -396,7 +396,7 @@ export function OverviewPage() {
                     })}
                   </p>
                   {report.needsAttention.length > 0 ? (
-                    <ul className="list-disc space-y-1 ps-5 text-[var(--warning)]">
+                    <ul className="list-disc space-y-1 ps-5 text-warning">
                       {report.needsAttention.map((item) => (
                         <li
                           key={`${item.code}-${item.field ?? ''}-${item.params?.catalogId ?? ''}`}

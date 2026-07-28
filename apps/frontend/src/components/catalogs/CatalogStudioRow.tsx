@@ -100,10 +100,10 @@ export function CatalogStudioRow({
       style={style}
       className={cn(
         'group transition-colors',
-        isDragging && 'z-30 opacity-90 shadow-lg ring-2 ring-[var(--accent)]/40',
+        isDragging && 'z-30 opacity-90 shadow-lg ring-2 ring-accent/40',
         !catalog.enabled && 'opacity-60',
-        selected && 'bg-[var(--accent)]/5',
-        active && 'bg-[var(--accent)]/10 ring-1 ring-inset ring-[var(--accent)]/60',
+        selected && 'bg-accent/5',
+        active && 'bg-accent/10 ring-1 ring-inset ring-accent/60',
       )}
     >
       <Table.Cell>
@@ -116,8 +116,8 @@ export function CatalogStudioRow({
             className={cn(
               'flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
               selected
-                ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)]'
-                : 'border-[var(--border)] hover:border-[var(--accent)]',
+                ? 'border-accent bg-accent text-accent-foreground'
+                : 'border-border hover:border-accent',
             )}
             onClick={(event) => {
               event.stopPropagation();
@@ -129,7 +129,7 @@ export function CatalogStudioRow({
 
           <button
             type="button"
-            className="cursor-grab touch-none p-1 text-[var(--muted-foreground)] active:cursor-grabbing"
+            className="cursor-grab touch-none p-1 text-muted active:cursor-grabbing"
             aria-label={t('catalogs.row.drag')}
             {...attributes}
             {...listeners}
@@ -145,8 +145,8 @@ export function CatalogStudioRow({
           <button
             type="button"
             className={cn(
-              'min-w-0 truncate rounded-md text-start font-medium outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]',
-              catalog.enabled ? 'text-[var(--foreground)]' : 'ml-text-muted',
+              'min-w-0 truncate rounded-md text-start font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              catalog.enabled ? 'text-foreground' : 'ml-text-muted',
             )}
             onClick={onActivate}
           >
@@ -154,7 +154,7 @@ export function CatalogStudioRow({
           </button>
           <button
             type="button"
-            className="shrink-0 rounded p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            className="shrink-0 rounded p-1 text-muted hover:text-foreground"
             aria-label={t('catalogs.actions.rename')}
             onClick={onRename}
           >
@@ -176,7 +176,7 @@ export function CatalogStudioRow({
       <Table.Cell className="hidden sm:table-cell">
         <span className="inline-flex items-center gap-2">
           <ProviderGlyph provider={catalog.provider} />
-          <span className="text-sm font-medium text-[var(--foreground)]">
+          <span className="text-sm font-medium text-foreground">
             {sourceLabel(catalog.provider)}
           </span>
         </span>
@@ -211,7 +211,7 @@ export function CatalogStudioRow({
               onPress={onToggleEnabled}
             >
               {catalog.enabled ? (
-                <Eye className="size-5 text-[var(--success)]" aria-hidden />
+                <Eye className="size-5 text-success" aria-hidden />
               ) : (
                 <EyeOff className="size-5 ml-text-muted" aria-hidden />
               )}
@@ -294,7 +294,7 @@ export function CatalogStudioRow({
             </Button>
             {menuOpen ? (
               <div
-                className="absolute end-0 top-full z-50 mt-1 grid min-w-40 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 shadow-lg"
+                className="absolute end-0 top-full z-50 mt-1 grid min-w-40 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg"
                 role="menu"
               >
                 {[
@@ -306,7 +306,7 @@ export function CatalogStudioRow({
                   <button
                     key={String(label)}
                     type="button"
-                    className="rounded-md px-3 py-2 text-start text-sm hover:bg-[var(--default)]"
+                    className="rounded-md px-3 py-2 text-start text-sm hover:bg-default"
                     onClick={() => {
                       (action as () => void)();
                       setMenuOpen(false);
@@ -318,7 +318,7 @@ export function CatalogStudioRow({
                 ))}
                 <button
                   type="button"
-                  className="rounded-md px-3 py-2 text-start text-sm text-[var(--danger)] hover:bg-[var(--default)]"
+                  className="rounded-md px-3 py-2 text-start text-sm text-danger hover:bg-default"
                   onClick={() => {
                     onDelete();
                     setMenuOpen(false);

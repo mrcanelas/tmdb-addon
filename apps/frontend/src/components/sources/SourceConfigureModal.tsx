@@ -130,14 +130,14 @@ export function SourceConfigureModal({
               ) : null}
             </form>
             {status.kind === 'success' ? (
-              <p className="text-sm text-[var(--success)]" role="status">
+              <p className="text-sm text-success" role="status">
                 {t('sources.test.success', {
                   state: healthLabel(status.result.health?.state),
                 })}
               </p>
             ) : null}
             {status.kind === 'failure' ? (
-              <p className="text-sm text-[var(--danger)]" role="alert">
+              <p className="text-sm text-danger" role="alert">
                 {t(status.messageKey, { code: status.code ?? 'ERROR' })}
               </p>
             ) : null}

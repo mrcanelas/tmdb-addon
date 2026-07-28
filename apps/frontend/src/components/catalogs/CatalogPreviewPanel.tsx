@@ -48,7 +48,7 @@ export function CatalogPreviewPanel({
         <Card.Title>{t("catalogs.preview.panelTitle")}</Card.Title>
         <button
           type="button"
-          className="rounded-md p-1.5 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--default)] hover:text-[var(--foreground)]"
+          className="rounded-md p-1.5 text-muted transition-colors hover:bg-default hover:text-foreground"
           aria-label={t("catalogs.preview.close")}
           onClick={onClose}
         >
@@ -71,7 +71,7 @@ export function CatalogPreviewPanel({
               />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate font-semibold text-[var(--foreground)]">
+                  <h3 className="truncate font-semibold text-foreground">
                     {displayName}
                   </h3>
                   <Chip
@@ -110,7 +110,7 @@ export function CatalogPreviewPanel({
                 <dt className="text-xs ml-text-muted">
                   {t("catalogs.field.provider")}: 
                 </dt>
-                <dd className="inline-flex items-center gap-2 font-medium text-[var(--foreground)]">
+                <dd className="inline-flex items-center gap-2 font-medium text-foreground">
                   <span>{sourceLabel(catalog.provider)}</span>
                 </dd>
               </div>
@@ -118,7 +118,7 @@ export function CatalogPreviewPanel({
                 <dt className="text-xs ml-text-muted">
                   {t("catalogs.field.type")}: 
                 </dt>
-                <dd className="font-medium text-[var(--foreground)]">
+                <dd className="font-medium text-foreground">
                   {t(`catalogs.type.${catalog.mediaType}`)}
                 </dd>
               </div>
@@ -126,7 +126,7 @@ export function CatalogPreviewPanel({
                 <dt className="text-xs ml-text-muted">
                   {t("catalogs.field.home")}: 
                 </dt>
-                <dd className="font-medium text-[var(--foreground)]">
+                <dd className="font-medium text-foreground">
                   {catalog.showInHome ? "True" : "False"}
                 </dd>
               </div>
@@ -134,7 +134,7 @@ export function CatalogPreviewPanel({
                 <dt className="text-xs ml-text-muted">
                   {t("catalogs.field.group")}: 
                 </dt>
-                <dd className="truncate font-medium text-[var(--foreground)]">
+                <dd className="truncate font-medium text-foreground">
                   {catalog.group || t("catalogs.preview.none")}
                 </dd>
               </div>
@@ -153,7 +153,7 @@ export function CatalogPreviewPanel({
 
           {warnings.length > 0 ? (
             <ul
-              className="space-y-1 px-4 pb-2 text-sm text-[var(--warning)]"
+              className="space-y-1 px-4 pb-2 text-sm text-warning"
               role="status"
             >
               {warnings.map((warning) => (
@@ -179,7 +179,7 @@ export function CatalogPreviewPanel({
             </p>
           ) : (
             <>
-              <h4 className="mb-3 text-sm font-semibold text-[var(--foreground)]">
+              <h4 className="mb-3 text-sm font-semibold text-foreground">
                 {t("catalogs.preview.firstTitles", { count: metas.length })}
               </h4>
               <div className="grid grid-cols-4 gap-3">

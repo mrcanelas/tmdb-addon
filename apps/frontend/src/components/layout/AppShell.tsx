@@ -17,10 +17,10 @@ export function AppShell() {
 
   return (
     <PageTitleProvider displayName={t('shell.greeting.visitor')}>
-      <div className="flex h-dvh overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
+      <div className="flex h-dvh overflow-hidden bg-background text-foreground">
         <a
           href="#page-main"
-          className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-[var(--surface-secondary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-[var(--accent)]"
+          className="absolute start-4 top-4 z-[100] -translate-y-[160%] rounded-md bg-surface-secondary px-3 py-2 text-sm font-medium text-foreground shadow-md outline-none ring-2 ring-transparent transition-transform focus:translate-y-0 focus:ring-accent"
         >
           {t('shell.skipToMain')}
         </a>
@@ -34,7 +34,7 @@ export function AppShell() {
             id="page-main"
             tabIndex={-1}
             aria-labelledby="page-title"
-            className="flex min-h-0 flex-1 flex-col bg-[var(--background)]"
+            className="flex min-h-0 flex-1 flex-col bg-background"
           >
             <ScrollShadow
               orientation="vertical"

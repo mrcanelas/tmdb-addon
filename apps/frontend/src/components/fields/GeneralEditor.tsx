@@ -286,7 +286,7 @@ export function GeneralEditor() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm font-medium text-[var(--foreground)]">
+                  <p className="text-sm font-medium text-foreground">
                     {t('languageRegion.metadataLocales')}
                   </p>
                   <p className="text-xs ml-text-muted">
@@ -297,7 +297,7 @@ export function GeneralEditor() {
                   {orderedLocales.map((locale, index) => (
                     <li
                       key={`${locale}-${index}`}
-                      className="inline-flex max-w-full items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1.5"
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2 py-1.5"
                     >
                       <LocaleFlag locale={{ type: 'locale', value: locale }} />
                       <span className="max-w-40 truncate text-sm font-medium">
@@ -389,7 +389,7 @@ export function GeneralEditor() {
               </div>
 
               <div className="grid max-w-md gap-1">
-                <p className="text-sm font-medium text-[var(--foreground)]">
+                <p className="text-sm font-medium text-foreground">
                   {t('languageRegion.timezone')}
                 </p>
                 <GeneralSelect
@@ -418,7 +418,7 @@ export function GeneralEditor() {
 
             <div className="space-y-6">
               <div className="grid max-w-xs gap-1">
-                <p className="text-sm font-medium text-[var(--foreground)]">
+                <p className="text-sm font-medium text-foreground">
                   {tp('presentation.castCount')}
                 </p>
                 <GeneralSelect
@@ -492,7 +492,7 @@ export function GeneralEditor() {
                         <Checkbox.Indicator />
                       </Checkbox.Control>
                       <span>
-                        <span className="font-medium text-[var(--foreground)]">
+                        <span className="font-medium text-foreground">
                           {tp(labelKey)}
                         </span>
                         <span className="mt-0.5 block text-xs ml-text-muted">

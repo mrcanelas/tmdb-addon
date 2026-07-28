@@ -29,7 +29,7 @@ export function SourceProviderIcon({
 
   return (
     <span
-      className={`flex ${box} shrink-0 items-center justify-center overflow-hidden rounded-xl ${!showImage && "bg-[var(--default)] text-[var(--muted-foreground)]"}`}
+      className={`flex ${box} shrink-0 items-center justify-center overflow-hidden rounded-xl ${!showImage && "bg-default text-muted"}`}
       aria-hidden={!showImage}
     >
       {showImage ? (
@@ -43,7 +43,7 @@ export function SourceProviderIcon({
         />
       ) : (
         <span
-          className={`${letter} font-semibold text-[var(--foreground)]`}
+          className={`${letter} font-semibold text-foreground`}
           aria-hidden
         >
           {name.slice(0, 1).toUpperCase()}
