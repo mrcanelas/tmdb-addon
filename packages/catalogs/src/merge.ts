@@ -9,6 +9,19 @@ export interface CatalogMetaPreview {
   releaseInfo?: string;
   provider?: string;
   sourceInstanceId?: string;
+  /** Optional fields for Rule Studio evaluation (AGENTS.md §13). */
+  adult?: boolean;
+  genres?: string[];
+  overview?: string;
+  keywords?: string[];
+  rating?: number;
+  voteCount?: number;
+  year?: number;
+  certification?: string;
+  released?: boolean;
+  digitallyReleased?: boolean;
+  originalLanguage?: string;
+  hasArtwork?: boolean;
 }
 
 function dedupeById(metas: CatalogMetaPreview[]): CatalogMetaPreview[] {

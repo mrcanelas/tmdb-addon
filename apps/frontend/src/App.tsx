@@ -14,6 +14,7 @@ import { LanguageRegionPage } from '@/pages/LanguageRegionPage';
 import { SaveInstallPage } from '@/pages/SaveInstallPage';
 import { ProfilesPage } from '@/pages/ProfilesPage';
 import { AdvancedPage } from '@/pages/AdvancedPage';
+import { RulesPage } from '@/pages/RulesPage';
 import { TrackingOAuthCallbackPage } from '@/pages/TrackingOAuthCallbackPage';
 import {
   CatalogsHubPage,
@@ -43,10 +44,12 @@ function ThemedApp() {
                 <Route path="search" element={<SearchAiPage />} />
               </Route>
 
+              <Route path="rules" element={<RulesPage />} />
+
               <Route path="catalogs" element={<CatalogsHubPage />}>
                 <Route index element={<CatalogStudioPage />} />
                 <Route path="studio" element={<Navigate to="/catalogs" replace />} />
-                <Route path="rules" element={<Navigate to="/catalogs" replace />} />
+                <Route path="rules" element={<Navigate to="/rules" replace />} />
                 <Route path="order" element={<Navigate to="/catalogs" replace />} />
               </Route>
 

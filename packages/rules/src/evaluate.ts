@@ -5,7 +5,9 @@ export interface RuleCandidate {
   id: string;
   type?: 'movie' | 'series' | 'anime';
   title?: string;
+  overview?: string;
   genres?: string[];
+  keywords?: string[];
   rating?: number;
   voteCount?: number;
   year?: number;
@@ -129,6 +131,28 @@ export function evaluateRules(
       detail: `Matches excluded genre(s): ${rules.excludeGenres.join(', ')}`,
     });
     return { include: false, reasons };
+  }
+
+  if (rules.excludeKeywords?.length) {
+    const haystack = [
+      item.title,
+      item.overview,
+      ...(item.keywords ?? []),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    const matched = rules.excludeKeywords.find((keyword) =>
+      haystack.includes(keyword.toLowerCase()),
+    );
+    if (matched) {
+      reasons.push({
+        rule: 'excludeKeywords',
+        outcome: 'exclude',
+        detail: `Matches excluded keyword: ${matched}`,
+      });
+      return { include: false, reasons };
+    }
   }
 
   if (rules.requireGenres?.length && !hasAll(item.genres, rules.requireGenres)) {

@@ -31,6 +31,7 @@
   "catalogs.actions.export": "Exportar",
   "catalogs.actions.import": "Importar",
   "catalogs.actions.importFileAria": "Importar catálogos desde un archivo JSON",
+  "catalogs.actions.globalRules": "Reglas globales",
   "catalogs.actions.createMerged": "Añadir fusionado",
   "catalogs.actions.createRotated": "Añadir rotación",
   "catalogs.actions.addCatalog": "Añadir catálogo",

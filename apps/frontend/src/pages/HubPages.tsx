@@ -12,7 +12,7 @@ export function SourcesHubPage() {
   return <Outlet />;
 }
 
-/** Catalogs hub — Studio is the only surface; rules live in the catalog edit modal. */
+/** Catalogs hub — Studio is the surface; global rules live at `/rules`. */
 export function CatalogsHubPage() {
   return <Outlet />;
 }

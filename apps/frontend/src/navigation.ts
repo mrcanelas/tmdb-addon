@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Blocks,
+  Filter,
   Heart,
   House,
   Layers,
@@ -18,6 +19,7 @@ import {
 export type ConfigureModuleId =
   | 'home'
   | 'sources'
+  | 'rules'
   | 'catalogs'
   | 'metas'
   | 'profiles'
@@ -65,6 +67,14 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
     simpleMode: true,
     kind: 'route',
     Icon: Blocks,
+  },
+  {
+    id: 'rules',
+    path: '/rules',
+    labelKey: 'nav.rules',
+    simpleMode: true,
+    kind: 'route',
+    Icon: Filter,
   },
   {
     id: 'catalogs',
@@ -146,6 +156,7 @@ export const DONATE_OPTIONS = [
 export const CONFIGURE_HUB_ENTRY: Partial<Record<ConfigureModuleId, string>> = {
   home: '/',
   sources: '/sources',
+  rules: '/rules',
   catalogs: '/catalogs',
   metas: '/metas/fields',
   profiles: '/profiles',
@@ -180,6 +191,12 @@ export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
     id: 'sources-search',
     path: '/sources/search',
     labelKeys: ['nav.sources', 'nav.searchAi'],
+    simpleMode: true,
+  },
+  {
+    id: 'rules',
+    path: '/rules',
+    labelKeys: ['nav.rules'],
     simpleMode: true,
   },
   {
@@ -302,7 +319,6 @@ export const CONFIGURE_LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: '/overview', to: '/' },
   { from: '/home', to: '/' },
   { from: '/catalog-studio', to: '/catalogs' },
-  { from: '/rules', to: '/catalogs' },
   { from: '/sorting', to: '/catalogs' },
   { from: '/meta-builder', to: '/metas/fields' },
   { from: '/resolution', to: '/metas/fields' },

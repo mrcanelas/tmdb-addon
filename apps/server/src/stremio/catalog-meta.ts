@@ -1,7 +1,10 @@
 import {
+  filterMetasByEffectiveRules,
   resolveCatalogResults,
   sortCatalogsByPosition,
   type CatalogMetaPreview,
+  type CatalogPreviewWarning,
+  type CatalogResolveResult,
 } from '@metalayer/catalogs';
 import type { CatalogDefinition, MetaLayerConfig } from '@metalayer/config';
 import {
@@ -22,6 +25,7 @@ import {
 } from '@metalayer/providers';
 import type { CacheStore } from '@metalayer/cache';
 import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
+import { tmdbCatalogItemToMetaPreview } from './tmdb-catalog-meta.js';
 
 export type SecretResolver = (provider: string) => Promise<string | null | undefined>;
 
@@ -101,6 +105,13 @@ export function findCatalogByManifestId(
   return undefined;
 }
 
+export type LoadCatalogMetasResult = {
+  metas: CatalogMetaPreview[];
+  warnings: CatalogPreviewWarning[];
+  mode?: CatalogResolveResult['mode'];
+  activeSourceId?: string;
+};
+
 export async function loadCatalogMetas(
   app: StremioAppContext,
   config: MetaLayerConfig,
@@ -108,7 +119,7 @@ export async function loadCatalogMetas(
   page: number,
   correlationId: string,
   getSecret: SecretResolver,
-): Promise<CatalogMetaPreview[]> {
+): Promise<LoadCatalogMetasResult> {
   const locale = config.localization.metadataLocale || 'en-US';
   const region =
     config.localization.availabilityRegion ||
@@ -146,15 +157,11 @@ export async function loadCatalogMetas(
           mediaType: source.mediaType,
           page,
         });
-        return items.map(
-          (item): CatalogMetaPreview => ({
-            id: item.publicId,
-            type: item.mediaType,
-            name: item.name,
-            poster: tmdbImageUrl(item.posterPath, 'w342'),
-            releaseInfo: item.releaseDate,
-            provider: 'tmdb',
-          }),
+        return items.map((item) =>
+          tmdbCatalogItemToMetaPreview(
+            item,
+            tmdbImageUrl(item.posterPath, 'w342'),
+          ),
         );
       }
 
@@ -186,6 +193,7 @@ export async function loadCatalogMetas(
             name: item.name,
             poster: item.posterUrl ?? undefined,
             provider: source.provider,
+            hasArtwork: Boolean(item.posterUrl),
           }),
         );
       }
@@ -217,7 +225,12 @@ export async function loadCatalogMetas(
     },
   );
 
-  return resolved.metas;
+  return {
+    metas: filterMetasByEffectiveRules(resolved.metas, config, catalog),
+    warnings: resolved.warnings,
+    mode: resolved.mode,
+    activeSourceId: resolved.activeSourceId,
+  };
 }
 
 export async function resolveStremioMeta(

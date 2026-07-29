@@ -124,7 +124,7 @@ export const legacyStremioRoutes: FastifyPluginAsync = async (app) => {
     const page = Math.floor(skip / LEGACY_PAGE_SIZE) + 1;
 
     try {
-      const metas = await loadCatalogMetas(
+      const { metas } = await loadCatalogMetas(
         app,
         config,
         catalog,

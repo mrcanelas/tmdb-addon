@@ -78,6 +78,12 @@ export interface TmdbCatalogItem {
   posterPath?: string | null;
   releaseDate?: string;
   publicId: string;
+  adult?: boolean;
+  genreIds?: number[];
+  overview?: string;
+  voteAverage?: number;
+  voteCount?: number;
+  originalLanguage?: string;
 }
 
 export type TmdbFetch = (
@@ -632,6 +638,11 @@ function mapCatalogItem(
       : typeof raw.first_air_date === 'string'
         ? raw.first_air_date
         : undefined;
+  const genreIds = Array.isArray(raw.genre_ids)
+    ? raw.genre_ids
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value))
+    : undefined;
 
   return {
     id: tmdbId,
@@ -647,5 +658,15 @@ function mapCatalogItem(
         tmdbId,
         preference,
       }) ?? `tmdb:${tmdbId}`,
+    adult: typeof raw.adult === 'boolean' ? raw.adult : undefined,
+    genreIds,
+    overview: typeof raw.overview === 'string' ? raw.overview : undefined,
+    voteAverage:
+      typeof raw.vote_average === 'number' ? raw.vote_average : undefined,
+    voteCount: typeof raw.vote_count === 'number' ? raw.vote_count : undefined,
+    originalLanguage:
+      typeof raw.original_language === 'string'
+        ? raw.original_language
+        : undefined,
   };
 }

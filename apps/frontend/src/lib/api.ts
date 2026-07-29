@@ -586,6 +586,9 @@ export interface RuleSetDraft {
   releasedOnly?: boolean;
   minimumRating?: number;
   minimumVotes?: number;
+  maximumCertification?: string;
+  excludeGenres?: string[];
+  excludeKeywords?: string[];
 }
 
 export async function ensureStudioSession(): Promise<CatalogSession> {

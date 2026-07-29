@@ -8,31 +8,26 @@ import {
   importCatalogDefinitions,
   moveCatalog,
   renameCatalog,
-  resolveCatalogResults,
   setCatalogEnabled,
   setCatalogGroup,
   setCatalogShowInHome,
   setCatalogTags,
   sortCatalogsByPosition,
   toManifestCatalogEntries,
-  type CatalogMetaPreview,
 } from '@metalayer/catalogs';
 import { createApiError } from '@metalayer/api-errors';
 import type { CatalogDefinition } from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
-import {
-  ProviderError,
-  TmdbProviderAdapter,
-  AnilistProviderAdapter,
-  MalJikanProviderAdapter,
-  KitsuProviderAdapter,
-  PublicMetaDBAdapter,
-} from '@metalayer/providers';
-import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
+import type { CacheStore } from '@metalayer/cache';
+import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
+import { loadCatalogMetas } from '../stremio/catalog-meta.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     configStore: ConfigurationStore;
+    providerFetch?: TmdbFetch;
+    providerHealth: ProviderHealthRegistry;
+    providerCache: CacheStore;
   }
 }
 
@@ -340,128 +335,36 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
     if (!access.ok) return reply.status(access.status).send(access.body);
 
     const view = (await app.configStore.getPublic(request.params.configId))!;
-    const locale =
-      request.query.locale || view.config.localization.metadataLocale || 'en-US';
-    const region =
-      request.query.region ||
-      view.config.localization.availabilityRegion ||
-      view.config.localization.contentRegion;
-    const apiKey =
-      request.body?.apiKey ||
-      await app.configStore.getSecretPlaintext(request.params.configId, 'tmdb') ||
-      process.env.METALAYER_TMDB_API_KEY ||
-      process.env.TMDB_API;
+    const catalog = view.config.catalogs.find(
+      (item) => item.instanceId === request.params.instanceId,
+    );
+    if (!catalog) {
+      return reply.status(404).send(
+        createApiError({
+          code: 'CONFIGURATION_NOT_FOUND',
+          message: `Catalog ${request.params.instanceId} was not found`,
+          correlationId: request.correlationId,
+          params: { instanceId: request.params.instanceId },
+        }),
+      );
+    }
 
     const started = Date.now();
     try {
-      const resolved = await resolveCatalogResults(
-        view.config.catalogs,
-        request.params.instanceId,
-        async (catalog) => {
-          const ctx = {
-            correlationId: request.correlationId,
-            locale,
-            region,
-            apiKey,
-          };
-
-          if (catalog.provider === 'tmdb') {
-            const adapter = createAppProviderAdapter(app, 'tmdb', {
-              apiKey,
-              cache: app.providerCache,
-              stremioPublicId: view.config.identity?.stremioPublicId || 'imdb',
-            });
-            if (!(adapter instanceof TmdbProviderAdapter)) {
-              throw new Error('TMDB adapter unavailable');
-            }
-            const items = await adapter.getCatalogPage(ctx, {
-              providerCatalogId: catalog.providerCatalogId,
-              mediaType: catalog.mediaType,
-              page: request.body?.page ?? 1,
-            });
-            return items.map(
-              (item): CatalogMetaPreview => ({
-                id: item.publicId,
-                type: item.mediaType,
-                name: item.name,
-                poster: item.posterPath
-                  ? `https://image.tmdb.org/t/p/w342${item.posterPath}`
-                  : undefined,
-                releaseInfo: item.releaseDate,
-                provider: 'tmdb',
-              }),
-            );
+      const resolved = await loadCatalogMetas(
+        app,
+        view.config,
+        catalog,
+        request.body?.page ?? 1,
+        request.correlationId,
+        async (provider) => {
+          if (provider === 'tmdb' && request.body?.apiKey) {
+            return request.body.apiKey;
           }
-
-          if (
-            catalog.provider === 'anilist' ||
-            catalog.provider === 'mal' ||
-            catalog.provider === 'kitsu'
-          ) {
-            const adapter = createAppProviderAdapter(app, catalog.provider, {
-              cache: app.providerCache,
-              jikanBaseUrl: process.env.METALAYER_JIKAN_URL,
-            });
-            if (
-              !(adapter instanceof AnilistProviderAdapter) &&
-              !(adapter instanceof MalJikanProviderAdapter) &&
-              !(adapter instanceof KitsuProviderAdapter)
-            ) {
-              throw new Error(`${catalog.provider} anime adapter unavailable`);
-            }
-            const items = await adapter.getCatalogPage(ctx, {
-              providerCatalogId: catalog.providerCatalogId,
-              mediaType: 'anime',
-              page: request.body?.page ?? 1,
-            });
-            return items.map(
-              (item): CatalogMetaPreview => ({
-                id: item.publicId,
-                type: 'anime',
-                name: item.name,
-                poster: item.posterUrl ?? undefined,
-                provider: catalog.provider,
-              }),
-            );
-          }
-
-          if (catalog.provider === 'publicmetadb') {
-            const pmdbKey =
-              await app.configStore.getSecretPlaintext(
-                request.params.configId,
-                'publicmetadb',
-              ) || request.body?.apiKey;
-            if (!pmdbKey) {
-              throw new ProviderError({
-                code: 'auth',
-                providerId: 'publicmetadb',
-                message: 'PublicMetaDB API key is missing',
-                retryable: false,
-              });
-            }
-            const adapter = createAppProviderAdapter(app, 'publicmetadb', {
-              apiKey: pmdbKey,
-              cache: app.providerCache,
-            });
-            if (!(adapter instanceof PublicMetaDBAdapter)) {
-              throw new Error('PublicMetaDB adapter unavailable');
-            }
-            const items = await adapter.getCatalogPage(ctx, {
-              providerCatalogId: catalog.providerCatalogId,
-              mediaType: catalog.mediaType,
-              page: request.body?.page ?? 1,
-            });
-            return items.map(
-              (item): CatalogMetaPreview => ({
-                id: item.publicId,
-                type: item.mediaType,
-                name: item.name,
-                provider: 'publicmetadb',
-              }),
-            );
-          }
-
-          throw new Error(`Provider ${catalog.provider} catalog preview is not available yet`);
+          return app.configStore.getSecretPlaintext(
+            request.params.configId,
+            provider,
+          );
         },
       );
 
@@ -476,33 +379,25 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
         correlationId: request.correlationId,
       };
     } catch (error) {
-      const providerError =
-        error instanceof ProviderError
-          ? error
-          : new ProviderError({
-              code: 'upstream',
-              providerId: 'tmdb',
-              message: 'Catalog preview failed',
-              cause: error,
-            });
-      const status = providerError.code === 'auth' ? 400 : 502;
+      const message =
+        error instanceof Error ? error.message : 'Catalog preview failed';
+      const isAuth =
+        /api key|credential|auth/i.test(message) ||
+        (typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          (error as { code?: string }).code === 'auth');
+      const status = isAuth ? 400 : 502;
       return reply.status(status).send({
         metas: [],
         warnings: [
           {
-            code:
-              providerError.code === 'auth'
-                ? 'SOURCE_CREDENTIAL_MISSING'
-                : 'PROVIDER_UNAVAILABLE',
+            code: isAuth ? 'SOURCE_CREDENTIAL_MISSING' : 'PROVIDER_UNAVAILABLE',
           },
         ],
         error: {
-          code:
-            providerError.code === 'auth'
-              ? 'SOURCE_CREDENTIAL_MISSING'
-              : 'PROVIDER_UNAVAILABLE',
-          providerCode: providerError.code,
-          message: providerError.message,
+          code: isAuth ? 'SOURCE_CREDENTIAL_MISSING' : 'PROVIDER_UNAVAILABLE',
+          message,
         },
         correlationId: request.correlationId,
       });

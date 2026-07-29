@@ -71,6 +71,15 @@ describe('@metalayer/rules', () => {
     expect(result.reasons.some((item) => item.outcome === 'prefer')).toBe(true);
   });
 
+  it('excludes items whose title matches excludeKeywords', () => {
+    const result = evaluateRules(
+      { id: '3', title: 'A Scary Horror Night', genres: ['Drama'] },
+      { excludeKeywords: ['horror'] },
+    );
+    expect(result.include).toBe(false);
+    expect(result.reasons[0]?.rule).toBe('excludeKeywords');
+  });
+
   it('sorts merge layers by declared inheritance order', () => {
     const merged = mergeRuleSets([
       { context: 'catalog', rules: { yearTo: 2024 } },

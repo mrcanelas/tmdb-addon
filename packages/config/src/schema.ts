@@ -93,6 +93,9 @@ export const RuleSetSchema = z.object({
   excludeAdult: z.boolean().optional(),
   maximumCertification: z.string().optional(),
 
+  /** Case-insensitive substrings matched against title / overview / keywords. */
+  excludeKeywords: z.array(z.string()).optional(),
+
   hideWatched: z.boolean().optional(),
   requireArtwork: z.boolean().optional(),
   hideSpecials: z.boolean().optional(),

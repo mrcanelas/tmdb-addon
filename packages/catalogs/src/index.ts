@@ -22,6 +22,11 @@ export {
 } from './studio-extra.js';
 
 export { mergeMetas, type CatalogMetaPreview } from './merge.js';
+export {
+  catalogMetaToRuleCandidate,
+  filterMetasByEffectiveRules,
+  resolveCatalogEffectiveRules,
+} from './rules-filter.js';
 export { pickRotationSource, type RotationMode } from './rotation.js';
 export {
   resolveCatalogResults,

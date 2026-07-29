@@ -289,6 +289,9 @@ importers:
       '@metalayer/config':
         specifier: workspace:*
         version: link:../config
+      '@metalayer/rules':
+        specifier: workspace:*
+        version: link:../rules
 
   packages/config:
     dependencies:

@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@metalayer/config": "workspace:*"
+    "@metalayer/config": "workspace:*",
+    "@metalayer/rules": "workspace:*"
   }
 }
