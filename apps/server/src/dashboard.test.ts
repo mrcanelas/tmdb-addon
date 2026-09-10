@@ -105,4 +105,30 @@ describe('@metalayer/server dashboard', () => {
     expect(health.statusCode).toBe(200);
     expect(health.json().providers.tmdb.state).toBe('degraded');
   });
+
+  it('updates instance provider availability for operators', async () => {
+    const app = await appPromise;
+    const headers = { 'x-metalayer-dashboard-token': TOKEN };
+
+    const updated = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/dashboard/providers/tmdb',
+      headers,
+      payload: { enabled: false, configured: true },
+    });
+
+    expect(updated.statusCode).toBe(200);
+    expect(updated.json().provider).toMatchObject({
+      id: 'tmdb',
+      enabled: false,
+      configured: true,
+      source: 'admin',
+    });
+
+    const sources = await app.inject({ method: 'GET', url: '/api/v1/sources' });
+    const tmdb = sources
+      .json()
+      .sources.find((source: { id: string }) => source.id === 'tmdb');
+    expect(tmdb.instance).toMatchObject({ enabled: false, configured: true });
+  });
 });

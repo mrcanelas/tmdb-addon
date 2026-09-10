@@ -36,6 +36,24 @@ function source(overrides: Partial<PublicSource> & { id: string }): PublicSource
 describe('provider availability', () => {
   it('rejects coming_soon scaffolds and adapterless providers', () => {
     expect(
+      providerAvailabilityFor(
+        source({
+          id: 'tmdb',
+          instance: { enabled: false, configured: true, source: 'admin' },
+        }),
+      ),
+    ).toEqual({ id: 'tmdb', available: false, reason: 'disabled' });
+
+    expect(
+      providerAvailabilityFor(
+        source({
+          id: 'fanart',
+          instance: { enabled: true, configured: false, source: 'default' },
+        }),
+      ),
+    ).toEqual({ id: 'fanart', available: false, reason: 'instanceNotConfigured' });
+
+    expect(
       providerAvailabilityFor(source({ id: 'tvdb', connectionState: 'coming_soon' })),
     ).toEqual({ id: 'tvdb', available: false, reason: 'comingSoon' });
 

@@ -38,6 +38,7 @@ function localeAdapterFor(providerId: string): ProviderLocaleAdapter {
 }
 
 function toPublicProvider(definition: ReturnType<typeof listProviders>[number]) {
+  const adapterAvailable = listAdapterProviderIds().includes(definition.id);
   return {
     id: definition.id,
     name: definition.name,
@@ -46,7 +47,7 @@ function toPublicProvider(definition: ReturnType<typeof listProviders>[number]) 
     requiresCredential: definition.requiresCredential,
     requiresOAuth: definition.requiresOAuth,
     capabilities: definition.capabilities,
-    adapterAvailable: listAdapterProviderIds().includes(definition.id),
+    adapterAvailable,
   };
 }
 
@@ -116,6 +117,7 @@ export const sourcesRoutes: FastifyPluginAsync = async (app) => {
     return {
       sources: listProviders().map((definition) => ({
         ...toPublicProvider(definition),
+        instance: app.instanceProviders.get(definition.id),
         health: healthByProvider[definition.id] ?? {
           state: 'healthy' as const,
           consecutiveFailures: 0,
@@ -143,6 +145,7 @@ export const sourcesRoutes: FastifyPluginAsync = async (app) => {
       const locale = localeAdapterFor(definition.id);
       return {
         source: toPublicProvider(definition),
+        instance: app.instanceProviders.get(definition.id),
         locale: {
           supportsLocale: locale.supportsLocale('en-US'),
           example: locale.toProviderLocale({ locale: 'pt-BR', region: 'BR' }),

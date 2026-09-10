@@ -8,6 +8,7 @@ import {
   resolveDeploymentMode,
   safeTokenEquals,
 } from '@metalayer/observability';
+import { getProvider } from '@metalayer/providers';
 
 const require = createRequire(import.meta.url);
 const { METALAYER } = require('@metalayer/identity') as {
@@ -165,6 +166,41 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
       correlationId: request.correlationId,
     };
   });
+
+  app.get('/dashboard/providers', async (request, reply) => {
+    const access = requireOperator(request);
+    if (!access.ok) return reply.status(access.status).send(access.body);
+    return {
+      providers: app.instanceProviders.list(),
+      correlationId: request.correlationId,
+    };
+  });
+
+  app.put<{ Params: { providerId: string }; Body: { enabled?: boolean; configured?: boolean } }>(
+    '/dashboard/providers/:providerId',
+    async (request, reply) => {
+      const access = requireOperator(request);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+      if (!getProvider(request.params.providerId)) {
+        return reply.status(404).send(
+          createApiError({
+            code: 'PROVIDER_UNAVAILABLE',
+            message: `Provider ${request.params.providerId} was not found`,
+            correlationId: request.correlationId,
+            params: { provider: request.params.providerId },
+          }),
+        );
+      }
+
+      return {
+        provider: app.instanceProviders.update(request.params.providerId, {
+          enabled: request.body?.enabled,
+          configured: request.body?.configured,
+        }),
+        correlationId: request.correlationId,
+      };
+    },
+  );
 
   app.post('/dashboard/backups', async (request, reply) => {
     const access = requireOperator(request);

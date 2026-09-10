@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 - Overview legacy TMDB Addon import (dry-run preview + confirm → Save & Install)
 - Appearance Field Resolution builder for **logo** (with `no-language` default chain)
+- Dashboard provider availability API and Sources instance availability state
 
 ### Fixed
 

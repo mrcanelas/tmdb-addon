@@ -6,6 +6,8 @@ import type { FieldRailId } from './field-registry.js';
  * Reasons are surfaced instead of silently dropping providers (§4.3).
  */
 export type ProviderUnavailableReason =
+  | 'disabled'
+  | 'instanceNotConfigured'
   | 'comingSoon'
   | 'noAdapter'
   | 'unsupportedField'
@@ -53,6 +55,12 @@ export function providerAvailabilityFor(
   source: PublicSource,
   field?: string,
 ): ProviderAvailability {
+  if (source.instance?.enabled === false) {
+    return { id: source.id, available: false, reason: 'disabled' };
+  }
+  if (source.instance?.configured === false) {
+    return { id: source.id, available: false, reason: 'instanceNotConfigured' };
+  }
   if (source.connectionState === 'coming_soon') {
     return { id: source.id, available: false, reason: 'comingSoon' };
   }

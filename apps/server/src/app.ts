@@ -39,6 +39,7 @@ import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
 import { nativeStremioRoutes } from './routes/native-stremio.js';
 import { legacyStremioRoutes } from './routes/legacy-stremio.js';
+import { InstanceProviderSettings } from './instance-provider-settings.js';
 
 export interface BuildAppOptions {
   logger?: boolean;
@@ -52,6 +53,7 @@ export interface BuildAppOptions {
   /** Shared provider circuit-breaker registry (tests / process default). */
   providerHealth?: ProviderHealthRegistry;
   providerCache?: CacheStore;
+  instanceProviders?: InstanceProviderSettings;
   correctionRegistry?: CorrectionRegistry;
   metrics?: MetricsRegistry;
   logBuffer?: BoundedLogBuffer;
@@ -69,6 +71,7 @@ declare module 'fastify' {
     providerFetch?: TmdbFetch;
     providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
+    instanceProviders: InstanceProviderSettings;
     correctionRegistry: CorrectionRegistry;
     metrics: MetricsRegistry;
     logBuffer: BoundedLogBuffer;
@@ -148,11 +151,14 @@ export async function buildApp(options: BuildAppOptions = {}) {
   const metrics = options.metrics ?? new MetricsRegistry();
   const logBuffer = options.logBuffer ?? new BoundedLogBuffer();
   const providerHealth = options.providerHealth ?? new ProviderHealthRegistry();
+  const instanceProviders =
+    options.instanceProviders ?? new InstanceProviderSettings(options.env ?? process.env);
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
   app.decorate('providerHealth', providerHealth);
   app.decorate('providerCache', providerCache);
+  app.decorate('instanceProviders', instanceProviders);
   app.decorate('correctionRegistry', correctionRegistry);
   app.decorate('metrics', metrics);
   app.decorate('logBuffer', logBuffer);

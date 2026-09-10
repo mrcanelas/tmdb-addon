@@ -41,6 +41,11 @@ export interface PublicSource {
   requiresOAuth: boolean;
   capabilities: ProviderCapabilities;
   adapterAvailable: boolean;
+  instance?: {
+    enabled: boolean;
+    configured: boolean;
+    source: 'env' | 'admin' | 'default';
+  };
 }
 
 export interface SourceTestResult {
