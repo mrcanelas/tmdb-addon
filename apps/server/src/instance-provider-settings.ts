@@ -49,10 +49,11 @@ export class InstanceProviderSettings {
   }
 
   update(id: string, patch: { enabled?: boolean; configured?: boolean }): InstanceProviderState {
+    const next = { ...this.overrides.get(id), source: 'admin' as const };
+    if (patch.enabled !== undefined) next.enabled = patch.enabled;
+    if (patch.configured !== undefined) next.configured = patch.configured;
     this.overrides.set(id, {
-      ...this.overrides.get(id),
-      ...patch,
-      source: 'admin',
+      ...next,
     });
     return this.get(id);
   }

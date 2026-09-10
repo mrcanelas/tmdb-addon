@@ -50,6 +50,29 @@ export function fetchLogs() {
   );
 }
 
+export interface DashboardProviderState {
+  id: string;
+  enabled: boolean;
+  configured: boolean;
+  source: 'env' | 'admin' | 'default';
+}
+
+export function fetchProviders() {
+  return apiFetch<{ providers: DashboardProviderState[] }>(
+    '/api/v1/dashboard/providers',
+  );
+}
+
+export function updateProvider(
+  providerId: string,
+  patch: { enabled?: boolean; configured?: boolean },
+) {
+  return apiFetch<{ provider: DashboardProviderState }>(
+    `/api/v1/dashboard/providers/${encodeURIComponent(providerId)}`,
+    { method: 'PUT', body: JSON.stringify(patch) },
+  );
+}
+
 export function createBackup() {
   return apiFetch<{ backup: { includesSecrets: boolean; configurations: unknown[] } }>(
     '/api/v1/dashboard/backups',

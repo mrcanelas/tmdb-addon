@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { Button, MetaLayerThemeProvider } from '@metalayer/shared-ui';
 import { OverviewPage } from './pages/OverviewPage';
+import { ProvidersPage } from './pages/ProvidersPage';
 import { LogsPage } from './pages/LogsPage';
 import { BackupsPage } from './pages/BackupsPage';
 import { UpdatesPage } from './pages/UpdatesPage';
@@ -37,6 +38,9 @@ export function App() {
               >
                 <NavLink to="/" end className={({ isActive }) => (isActive ? 'font-semibold text-accent' : 'ml-text-muted')}>
                   {t('dashboard.nav.overview')}
+                </NavLink>
+                <NavLink to="/providers" className={({ isActive }) => (isActive ? 'font-semibold text-accent' : 'ml-text-muted')}>
+                  {t('dashboard.nav.providers')}
                 </NavLink>
                 <NavLink to="/logs" className={({ isActive }) => (isActive ? 'font-semibold text-accent' : 'ml-text-muted')}>
                   {t('dashboard.nav.logs')}
@@ -77,6 +81,7 @@ export function App() {
               <Routes>
                 <Route index element={<OverviewPage />} />
                 <Route path="overview" element={<OverviewPage />} />
+                <Route path="providers" element={<ProvidersPage />} />
                 <Route path="logs" element={<LogsPage />} />
                 <Route path="backups" element={<BackupsPage />} />
                 <Route path="updates" element={<UpdatesPage />} />
