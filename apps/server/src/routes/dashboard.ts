@@ -192,11 +192,16 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
-      return {
-        provider: app.instanceProviders.update(request.params.providerId, {
+      const state = await app.configStore.setInstanceProviderState(
+        request.params.providerId,
+        {
           enabled: request.body?.enabled,
           configured: request.body?.configured,
-        }),
+        },
+      );
+
+      return {
+        provider: app.instanceProviders.update(request.params.providerId, state),
         correlationId: request.correlationId,
       };
     },

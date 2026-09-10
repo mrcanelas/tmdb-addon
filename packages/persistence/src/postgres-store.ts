@@ -21,6 +21,7 @@ import type {
   SecretCredentialState,
   SecretKind,
   UpdateConfigurationInput,
+  InstanceProviderStoredState,
   VaultReencryptResult,
   VaultSecretRow,
 } from './store.js';
@@ -56,6 +57,13 @@ CREATE TABLE IF NOT EXISTS configuration_revisions (
   created_at TEXT NOT NULL,
   note TEXT,
   UNIQUE(config_id, revision_number)
+);
+
+CREATE TABLE IF NOT EXISTS instance_provider_settings (
+  provider_id TEXT PRIMARY KEY NOT NULL,
+  enabled BOOLEAN,
+  configured BOOLEAN,
+  updated_at TEXT NOT NULL
 );
 `;
 
@@ -418,6 +426,50 @@ export class PostgresConfigurationStore implements ConfigurationStore {
     }
 
     return result;
+  }
+
+  async listInstanceProviderStates(): Promise<Record<string, InstanceProviderStoredState>> {
+    const result = await this.pool.query<{
+      provider_id: string;
+      enabled: boolean | null;
+      configured: boolean | null;
+    }>(
+      `SELECT provider_id, enabled, configured
+       FROM instance_provider_settings
+       ORDER BY provider_id`,
+    );
+    const states: Record<string, InstanceProviderStoredState> = {};
+    for (const row of result.rows) {
+      states[row.provider_id] = {
+        ...(row.enabled === null ? {} : { enabled: row.enabled }),
+        ...(row.configured === null ? {} : { configured: row.configured }),
+      };
+    }
+    return states;
+  }
+
+  async setInstanceProviderState(
+    providerId: string,
+    state: InstanceProviderStoredState,
+  ): Promise<InstanceProviderStoredState> {
+    const existing = (await this.listInstanceProviderStates())[providerId] ?? {};
+    const next = { ...existing, ...state };
+    await this.pool.query(
+      `INSERT INTO instance_provider_settings
+       (provider_id, enabled, configured, updated_at)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (provider_id) DO UPDATE SET
+         enabled = EXCLUDED.enabled,
+         configured = EXCLUDED.configured,
+         updated_at = EXCLUDED.updated_at`,
+      [
+        providerId,
+        next.enabled ?? null,
+        next.configured ?? null,
+        new Date().toISOString(),
+      ],
+    );
+    return next;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {

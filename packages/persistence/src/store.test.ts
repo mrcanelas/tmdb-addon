@@ -92,6 +92,34 @@ describe('@metalayer/persistence', () => {
     expect(JSON.stringify(exported)).not.toContain('export-edit-token');
   });
 
+  it('persists instance provider states across sqlite restarts', async () => {
+    const dbPath = join(tmpdir(), `metalayer-provider-state-${Date.now()}.sqlite`);
+
+    try {
+      const first = new SqliteConfigurationStore({
+        sqlitePath: dbPath,
+        encryptionKey: TEST_KEY,
+      });
+      await first.setInstanceProviderState('tmdb', {
+        enabled: false,
+        configured: true,
+      });
+      await first.close();
+
+      const second = new SqliteConfigurationStore({
+        sqlitePath: dbPath,
+        encryptionKey: TEST_KEY,
+      });
+      expect((await second.listInstanceProviderStates()).tmdb).toEqual({
+        enabled: false,
+        configured: true,
+      });
+      await second.close();
+    } finally {
+      rmSync(dbPath, { force: true });
+    }
+  });
+
   it('reencrypts vault secrets to a new active key version', async () => {
     const oldKey = parseEncryptionKey(Buffer.alloc(32, 4).toString('base64'));
     const newKey = parseEncryptionKey(Buffer.alloc(32, 8).toString('base64'));

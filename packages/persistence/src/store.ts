@@ -88,6 +88,11 @@ export interface VaultReencryptResult {
   dryRun: boolean;
 }
 
+export interface InstanceProviderStoredState {
+  enabled?: boolean;
+  configured?: boolean;
+}
+
 export interface ConfigurationStore {
   create(input: CreateConfigurationInput): Promise<PublicConfigurationView>;
   update(
@@ -118,6 +123,11 @@ export interface ConfigurationStore {
   reencryptVaultSecrets(options?: {
     dryRun?: boolean;
   }): Promise<VaultReencryptResult>;
+  listInstanceProviderStates(): Promise<Record<string, InstanceProviderStoredState>>;
+  setInstanceProviderState(
+    providerId: string,
+    state: InstanceProviderStoredState,
+  ): Promise<InstanceProviderStoredState>;
   listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]>;
   getRevision(
     configId: string,
@@ -164,6 +174,13 @@ function ensureSchema(db: DatabaseSync): void {
       note TEXT,
       UNIQUE(config_id, revision_number),
       FOREIGN KEY(config_id) REFERENCES configurations(config_id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS instance_provider_settings (
+      provider_id TEXT PRIMARY KEY NOT NULL,
+      enabled INTEGER,
+      configured INTEGER,
+      updated_at TEXT NOT NULL
     );
   `);
 }
@@ -510,6 +527,52 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     }
 
     return result;
+  }
+
+  async listInstanceProviderStates(): Promise<Record<string, InstanceProviderStoredState>> {
+    const rows = this.db
+      .prepare(
+        `SELECT provider_id, enabled, configured FROM instance_provider_settings
+         ORDER BY provider_id`,
+      )
+      .all() as Array<{
+      provider_id: string;
+      enabled: number | null;
+      configured: number | null;
+    }>;
+    const states: Record<string, InstanceProviderStoredState> = {};
+    for (const row of rows) {
+      states[row.provider_id] = {
+        ...(row.enabled === null ? {} : { enabled: row.enabled === 1 }),
+        ...(row.configured === null ? {} : { configured: row.configured === 1 }),
+      };
+    }
+    return states;
+  }
+
+  async setInstanceProviderState(
+    providerId: string,
+    state: InstanceProviderStoredState,
+  ): Promise<InstanceProviderStoredState> {
+    const existing = (await this.listInstanceProviderStates())[providerId] ?? {};
+    const next = { ...existing, ...state };
+    this.db
+      .prepare(
+        `INSERT INTO instance_provider_settings
+         (provider_id, enabled, configured, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(provider_id) DO UPDATE SET
+           enabled = excluded.enabled,
+           configured = excluded.configured,
+           updated_at = excluded.updated_at`,
+      )
+      .run(
+        providerId,
+        next.enabled === undefined ? null : Number(next.enabled),
+        next.configured === undefined ? null : Number(next.configured),
+        new Date().toISOString(),
+      );
+    return next;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {

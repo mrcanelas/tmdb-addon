@@ -1,4 +1,5 @@
 import { getProvider, listProviders } from '@metalayer/providers';
+import type { InstanceProviderStoredState } from '@metalayer/persistence';
 
 export type InstanceProviderState = {
   id: string;
@@ -26,9 +27,16 @@ const PROVIDER_ENV: Record<string, string[]> = {
 };
 
 export class InstanceProviderSettings {
-  private readonly overrides = new Map<string, Partial<InstanceProviderState>>();
+  private readonly overrides = new Map<string, InstanceProviderStoredState>();
 
-  constructor(private readonly env: NodeJS.ProcessEnv = process.env) {}
+  constructor(
+    private readonly env: NodeJS.ProcessEnv = process.env,
+    initial: Record<string, InstanceProviderStoredState> = {},
+  ) {
+    for (const [id, state] of Object.entries(initial)) {
+      this.overrides.set(id, state);
+    }
+  }
 
   list(): InstanceProviderState[] {
     return listProviders().map((provider) => this.get(provider.id));
@@ -39,22 +47,21 @@ export class InstanceProviderSettings {
     const envKeys = PROVIDER_ENV[id] ?? [];
     const envConfigured = envKeys.length > 0 && envKeys.every((key) => this.env[key]?.trim());
     const needsOperatorConfig = Boolean(provider?.requiresCredential || provider?.requiresOAuth);
+    const override = this.overrides.get(id);
     const base: InstanceProviderState = {
       id,
       enabled: provider?.connectionState !== 'coming_soon',
       configured: !needsOperatorConfig || Boolean(envConfigured),
-      source: envConfigured ? 'env' : 'default',
+      source: override ? 'admin' : envConfigured ? 'env' : 'default',
     };
-    return { ...base, ...this.overrides.get(id), id };
+    return { ...base, ...override, id };
   }
 
-  update(id: string, patch: { enabled?: boolean; configured?: boolean }): InstanceProviderState {
-    const next = { ...this.overrides.get(id), source: 'admin' as const };
+  update(id: string, patch: InstanceProviderStoredState): InstanceProviderState {
+    const next = { ...this.overrides.get(id) };
     if (patch.enabled !== undefined) next.enabled = patch.enabled;
     if (patch.configured !== undefined) next.configured = patch.configured;
-    this.overrides.set(id, {
-      ...next,
-    });
+    this.overrides.set(id, next);
     return this.get(id);
   }
 }

@@ -152,7 +152,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
   const logBuffer = options.logBuffer ?? new BoundedLogBuffer();
   const providerHealth = options.providerHealth ?? new ProviderHealthRegistry();
   const instanceProviders =
-    options.instanceProviders ?? new InstanceProviderSettings(options.env ?? process.env);
+    options.instanceProviders ??
+    new InstanceProviderSettings(
+      options.env ?? process.env,
+      await store.listInstanceProviderStates(),
+    );
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
