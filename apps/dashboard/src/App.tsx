@@ -4,6 +4,7 @@ import { applyDocumentLocale, LOCALE_REGISTRY } from '@metalayer/i18n';
 import { Button, MetaLayerThemeProvider } from '@metalayer/shared-ui';
 import { OverviewPage } from './pages/OverviewPage';
 import { ProvidersPage } from './pages/ProvidersPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { LogsPage } from './pages/LogsPage';
 import { BackupsPage } from './pages/BackupsPage';
 import { UpdatesPage } from './pages/UpdatesPage';
@@ -51,6 +52,9 @@ export function App() {
                 <NavLink to="/updates" className={({ isActive }) => (isActive ? 'font-semibold text-accent' : 'ml-text-muted')}>
                   {t('dashboard.nav.updates')}
                 </NavLink>
+                <NavLink to="/settings" className={({ isActive }) => (isActive ? 'font-semibold text-accent' : 'ml-text-muted')}>
+                  {t('dashboard.nav.settings')}
+                </NavLink>
               </nav>
               <div className="mt-4 flex flex-wrap gap-2">
                 {SHELL_LOCALES.map((locale) => (
@@ -85,6 +89,7 @@ export function App() {
                 <Route path="logs" element={<LogsPage />} />
                 <Route path="backups" element={<BackupsPage />} />
                 <Route path="updates" element={<UpdatesPage />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Routes>
             </main>
           </div>

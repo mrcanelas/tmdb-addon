@@ -8,6 +8,7 @@
   "dashboard.nav.logs": "‏Logs‎",
   "dashboard.nav.backups": "‏Backups‎",
   "dashboard.nav.updates": "‏Updates‎",
+  "dashboard.nav.settings": "‏Settings‎",
   "dashboard.loginTitle": "‏Operator access‎",
   "dashboard.loginIntro": "‏Enter the dashboard token configured as METALAYER_DASHBOARD_TOKEN. It is stored only in this browser session.‎",
   "dashboard.tokenLabel": "‏Dashboard token‎",
@@ -40,5 +41,10 @@
   "dashboard.updatesIntro": "‏Check the current MetaLayer version and upgrade notes.‎",
   "dashboard.currentVersion": "‏Current version‎",
   "dashboard.upgradeCommand": "‏Upgrade check‎",
+  "dashboard.settingsTitle": "‏Settings‎",
+  "dashboard.settingsIntro": "‏Runtime settings and restart requirements.‎",
+  "dashboard.setting.reload.hot": "‏Hot reload‎",
+  "dashboard.setting.reload.process-restart": "‏Process restart‎",
+  "dashboard.setting.reload.immutable": "‏Immutable‎",
   "dashboard.locale.pseudoQa": "‏‎{{locale}}‏ (QA)‎"
 }

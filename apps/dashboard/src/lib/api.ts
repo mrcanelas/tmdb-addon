@@ -87,3 +87,10 @@ export function fetchUpdates() {
     upgradeCommand: string;
   }>('/api/v1/dashboard/updates');
 }
+
+export function fetchSettings() {
+  return apiFetch<{
+    mode: string;
+    settings: Array<{ key: string; description: string; reload: string }>;
+  }>('/api/v1/dashboard/settings');
+}

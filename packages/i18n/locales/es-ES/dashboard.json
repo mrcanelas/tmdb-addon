@@ -8,6 +8,7 @@
   "dashboard.nav.logs": "Logs",
   "dashboard.nav.backups": "Copias",
   "dashboard.nav.updates": "Actualizaciones",
+  "dashboard.nav.settings": "Settings",
   "dashboard.loginTitle": "Acceso de operador",
   "dashboard.loginIntro": "Introduce el token del dashboard configurado como METALAYER_DASHBOARD_TOKEN. Solo se guarda en esta sesión del navegador.",
   "dashboard.tokenLabel": "Token del dashboard",
@@ -40,5 +41,10 @@
   "dashboard.updatesIntro": "Consulta la versión actual de MetaLayer y notas de actualización.",
   "dashboard.currentVersion": "Versión actual",
   "dashboard.upgradeCommand": "Comprobación de actualización",
+  "dashboard.settingsTitle": "Settings",
+  "dashboard.settingsIntro": "Configuración de runtime y requisitos de reinicio.",
+  "dashboard.setting.reload.hot": "Hot reload",
+  "dashboard.setting.reload.process-restart": "Reinicio del proceso",
+  "dashboard.setting.reload.immutable": "Inmutable",
   "dashboard.locale.pseudoQa": "{{locale}} (QA)"
 }

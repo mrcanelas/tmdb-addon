@@ -8,6 +8,7 @@
   "dashboard.nav.logs": "LøgsLø",
   "dashboard.nav.backups": "BåçkûpsBåç",
   "dashboard.nav.updates": "ÛpdåtésÛpd",
+  "dashboard.nav.settings": "SéttîñgsSét",
   "dashboard.loginTitle": "Øpéråtør åççéssØpérå",
   "dashboard.loginIntro": "Éñtér thé dåshbøård tøkéñ çøñfîgûréd ås MÉTÅLÅYÉR_DÅSHBØÅRD_TØKÉÑ. Ît îs støréd øñly îñ thîs brøwsér séssîøñ.Éñtér thé dåshbøård tøkéñ çøñfîgû",
   "dashboard.tokenLabel": "Dåshbøård tøkéñDåshb",
@@ -40,5 +41,10 @@
   "dashboard.updatesIntro": "Çhéçk thé çûrréñt MétåLåyér vérsîøñ åñd ûpgrådé ñøtés.Çhéçk thé çûrréñt",
   "dashboard.currentVersion": "Çûrréñt vérsîøñÇûrré",
   "dashboard.upgradeCommand": "Ûpgrådé çhéçkÛpgr",
+  "dashboard.settingsTitle": "SéttîñgsSét",
+  "dashboard.settingsIntro": "Rûñtîmé séttîñgs åñd réstårt réqûîréméñts.Rûñtîmé séttî",
+  "dashboard.setting.reload.hot": "Høt réløådHøt",
+  "dashboard.setting.reload.process-restart": "Prøçéss réstårtPrøçé",
+  "dashboard.setting.reload.immutable": "ÎmmûtåbléÎmm",
   "dashboard.locale.pseudoQa": "{{locale}} (QÅ) ("
 }
