@@ -5,12 +5,17 @@ import {
   type DashboardProviderState,
   fetchProviders,
   updateProvider,
+  updateProviderSecret,
 } from '@/lib/api';
+
+type SecretKind = 'api_key' | 'client_id' | 'client_secret';
+const SECRET_KINDS: SecretKind[] = ['api_key', 'client_id', 'client_secret'];
 
 export function ProvidersPage() {
   const { t } = useTranslation('dashboard');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [providers, setProviders] = useState<DashboardProviderState[]>([]);
+  const [secretDrafts, setSecretDrafts] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +47,17 @@ export function ProvidersPage() {
     } catch {
       setProviders(previous);
     }
+  }
+
+  async function saveSecret(provider: DashboardProviderState, kind: SecretKind) {
+    const key = `${provider.id}:${kind}`;
+    const plaintext = secretDrafts[key]?.trim();
+    if (!plaintext) return;
+    const result = await updateProviderSecret(provider.id, kind, plaintext);
+    setProviders((items) =>
+      items.map((item) => (item.id === provider.id ? result.provider : item)),
+    );
+    setSecretDrafts((drafts) => ({ ...drafts, [key]: '' }));
   }
 
   return (
@@ -85,6 +101,45 @@ export function ProvidersPage() {
                   ? t('dashboard.provider.disable')
                   : t('dashboard.provider.enable')}
               </Button>
+              <div className="sm:col-span-3">
+                <div className="grid gap-2 md:grid-cols-3">
+                  {SECRET_KINDS.map((kind) => {
+                    const key = `${provider.id}:${kind}`;
+                    return (
+                      <form
+                        key={kind}
+                        className="flex gap-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void saveSecret(provider, kind);
+                        }}
+                      >
+                        <label className="min-w-0 flex-1">
+                          <span className="sr-only">
+                            {t(`dashboard.provider.secret.${kind}`)}
+                          </span>
+                          <input
+                            className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-foreground"
+                            type="password"
+                            autoComplete="off"
+                            value={secretDrafts[key] ?? ''}
+                            placeholder={t(`dashboard.provider.secret.${kind}`)}
+                            onChange={(event) =>
+                              setSecretDrafts((drafts) => ({
+                                ...drafts,
+                                [key]: event.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                        <Button size="sm" type="submit">
+                          {t('dashboard.provider.secret.save')}
+                        </Button>
+                      </form>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           ))}
         </div>

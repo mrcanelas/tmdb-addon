@@ -73,6 +73,20 @@ export function updateProvider(
   );
 }
 
+export function updateProviderSecret(
+  providerId: string,
+  kind: 'api_key' | 'client_id' | 'client_secret',
+  plaintext: string,
+) {
+  return apiFetch<{
+    provider: DashboardProviderState;
+    secretStates: Record<string, string>;
+  }>(
+    `/api/v1/dashboard/providers/${encodeURIComponent(providerId)}/secrets/${kind}`,
+    { method: 'PUT', body: JSON.stringify({ plaintext }) },
+  );
+}
+
 export function createBackup() {
   return apiFetch<{ backup: { includesSecrets: boolean; configurations: unknown[] } }>(
     '/api/v1/dashboard/backups',
