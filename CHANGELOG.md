@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 - Dashboard provider availability API/UI and Sources instance availability state
 - Persistent instance provider enable/configured state for Lite and Server stores
 - Instance-scoped provider API key vault for operator-managed Sources credentials
+- Tracking OAuth client credentials can resolve from the instance vault before env vars
 
 ### Fixed
 

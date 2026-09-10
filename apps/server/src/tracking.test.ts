@@ -123,16 +123,20 @@ describe('@metalayer/server tracking', () => {
   it('builds Trakt auth URL, exchanges code into vault, and disconnects', async () => {
     const previousId = process.env.TRAKT_CLIENT_ID;
     const previousSecret = process.env.TRAKT_CLIENT_SECRET;
-    process.env.TRAKT_CLIENT_ID = 'trakt-client';
-    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+    delete process.env.TRAKT_CLIENT_ID;
+    delete process.env.TRAKT_CLIENT_SECRET;
 
     const store = createMemoryConfigurationStore(Buffer.alloc(32, 38).toString('base64'));
+    await store.upsertInstanceVaultSecret('trakt', 'client_id', 'trakt-client');
+    await store.upsertInstanceVaultSecret('trakt', 'client_secret', 'trakt-secret');
     const app = await buildApp({
       logger: false,
       store,
       providerFetch: async (url, init) => {
         expect(String(url)).toContain('oauth/token');
         expect(init?.method).toBe('POST');
+        expect(String(init?.body)).toContain('trakt-client');
+        expect(String(init?.body)).toContain('trakt-secret');
         return new Response(
           JSON.stringify({
             access_token: 'live-access',
@@ -195,8 +199,10 @@ describe('@metalayer/server tracking', () => {
     expect(disconnected.json().state).toBe('not_configured');
 
     await app.close();
-    process.env.TRAKT_CLIENT_ID = previousId;
-    process.env.TRAKT_CLIENT_SECRET = previousSecret;
+    if (previousId === undefined) delete process.env.TRAKT_CLIENT_ID;
+    else process.env.TRAKT_CLIENT_ID = previousId;
+    if (previousSecret === undefined) delete process.env.TRAKT_CLIENT_SECRET;
+    else process.env.TRAKT_CLIENT_SECRET = previousSecret;
   });
 
   it('rejects OAuth redirectUri outside the instance allowlist', async () => {

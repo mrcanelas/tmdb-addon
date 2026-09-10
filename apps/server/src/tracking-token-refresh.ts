@@ -30,6 +30,24 @@ export interface ProactiveTrackingRefreshResult {
 
 const DEFAULT_REFRESH_BUFFER_MS = 60 * 60 * 1000;
 
+async function resolveRefreshOAuthClient(
+  store: ConfigurationStore,
+  provider: 'trakt' | 'mal',
+): Promise<{ clientId?: string; clientSecret?: string }> {
+  const env =
+    provider === 'trakt'
+      ? { clientId: 'TRAKT_CLIENT_ID', clientSecret: 'TRAKT_CLIENT_SECRET' }
+      : { clientId: 'MAL_CLIENT_ID', clientSecret: 'MAL_CLIENT_SECRET' };
+  return {
+    clientId:
+      (await store.getInstanceSecretPlaintext(provider, 'client_id')) ||
+      process.env[env.clientId],
+    clientSecret:
+      (await store.getInstanceSecretPlaintext(provider, 'client_secret')) ||
+      process.env[env.clientSecret],
+  };
+}
+
 export function computeAccessExpiresAt(
   expiresIn?: number,
   now = Date.now(),
@@ -136,8 +154,10 @@ export async function tryRefreshTrackingToken(input: {
   if (!refreshToken) return null;
 
   if (input.provider === 'trakt') {
-    const clientId = process.env.TRAKT_CLIENT_ID;
-    const clientSecret = process.env.TRAKT_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveRefreshOAuthClient(
+      input.store,
+      'trakt',
+    );
     if (!clientId || !clientSecret) return null;
     const tokens = await refreshTraktAccessToken({
       refreshToken,
@@ -169,8 +189,10 @@ export async function tryRefreshTrackingToken(input: {
   }
 
   if (input.provider === 'mal') {
-    const clientId = process.env.MAL_CLIENT_ID;
-    const clientSecret = process.env.MAL_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveRefreshOAuthClient(
+      input.store,
+      'mal',
+    );
     if (!clientId || !clientSecret) return null;
     const tokens = await refreshMalAccessToken({
       refreshToken,

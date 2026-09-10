@@ -59,6 +59,8 @@ function requireOperator(
 
 function parseSecretKind(value: string): SecretKind | null {
   return value === 'api_key' ||
+    value === 'client_id' ||
+    value === 'client_secret' ||
     value === 'oauth_access' ||
     value === 'oauth_refresh' ||
     value === 'session'

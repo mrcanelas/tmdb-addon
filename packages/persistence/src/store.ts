@@ -12,7 +12,13 @@ import {
   type EncryptionKeyRing,
 } from '@metalayer/security';
 
-export type SecretKind = 'api_key' | 'oauth_access' | 'oauth_refresh' | 'session';
+export type SecretKind =
+  | 'api_key'
+  | 'client_id'
+  | 'client_secret'
+  | 'oauth_access'
+  | 'oauth_refresh'
+  | 'session';
 
 export type SecretCredentialState =
   | 'connected'

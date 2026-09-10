@@ -69,6 +69,8 @@ describe('tracking-token-refresh', () => {
     await writeTrackingOAuthMeta(store, created.configId, 'trakt', {
       accessExpiresAt: '2026-07-12T12:00:00.000Z',
     });
+    await store.upsertInstanceVaultSecret('trakt', 'client_id', 'trakt-client');
+    await store.upsertInstanceVaultSecret('trakt', 'client_secret', 'trakt-secret');
 
     const fetchImpl = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -89,8 +91,8 @@ describe('tracking-token-refresh', () => {
 
     const originalClientId = process.env.TRAKT_CLIENT_ID;
     const originalClientSecret = process.env.TRAKT_CLIENT_SECRET;
-    process.env.TRAKT_CLIENT_ID = 'trakt-client';
-    process.env.TRAKT_CLIENT_SECRET = 'trakt-secret';
+    delete process.env.TRAKT_CLIENT_ID;
+    delete process.env.TRAKT_CLIENT_SECRET;
 
     try {
       const dry = await runProactiveTrackingRefresh({
@@ -119,8 +121,10 @@ describe('tracking-token-refresh', () => {
       const meta = await store.getSecretPlaintext(created.configId, 'trakt', 'session');
       expect(meta).toContain('accessExpiresAt');
     } finally {
-      process.env.TRAKT_CLIENT_ID = originalClientId;
-      process.env.TRAKT_CLIENT_SECRET = originalClientSecret;
+      if (originalClientId === undefined) delete process.env.TRAKT_CLIENT_ID;
+      else process.env.TRAKT_CLIENT_ID = originalClientId;
+      if (originalClientSecret === undefined) delete process.env.TRAKT_CLIENT_SECRET;
+      else process.env.TRAKT_CLIENT_SECRET = originalClientSecret;
       await store.close();
     }
   });

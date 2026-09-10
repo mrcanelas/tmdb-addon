@@ -59,6 +59,31 @@ function envOAuthRedirectUri(provider: OAuthTrackingProvider): string | undefine
   }
 }
 
+const OAUTH_CLIENT_ENV: Record<
+  OAuthTrackingProvider,
+  { clientId: string; clientSecret: string }
+> = {
+  trakt: { clientId: 'TRAKT_CLIENT_ID', clientSecret: 'TRAKT_CLIENT_SECRET' },
+  simkl: { clientId: 'SIMKL_CLIENT_ID', clientSecret: 'SIMKL_CLIENT_SECRET' },
+  anilist: { clientId: 'ANILIST_CLIENT_ID', clientSecret: 'ANILIST_CLIENT_SECRET' },
+  mal: { clientId: 'MAL_CLIENT_ID', clientSecret: 'MAL_CLIENT_SECRET' },
+};
+
+async function resolveOAuthClient(
+  store: ConfigurationStore,
+  provider: OAuthTrackingProvider,
+): Promise<{ clientId?: string; clientSecret?: string }> {
+  const env = OAUTH_CLIENT_ENV[provider];
+  return {
+    clientId:
+      (await store.getInstanceSecretPlaintext(provider, 'client_id')) ||
+      process.env[env.clientId],
+    clientSecret:
+      (await store.getInstanceSecretPlaintext(provider, 'client_secret')) ||
+      process.env[env.clientSecret],
+  };
+}
+
 /**
  * Resolve and allowlist an OAuth redirect URI for tracking providers.
  * Returns `'failed'` after sending a 400 response when validation fails.
@@ -603,7 +628,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.TRAKT_CLIENT_ID;
+    const { clientId } = await resolveOAuthClient(app.configStore, 'trakt');
     if (!clientId) {
       return reply.status(400).send(
         createApiError({
@@ -649,8 +674,10 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.TRAKT_CLIENT_ID;
-    const clientSecret = process.env.TRAKT_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveOAuthClient(
+      app.configStore,
+      'trakt',
+    );
     if (!clientId || !clientSecret) {
       return reply.status(400).send(
         createApiError({
@@ -775,7 +802,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.SIMKL_CLIENT_ID;
+    const { clientId } = await resolveOAuthClient(app.configStore, 'simkl');
     if (!clientId) {
       return reply.status(400).send(
         createApiError({
@@ -821,8 +848,10 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.SIMKL_CLIENT_ID;
-    const clientSecret = process.env.SIMKL_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveOAuthClient(
+      app.configStore,
+      'simkl',
+    );
     if (!clientId || !clientSecret) {
       return reply.status(400).send(
         createApiError({
@@ -940,7 +969,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.ANILIST_CLIENT_ID;
+    const { clientId } = await resolveOAuthClient(app.configStore, 'anilist');
     if (!clientId) {
       return reply.status(400).send(
         createApiError({
@@ -986,8 +1015,10 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.ANILIST_CLIENT_ID;
-    const clientSecret = process.env.ANILIST_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveOAuthClient(
+      app.configStore,
+      'anilist',
+    );
     if (!clientId || !clientSecret) {
       return reply.status(400).send(
         createApiError({
@@ -1107,7 +1138,7 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.MAL_CLIENT_ID;
+    const { clientId } = await resolveOAuthClient(app.configStore, 'mal');
     if (!clientId) {
       return reply.status(400).send(
         createApiError({
@@ -1156,8 +1187,10 @@ export const trackingRoutes: FastifyPluginAsync = async (app) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
 
-    const clientId = process.env.MAL_CLIENT_ID;
-    const clientSecret = process.env.MAL_CLIENT_SECRET;
+    const { clientId, clientSecret } = await resolveOAuthClient(
+      app.configStore,
+      'mal',
+    );
     if (!clientId || !clientSecret) {
       return reply.status(400).send(
         createApiError({

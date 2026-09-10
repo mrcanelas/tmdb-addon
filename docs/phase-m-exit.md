@@ -29,7 +29,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
 | Field Resolution Chains inheritance/episode UX depth | **Deferred → redesigned** — dedicated `/configure/resolution` (field rail × plan editor, Stremio meta mapping); Appearance is display + bridge until page ships (`FRONTEND.md`, `docs/field-resolution-chains.md`) |
-| Admin-first instance settings (replace day-two `.env`) | **Partial (Providers/Settings MVP)** — Dashboard provider enable/configured state feeds Sources availability and persists; runtime settings are visible; instance API-key vault exists; OAuth client-secret UI/wiring still to implement |
+| Admin-first instance settings (replace day-two `.env`) | **Partial (Providers/Settings MVP)** — Dashboard provider enable/configured state feeds Sources availability and persists; runtime settings are visible; instance API-key vault and Tracking OAuth client credential wiring exist; secret-entry UI still to implement |
 | Full i18n/RTL layout hardening | **Done (MVP)** — configure + dashboard load en-XA/ar-XB with `dir`; smoke + physical-CSS guard; checklist `docs/rtl-layout-checklist.md` signed 2026-07-13 |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | **Done (MVP)** — migration fixtures + security hardening (OAuth redirect allowlist, OAuth `state` CSRF, redaction); formal notes in `docs/security.md` |
