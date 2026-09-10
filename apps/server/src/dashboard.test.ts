@@ -131,4 +131,28 @@ describe('@metalayer/server dashboard', () => {
       .sources.find((source: { id: string }) => source.id === 'tmdb');
     expect(tmdb.instance).toMatchObject({ enabled: false, configured: true });
   });
+
+  it('stores instance provider secrets without returning plaintext', async () => {
+    const app = await appPromise;
+    const headers = { 'x-metalayer-dashboard-token': TOKEN };
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/dashboard/providers/fanart/secrets/api_key',
+      headers,
+      payload: { plaintext: 'fanart-instance-secret' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().secretStates.fanart).toBe('connected');
+    expect(response.json().provider).toMatchObject({
+      id: 'fanart',
+      configured: true,
+      source: 'admin',
+    });
+    expect(JSON.stringify(response.json())).not.toContain('fanart-instance-secret');
+    expect(
+      await store.getInstanceSecretPlaintext('fanart', 'api_key'),
+    ).toBe('fanart-instance-secret');
+  });
 });

@@ -105,10 +105,12 @@ async function resolveApiKey(options: {
   }
 
   if (options.providerId === 'tmdb') {
-    return process.env.METALAYER_TMDB_API_KEY || process.env.TMDB_API || undefined;
+    return (
+      await options.app.configStore.getInstanceSecretPlaintext(options.providerId)
+    ) || process.env.METALAYER_TMDB_API_KEY || process.env.TMDB_API || undefined;
   }
 
-  return undefined;
+  return (await options.app.configStore.getInstanceSecretPlaintext(options.providerId)) ?? undefined;
 }
 
 export const sourcesRoutes: FastifyPluginAsync = async (app) => {

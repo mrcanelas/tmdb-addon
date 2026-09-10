@@ -12,6 +12,7 @@ export {
   type SecretKind,
   type StoredConfiguration,
   type InstanceProviderStoredState,
+  type InstanceVaultSecretRow,
   type VaultSecretRow,
   type VaultReencryptResult,
 } from './store.js';

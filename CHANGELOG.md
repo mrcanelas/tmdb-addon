@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 - Appearance Field Resolution builder for **logo** (with `no-language` default chain)
 - Dashboard provider availability API/UI and Sources instance availability state
 - Persistent instance provider enable/configured state for Lite and Server stores
+- Instance-scoped provider API key vault for operator-managed Sources credentials
 
 ### Fixed
 

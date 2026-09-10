@@ -88,6 +88,14 @@ export interface VaultReencryptResult {
   dryRun: boolean;
 }
 
+export interface InstanceVaultSecretRow {
+  id: string;
+  provider: string;
+  kind: SecretKind;
+  ciphertext: string;
+  keyVersion: number;
+}
+
 export interface InstanceProviderStoredState {
   enabled?: boolean;
   configured?: boolean;
@@ -120,6 +128,15 @@ export interface ConfigurationStore {
   ): Promise<boolean>;
   listSecretStates(configId: string): Promise<Record<string, SecretCredentialState>>;
   listVaultSecretRows(): Promise<VaultSecretRow[]>;
+  getInstanceSecretPlaintext(provider: string, kind?: SecretKind): Promise<string | null>;
+  upsertInstanceVaultSecret(
+    provider: string,
+    kind: SecretKind,
+    plaintext: string,
+  ): Promise<boolean>;
+  deleteInstanceVaultSecret(provider: string, kind: SecretKind): Promise<boolean>;
+  listInstanceSecretStates(): Promise<Record<string, SecretCredentialState>>;
+  listInstanceVaultSecretRows(): Promise<InstanceVaultSecretRow[]>;
   reencryptVaultSecrets(options?: {
     dryRun?: boolean;
   }): Promise<VaultReencryptResult>;
@@ -181,6 +198,17 @@ function ensureSchema(db: DatabaseSync): void {
       enabled INTEGER,
       configured INTEGER,
       updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS instance_vault_secrets (
+      id TEXT PRIMARY KEY NOT NULL,
+      provider TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      ciphertext TEXT NOT NULL,
+      key_version INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(provider, kind)
     );
   `);
 }
@@ -481,6 +509,90 @@ export class SqliteConfigurationStore implements ConfigurationStore {
     }));
   }
 
+  async getInstanceSecretPlaintext(
+    provider: string,
+    kind: SecretKind = 'api_key',
+  ): Promise<string | null> {
+    const row = this.db
+      .prepare(
+        `SELECT ciphertext FROM instance_vault_secrets
+         WHERE provider = ? AND kind = ?`,
+      )
+      .get(provider, kind) as { ciphertext: string } | undefined;
+    return row ? decryptSecret(row.ciphertext, this.keyRing) : null;
+  }
+
+  async upsertInstanceVaultSecret(
+    provider: string,
+    kind: SecretKind,
+    plaintext: string,
+  ): Promise<boolean> {
+    if (!plaintext) return false;
+    const now = new Date().toISOString();
+    const envelope = encryptSecret(plaintext, this.keyRing);
+    this.db
+      .prepare(
+        `INSERT INTO instance_vault_secrets
+         (id, provider, kind, ciphertext, key_version, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(provider, kind) DO UPDATE SET
+           ciphertext = excluded.ciphertext,
+           key_version = excluded.key_version,
+           updated_at = excluded.updated_at`,
+      )
+      .run(
+        generateVaultEntryId(),
+        provider,
+        kind,
+        envelope,
+        this.keyRing.activeVersion,
+        now,
+        now,
+      );
+    return true;
+  }
+
+  async deleteInstanceVaultSecret(provider: string, kind: SecretKind): Promise<boolean> {
+    const result = this.db
+      .prepare(`DELETE FROM instance_vault_secrets WHERE provider = ? AND kind = ?`)
+      .run(provider, kind);
+    return Number(result.changes ?? 0) > 0;
+  }
+
+  async listInstanceSecretStates(): Promise<Record<string, SecretCredentialState>> {
+    const rows = this.db
+      .prepare(`SELECT provider FROM instance_vault_secrets ORDER BY provider`)
+      .all() as Array<{ provider: string }>;
+    const states: Record<string, SecretCredentialState> = {};
+    for (const row of rows) {
+      states[row.provider] = 'connected';
+    }
+    return states;
+  }
+
+  async listInstanceVaultSecretRows(): Promise<InstanceVaultSecretRow[]> {
+    const rows = this.db
+      .prepare(
+        `SELECT id, provider, kind, ciphertext, key_version
+         FROM instance_vault_secrets
+         ORDER BY provider, kind`,
+      )
+      .all() as Array<{
+      id: string;
+      provider: string;
+      kind: string;
+      ciphertext: string;
+      key_version: number;
+    }>;
+    return rows.map((row) => ({
+      id: row.id,
+      provider: row.provider,
+      kind: row.kind as SecretKind,
+      ciphertext: row.ciphertext,
+      keyVersion: Number(row.key_version),
+    }));
+  }
+
   async reencryptVaultSecrets(options: {
     dryRun?: boolean;
   } = {}): Promise<VaultReencryptResult> {
@@ -511,6 +623,38 @@ export class SqliteConfigurationStore implements ConfigurationStore {
         const envelope = encryptSecret(plaintext, this.keyRing);
         if (!dryRun) {
           update.run(
+            envelope,
+            this.keyRing.activeVersion,
+            new Date().toISOString(),
+            row.id,
+          );
+        }
+        result.reencrypted += 1;
+      } catch (error) {
+        result.failed.push({
+          id: row.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    const instanceRows = await this.listInstanceVaultSecretRows();
+    const updateInstance = this.db.prepare(
+      `UPDATE instance_vault_secrets
+       SET ciphertext = ?, key_version = ?, updated_at = ?
+       WHERE id = ?`,
+    );
+    result.total += instanceRows.length;
+    for (const row of instanceRows) {
+      if (row.keyVersion === this.keyRing.activeVersion) {
+        result.alreadyCurrent += 1;
+        continue;
+      }
+      try {
+        const plaintext = decryptSecret(row.ciphertext, this.keyRing);
+        const envelope = encryptSecret(plaintext, this.keyRing);
+        if (!dryRun) {
+          updateInstance.run(
             envelope,
             this.keyRing.activeVersion,
             new Date().toISOString(),

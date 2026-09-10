@@ -9,6 +9,7 @@ import {
   safeTokenEquals,
 } from '@metalayer/observability';
 import { getProvider } from '@metalayer/providers';
+import type { SecretKind } from '@metalayer/persistence';
 
 const require = createRequire(import.meta.url);
 const { METALAYER } = require('@metalayer/identity') as {
@@ -54,6 +55,15 @@ function requireOperator(
     };
   }
   return { ok: true };
+}
+
+function parseSecretKind(value: string): SecretKind | null {
+  return value === 'api_key' ||
+    value === 'oauth_access' ||
+    value === 'oauth_refresh' ||
+    value === 'session'
+    ? value
+    : null;
 }
 
 export const dashboardRoutes: FastifyPluginAsync = async (app) => {
@@ -172,6 +182,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
     if (!access.ok) return reply.status(access.status).send(access.body);
     return {
       providers: app.instanceProviders.list(),
+      secretStates: await app.configStore.listInstanceSecretStates(),
       correlationId: request.correlationId,
     };
   });
@@ -202,6 +213,79 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
 
       return {
         provider: app.instanceProviders.update(request.params.providerId, state),
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.put<{
+    Params: { providerId: string; kind: string };
+    Body: { plaintext?: string };
+  }>(
+    '/dashboard/providers/:providerId/secrets/:kind',
+    async (request, reply) => {
+      const access = requireOperator(request);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+      if (!getProvider(request.params.providerId)) {
+        return reply.status(404).send(
+          createApiError({
+            code: 'PROVIDER_UNAVAILABLE',
+            message: `Provider ${request.params.providerId} was not found`,
+            correlationId: request.correlationId,
+            params: { provider: request.params.providerId },
+          }),
+        );
+      }
+      const kind = parseSecretKind(request.params.kind);
+      if (!kind || !request.body?.plaintext) {
+        return reply.status(400).send(
+          createApiError({
+            code: 'VALIDATION_FAILED',
+            message: 'Invalid provider secret payload',
+            correlationId: request.correlationId,
+            params: { field: 'kind' },
+          }),
+        );
+      }
+
+      await app.configStore.upsertInstanceVaultSecret(
+        request.params.providerId,
+        kind,
+        request.body.plaintext,
+      );
+      const state = await app.configStore.setInstanceProviderState(
+        request.params.providerId,
+        { configured: true },
+      );
+
+      return {
+        provider: app.instanceProviders.update(request.params.providerId, state),
+        secretStates: await app.configStore.listInstanceSecretStates(),
+        correlationId: request.correlationId,
+      };
+    },
+  );
+
+  app.delete<{ Params: { providerId: string; kind: string } }>(
+    '/dashboard/providers/:providerId/secrets/:kind',
+    async (request, reply) => {
+      const access = requireOperator(request);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+      const kind = parseSecretKind(request.params.kind);
+      if (!kind) {
+        return reply.status(400).send(
+          createApiError({
+            code: 'VALIDATION_FAILED',
+            message: 'Invalid provider secret kind',
+            correlationId: request.correlationId,
+            params: { field: 'kind' },
+          }),
+        );
+      }
+
+      await app.configStore.deleteInstanceVaultSecret(request.params.providerId, kind);
+      return {
+        secretStates: await app.configStore.listInstanceSecretStates(),
         correlationId: request.correlationId,
       };
     },

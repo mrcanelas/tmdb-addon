@@ -120,6 +120,19 @@ describe('@metalayer/persistence', () => {
     }
   });
 
+  it('stores instance vault secrets without configuration ids', async () => {
+    await store.upsertInstanceVaultSecret('fanart', 'api_key', 'fanart-secret');
+
+    expect(await store.getInstanceSecretPlaintext('fanart')).toBe('fanart-secret');
+    expect(await store.listInstanceSecretStates()).toEqual({ fanart: 'connected' });
+    expect(JSON.stringify(await store.listInstanceVaultSecretRows())).not.toContain(
+      'fanart-secret',
+    );
+
+    expect(await store.deleteInstanceVaultSecret('fanart', 'api_key')).toBe(true);
+    expect(await store.getInstanceSecretPlaintext('fanart')).toBeNull();
+  });
+
   it('reencrypts vault secrets to a new active key version', async () => {
     const oldKey = parseEncryptionKey(Buffer.alloc(32, 4).toString('base64'));
     const newKey = parseEncryptionKey(Buffer.alloc(32, 8).toString('base64'));
@@ -137,6 +150,7 @@ describe('@metalayer/persistence', () => {
         editCredential: 'file-rotate-token',
         secrets: { tmdb: 'file-rotate-secret' },
       });
+      await v1Store.upsertInstanceVaultSecret('fanart', 'api_key', 'instance-secret');
       const before = await v1Store.listVaultSecretRows();
       expect(before[0]!.keyVersion).toBe(1);
       await v1Store.close();
@@ -148,11 +162,14 @@ describe('@metalayer/persistence', () => {
       expect(await v2Store.getSecretPlaintext(cfg.configId, 'tmdb')).toBe(
         'file-rotate-secret',
       );
+      expect(await v2Store.getInstanceSecretPlaintext('fanart')).toBe(
+        'instance-secret',
+      );
 
       const dry = await v2Store.reencryptVaultSecrets({ dryRun: true });
       expect(dry).toMatchObject({
-        total: 1,
-        reencrypted: 1,
+        total: 2,
+        reencrypted: 2,
         alreadyCurrent: 0,
         dryRun: true,
         activeVersion: 2,
@@ -161,9 +178,10 @@ describe('@metalayer/persistence', () => {
       expect((await v2Store.listVaultSecretRows())[0]!.keyVersion).toBe(1);
 
       const applied = await v2Store.reencryptVaultSecrets();
-      expect(applied.reencrypted).toBe(1);
+      expect(applied.reencrypted).toBe(2);
       expect(applied.failed).toHaveLength(0);
       expect((await v2Store.listVaultSecretRows())[0]!.keyVersion).toBe(2);
+      expect((await v2Store.listInstanceVaultSecretRows())[0]!.keyVersion).toBe(2);
       expect(await v2Store.getSecretPlaintext(cfg.configId, 'tmdb')).toBe(
         'file-rotate-secret',
       );
@@ -174,6 +192,9 @@ describe('@metalayer/persistence', () => {
       });
       expect(await activeOnly.getSecretPlaintext(cfg.configId, 'tmdb')).toBe(
         'file-rotate-secret',
+      );
+      expect(await activeOnly.getInstanceSecretPlaintext('fanart')).toBe(
+        'instance-secret',
       );
       await activeOnly.close();
       await v2Store.close();

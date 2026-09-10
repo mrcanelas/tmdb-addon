@@ -18,7 +18,10 @@ describe('@metalayer/server sources diagnostics', () => {
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (value.includes('api_key=vaulted-tmdb-key')) {
+      if (
+        value.includes('api_key=vaulted-tmdb-key') ||
+        value.includes('api_key=instance-tmdb-key')
+      ) {
         return new Response(JSON.stringify({ images: {} }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -82,6 +85,21 @@ describe('@metalayer/server sources diagnostics', () => {
     expect(body.locale.providerParams).toEqual({ language: 'pt-BR', region: 'BR' });
     expect(body.cacheKeyExample).toContain('tmdb|ping|');
     expect(JSON.stringify(body)).not.toContain('vaulted-tmdb-key');
+  });
+
+  it('tests sources with instance vaulted credentials', async () => {
+    const app = await appPromise;
+    await store.upsertInstanceVaultSecret('tmdb', 'api_key', 'instance-tmdb-key');
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/sources/tmdb/test',
+      payload: { locale: 'en-US' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().ok).toBe(true);
+    expect(JSON.stringify(response.json())).not.toContain('instance-tmdb-key');
   });
 
   it('rejects unknown providers with stable error codes', async () => {
