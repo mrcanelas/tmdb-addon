@@ -64,3 +64,8 @@ Residual / follow-up (not Phase M blockers): deeper SSRF audit of custom URL art
 - Admin-first instance config: `docs/adr/0008-admin-first-instance-config.md`, `docs/dashboard.md`
 - Telemetry defaults off: `docs/telemetry.md`
 - Legacy import vaults secrets: `docs/migration-from-tmdb-addon.md`
+
+
+### Request URL logging
+
+Request serializers and error buffers redact query strings and legacy compressed URL segments. New browser clients send provider keys in `X-MetaLayer-Api-Key` or use vault credentials. Legacy query-key inputs remain accepted for compatibility, but clients should migrate. Production smoke uses fake sentinels to check that request logs do not expose them.

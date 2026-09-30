@@ -71,6 +71,7 @@ export function tmdbCatalogItemToMetaPreview(
     poster: posterUrl,
     releaseInfo: item.releaseDate,
     provider: 'tmdb',
+    facts: { popularity: item.popularity, originalTitle: item.originalTitle },
     adult: item.adult,
     genres: tmdbGenreNames(item.genreIds),
     overview: item.overview,
@@ -78,8 +79,8 @@ export function tmdbCatalogItemToMetaPreview(
     voteCount: item.voteCount,
     year: yearFromReleaseInfo(item.releaseDate),
     released,
-    // List endpoints do not expose digital release; mirror theatrical/air date.
-    digitallyReleased: released,
+    // List endpoints do not expose digital release; leave unknown.
+    digitallyReleased: undefined,
     originalLanguage: item.originalLanguage,
     hasArtwork: Boolean(posterUrl ?? item.posterPath),
   };

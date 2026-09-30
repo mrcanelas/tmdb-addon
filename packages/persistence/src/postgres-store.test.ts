@@ -50,4 +50,18 @@ describe.runIf(Boolean(postgresUrl))('@metalayer/persistence postgres', () => {
     const restored = await store.restoreRevision(created.configId, first.revisionId);
     expect(restored?.config.name).toBe('v1');
   });
+  it('keeps local corrections across database reconnections and deletes them durably', async () => {
+    store = await PostgresConfigurationStore.connect({ connectionString: postgresUrl!, encryptionKey: TEST_KEY });
+    const created = await store.create({ config: createDefaultMetaLayerConfig({ name: 'Correction PG' }), editCredential: 'correction-edit-pg' });
+    const value = { id: 'pg-correction', status: 'local', payload: { title: 'Corrected' } };
+    await store.saveLocalCorrection(created.configId, value.id, value);
+    await store.close();
+    store = await PostgresConfigurationStore.connect({ connectionString: postgresUrl!, encryptionKey: TEST_KEY });
+    expect(await store.listLocalCorrections(created.configId)).toEqual([value]);
+    await store.saveLocalCorrection(created.configId, value.id, { ...value, status: 'proposed' });
+    expect((await store.exportSafe(created.configId))?.localCorrections).toEqual([{ ...value, status: 'proposed' }]);
+    await store.deleteLocalCorrection(created.configId, value.id);
+    expect(await store.listLocalCorrections(created.configId)).toEqual([]);
+  });
+
 });

@@ -29,7 +29,8 @@
     "i18n:pseudo": "pnpm -F @metalayer/i18n i18n:pseudo",
     "metalayer:upgrade-check": "node ./scripts/metalayer-upgrade-check.mjs",
     "metalayer:vault-reencrypt": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-vault-reencrypt.ts",
-    "metalayer:tracking-refresh": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-tracking-refresh.ts"
+    "metalayer:tracking-refresh": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-tracking-refresh.ts",
+    "test:production": "node scripts/smoke-production.mjs"
   },
   "repository": {
     "type": "git",

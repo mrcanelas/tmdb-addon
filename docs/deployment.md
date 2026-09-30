@@ -171,3 +171,8 @@ Requires Trakt/MAL OAuth **client** credentials from Admin Providers (or env def
 - Do not bake encryption keys or dashboard tokens into Docker images.
 - Telemetry stays off unless `METALAYER_TELEMETRY_ENABLED=true`.
 - Default backups never include vault plaintext.
+
+
+### Production build and beta images
+
+`pnpm build` bundles server workspace TypeScript into `apps/server/dist`; third-party runtime dependencies remain installed. Verify with `pnpm test:production` using plain Node after building the interfaces. Docker prerelease tags update `alpha`, `beta` or `rc`, while only stable versions update `latest`. See `beta-readiness.md` for the CI and manual release gates.

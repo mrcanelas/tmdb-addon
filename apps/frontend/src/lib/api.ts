@@ -159,10 +159,9 @@ export async function fetchPublicMetaDBLists(
   editCredential: string,
   apiKey?: string,
 ): Promise<{ items: PublicMetaDBListSummary[] }> {
-  const query = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
   return apiFetch(
-    `/api/v1/configurations/${configId}/sources/publicmetadb/lists${query}`,
-    withEditCredential(configId, editCredential),
+    `/api/v1/configurations/${configId}/sources/publicmetadb/lists`,
+    { headers: { ...withEditCredential(configId, editCredential).headers, ...(apiKey ? { 'X-MetaLayer-Api-Key': apiKey } : {}) } },
   );
 }
 
@@ -171,10 +170,9 @@ export async function fetchPublicMetaDBPicks(
   editCredential: string,
   apiKey?: string,
 ): Promise<{ items: PublicMetaDBPickSummary[] }> {
-  const query = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
   return apiFetch(
-    `/api/v1/configurations/${configId}/sources/publicmetadb/picks${query}`,
-    withEditCredential(configId, editCredential),
+    `/api/v1/configurations/${configId}/sources/publicmetadb/picks`,
+    { headers: { ...withEditCredential(configId, editCredential).headers, ...(apiKey ? { 'X-MetaLayer-Api-Key': apiKey } : {}) } },
   );
 }
 

@@ -172,7 +172,12 @@ export function resolutionConfigFromFieldProviders(
       field === 'title' || field === 'description' || field === 'originalTitle'
         ? 'locale-first'
         : 'provider-first';
-    fields[field] = planFromProviderChain(providers, locales, strategy);
+    const fieldLocales: LocalePreference[] = field === 'title' || field === 'description'
+      ? locales
+      : ['poster', 'background', 'logo'].includes(field)
+        ? [...locales.filter(locale => locale.type !== 'original-language'), { type: 'no-language' }, { type: 'any-language' }]
+        : [{ type: 'provider-default' }];
+    fields[field] = planFromProviderChain(providers, fieldLocales, strategy);
   }
 
   return ResolutionConfigSchema.parse({

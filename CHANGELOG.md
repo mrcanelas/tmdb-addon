@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 ## [Unreleased]
 
+### Beta delivery hardening
+
+- Fix plain-Node production startup by bundling internal TypeScript packages.
+- Redact credential-bearing request URLs; use headers for PublicMetaDB browser credentials.
+- Apply shared movie/series field resolution, catalog filtering and page sorting to public Stremio delivery.
+- Fix duplicate catalog IDs, filtered native pagination and AniList/MAL/Kitsu metadata dispatch.
+- Persist local corrections in SQLite/Postgres and stop loading sample community overrides in production.
+- Add production/Docker/service CI gates and keep prereleases off Docker `latest`.
+- See [beta-readiness.md](docs/beta-readiness.md) for compatibility, validation and remaining release gates.
+
 ### Added
 
 - Overview legacy TMDB Addon import (dry-run preview + confirm → Save & Install)

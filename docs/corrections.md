@@ -44,3 +44,8 @@ Base path: `/api/v1`. Configuration routes require `X-MetaLayer-Edit-Credential`
 - Richer evidence UI and affected profile/catalog summaries
 - Broader correction types wired end-to-end on every native meta path
 - Community contribution packaging workflow beyond schema validation
+
+
+### Durable local corrections
+
+Local corrections now use the configuration database (`local_corrections`) in SQLite and Postgres. Mutation endpoints persist creation, moderation and deletion; configuration requests reload stored rows. Safe exports include a `localCorrections` array. Production does not load sample community fixtures. See `beta-readiness.md` for backup and migration limitations.

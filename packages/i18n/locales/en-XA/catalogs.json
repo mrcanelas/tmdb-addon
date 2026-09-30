@@ -106,5 +106,9 @@
   "catalogs.table.order": "ØrdérØr",
   "catalogs.table.catalog": "ÇåtåløgÇåt",
   "catalogs.table.actions": "ÅçtîøñsÅçt",
-  "catalogs.titleCard.noPoster": "Ñø pøstér åvåîlåbléÑø pøs"
+  "catalogs.titleCard.noPoster": "Ñø pøstér åvåîlåbléÑø pøs",
+  "catalogs.warning.RULE_DATA_UNAVAILABLE": "Thé søûrçé døés ñøt prøvîdé dåtå før thé Thé søûrçé dø{{rule}} fîltér; ît wås ñøt åpplîéd. fîltér; ",
+  "catalogs.warning.SORT_DATA_UNAVAILABLE": "Thé søûrçé døés ñøt prøvîdé thé Thé søûrçé{{field}} sørtîñg fîéld. sørt",
+  "catalogs.warning.CATALOG_PROVIDER_UNAVAILABLE": "Çåtåløg délîvéry îs ñøt åvåîlåblé før Çåtåløg délî{{provider}} yét. y",
+  "catalogs.warning.CATALOG_SCAN_LIMIT": "Thé çåtåløg sçåñ støppéd åftér Thé çåtålø{{maxPages}} søûrçé pågés. Ñårrøw thé fîltérs ør try å dîfféréñt søûrçé. søûrçé pågés. Ñår"
 }

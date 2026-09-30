@@ -4,7 +4,6 @@ import { dirname } from 'node:path';
 import { createApiError } from '@metalayer/api-errors';
 import {
   CorrectionRegistry,
-  loadSampleCommunityCorrections,
 } from '@metalayer/corrections';
 import {
   BoundedLogBuffer,
@@ -29,6 +28,7 @@ import {
   FASTIFY_LOG_REDACT_PATHS,
   parseEncryptionKeyRingFromEnv,
   redactSensitive,
+  sanitizeLogUrl,
   resolveEncryptionKeyRing,
   type EncryptionKeyRing,
 } from '@metalayer/security';
@@ -119,6 +119,9 @@ function buildLoggerOption(enabled: boolean) {
   if (!enabled) return false;
 
   return {
+    serializers: {
+      req: (req: { method: string; url: string }) => ({ method: req.method, url: sanitizeLogUrl(req.url) }),
+    },
     redact: {
       paths: [...FASTIFY_LOG_REDACT_PATHS],
       censor: '[REDACTED]',
@@ -143,11 +146,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       : new MemoryCache());
   const correctionRegistry =
     options.correctionRegistry ??
-    (() => {
-      const registry = new CorrectionRegistry();
-      registry.loadCommunity(loadSampleCommunityCorrections());
-      return registry;
-    })();
+    new CorrectionRegistry();
   const metrics = options.metrics ?? new MetricsRegistry();
   const logBuffer = options.logBuffer ?? new BoundedLogBuffer();
   const providerHealth = options.providerHealth ?? new ProviderHealthRegistry();
@@ -173,6 +172,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
     metrics.increment('requestsTotal');
   });
 
+  app.addHook('preHandler', async (request) => {
+    const configId = (request.params as { configId?: string })?.configId;
+    if (configId && !options.correctionRegistry) {
+      app.correctionRegistry.loadLocal(configId, await store.listLocalCorrections(configId));
+    }
+  });
+
   app.addHook('onResponse', async (request, reply) => {
     const started = (request as { _startedAtMs?: number })._startedAtMs;
     if (typeof started === 'number') {
@@ -182,7 +188,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       metrics.increment('errorsTotal');
       logBuffer.append({
         level: 'error',
-        message: `${request.method} ${request.url} → ${reply.statusCode}`,
+        message: `${request.method} ${sanitizeLogUrl(request.url)} → ${reply.statusCode}`,
         correlationId: request.correlationId,
       });
     }
@@ -209,11 +215,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
   app.setNotFoundHandler((request, reply) => {
     const error = createApiError({
       code: 'ROUTE_NOT_FOUND',
-      message: `Route not found: ${request.method} ${request.url}`,
+      message: `Route not found: ${request.method} ${sanitizeLogUrl(request.url)}`,
       correlationId: request.correlationId,
       params: {
         method: request.method,
-        path: request.url,
+        path: sanitizeLogUrl(request.url),
       },
     });
     return reply.status(404).send(error);

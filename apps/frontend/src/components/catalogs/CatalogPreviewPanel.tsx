@@ -158,7 +158,7 @@ export function CatalogPreviewPanel({
             >
               {warnings.map((warning) => (
                 <li
-                  key={`${warning.code}-${warning.params?.instanceId ?? ""}-${warning.params?.sourceId ?? ""}-${warning.params?.mode ?? ""}`}
+                  key={`${warning.code}-${JSON.stringify(warning.params ?? {})}`}
                 >
                   {t(`catalogs.warning.${warning.code}`, {
                     ...warning.params,

@@ -68,7 +68,9 @@ export function toManifestCatalogEntries(
     .filter((catalog) => catalog.enabled)
     .map((catalog) => ({
       instanceId: catalog.instanceId,
-      id: `${catalog.provider}.${catalog.providerCatalogId}`,
+      id: catalogs.filter(item => item.enabled && item.mediaType === catalog.mediaType && item.provider === catalog.provider && item.providerCatalogId === catalog.providerCatalogId).length > 1
+        ? `${catalog.provider}.${catalog.providerCatalogId}~${catalog.instanceId}`
+        : `${catalog.provider}.${catalog.providerCatalogId}`,
       type: catalog.mediaType,
       name: applyCatalogNamePrefix(
         resolveCatalogDisplayName(catalog, locale),

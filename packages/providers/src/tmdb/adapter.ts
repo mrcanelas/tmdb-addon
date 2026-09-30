@@ -72,6 +72,8 @@ export interface TmdbEpisodeSummary {
 }
 
 export interface TmdbCatalogItem {
+  popularity?: number;
+  originalTitle?: string;
   id: number;
   name: string;
   mediaType: 'movie' | 'series' | 'anime';
@@ -647,6 +649,8 @@ function mapCatalogItem(
   return {
     id: tmdbId,
     name,
+    popularity: typeof raw.popularity === 'number' ? raw.popularity : undefined,
+    originalTitle: typeof (raw.original_title ?? raw.original_name) === 'string' ? String(raw.original_title ?? raw.original_name) : undefined,
     mediaType,
     posterPath:
       typeof raw.poster_path === 'string' || raw.poster_path === null

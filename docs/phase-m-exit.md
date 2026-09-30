@@ -28,7 +28,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
-| Field Resolution Chains inheritance/episode UX depth | **Deferred → redesigned** — dedicated `/configure/resolution` (field rail × plan editor, Stremio meta mapping); Appearance is display + bridge until page ships (`FRONTEND.md`, `docs/field-resolution-chains.md`) |
+| Field Resolution Chains inheritance/episode UX depth | **Deferred → redesigned** — dedicated `/configure/resolution` (field rail × plan editor, Stremio meta mapping); Fields page now exists at `/configure/metas/fields`; deeper inheritance remains deferred (`FRONTEND.md`, `docs/field-resolution-chains.md`) |
 | Admin-first instance settings (replace day-two `.env`) | **Partial (Providers/Settings MVP)** — Dashboard provider enable/configured state feeds Sources availability and persists; runtime settings are visible; instance API-key/OAuth credential vault and Providers secret-entry UI exist; editable runtime Settings still to implement |
 | Full i18n/RTL layout hardening | **Done (MVP)** — configure + dashboard load en-XA/ar-XB with `dir`; smoke + physical-CSS guard; checklist `docs/rtl-layout-checklist.md` signed 2026-07-13 |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
@@ -47,7 +47,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Security review | **Done (MVP)** — see `docs/security.md` (OAuth `state` CSRF + redact paths + allowlist) |
 | Translation review (en-US / pt-BR / es-ES) | **Done (MVP)** — attention codes + dashboard pseudo labels; per-locale catalog rename editor still Open (non-blocking) |
 | Pseudo-locale and RTL layout review | **Done (MVP)** — checklist signed 2026-07-13; `rtl-physical-css` guard + pseudo smoke tests |
-| Field Resolution Chains review | **Planning closed (MVP)** — dedicated page wireframe + Stremio meta field rail; React page Open |
+| Field Resolution Chains review | **Planning closed (MVP)** — dedicated page wireframe + Stremio meta field rail; React Fields page shipped; advanced runtime gaps are tracked in `beta-readiness.md` |
 | Documentation pass | Partial — ADR 0008 + Admin-first + FRC/FRONTEND/AGENTS + UX decisions/mocks; deeper §36 still Open |
 
 ## Exit criterion
@@ -55,3 +55,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 > all 1.0 feature categories are implemented.
 
 Deferred items above must be closed or re-deferred with release-note callouts before Phase N (`1.0.0-rc.N`).
+
+
+## Public delivery audit follow-up
+
+The original MVP sign-offs above do not establish public beta readiness. The subsequent audit found gaps between isolated modules and actual Stremio delivery. See [beta-readiness.md](beta-readiness.md) for fixes, compatibility details, new CI gates and the remaining integration/security checks. Do not mark those checks complete solely because this patch or the original unit suite passes.

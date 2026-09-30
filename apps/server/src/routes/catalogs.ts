@@ -20,7 +20,7 @@ import type { CatalogDefinition } from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import type { CacheStore } from '@metalayer/cache';
 import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
-import { loadCatalogMetas } from '../stremio/catalog-meta.js';
+import { loadCatalogPage } from '../stremio/catalog-meta.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -351,9 +351,11 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
 
     const started = Date.now();
     try {
-      const resolved = await loadCatalogMetas(
+      const resolved = await loadCatalogPage(
         app,
-        view.config,
+        { ...view.config, localization: { ...view.config.localization,
+          metadataLocale: request.query.locale || view.config.localization.metadataLocale,
+          availabilityRegion: request.query.region || view.config.localization.availabilityRegion } },
         catalog,
         request.body?.page ?? 1,
         request.correlationId,

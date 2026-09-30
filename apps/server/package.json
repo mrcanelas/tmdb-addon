@@ -8,7 +8,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc --noEmit -p tsconfig.json && node build.mjs",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --config ../../vitest.config.ts"
@@ -33,10 +33,15 @@
     "@metalayer/tracking": "workspace:*",
     "dotenv": "^16.5.0",
     "fastify": "^5.4.0",
-    "fastify-plugin": "^6.0.0"
+    "fastify-plugin": "^6.0.0",
+    "ioredis": "^5.11.1",
+    "lz-string": "^1.5.0",
+    "pg": "^8.22.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
+    "esbuild": "^0.28.2",
     "tsx": "^4.21.0",
     "typescript": "^5.5.3"
   }

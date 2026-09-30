@@ -1,13 +1,16 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { createDefaultMetaLayerConfig } from '@metalayer/config';
 import { createMemoryConfigurationStore } from '@metalayer/persistence';
+import { CorrectionRegistry, loadSampleCommunityCorrections } from '@metalayer/corrections';
 import { buildApp } from './app.js';
 
 const TEST_KEY = Buffer.alloc(32, 41).toString('base64');
 
 describe('@metalayer/server corrections', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
-  const appPromise = buildApp({ logger: false, store });
+  const correctionRegistry = new CorrectionRegistry();
+  correctionRegistry.loadCommunity(loadSampleCommunityCorrections());
+  const appPromise = buildApp({ logger: false, store, correctionRegistry });
 
   afterAll(async () => {
     await (await appPromise).close();

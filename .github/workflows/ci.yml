@@ -38,3 +38,71 @@ jobs:
 
       - name: Build MetaLayer
         run: pnpm build
+
+      - name: Smoke test production bundle and request-log redaction
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm test:production | tee /tmp/metalayer-smoke.log
+          if grep -q 'PRODUCTION_SMOKE_FAKE_SECRET' /tmp/metalayer-smoke.log; then
+            echo 'Request logs leaked the test credential'
+            exit 1
+          fi
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: metalayer
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: metalayer
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U metalayer"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Postgres and Redis integration contracts
+        env:
+          POSTGRES_URL: postgres://metalayer:test-only@localhost:5432/metalayer
+          REDIS_URL: redis://localhost:6379
+        run: pnpm exec vitest run packages/persistence/src/postgres-store.test.ts packages/cache/src/redis.test.ts
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mode: [lite, server]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start distribution
+        env:
+          MODE: ${{ matrix.mode }}
+        run: |
+          docker build -f "docker/Dockerfile.$MODE" -t metalayer-test .
+          docker run -d --name metalayer-test -p 1338:1338 \
+            -e METALAYER_ENCRYPTION_KEY=$(printf '0%.0s' {1..64}) metalayer-test
+          for attempt in {1..20}; do
+            if curl -fsS http://localhost:1338/configure/ >/dev/null; then
+              curl -fsS http://localhost:1338/admin/ >/dev/null
+              curl -fsS http://localhost:1338/manifest.json >/dev/null
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs metalayer-test
+          exit 1

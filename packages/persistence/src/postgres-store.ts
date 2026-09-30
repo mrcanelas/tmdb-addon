@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS vault_secrets (
   UNIQUE(config_id, provider, kind)
 );
 
+CREATE TABLE IF NOT EXISTS local_corrections (
+  config_id TEXT NOT NULL REFERENCES configurations(config_id) ON DELETE CASCADE,
+  correction_id TEXT NOT NULL,
+  correction_json TEXT NOT NULL,
+  PRIMARY KEY (config_id, correction_id)
+);
+
 CREATE TABLE IF NOT EXISTS configuration_revisions (
   revision_id TEXT PRIMARY KEY NOT NULL,
   config_id TEXT NOT NULL REFERENCES configurations(config_id) ON DELETE CASCADE,
@@ -674,7 +681,23 @@ export class PostgresConfigurationStore implements ConfigurationStore {
       config: view.config,
       secrets: view.secrets,
       includesSecrets: false,
+      localCorrections: await this.listLocalCorrections(configId),
     };
+  }
+
+  async listLocalCorrections(configId: string): Promise<unknown[]> {
+    const result = await this.pool.query<{ correction_json: string }>('SELECT correction_json FROM local_corrections WHERE config_id = $1 ORDER BY correction_id', [configId]);
+    return result.rows.map(row => JSON.parse(row.correction_json));
+  }
+
+  async saveLocalCorrection(configId: string, correctionId: string, value: unknown): Promise<void> {
+    await this.pool.query(`INSERT INTO local_corrections (config_id, correction_id, correction_json)
+      VALUES ($1, $2, $3) ON CONFLICT(config_id, correction_id) DO UPDATE SET correction_json = EXCLUDED.correction_json`,
+      [configId, correctionId, JSON.stringify(value)]);
+  }
+
+  async deleteLocalCorrection(configId: string, correctionId: string): Promise<void> {
+    await this.pool.query('DELETE FROM local_corrections WHERE config_id = $1 AND correction_id = $2', [configId, correctionId]);
   }
 
   async close(): Promise<void> {

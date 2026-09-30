@@ -12,7 +12,7 @@ import type { CacheStore } from '@metalayer/cache';
 import { ProviderError } from '@metalayer/providers';
 import {
   findCatalogByManifestId,
-  loadCatalogMetas,
+  loadCatalogWindow,
   parseSkip,
   resolveStremioMeta,
   stremioType,
@@ -29,7 +29,6 @@ declare module 'fastify' {
   }
 }
 
-const PAGE_SIZE = 100;
 
 type ReplyLike = {
   status: (code: number) => { send: (body: unknown) => unknown };
@@ -118,19 +117,19 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const skip = parseSkip(request.params.extra);
-    const page = Math.floor(skip / PAGE_SIZE) + 1;
 
     try {
-      const { metas } = await loadCatalogMetas(
+      const result = await loadCatalogWindow(
         app,
         effective,
         catalog,
-        page,
+        skip,
         request.correlationId,
         vaultSecretResolver(app, view.configId),
       );
       return {
-        metas: metas.map((meta) => ({
+        ...(result.warnings.length ? { warnings: result.warnings } : {}),
+        metas: result.metas.map((meta) => ({
           id: meta.id,
           type: stremioType(meta.type),
           name: meta.name,

@@ -19,6 +19,7 @@ export {
 
 export {
   redactSensitive,
+  sanitizeLogUrl,
   isSensitiveKey,
   isSensitiveHeader,
   FASTIFY_LOG_REDACT_PATHS,

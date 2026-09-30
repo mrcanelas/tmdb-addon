@@ -39,7 +39,7 @@ describe('tmdb-catalog-meta helpers', () => {
     expect(meta.genres).toEqual(['Horror']);
     expect(meta.rating).toBe(7.5);
     expect(meta.released).toBe(true);
-    expect(meta.digitallyReleased).toBe(true);
+    expect(meta.digitallyReleased).toBeUndefined();
     expect(meta.hasArtwork).toBe(true);
   });
 });

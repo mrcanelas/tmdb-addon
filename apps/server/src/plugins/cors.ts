@@ -8,9 +8,9 @@ const corsPluginImpl: FastifyPluginAsync = async (app) => {
     reply.header('Access-Control-Allow-Origin', origin);
     reply.header(
       'Access-Control-Allow-Headers',
-      'Content-Type, X-MetaLayer-Edit-Credential, X-Correlation-Id',
+      'Content-Type, X-MetaLayer-Edit-Credential, X-Correlation-Id, X-MetaLayer-Api-Key',
     );
-    reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+    reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
     if (request.method === 'OPTIONS') {
       return reply.status(204).send();
     }

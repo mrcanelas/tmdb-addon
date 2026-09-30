@@ -4,7 +4,7 @@ const SENSITIVE_KEY =
   /^(editCredential|edit_credential|password|passwd|secret|secrets|apiKey|api_key|accessToken|access_token|refreshToken|refresh_token|token|authorization|ciphertext|encryptionKey|encryption_key|plaintext|client_secret|clientSecret)$/i;
 
 const SENSITIVE_HEADER =
-  /^(authorization|cookie|set-cookie|x-metalayer-edit-credential|x-metalayer-dashboard-token)$/i;
+  /^(authorization|cookie|set-cookie|x-metalayer-edit-credential|x-metalayer-dashboard-token|x-metalayer-api-key)$/i;
 
 /** Vault envelope or long opaque credential-looking strings. */
 const VAULT_ENVELOPE = /^v1:\d+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+$/;
@@ -93,6 +93,17 @@ export const FASTIFY_LOG_REDACT_PATHS = [
   'body.secrets',
   'body.secrets.*',
   'req.query.apiKey',
+  'req.headers["x-metalayer-api-key"]',
   'req.body.apiKey',
   'body.apiKey',
 ] as const;
+
+/** Keep paths useful without logging query credentials or compressed legacy configs. */
+export function sanitizeLogUrl(input: string): string {
+  const path = input.split(/[?#]/, 1)[0] ?? '/';
+  const segments = path.split('/');
+  if (segments[1] && !['api', 'c', 'configure', 'admin', 'health', 'manifest.json', 'favicon.ico'].includes(segments[1])) {
+    segments[1] = '[REDACTED]';
+  }
+  return segments.join('/') + (input.includes('?') ? '?[REDACTED]' : '');
+}

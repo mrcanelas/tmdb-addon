@@ -106,5 +106,9 @@
   "catalogs.table.order": "Ordem",
   "catalogs.table.catalog": "Catálogo",
   "catalogs.table.actions": "Ações",
-  "catalogs.titleCard.noPoster": "Pôster indisponível"
+  "catalogs.titleCard.noPoster": "Pôster indisponível",
+  "catalogs.warning.RULE_DATA_UNAVAILABLE": "A fonte não fornece dados para o filtro {{rule}}; ele não foi aplicado.",
+  "catalogs.warning.SORT_DATA_UNAVAILABLE": "A fonte não fornece o campo {{field}} para ordenação.",
+  "catalogs.warning.CATALOG_PROVIDER_UNAVAILABLE": "A entrega de catálogos de {{provider}} ainda não está disponível.",
+  "catalogs.warning.CATALOG_SCAN_LIMIT": "A busca foi limitada a {{maxPages}} páginas da fonte. Ajuste os filtros ou tente outra fonte."
 }

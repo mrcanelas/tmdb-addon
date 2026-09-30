@@ -347,7 +347,7 @@ describe('@metalayer/server native Stremio routes', () => {
     expect(created.statusCode).toBe(201);
     const { configId } = created.json();
 
-    app.correctionRegistry.upsertLocal(configId, {
+    const correction = app.correctionRegistry.upsertLocal(configId, {
       target: { provider: 'imdb', id: 'tt0903747', entityKind: 'series' },
       type: 'episode_reassignment',
       payload: {
@@ -357,6 +357,7 @@ describe('@metalayer/server native Stremio routes', () => {
       reason: 'Move pilot to specials row',
       sources: [{ kind: 'test-fixture', label: 'native-stremio' }],
     });
+    await store.saveLocalCorrection(configId, correction.id, correction);
 
     const series = await app.inject({
       method: 'GET',

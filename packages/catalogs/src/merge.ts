@@ -22,6 +22,23 @@ export interface CatalogMetaPreview {
   digitallyReleased?: boolean;
   originalLanguage?: string;
   hasArtwork?: boolean;
+  facts?: {
+    rating?: number;
+    voteCount?: number;
+    popularity?: number;
+    adult?: boolean;
+    originalLanguage?: string;
+    originalTitle?: string;
+    genres?: string[];
+    runtime?: number;
+    watched?: boolean;
+    certification?: string;
+    productionCountries?: string[];
+    networks?: string[];
+    digitallyReleased?: boolean;
+    availableInRegions?: string[];
+    isSpecial?: boolean;
+  };
 }
 
 function dedupeById(metas: CatalogMetaPreview[]): CatalogMetaPreview[] {

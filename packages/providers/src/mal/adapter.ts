@@ -84,7 +84,7 @@ export class MalJikanProviderAdapter implements ProviderAdapter {
     const path = resolveJikanCatalogPath(input.providerCatalogId);
     const raw = await this.requestJson<{
       data?: Array<Record<string, unknown>>;
-    }>(ctx, `${path}${path.includes('?') ? '&' : '?'}page=${page}`);
+    }>(ctx, `${path}${path.includes('?') ? '&' : '?'}page=${page}&limit=20`);
 
     return (raw.data ?? []).map((item) => mapJikanCatalogItem(item));
   }

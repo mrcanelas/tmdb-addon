@@ -68,6 +68,19 @@ export class CorrectionRegistry {
     return [...this.community.values()].sort((a, b) => a.id.localeCompare(b.id));
   }
 
+  loadLocal(configId: string, items: unknown[]): void {
+    const map = new Map<string, MetadataCorrection>();
+    for (const item of items) {
+      const result = validateCorrection(item);
+      if (!result.ok || !result.value || result.value.scope !== 'local') {
+        throw new CorrectionValidationError('Invalid stored local correction', result.issues);
+      }
+      map.set(result.value.id, result.value);
+    }
+    if (map.size) this.localByConfig.set(configId, map);
+    else this.localByConfig.delete(configId);
+  }
+
   listLocal(configId: string): MetadataCorrection[] {
     const map = this.localByConfig.get(configId);
     if (!map) return [];

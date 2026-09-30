@@ -61,6 +61,7 @@ export interface SafeConfigurationExport {
   config: MetaLayerConfig;
   secrets: Record<string, SecretCredentialState>;
   includesSecrets: false;
+  localCorrections?: unknown[];
 }
 
 export interface CreateConfigurationInput {
@@ -162,6 +163,9 @@ export interface ConfigurationStore {
     note?: string,
   ): Promise<PublicConfigurationView | null>;
   exportSafe(configId: string): Promise<SafeConfigurationExport | null>;
+  listLocalCorrections(configId: string): Promise<unknown[]>;
+  saveLocalCorrection(configId: string, correctionId: string, value: unknown): Promise<void>;
+  deleteLocalCorrection(configId: string, correctionId: string): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -186,6 +190,13 @@ function ensureSchema(db: DatabaseSync): void {
       updated_at TEXT NOT NULL,
       UNIQUE(config_id, provider, kind),
       FOREIGN KEY(config_id) REFERENCES configurations(config_id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS local_corrections (
+      config_id TEXT NOT NULL REFERENCES configurations(config_id) ON DELETE CASCADE,
+      correction_id TEXT NOT NULL,
+      correction_json TEXT NOT NULL,
+      PRIMARY KEY (config_id, correction_id)
     );
 
     CREATE TABLE IF NOT EXISTS configuration_revisions (
@@ -802,7 +813,23 @@ export class SqliteConfigurationStore implements ConfigurationStore {
       config: view.config,
       secrets: view.secrets,
       includesSecrets: false,
+      localCorrections: await this.listLocalCorrections(configId),
     };
+  }
+
+  async listLocalCorrections(configId: string): Promise<unknown[]> {
+    const rows = this.db.prepare('SELECT correction_json FROM local_corrections WHERE config_id = ? ORDER BY correction_id').all(configId) as Array<{ correction_json: string }>;
+    return rows.map(row => JSON.parse(row.correction_json));
+  }
+
+  async saveLocalCorrection(configId: string, correctionId: string, value: unknown): Promise<void> {
+    this.db.prepare(`INSERT INTO local_corrections (config_id, correction_id, correction_json)
+      VALUES (?, ?, ?) ON CONFLICT(config_id, correction_id) DO UPDATE SET correction_json = excluded.correction_json`)
+      .run(configId, correctionId, JSON.stringify(value));
+  }
+
+  async deleteLocalCorrection(configId: string, correctionId: string): Promise<void> {
+    this.db.prepare('DELETE FROM local_corrections WHERE config_id = ? AND correction_id = ?').run(configId, correctionId);
   }
 
   async close(): Promise<void> {

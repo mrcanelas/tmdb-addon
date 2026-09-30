@@ -13,7 +13,7 @@ export function buildStremioManifest(
   description: string,
   options: { pageSize?: number } = {},
 ) {
-  const pageSize = options.pageSize;
+  const pageSize = options.pageSize ?? 20;
   const catalogs = toManifestCatalogEntries(
     config.catalogs,
     config.localization.metadataLocale,
@@ -26,7 +26,7 @@ export function buildStremioManifest(
     extra: [{ name: 'skip', isRequired: false }],
   }));
 
-  const types = [...new Set(catalogs.map((catalog) => catalog.type))];
+  const types = [...new Set(catalogs.flatMap((catalog) => catalog.type === 'anime' ? ['anime', 'movie', 'series'] : [catalog.type]))];
 
   return {
     id: identity.manifestId,
@@ -35,7 +35,7 @@ export function buildStremioManifest(
     description,
     resources: catalogs.length > 0 ? ['catalog', 'meta'] : ['meta'],
     types: types.length > 0 ? types : ['movie', 'series'],
-    idPrefixes: ['tt', 'tmdb:', 'anilist:'],
+    idPrefixes: ['tt', 'tmdb:', 'anilist:', 'mal:', 'kitsu:'],
     catalogs,
     behaviorHints: {
       configurable: true,

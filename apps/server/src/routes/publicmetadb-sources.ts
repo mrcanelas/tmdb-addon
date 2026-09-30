@@ -158,7 +158,7 @@ export const publicMetaDBSourcesRoutes: FastifyPluginAsync = async (app) => {
         request,
         reply,
         configId: request.params.configId,
-        apiKey: request.query.apiKey,
+        apiKey: (request.headers['x-metalayer-api-key'] as string | undefined) || request.query.apiKey,
       });
       if (apiKey === 'failed') return;
 
@@ -197,7 +197,7 @@ export const publicMetaDBSourcesRoutes: FastifyPluginAsync = async (app) => {
         request,
         reply,
         configId: request.params.configId,
-        apiKey: request.query.apiKey,
+        apiKey: (request.headers['x-metalayer-api-key'] as string | undefined) || request.query.apiKey,
       });
       if (apiKey === 'failed') return;
 

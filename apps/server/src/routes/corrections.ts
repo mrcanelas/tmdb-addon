@@ -132,6 +132,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
           : [{ kind: 'manual', label: 'Local override' }],
         author: body.author,
       });
+      await app.configStore.saveLocalCorrection(request.params.configId, created.id, created);
       return reply.status(201).send({
         correction: publicCorrection(created),
         correlationId: request.correlationId,
@@ -202,6 +203,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
+    await app.configStore.saveLocalCorrection(request.params.configId, updated.id, updated);
     return {
       correction: publicCorrection(updated),
       correlationId: request.correlationId,
@@ -229,6 +231,7 @@ export const correctionsRoutes: FastifyPluginAsync = async (app) => {
         );
       }
 
+      await app.configStore.deleteLocalCorrection(request.params.configId, request.params.correctionId);
       return {
         ok: true,
         rolledBack: request.params.correctionId,

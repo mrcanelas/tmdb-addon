@@ -28,6 +28,7 @@ export const previewRoutes: FastifyPluginAsync = async (app) => {
     '/preview/movie/:id',
     async (request, reply) => {
       const apiKey =
+        (request.headers['x-metalayer-api-key'] as string | undefined) ||
         request.query.apiKey ||
         process.env.METALAYER_TMDB_API_KEY ||
         process.env.TMDB_API;

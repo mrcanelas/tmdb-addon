@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FASTIFY_LOG_REDACT_PATHS, redactSensitive } from './redact.js';
+import { FASTIFY_LOG_REDACT_PATHS, redactSensitive, sanitizeLogUrl } from './redact.js';
 
 describe('@metalayer/security redact', () => {
   it('redacts edit credentials and secret map values', () => {
@@ -51,3 +51,10 @@ describe('@metalayer/security redact', () => {
     expect(FASTIFY_LOG_REDACT_PATHS.join(' ')).toContain('req.body.apiKey');
   });
 });
+
+ it('redacts query strings and legacy configuration segments without breaking useful route paths', () => {
+   expect(sanitizeLogUrl('/api/v1/preview/movie/550?apiKey=private&token=another')).toBe('/api/v1/preview/movie/550?[REDACTED]');
+   expect(sanitizeLogUrl('/compressed-config-with-credentials/catalog/movie/tmdb.top.json')).toBe('/[REDACTED]/catalog/movie/tmdb.top.json');
+   expect(sanitizeLogUrl('/c/ml_public/meta/movie/tt0137523.json')).toBe('/c/ml_public/meta/movie/tt0137523.json');
+   expect(redactSensitive({ 'x-metalayer-api-key': 'secret' })).toEqual({ 'x-metalayer-api-key': '[REDACTED]' });
+ });

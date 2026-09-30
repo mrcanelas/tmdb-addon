@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { dirname } from 'node:path';
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyStatic from '@fastify/static';
 
@@ -12,9 +13,8 @@ export interface SpaStaticOptions {
 }
 
 function defaultMonorepoRoot(): string {
-  const here = fileURLToPath(new URL('.', import.meta.url));
-  // apps/server/{src|dist}/plugins → monorepo root
-  return resolve(here, '../../../..');
+  // This package ships JavaScript and keeps its location in source and bundled builds.
+  return resolve(dirname(createRequire(import.meta.url).resolve('@metalayer/identity')), '../../..');
 }
 
 function resolveSpaRoot(

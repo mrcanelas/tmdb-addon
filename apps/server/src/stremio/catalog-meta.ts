@@ -1,14 +1,15 @@
+import { applyCatalogPolicy, type CatalogWarning } from './catalog-policy.js';
+import { resolveMetadata, applyPresentation } from '@metalayer/metadata-resolver';
+import { gatherLiveBag } from './gather-fields.js';
 import {
-  filterMetasByEffectiveRules,
   resolveCatalogResults,
   sortCatalogsByPosition,
   type CatalogMetaPreview,
-  type CatalogPreviewWarning,
-  type CatalogResolveResult,
 } from '@metalayer/catalogs';
 import type { CatalogDefinition, MetaLayerConfig } from '@metalayer/config';
 import {
   applyEpisodeCorrectionsToVideos,
+  applyMetadataCorrections,
   correctionsReferenceSpecialSeason,
   filterCorrectionsForIdentity,
   type CorrectionRegistry,
@@ -98,28 +99,22 @@ export function findCatalogByManifestId(
     const found = enabled.find(
       (catalog) =>
         catalog.mediaType === type &&
-        `${catalog.provider}.${catalog.providerCatalogId}` === candidate,
+        (`${catalog.provider}.${catalog.providerCatalogId}` === candidate ||
+          `${catalog.provider}.${catalog.providerCatalogId}~${catalog.instanceId}` === candidate),
     );
     if (found) return found;
   }
   return undefined;
 }
 
-export type LoadCatalogMetasResult = {
-  metas: CatalogMetaPreview[];
-  warnings: CatalogPreviewWarning[];
-  mode?: CatalogResolveResult['mode'];
-  activeSourceId?: string;
-};
-
-export async function loadCatalogMetas(
+export async function loadCatalogPage(
   app: StremioAppContext,
   config: MetaLayerConfig,
   catalog: CatalogDefinition,
   page: number,
   correlationId: string,
   getSecret: SecretResolver,
-): Promise<LoadCatalogMetasResult> {
+): Promise<{ metas: CatalogMetaPreview[]; hasMore: boolean; warnings: CatalogWarning[]; mode?: string; activeSourceId?: string }> {
   const locale = config.localization.metadataLocale || 'en-US';
   const region =
     config.localization.availabilityRegion ||
@@ -129,6 +124,8 @@ export async function loadCatalogMetas(
     process.env.METALAYER_TMDB_API_KEY ||
     process.env.TMDB_API;
 
+  let hasMore = false;
+  const policyWarnings: CatalogWarning[] = [];
   const resolved = await resolveCatalogResults(
     config.catalogs,
     catalog.instanceId,
@@ -157,12 +154,16 @@ export async function loadCatalogMetas(
           mediaType: source.mediaType,
           page,
         });
-        return items.map((item) =>
+        hasMore ||= items.length >= 20;
+        const mapped = items.map((item) =>
           tmdbCatalogItemToMetaPreview(
             item,
             tmdbImageUrl(item.posterPath, 'w342'),
           ),
         );
+        const filtered = applyCatalogPolicy(mapped, config, source);
+        policyWarnings.push(...filtered.warnings);
+        return filtered.metas;
       }
 
       if (
@@ -186,10 +187,11 @@ export async function loadCatalogMetas(
           mediaType: 'anime',
           page,
         });
+        hasMore ||= items.length >= 20;
         return items.map(
           (item): CatalogMetaPreview => ({
             id: item.publicId,
-            type: 'anime',
+            type: item.format === 'movie' ? 'movie' : 'anime',
             name: item.name,
             poster: item.posterUrl ?? undefined,
             provider: source.provider,
@@ -200,7 +202,7 @@ export async function loadCatalogMetas(
 
       if (source.provider === 'publicmetadb') {
         const pmdbKey = await getSecret('publicmetadb');
-        if (!pmdbKey) return [];
+        if (!pmdbKey) { policyWarnings.push({ code: 'SOURCE_CREDENTIAL_MISSING', params: { provider: 'publicmetadb' } }); return []; }
         const adapter = createAppProviderAdapter(app, 'publicmetadb', {
           apiKey: pmdbKey,
           cache: app.providerCache,
@@ -211,6 +213,7 @@ export async function loadCatalogMetas(
           mediaType: source.mediaType,
           page,
         });
+        hasMore ||= items.length >= 20;
         return items.map(
           (item): CatalogMetaPreview => ({
             id: item.publicId,
@@ -221,19 +224,46 @@ export async function loadCatalogMetas(
         );
       }
 
+      policyWarnings.push({ code: 'CATALOG_PROVIDER_UNAVAILABLE', params: { provider: source.provider } });
       return [];
     },
   );
 
-  return {
-    metas: filterMetasByEffectiveRules(resolved.metas, config, catalog),
-    warnings: resolved.warnings,
-    mode: resolved.mode,
-    activeSourceId: resolved.activeSourceId,
-  };
+  const filtered = applyCatalogPolicy(resolved.metas, config, catalog);
+  return { metas: filtered.metas, hasMore, mode: resolved.mode, activeSourceId: resolved.activeSourceId, warnings: [...resolved.warnings, ...policyWarnings, ...filtered.warnings] };
 }
 
-export async function resolveStremioMeta(
+export async function loadCatalogMetas(
+  app: StremioAppContext, config: MetaLayerConfig, catalog: CatalogDefinition,
+  page: number, correlationId: string, getSecret: SecretResolver,
+) {
+  return loadCatalogPage(app, config, catalog, page, correlationId, getSecret);
+}
+
+/** Offset counts delivered items, not the upstream page size (filters and merges change it). */
+export async function loadCatalogWindow(
+  app: StremioAppContext, config: MetaLayerConfig, catalog: CatalogDefinition,
+  skip: number, correlationId: string, getSecret: SecretResolver,
+): Promise<{ metas: CatalogMetaPreview[]; warnings: CatalogWarning[] }> {
+  const output: CatalogMetaPreview[] = [];
+  const seen = new Set<string>();
+  const warnings: CatalogWarning[] = [];
+  // Bounded scan protects a public instance against huge offsets and restrictive rules.
+  const maxPages = 25;
+  for (let page = 1; page <= maxPages; page++) {
+    const result = await loadCatalogPage(app, config, catalog, page, correlationId, getSecret);
+    warnings.push(...result.warnings);
+    for (const meta of result.metas) {
+      const key = `${meta.type}:${meta.id}`;
+      if (!seen.has(key)) { seen.add(key); output.push(meta); }
+    }
+    if (output.length >= skip + 20 || !result.hasMore) break;
+    if (page === maxPages) warnings.push({ code: 'CATALOG_SCAN_LIMIT', params: { maxPages } });
+  }
+  return { metas: output.slice(skip, skip + 20), warnings: [...new Map(warnings.map(w => [JSON.stringify(w), w])).values()] };
+}
+
+async function resolveBaseStremioMeta(
   app: StremioAppContext,
   config: MetaLayerConfig,
   type: 'movie' | 'series' | 'anime',
@@ -253,14 +283,16 @@ export async function resolveStremioMeta(
       config.localization.contentRegion,
   };
 
-  if (type === 'anime') {
+  if (type === 'anime' || /^(anilist|mal|kitsu):/.test(publicId)) {
     try {
-      const anilistId = parseAnimePublicId(publicId);
+      const match = /^(?:(anilist|mal|kitsu):)?(\d+)$/i.exec(publicId);
+      const provider = match?.[1]?.toLowerCase() ?? 'anilist';
+      const anilistId = match ? Number(match[2]) : null;
       if (anilistId === null) {
         return { status: 404, body: { meta: null } };
       }
-      const adapter = createAppProviderAdapter(app, 'anilist', {});
-      if (!(adapter instanceof AnilistProviderAdapter)) {
+      const adapter = createAppProviderAdapter(app, provider, { jikanBaseUrl: process.env.METALAYER_JIKAN_URL });
+      if (!(adapter instanceof AnilistProviderAdapter) && !(adapter instanceof MalJikanProviderAdapter) && !(adapter instanceof KitsuProviderAdapter)) {
         return { status: 502, body: { meta: null } };
       }
       const anime = await adapter.getAnime(ctx, anilistId);
@@ -418,4 +450,58 @@ export async function resolveStremioMeta(
     }
     return { status: 502, body: { meta: null } };
   }
+}
+
+/** Resolve public metadata through the same field engine as the Inspector. */
+export async function resolveStremioMeta(
+  app: StremioAppContext,
+  config: MetaLayerConfig,
+  type: 'movie' | 'series' | 'anime',
+  publicId: string,
+  correlationId: string,
+  getSecret: SecretResolver,
+  options: { configIdForCorrections?: string } = {},
+): Promise<{ status: 200; body: { meta: Record<string, unknown> } } | { status: 404 | 502; body: { meta: null } }> {
+  const base = await resolveBaseStremioMeta(app, config, type, publicId, correlationId, getSecret, options);
+  if (base.status !== 200) return base;
+  let meta = base.body.meta;
+  const anime = type === 'anime' || /^(anilist|mal|kitsu):/.test(publicId);
+  let ids: { imdb?: string; tmdb?: string | number } = {};
+  if (!anime) {
+    try {
+      const live = await gatherLiveBag(app, config, { id: publicId, mediaType: type, correlationId, getSecret });
+      const fields = resolveMetadata(live.bag, {
+        fieldProviders: config.fieldProviders,
+        resolution: config.resolution,
+        localization: config.localization,
+        mediaType: type,
+        originalLanguage: live.originalLanguage,
+      });
+      ids = fields.externalIds.value ?? {};
+      // Do not silently put TMDB back when a user explicitly excludes it.
+      meta = {
+        ...meta,
+        name: fields.displayTitle ?? String(meta.id),
+        description: fields.displayDescription ?? undefined,
+        poster: fields.poster.value ?? undefined,
+        background: fields.background.value ?? undefined,
+        logo: fields.logo.value ?? undefined,
+        imdbRating: fields.rating.value?.toFixed(1),
+        releaseInfo: fields.releaseDate.value ?? undefined,
+      };
+    } catch {
+      return { status: 502, body: { meta: null } };
+    }
+  }
+  const corrections = options.configIdForCorrections && app.correctionRegistry
+    ? app.correctionRegistry.listResolved(options.configIdForCorrections) : [];
+  const applicable = anime
+    ? corrections.filter(item => `${item.target.provider}:${item.target.id}` === publicId)
+    : filterCorrectionsForIdentity(corrections, ids);
+  const corrected = applyMetadataCorrections({ ...meta, title: meta.name, releaseDate: meta.releaseInfo }, applicable);
+  if (corrected.hidden) return { status: 404, body: { meta: null } };
+  meta = { ...corrected.value, name: corrected.value.title, releaseInfo: corrected.value.releaseDate };
+  delete meta.title;
+  delete meta.releaseDate;
+  return { status: 200, body: { meta: applyPresentation(meta, config.presentation, config.localization).meta } };
 }
