@@ -21,7 +21,7 @@ const METALAYER = {
   manifestId: 'community.metalayer',
   manifestName: 'MetaLayer',
   /** MetaLayer SemVer line — independent from the legacy 3.x package. */
-  version: '1.0.0-beta.1',
+  version: '1.0.0-rc.1',
   tagline: 'Your metadata. Your catalogs. Your way.',
 };
 

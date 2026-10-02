@@ -6,8 +6,8 @@ MetaLayer follows Semantic Versioning. The product version line starts at `1.0.0
 
 | Channel | Version | Notes |
 |---|---|---|
-| Development | `1.0.0-beta.1` | Phase M — feature freeze for new major modules |
-| Next | `1.0.0-rc.N` | Phase N — release candidate |
+| Development | `1.0.0-rc.1` | Phase N — release candidate |
+| Next | `1.0.0` | Phase O after `docs/release-gates.md` |
 | Stable goal | `1.0.0` | Phase O |
 
 See `docs/phase-m-exit.md` for beta deferrals and hardening checklist. Published notes: `CHANGELOG.md`.

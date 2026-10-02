@@ -1,6 +1,6 @@
 # Phase M — Beta stabilization
 
-Status: **in progress** — `1.0.0-beta.1` with **feature freeze** for new major modules (hardening / i18n / docs / approved deferral closure only).
+Status: **exit pending maintainer gates** — `1.0.0-beta.3` closes approved deferrals; proceed to Phase N (`1.0.0-rc.1`) after `docs/release-gates.md` smoke items for beta.3.
 
 ## Entry gate
 
@@ -12,7 +12,7 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 |---|---|
 | Native Stremio catalog + meta | `/c/:configId/catalog/...` and `/c/:configId/meta/{movie,series,anime}/...` |
 | Save & Install UI | Manifest URL + Stremio open/copy |
-| Manifest identity finalized | `community.metalayer` @ `1.0.0-beta.1` (ADR 0001) |
+| Manifest identity finalized | `community.metalayer` @ `1.0.0-beta.2` (ADR 0001) |
 | Language & Region UI | Shipped before entry |
 | Field Resolution Chains F2 | Shipped before entry |
 
@@ -28,9 +28,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 
 | Encryption key rotation tooling | **Done** — key ring + `pnpm metalayer:vault-reencrypt` |
 | Postgres + Redis Server end-to-end | **Done (MVP)** — Postgres ConfigurationStore + RedisCache when REDIS_URL set |
-| Field Resolution Chains inheritance/episode UX depth | **Deferred → redesigned** — dedicated `/configure/resolution` (field rail × plan editor, Stremio meta mapping); Fields page now exists at `/configure/metas/fields`; deeper inheritance remains deferred (`FRONTEND.md`, `docs/field-resolution-chains.md`) |
-| Admin-first instance settings (replace day-two `.env`) | **Partial (Providers/Settings MVP)** — Dashboard provider enable/configured state feeds Sources availability and persists; runtime settings are visible; instance API-key/OAuth credential vault and Providers secret-entry UI exist; editable runtime Settings still to implement |
-| Full i18n/RTL layout hardening | **Done (MVP)** — configure + dashboard load en-XA/ar-XB with `dir`; smoke + physical-CSS guard; checklist `docs/rtl-layout-checklist.md` signed 2026-07-13 |
+| Admin-first instance settings (replace day-two `.env`) | **Done (MVP)** — editable Dashboard Settings + Providers vault; bootstrap keys remain env-only |
+| Field Resolution Chains inheritance/episode UX depth | **Partial (beta.2)** — episode-order chains + anime `videos[]` shipped; profile/catalog/title inheritance UI still deferred || Full i18n/RTL layout hardening | **Done (MVP)** — configure + dashboard load en-XA/ar-XB with `dir`; smoke + physical-CSS guard; checklist `docs/rtl-layout-checklist.md` signed 2026-07-13 |
 | Performance measurement against §34 objectives | **Done (MVP)** — p50/p95/p99 in MetricsRegistry + `pnpm test:perf` harness (strict opt-in) |
 | Security / migration review sign-off | **Done (MVP)** — migration fixtures + security hardening (OAuth redirect allowlist, OAuth `state` CSRF, redaction); formal notes in `docs/security.md` |
 
@@ -45,9 +44,8 @@ Phase M began after Phases A–L product categories existed and remaining gaps w
 | Migration testing (legacy import fixtures) | **Done (MVP)** — planner + API dry-run matrix across §33.5 fixtures; malformed → `LEGACY_IMPORT_FAILED`; persist vaults secrets |
 | Provider reliability / degradation | **Done (MVP)** — process-scoped `ProviderHealthRegistry`; circuit state persists across requests; `GET /sources` + `GET /dashboard/health` expose snapshots |
 | Security review | **Done (MVP)** — see `docs/security.md` (OAuth `state` CSRF + redact paths + allowlist) |
-| Translation review (en-US / pt-BR / es-ES) | **Done (MVP)** — attention codes + dashboard pseudo labels; per-locale catalog rename editor still Open (non-blocking) |
-| Pseudo-locale and RTL layout review | **Done (MVP)** — checklist signed 2026-07-13; `rtl-physical-css` guard + pseudo smoke tests |
-| Field Resolution Chains review | **Planning closed (MVP)** — dedicated page wireframe + Stremio meta field rail; React Fields page shipped; advanced runtime gaps are tracked in `beta-readiness.md` |
+| Translation review (en-US / pt-BR / es-ES) | **Done (MVP)** — attention codes + dashboard pseudo labels; per-locale catalog rename editor targeted for beta.3 |
+| Field Resolution Chains review | **Partial (beta.2)** — episode-order UI + anime delivery; remaining gaps in `docs/field-resolution-chains.md` |
 | Documentation pass | Partial — ADR 0008 + Admin-first + FRC/FRONTEND/AGENTS + UX decisions/mocks; deeper §36 still Open |
 
 ## Exit criterion

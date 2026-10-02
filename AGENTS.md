@@ -3738,11 +3738,11 @@ The version remains in the `1.0.0` prerelease line until stable.
 | J | Correction Hub | **Complete** | `docs/phase-j-exit.md` |
 | K | Search and AI | **Complete** | `docs/phase-k-exit.md` |
 | L | Dashboard and deployment | **Complete** | `docs/phase-l-exit.md` |
-| M | Beta stabilization | **In progress** (`1.0.0-beta.1`) | `docs/phase-m-exit.md` |
-| N | Release candidate | **Not started** | — |
+| M | Beta stabilization | **Complete for code** (`1.0.0-beta.3`) | `docs/phase-m-exit.md` |
+| N | Release candidate | **In progress** (`1.0.0-rc.1`) | `docs/phase-n-exit.md` |
 | O | Stable launch `1.0.0` | **Not started** | — |
 
-**Current prerelease posture:** `1.0.0-beta.1` (Phase M). Remaining gaps are tracked as explicit beta deferrals in `docs/phase-m-exit.md`.
+**Current prerelease posture:** `1.0.0-rc.1` (Phase N). Maintainer gates: `docs/release-gates.md`.
 
 ### Cross-cutting work already landed after Phase L (frontend track)
 
@@ -4034,7 +4034,7 @@ Version:
 1.0.0-beta.N
 ```
 
-**Status (2026-07-12): in progress** — entered at `1.0.0-beta.1`. See `docs/phase-m-exit.md`.
+**Status (2026-10-02): code-complete for approved deferrals** — last beta cut `1.0.0-beta.3`. See `docs/phase-m-exit.md`. Phase N: `docs/phase-n-exit.md`.
 
 Tasks:
 
@@ -4063,7 +4063,7 @@ Version:
 1.0.0-rc.N
 ```
 
-**Status: not started.**
+**Status (2026-10-02): in progress** — entered at `1.0.0-rc.1`. See `docs/phase-n-exit.md` and `docs/release-gates.md`.
 
 Tasks:
 
@@ -4397,7 +4397,7 @@ No.
 
 MetaLayer migration and reconstruction are complete when every item below is checked.
 
-Progress note (2026-07-12): Phase **M** (`1.0.0-beta.1`) is in progress. Phases A–L landed; remaining work is tracked as beta deferrals and Phase M hardening in `docs/phase-m-exit.md`.
+Progress note (2026-10-02): Phase **N** (`1.0.0-rc.1`) is in progress. Phase M code deferrals closed through `1.0.0-beta.3`. Remaining work is maintainer gates in `docs/release-gates.md`.
 
 - [x] MetaLayer is the primary brand for greenfield apps (`apps/frontend`, `apps/dashboard`, `apps/server`).
 - [ ] The stable version is `1.0.0` (still on `1.0.0-beta.*`).

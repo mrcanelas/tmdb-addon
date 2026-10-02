@@ -7,12 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 ## [Unreleased]
 
+### Stable launch prep
+
+- Maintainer gates tracked in [release-gates.md](docs/release-gates.md).
+
+## [1.0.0-rc.1] — 2026-10-02
+
+### Release candidate
+
+- Feature freeze for 1.0 scope; critical fixes only.
+- Includes beta.2–beta.3 delivery: native search, catalog window, account/AI catalogs, anime episode order, localized catalog names, profile overrides, editable Dashboard Settings, rate limit, SSRF helpers, backup/restore CLIs, CI integration script aliases.
+- Manual install / OAuth / backup / security soak gates remain open — see `docs/release-gates.md`.
+
+## [1.0.0-beta.3] — 2026-10-02
+
+### Added
+
+- Catalog Studio localized rename editor (`name.default` + `name.values` per locale).
+- Profile overrides UI and schema: rules, sorting, presentation, trackingProvider (ADR 0009).
+- Editable Dashboard Settings: `instance_settings` persistence, `RuntimeSettings`, `PUT/DELETE /dashboard/settings/:key`, masked secrets, restart-pending badges.
+- Rate limiting plugin, SSRF helpers (`assertSafeRemoteUrl` / `safeFetch`), `pnpm metalayer:backup` / `metalayer:restore`, `test:integration` / `test:e2e` scripts, root package renamed to `metalayer`, maintainer checklist in `docs/release-gates.md`.
+
+## [1.0.0-beta.2] — 2026-10-02
+
 ### Release track (beta.2)
 
 - Native Stremio text search: `metalayer.search` catalogs per media type, TMDB and anime provider search, search-only rules (`config.search`), live `/search/combined`.
 - Materialized catalog window: cursor-based pagination resumes from the shared buffer, sorting plans run over the gathered window (`CATALOG_SORT_SCOPE`), TMDB `hasMore` from `total_pages`, scan/sort budgets via `METALAYER_CATALOG_SCAN_PAGES` / `METALAYER_CATALOG_SORT_PAGES`. Legacy route and Studio preview share the path.
 - Account and AI catalogs are delivered live: Trakt (watchlist, recommendations, personal lists, trending, popular), new MDBList adapter (user lists, legacy `mdblist.{id}` ids), TMDB account watchlist/favorites/lists, SIMKL library statuses, AniList and MAL user lists. AI Ranked List proposals persist `staticItems` and are served in rank order. Missing credentials yield `SOURCE_CREDENTIAL_MISSING` warnings and never poison the catalog window cache.
 - Studio source picker: `GET/POST /api/v1/configurations/:configId/catalog-sources[/import]` and a *Catalogs* action on Sources cards list only instance-enabled, connected providers (§8.1.1).
+- Anime episode order chains: `episodes` / `episodeOrder` resolvable fields, `orderTypes` expansion in the compiler, `getEpisodes` on AniList/MAL/Kitsu, native anime `videos[]`, Fribb live optional fetch, cour/episode Identity Graph edges, order-type UI on Resolution Chains, Meta Inspector attempts.
 
 ### Beta delivery hardening
 
