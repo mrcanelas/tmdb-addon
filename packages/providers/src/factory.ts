@@ -24,6 +24,7 @@ import { KitsuProviderAdapter } from './kitsu/adapter.js';
 import { TraktTrackingAdapter } from './trakt/adapter.js';
 import { SimklTrackingAdapter } from './simkl/adapter.js';
 import { PublicMetaDBAdapter } from './publicmetadb/adapter.js';
+import { MdblistAdapter } from './mdblist/adapter.js';
 import { getProvider } from './registry.js';
 
 export { listAdapterProviderIds } from './adapter-ids.js';
@@ -192,6 +193,13 @@ export function createProviderAdapter(
       return new SimklTrackingAdapter({
         accessToken: options.accessToken ?? options.apiKey,
         clientId: process.env.SIMKL_CLIENT_ID,
+        fetchImpl: options.fetchImpl,
+        policy: options.policy,
+        health,
+      });
+    case 'mdblist':
+      return new MdblistAdapter({
+        apiKey: options.apiKey,
         fetchImpl: options.fetchImpl,
         policy: options.policy,
         health,

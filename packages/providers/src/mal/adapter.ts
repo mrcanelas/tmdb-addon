@@ -89,6 +89,17 @@ export class MalJikanProviderAdapter implements ProviderAdapter {
     return (raw.data ?? []).map((item) => mapJikanCatalogItem(item));
   }
 
+  async searchAnime(
+    ctx: ProviderContext,
+    query: string,
+    page = 1,
+  ): Promise<AnimeCatalogItem[]> {
+    const raw = await this.requestJson<{
+      data?: Array<Record<string, unknown>>;
+    }>(ctx, `/anime?q=${encodeURIComponent(query)}&page=${page}&limit=20&sfw=true`);
+    return (raw.data ?? []).map((item) => mapJikanCatalogItem(item));
+  }
+
   async getAnime(ctx: ProviderContext, id: number): Promise<AnimeMetadataSummary> {
     const raw = await this.requestJson<{ data?: Record<string, unknown> }>(
       ctx,

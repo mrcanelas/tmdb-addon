@@ -102,5 +102,19 @@
   "sources.publicmetadb.errors.listsFailed": "‏Could not load your lists.‎",
   "sources.publicmetadb.errors.picksFailed": "‏Could not load your picks.‎",
   "sources.publicmetadb.errors.nothingSelected": "‏Select at least one catalog to import.‎",
-  "sources.publicmetadb.errors.importFailed": "‏Catalog import failed.‎"
+  "sources.publicmetadb.errors.importFailed": "‏Catalog import failed.‎",
+  "sources.actions.catalogs": "‏Catalogs‎",
+  "sources.accountCatalogs.title": "‏‎{{name}}‏ catalogs‎",
+  "sources.accountCatalogs.loading": "‏Loading available catalogs…‎",
+  "sources.accountCatalogs.listTitle": "‏Available catalogs‎",
+  "sources.accountCatalogs.listHint": "‏Pick the account lists to add to Catalog Studio. Items are delivered live from your account.‎",
+  "sources.accountCatalogs.publicOnlyHint": "‏Connect ‎{{name}}‏ to unlock personal lists. Public catalogs are available now.‎",
+  "sources.accountCatalogs.import": "‏Add ‎{{count}}‏ catalog(s)‎",
+  "sources.accountCatalogs.importing": "‏Adding…‎",
+  "sources.accountCatalogs.importSuccess": "‏Added ‎{{imported}}‏ catalog(s). Skipped ‎{{skipped}}‏ duplicate(s).‎",
+  "sources.accountCatalogs.reason.PROVIDER_DISABLED": "‏‎{{name}}‏ is disabled on this instance.‎",
+  "sources.accountCatalogs.reason.SOURCE_CREDENTIAL_MISSING": "‏Connect ‎{{name}}‏ in Tracking (or add your API key) to list its catalogs.‎",
+  "sources.accountCatalogs.reason.PROVIDER_UNAVAILABLE": "‏‎{{name}}‏ is not configured on this instance or did not respond.‎",
+  "sources.accountCatalogs.errors.loadFailed": "‏Could not load account catalogs.‎",
+  "sources.accountCatalogs.errors.importFailed": "‏Could not add the selected catalogs.‎"
 }

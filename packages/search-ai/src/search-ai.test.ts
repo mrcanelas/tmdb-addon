@@ -120,5 +120,10 @@ describe('@metalayer/search-ai', () => {
     expect(applied.catalogs).toHaveLength(1);
     expect(applied.catalogs[0]!.providerCatalogId).toBe('ai.ranked-list');
     expect(applied.catalogs[0]!.tags).toContain('ai');
+    // Resolved items are materialized so Stremio can serve the catalog (W2).
+    expect(applied.catalogs[0]!.staticItems).toEqual([
+      { type: 'movie', id: 'tt0133093', name: 'The Matrix', year: 1999 },
+    ]);
+    expect(rankedProposal.summary.params).toEqual({ count: 1 });
   });
 });

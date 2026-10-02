@@ -84,6 +84,23 @@ export class KitsuProviderAdapter implements ProviderAdapter {
     );
   }
 
+  async searchAnime(
+    ctx: ProviderContext,
+    query: string,
+    page = 1,
+  ): Promise<AnimeCatalogItem[]> {
+    const offset = (page - 1) * 20;
+    const raw = await this.requestJson<{
+      data?: Array<{ id?: string; attributes?: Record<string, unknown> }>;
+    }>(
+      ctx,
+      `/anime?filter[text]=${encodeURIComponent(query)}&page[limit]=20&page[offset]=${offset}`,
+    );
+    return (raw.data ?? []).map((item) =>
+      mapKitsuCatalogItem(Number(item.id), item.attributes ?? {}),
+    );
+  }
+
   async getAnime(ctx: ProviderContext, id: number): Promise<AnimeMetadataSummary> {
     const raw = await this.requestJson<{
       data?: { id?: string; attributes?: Record<string, unknown> };

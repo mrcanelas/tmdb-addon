@@ -9,11 +9,12 @@ import {
   combineSearchHits,
   createRankedListCatalogProposal,
   fixtureRankedCandidates,
-  fixtureSearchHits,
   resolveRankedList,
   runSmartDiscovery,
   type AiProposal,
+  type SearchHit,
 } from '@metalayer/search-ai';
+import { searchStremio, type SearchMediaType } from '../stremio/search.js';
 
 function readEditCredential(request: FastifyRequest): string | undefined {
   const header = request.headers['x-metalayer-edit-credential'];
@@ -72,7 +73,7 @@ function getProposal(configId: string, proposalId: string): AiProposal | null {
 export const searchAiRoutes: FastifyPluginAsync = async (app) => {
   app.post<{
     Params: { configId: string };
-    Body: { query?: string; providers?: string[] };
+    Body: { query?: string; mediaTypes?: SearchMediaType[] };
   }>('/configurations/:configId/search/combined', async (request, reply) => {
     const access = await requireEdit(app, request, request.params.configId);
     if (!access.ok) return reply.status(access.status).send(access.body);
@@ -88,16 +89,45 @@ export const searchAiRoutes: FastifyPluginAsync = async (app) => {
       );
     }
 
-    const providers = request.body?.providers?.length
-      ? request.body.providers
-      : ['tmdb', 'tvdb'];
-    const providerHits = providers.map((provider) => ({
-      provider,
-      hits: fixtureSearchHits(query).map((hit) => ({ ...hit, provider })),
-    }));
+    const view = (await app.configStore.getPublic(request.params.configId))!;
+    const requested = request.body?.mediaTypes?.length
+      ? request.body.mediaTypes
+      : (['movie', 'series'] as SearchMediaType[]);
+    const mediaTypes = requested.filter(
+      (type): type is SearchMediaType => type === 'movie' || type === 'series' || type === 'anime',
+    );
 
+    // Same live search path as the public Stremio search catalogs.
+    const grouped = new Map<string, SearchHit[]>();
+    const warnings: Array<{ code: string; params?: Record<string, unknown> }> = [];
+    for (const mediaType of mediaTypes) {
+      const result = await searchStremio(app, view.config, {
+        query,
+        mediaType,
+        correlationId: request.correlationId,
+        getSecret: (provider) => app.configStore.getSecretPlaintext(request.params.configId, provider),
+      });
+      warnings.push(...result.warnings);
+      for (const hit of result.hits) {
+        const list = grouped.get(hit.provider) ?? [];
+        list.push(hit);
+        grouped.set(hit.provider, list);
+      }
+    }
+
+    const combined = combineSearchHits(
+      query,
+      [...grouped.entries()].map(([provider, hits]) => ({ provider, hits })),
+    );
     return {
-      ...combineSearchHits(query, providerHits),
+      ...combined,
+      warnings: [
+        ...combined.warnings,
+        ...warnings.map((warning) => ({
+          code: warning.code,
+          params: warning.params as Record<string, string | number | undefined> | undefined,
+        })),
+      ],
       correlationId: request.correlationId,
     };
   });

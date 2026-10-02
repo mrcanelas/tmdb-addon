@@ -20,7 +20,7 @@ import type { CatalogDefinition } from '@metalayer/config';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import type { CacheStore } from '@metalayer/cache';
 import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
-import { loadCatalogPage } from '../stremio/catalog-meta.js';
+import { CATALOG_PAGE_SIZE, loadCatalogWindow } from '../stremio/catalog-window.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -351,23 +351,28 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
 
     const started = Date.now();
     try {
-      const resolved = await loadCatalogPage(
+      // Studio preview serves exactly what Stremio receives for the same offset.
+      const page = Math.max(1, request.body?.page ?? 1);
+      const resolved = await loadCatalogWindow(
         app,
         { ...view.config, localization: { ...view.config.localization,
           metadataLocale: request.query.locale || view.config.localization.metadataLocale,
           availabilityRegion: request.query.region || view.config.localization.availabilityRegion } },
         catalog,
-        request.body?.page ?? 1,
+        (page - 1) * CATALOG_PAGE_SIZE,
         request.correlationId,
-        async (provider) => {
+        async (provider, kind) => {
           if (provider === 'tmdb' && request.body?.apiKey) {
             return request.body.apiKey;
           }
           return app.configStore.getSecretPlaintext(
             request.params.configId,
             provider,
+            kind ?? 'api_key',
           );
         },
+        // Ad-hoc keys / locale overrides must not seed the public window.
+        { bypassCache: Boolean(request.body?.apiKey || request.query.locale || request.query.region) },
       );
 
       return {
@@ -375,8 +380,8 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
         instanceId: request.params.instanceId,
         metas: resolved.metas,
         warnings: resolved.warnings,
-        mode: resolved.mode,
-        activeSourceId: resolved.activeSourceId,
+        mode: catalog.merge ? 'merge' : catalog.rotation ? 'rotation' : 'leaf',
+        window: resolved.window,
         timingMs: Date.now() - started,
         correlationId: request.correlationId,
       };

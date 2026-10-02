@@ -124,10 +124,25 @@ export const SortingPlanSchema = z.object({
   randomSeedWindow: z.enum(['request', 'hour', 'day', 'week']).optional(),
 });
 
+/**
+ * Pre-resolved catalog entry (AI Ranked List, imported static lists).
+ * Stores public Stremio ids only — never provider credentials.
+ */
+export const StaticCatalogItemSchema = z.object({
+  type: z.enum(['movie', 'series', 'anime']),
+  /** Public Stremio id (`tt…`, `tmdb:…`, `anilist:…`). */
+  id: z.string().min(1),
+  name: z.string().min(1),
+  year: z.number().int().optional(),
+  poster: z.string().url().optional(),
+});
+
 export const CatalogDefinitionSchema = z.object({
   instanceId: z.string().min(1),
   provider: z.string().min(1),
   providerCatalogId: z.string().min(1),
+  /** Materialized items served in order (AI ranked lists, static imports). */
+  staticItems: z.array(StaticCatalogItemSchema).max(500).optional(),
   mediaType: z.enum(['movie', 'series', 'anime']),
   originalName: z.string().min(1),
   customName: z.string().optional(),
@@ -148,6 +163,18 @@ export const CatalogDefinitionSchema = z.object({
   rules: RuleSetSchema.optional(),
   sorting: SortingPlanSchema.optional(),
 });
+
+/**
+ * Native Stremio text search (AGENTS.md §16.1 / §13.8).
+ * Search rules are isolated from catalog discovery rules.
+ */
+export const SearchPreferencesSchema = z.object({
+  enabled: z.boolean().default(true),
+  /** Optional rules applied only in the `search` context. */
+  rules: RuleSetSchema.optional(),
+});
+
+export const DEFAULT_SEARCH_PREFERENCES = { enabled: true } as const;
 
 /** ADR 0006 — public Stremio ids default to IMDb when available. */
 export const IdentityPreferencesSchema = z.object({
@@ -208,6 +235,7 @@ export const MetaLayerConfigSchema = z.object({
   profiles: z.array(ProfileDefinitionSchema).default([]),
   globalRules: RuleSetSchema.default({}),
   globalSorting: SortingPlanSchema.optional(),
+  search: SearchPreferencesSchema.default(DEFAULT_SEARCH_PREFERENCES),
   fieldProviders: FieldProvidersSchema,
   /** Optional Field Resolution Chains config (AGENTS.md §10). When absent, derived from fieldProviders. */
   resolution: z
@@ -239,6 +267,7 @@ export const MetaLayerConfigSchema = z.object({
 
 export type LocalizationPreferences = z.infer<typeof LocalizationPreferencesSchema>;
 export type IdentityPreferences = z.infer<typeof IdentityPreferencesSchema>;
+export type SearchPreferences = z.infer<typeof SearchPreferencesSchema>;
 export type MergeDefinition = z.infer<typeof MergeDefinitionSchema>;
 export type RotationDefinition = z.infer<typeof RotationDefinitionSchema>;
 export type RuleContext = z.infer<typeof RuleContextSchema>;
@@ -249,6 +278,7 @@ export type SortingPlan = z.infer<typeof SortingPlanSchema>;
 export type ResolvableField = z.infer<typeof ResolvableFieldSchema>;
 export type FieldProviders = z.infer<typeof FieldProvidersSchema>;
 export type ProfileDefinition = z.infer<typeof ProfileDefinitionSchema>;
+export type StaticCatalogItem = z.infer<typeof StaticCatalogItemSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
 // PresentationConfig re-exported from ./presentation.js above.

@@ -90,7 +90,9 @@ describe('beta public delivery regressions', () => {
     const catalogs = duplicateCatalog([source], source.instanceId);
     catalogs[1]!.rules = { yearFrom: 2020 };
     const id = await create(app, { catalogs });
-    const entries = (await app.inject(`/c/${id}/manifest.json`)).json().catalogs;
+    // Native text search adds one `metalayer.search` catalog per media type; ignore it here.
+    const entries = (await app.inject(`/c/${id}/manifest.json`)).json().catalogs
+      .filter((entry: { id: string }) => entry.id !== 'metalayer.search');
     expect(new Set(entries.map((entry: { id: string }) => entry.id)).size).toBe(2);
     const rows = await Promise.all(entries.map(async (entry: { id: string }) => (await app.inject(`/c/${id}/catalog/movie/${entry.id}.json`)).json().metas));
     expect(rows[0]).toHaveLength(2); expect(rows[1]).toHaveLength(1);

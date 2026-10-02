@@ -38,6 +38,8 @@ export interface CatalogMetaPreview {
     digitallyReleased?: boolean;
     availableInRegions?: string[];
     isSpecial?: boolean;
+    /** 1-based position in the source list (account/list catalogs). */
+    listPosition?: number;
   };
 }
 

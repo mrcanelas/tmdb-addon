@@ -42,13 +42,49 @@ All routes require a valid edit credential (`X-MetaLayer-Edit-Credential`). Base
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/c/:configId/catalog/:type/:id.json` | Catalog page for installed addon |
-| GET | `/c/:configId/catalog/:type/:id/:extra.json` | Same with `skip=` pagination |
+| GET | `/c/:configId/catalog/:type/:id/:extra.json` | Same with `skip=` pagination (`extra` also carries `search=` / `genre=`) |
+| GET | `/c/:configId/catalog/:type/metalayer.search/search=...json` | Native text search (see `docs/search-ai.md`) |
 | GET | `/c/:configId/p/:profileId/catalog/...` | Profile-scoped catalog |
 
 Unknown or disabled catalogs return an empty `metas` array.
+
+## Account, list and AI catalogs
+
+Account-backed catalogs are delivered live from the connected account (AGENTS.md §8.2, §20).
+The user credential comes from the per-configuration Secret Vault (`oauth_access` for OAuth
+providers, `api_key` for MDBList, `tmdb_session` for TMDB account lists) and travels only in
+request headers / provider-defined parameters — never in Stremio URLs, cache keys or logs.
+
+| Provider | `providerCatalogId` | Credential | Notes |
+|---|---|---|---|
+| Trakt | `watchlist`, `recommendations`, `list.{slug}` | OAuth token | List order preserved (`facts.listPosition`) |
+| Trakt | `trending`, `popular` | instance client id only | Public catalogs, no user token |
+| MDBList | `{listId}` (legacy), `list.{listId}`, `list.{user}/{slug}` | user API key | Movies and shows buckets |
+| TMDB account | `account.watchlist`, `account.favorites`, `account.list.{id}` | `tmdb_session` + TMDB key | Never cached (personal) |
+| SIMKL | `watchlist` (plan to watch), `watching`, `completed`, `hold`, `dropped` | OAuth token | Movies, series and anime |
+| AniList | `user.{current\|planning\|completed\|paused\|dropped\|repeating}` | OAuth token | Anime only |
+| MyAnimeList | `user.{watching\|completed\|on_hold\|dropped\|plan_to_watch}` | OAuth token | Anime only |
+| MetaLayer | `ai.ranked-list` | none | Served from `staticItems` stored at proposal confirmation |
+
+When the credential is missing or rejected the catalog returns `{"metas": []}` plus a
+`SOURCE_CREDENTIAL_MISSING` / `SOURCE_CREDENTIAL_INVALID` warning. Degraded responses are not
+written to the shared catalog window cache, so connecting an account takes effect immediately.
+
+### Studio source picker (§8.1.1)
+
+`GET /api/v1/configurations/:configId/catalog-sources` lists, per account provider, whether it is
+enabled on the instance, whether the configuration has a credential, and which catalogs can be
+added (including personal lists fetched live). `POST .../catalog-sources/import` appends the
+selected catalogs. Sources → *Catalogs* on a provider card opens this picker; disabled or
+unconfigured providers never appear as importable.
+
+### Static items
+
+`CatalogDefinition.staticItems` (max 500) stores pre-resolved public ids (`tt…`, `tmdb:…`,
+`anilist:…`) with name, year and optional poster. Any catalog with `staticItems` is served from
+them in stored order with 20-item pages; rules and sorting still apply.
 
 ## Still follow-up
 
 - Richer localized catalog display-name editing end-to-end in UI
 - Broader provider preview coverage beyond current adapters
-- AI-generated / ranked-list save flows (see Search & AI docs)

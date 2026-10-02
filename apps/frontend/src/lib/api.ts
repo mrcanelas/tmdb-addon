@@ -222,6 +222,59 @@ export async function importPublicMetaDBCatalogs(
   );
 }
 
+/** Account/list catalogs a connected provider can expose (W2, AGENTS.md §8.1.1). */
+export interface AccountCatalogDescriptor {
+  provider: string;
+  providerCatalogId: string;
+  mediaTypes: Array<'movie' | 'series' | 'anime'>;
+  name: string;
+  requiresCredential: boolean;
+}
+
+export interface AccountCatalogSourceView {
+  provider: string;
+  available: boolean;
+  connected: boolean;
+  reason?: 'PROVIDER_DISABLED' | 'SOURCE_CREDENTIAL_MISSING' | 'PROVIDER_UNAVAILABLE';
+  catalogs: AccountCatalogDescriptor[];
+}
+
+export interface AccountCatalogImportSelection {
+  provider: string;
+  providerCatalogId: string;
+  mediaType: 'movie' | 'series' | 'anime';
+  name: string;
+}
+
+export async function fetchAccountCatalogSources(
+  configId: string,
+  editCredential: string,
+): Promise<{ sources: AccountCatalogSourceView[] }> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/catalog-sources`,
+    withEditCredential(configId, editCredential),
+  );
+}
+
+export async function importAccountCatalogs(
+  configId: string,
+  editCredential: string,
+  selections: AccountCatalogImportSelection[],
+): Promise<{
+  imported: number;
+  skipped: number;
+  catalogs: CatalogListItem[];
+  manifestOrder: ManifestCatalogEntry[];
+}> {
+  return apiFetch(
+    `/api/v1/configurations/${configId}/catalog-sources/import`,
+    withEditCredential(configId, editCredential, {
+      method: 'POST',
+      body: JSON.stringify({ selections }),
+    }),
+  );
+}
+
 const SESSION_KEY = 'metalayer.catalogStudio.session';
 
 export interface CatalogListItem {

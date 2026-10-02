@@ -110,5 +110,7 @@
   "catalogs.warning.RULE_DATA_UNAVAILABLE": "‏The source does not provide data for the ‎{{rule}}‏ filter; it was not applied.‎",
   "catalogs.warning.SORT_DATA_UNAVAILABLE": "‏The source does not provide the ‎{{field}}‏ sorting field.‎",
   "catalogs.warning.CATALOG_PROVIDER_UNAVAILABLE": "‏Catalog delivery is not available for ‎{{provider}}‏ yet.‎",
-  "catalogs.warning.CATALOG_SCAN_LIMIT": "‏The catalog scan stopped after ‎{{maxPages}}‏ source pages. Narrow the filters or try a different source.‎"
+  "catalogs.warning.CATALOG_SCAN_LIMIT": "‏The catalog scan stopped after ‎{{maxPages}}‏ source pages. Narrow the filters or try a different source.‎",
+  "catalogs.warning.CATALOG_SORT_SCOPE": "‏Sorting was applied to ‎{{sortedItems}}‏ cards gathered from ‎{{sourcePages}}‏ source pages, not to the provider's whole catalog.‎",
+  "catalogs.warning.SEARCH_PROVIDER_FAILED": "‏‎{{provider}}‏ search failed (‎{{reason}}‏).‎"
 }

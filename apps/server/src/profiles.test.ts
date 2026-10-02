@@ -81,15 +81,18 @@ describe('@metalayer/server profiles', () => {
       url: `/c/${configId}/manifest.json`,
     });
     expect(base.statusCode).toBe(200);
-    expect(base.json().catalogs).toHaveLength(2);
+    const nonSearch = (catalogs: Array<{ id: string }>) =>
+      catalogs.filter((catalog) => catalog.id !== 'metalayer.search');
+    expect(nonSearch(base.json().catalogs)).toHaveLength(2);
 
     const profileManifest = await app.inject({
       method: 'GET',
       url: `/c/${configId}/p/kids/manifest.json`,
     });
     expect(profileManifest.statusCode).toBe(200);
-    expect(profileManifest.json().catalogs).toHaveLength(1);
-    expect(profileManifest.json().catalogs[0].type).toBe('movie');
+    const profileCatalogs = nonSearch(profileManifest.json().catalogs);
+    expect(profileCatalogs).toHaveLength(1);
+    expect(profileCatalogs[0].type).toBe('movie');
     expect(profileManifest.json().description).toContain('Kids');
 
     const missing = await app.inject({

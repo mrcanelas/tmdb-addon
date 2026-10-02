@@ -7,7 +7,26 @@ const TEST_KEY = Buffer.alloc(32, 43).toString('base64');
 
 describe('@metalayer/server search-ai', () => {
   const store = createMemoryConfigurationStore(TEST_KEY);
-  const appPromise = buildApp({ logger: false, store });
+  const appPromise = buildApp({
+    logger: false,
+    store,
+    providerFetch: async (input) => {
+      const url = String(input);
+      if (url.includes('/search/movie')) {
+        return new Response(
+          JSON.stringify({
+            total_pages: 1,
+            results: [{ id: 550, title: 'Fight Club', release_date: '1999-10-15', vote_average: 8.4 }],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(JSON.stringify({ results: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  });
 
   afterAll(async () => {
     await (await appPromise).close();
@@ -66,6 +85,7 @@ describe('@metalayer/server search-ai', () => {
       url: '/api/v1/configurations',
       payload: {
         editCredential: 'ranked-edit',
+        secrets: { tmdb: 'test-tmdb-key' },
         config: createDefaultMetaLayerConfig({ name: 'Ranked' }),
       },
     });
@@ -109,6 +129,9 @@ describe('@metalayer/server search-ai', () => {
       payload: { query: 'Fight' },
     });
     expect(combined.statusCode).toBe(200);
-    expect(combined.json().hits.length).toBeGreaterThan(0);
+    expect(combined.json().hits).toEqual([
+      expect.objectContaining({ title: 'Fight Club', provider: 'tmdb', mediaType: 'movie' }),
+    ]);
+    expect(combined.json().providers).toEqual(['tmdb']);
   });
 });

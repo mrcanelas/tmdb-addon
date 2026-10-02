@@ -102,5 +102,19 @@
   "sources.publicmetadb.errors.listsFailed": "Não foi possível carregar suas listas.",
   "sources.publicmetadb.errors.picksFailed": "Não foi possível carregar seus picks.",
   "sources.publicmetadb.errors.nothingSelected": "Selecione pelo menos um catálogo para importar.",
-  "sources.publicmetadb.errors.importFailed": "Falha ao importar catálogos."
+  "sources.publicmetadb.errors.importFailed": "Falha ao importar catálogos.",
+  "sources.actions.catalogs": "Catálogos",
+  "sources.accountCatalogs.title": "Catálogos de {{name}}",
+  "sources.accountCatalogs.loading": "Carregando catálogos disponíveis…",
+  "sources.accountCatalogs.listTitle": "Catálogos disponíveis",
+  "sources.accountCatalogs.listHint": "Escolha as listas da conta para adicionar ao Catalog Studio. Os itens são entregues ao vivo a partir da sua conta.",
+  "sources.accountCatalogs.publicOnlyHint": "Conecte {{name}} para liberar listas pessoais. Catálogos públicos já estão disponíveis.",
+  "sources.accountCatalogs.import": "Adicionar {{count}} catálogo(s)",
+  "sources.accountCatalogs.importing": "Adicionando…",
+  "sources.accountCatalogs.importSuccess": "{{imported}} catálogo(s) adicionado(s). {{skipped}} duplicado(s) ignorado(s).",
+  "sources.accountCatalogs.reason.PROVIDER_DISABLED": "{{name}} está desativado nesta instância.",
+  "sources.accountCatalogs.reason.SOURCE_CREDENTIAL_MISSING": "Conecte {{name}} em Tracking (ou informe sua chave de API) para listar os catálogos.",
+  "sources.accountCatalogs.reason.PROVIDER_UNAVAILABLE": "{{name}} não está configurado nesta instância ou não respondeu.",
+  "sources.accountCatalogs.errors.loadFailed": "Não foi possível carregar os catálogos da conta.",
+  "sources.accountCatalogs.errors.importFailed": "Não foi possível adicionar os catálogos selecionados."
 }

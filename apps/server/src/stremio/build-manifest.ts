@@ -1,5 +1,10 @@
 import { toManifestCatalogEntries } from '@metalayer/catalogs';
 import type { MetaLayerConfig } from '@metalayer/config';
+import {
+  SEARCH_CATALOG_ID,
+  searchCatalogName,
+  searchMediaTypesFor,
+} from './search.js';
 
 export interface ManifestIdentity {
   manifestId: string;
@@ -14,9 +19,17 @@ export function buildStremioManifest(
   options: { pageSize?: number } = {},
 ) {
   const pageSize = options.pageSize ?? 20;
-  const catalogs = toManifestCatalogEntries(
+  const locale = config.localization.metadataLocale;
+  const catalogs: Array<{
+    id: string;
+    type: string;
+    name: string;
+    pageSize?: number;
+    extra: Array<{ name: string; isRequired: boolean }>;
+    extraSupported: string[];
+  }> = toManifestCatalogEntries(
     config.catalogs,
-    config.localization.metadataLocale,
+    locale,
     config.presentation,
   ).map(({ id, type, name }) => ({
     id,
@@ -24,7 +37,23 @@ export function buildStremioManifest(
     name,
     ...(pageSize !== undefined ? { pageSize } : {}),
     extra: [{ name: 'skip', isRequired: false }],
+    extraSupported: ['skip'],
   }));
+
+  // Search catalogs require `search`, so Stremio never renders them on Home.
+  for (const mediaType of searchMediaTypesFor(config)) {
+    catalogs.push({
+      id: SEARCH_CATALOG_ID,
+      type: mediaType,
+      name: searchCatalogName(mediaType, locale),
+      ...(pageSize !== undefined ? { pageSize } : {}),
+      extra: [
+        { name: 'search', isRequired: true },
+        { name: 'skip', isRequired: false },
+      ],
+      extraSupported: ['search', 'skip'],
+    });
+  }
 
   const types = [...new Set(catalogs.flatMap((catalog) => catalog.type === 'anime' ? ['anime', 'movie', 'series'] : [catalog.type]))];
 

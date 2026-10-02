@@ -8,9 +8,12 @@ import { SourceProviderIcon } from '@/components/sources/SourceProviderIcon';
 export function SourceCatalogCard({
   source,
   onConfigure,
+  onCatalogs,
 }: {
   source: PublicSource;
   onConfigure: (source: PublicSource) => void;
+  /** When provided, shows a secondary "Catalogs" action (account/list catalogs). */
+  onCatalogs?: (source: PublicSource) => void;
 }) {
   const { t } = useTranslation('sources');
   const comingSoon = source.connectionState === 'coming_soon';
@@ -54,7 +57,7 @@ export function SourceCatalogCard({
         </div>
       </Card.Content>
 
-      <Card.Footer className="justify-center">
+      <Card.Footer className="flex-col gap-2 justify-center">
         <Button
           type="button"
           variant={connected ? 'primary' : 'secondary'}
@@ -68,6 +71,16 @@ export function SourceCatalogCard({
               ? t('sources.state.connected')
               : t('sources.actions.configure')}
         </Button>
+        {onCatalogs && !comingSoon && source.instance?.enabled !== false ? (
+          <Button
+            type="button"
+            variant="tertiary"
+            fullWidth
+            onPress={() => onCatalogs(source)}
+          >
+            {t('sources.actions.catalogs')}
+          </Button>
+        ) : null}
       </Card.Footer>
     </Card>
   );

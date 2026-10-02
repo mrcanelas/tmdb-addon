@@ -27,14 +27,34 @@ import {
 import type { CacheStore } from '@metalayer/cache';
 import { createAppProviderAdapter } from '../create-app-provider-adapter.js';
 import { tmdbCatalogItemToMetaPreview } from './tmdb-catalog-meta.js';
+import {
+  isAccountCatalogProvider,
+  loadAccountCatalogPage,
+  loadStaticCatalogPage,
+} from './account-catalogs.js';
 
-export type SecretResolver = (provider: string) => Promise<string | null | undefined>;
+/**
+ * Resolves a per-configuration secret. `kind` defaults to `api_key`;
+ * `oauth_access` is used for connected tracking accounts.
+ */
+export type SecretResolver = (
+  provider: string,
+  kind?: 'api_key' | 'oauth_access',
+) => Promise<string | null | undefined>;
+
+/** Minimal runtime-settings reader (Dashboard-managed values, W5). */
+export interface RuntimeSettingsReader {
+  getNumber?(key: string): number | undefined;
+  getBoolean?(key: string): boolean | undefined;
+  getString?(key: string): string | undefined;
+}
 
 export type StremioAppContext = {
   providerFetch?: TmdbFetch;
   providerHealth: ProviderHealthRegistry;
   providerCache: CacheStore;
   correctionRegistry?: CorrectionRegistry;
+  runtimeSettings?: RuntimeSettingsReader;
 };
 
 /** Legacy TMDB Addon catalog id aliases → MetaLayer providerCatalogId. */
@@ -54,10 +74,42 @@ export function tmdbImageUrl(
   return `https://image.tmdb.org/t/p/${size}${path}`;
 }
 
+export interface CatalogExtra {
+  skip: number;
+  search?: string;
+  genre?: string;
+}
+
+/** Stremio `extra` path segment: `skip=20&search=foo&genre=Drama` (URL-encoded). */
+export function parseCatalogExtra(extra?: string): CatalogExtra {
+  const out: CatalogExtra = { skip: 0 };
+  if (!extra) return out;
+  for (const pair of extra.split('&')) {
+    const eq = pair.indexOf('=');
+    if (eq === -1) continue;
+    const key = pair.slice(0, eq);
+    let value: string;
+    try {
+      value = decodeURIComponent(pair.slice(eq + 1).replace(/\+/g, ' '));
+    } catch {
+      value = pair.slice(eq + 1);
+    }
+    if (key === 'skip') {
+      const skip = Number(value);
+      if (Number.isFinite(skip) && skip >= 0) out.skip = Math.floor(skip);
+    } else if (key === 'search') {
+      const trimmed = value.trim();
+      if (trimmed) out.search = trimmed.slice(0, 200);
+    } else if (key === 'genre') {
+      const trimmed = value.trim();
+      if (trimmed) out.genre = trimmed.slice(0, 100);
+    }
+  }
+  return out;
+}
+
 export function parseSkip(extra?: string): number {
-  if (!extra) return 0;
-  const match = /(?:^|&)skip=(\d+)/.exec(extra);
-  return match ? Number(match[1]) : 0;
+  return parseCatalogExtra(extra).skip;
 }
 
 export function stremioType(
@@ -107,6 +159,11 @@ export function findCatalogByManifestId(
   return undefined;
 }
 
+export interface LoadCatalogPageOptions {
+  /** When false, rules still filter but no sorting plan runs (the window sorts the whole buffer). */
+  sort?: boolean;
+}
+
 export async function loadCatalogPage(
   app: StremioAppContext,
   config: MetaLayerConfig,
@@ -114,7 +171,9 @@ export async function loadCatalogPage(
   page: number,
   correlationId: string,
   getSecret: SecretResolver,
+  options: LoadCatalogPageOptions = {},
 ): Promise<{ metas: CatalogMetaPreview[]; hasMore: boolean; warnings: CatalogWarning[]; mode?: string; activeSourceId?: string }> {
+  const policyOptions = { sort: options.sort };
   const locale = config.localization.metadataLocale || 'en-US';
   const region =
     config.localization.availabilityRegion ||
@@ -137,6 +196,27 @@ export async function loadCatalogPage(
         apiKey,
       };
 
+      // Materialized catalogs (AI Ranked List, static imports) — AGENTS.md §16.3.
+      if (source.staticItems && source.staticItems.length > 0) {
+        const page_ = loadStaticCatalogPage(source, page);
+        hasMore ||= page_.hasMore;
+        const filtered = applyCatalogPolicy(page_.metas, config, source, policyOptions);
+        policyWarnings.push(...filtered.warnings);
+        return filtered.metas;
+      }
+
+      if (
+        source.provider === 'tmdb' &&
+        /^(account\.|watchlist$|favorites$|list\.)/.test(source.providerCatalogId)
+      ) {
+        const account = await loadAccountCatalogPage(app, config, source, page, ctx, getSecret);
+        policyWarnings.push(...account.warnings);
+        hasMore ||= account.hasMore;
+        const filtered = applyCatalogPolicy(account.metas, config, source, policyOptions);
+        policyWarnings.push(...filtered.warnings);
+        return filtered.metas;
+      }
+
       if (source.provider === 'tmdb') {
         const adapter = createAppProviderAdapter(app, 'tmdb', {
           apiKey,
@@ -149,19 +229,28 @@ export async function loadCatalogPage(
         const providerCatalogId =
           LEGACY_CATALOG_ALIASES[source.providerCatalogId] ??
           source.providerCatalogId;
-        const items = await adapter.getCatalogPage(ctx, {
+        const detailed = await adapter.getCatalogPageDetailed(ctx, {
           providerCatalogId,
           mediaType: source.mediaType,
           page,
         });
-        hasMore ||= items.length >= 20;
-        const mapped = items.map((item) =>
+        hasMore ||= detailed.page < detailed.totalPages;
+        const mapped = detailed.items.map((item) =>
           tmdbCatalogItemToMetaPreview(
             item,
             tmdbImageUrl(item.posterPath, 'w342'),
           ),
         );
-        const filtered = applyCatalogPolicy(mapped, config, source);
+        const filtered = applyCatalogPolicy(mapped, config, source, policyOptions);
+        policyWarnings.push(...filtered.warnings);
+        return filtered.metas;
+      }
+
+      if (isAccountCatalogProvider(source.provider, source.providerCatalogId)) {
+        const account = await loadAccountCatalogPage(app, config, source, page, ctx, getSecret);
+        policyWarnings.push(...account.warnings);
+        hasMore ||= account.hasMore;
+        const filtered = applyCatalogPolicy(account.metas, config, source, policyOptions);
         policyWarnings.push(...filtered.warnings);
         return filtered.metas;
       }
@@ -229,7 +318,7 @@ export async function loadCatalogPage(
     },
   );
 
-  const filtered = applyCatalogPolicy(resolved.metas, config, catalog);
+  const filtered = applyCatalogPolicy(resolved.metas, config, catalog, policyOptions);
   return { metas: filtered.metas, hasMore, mode: resolved.mode, activeSourceId: resolved.activeSourceId, warnings: [...resolved.warnings, ...policyWarnings, ...filtered.warnings] };
 }
 
@@ -238,29 +327,6 @@ export async function loadCatalogMetas(
   page: number, correlationId: string, getSecret: SecretResolver,
 ) {
   return loadCatalogPage(app, config, catalog, page, correlationId, getSecret);
-}
-
-/** Offset counts delivered items, not the upstream page size (filters and merges change it). */
-export async function loadCatalogWindow(
-  app: StremioAppContext, config: MetaLayerConfig, catalog: CatalogDefinition,
-  skip: number, correlationId: string, getSecret: SecretResolver,
-): Promise<{ metas: CatalogMetaPreview[]; warnings: CatalogWarning[] }> {
-  const output: CatalogMetaPreview[] = [];
-  const seen = new Set<string>();
-  const warnings: CatalogWarning[] = [];
-  // Bounded scan protects a public instance against huge offsets and restrictive rules.
-  const maxPages = 25;
-  for (let page = 1; page <= maxPages; page++) {
-    const result = await loadCatalogPage(app, config, catalog, page, correlationId, getSecret);
-    warnings.push(...result.warnings);
-    for (const meta of result.metas) {
-      const key = `${meta.type}:${meta.id}`;
-      if (!seen.has(key)) { seen.add(key); output.push(meta); }
-    }
-    if (output.length >= skip + 20 || !result.hasMore) break;
-    if (page === maxPages) warnings.push({ code: 'CATALOG_SCAN_LIMIT', params: { maxPages } });
-  }
-  return { metas: output.slice(skip, skip + 20), warnings: [...new Map(warnings.map(w => [JSON.stringify(w), w])).values()] };
 }
 
 async function resolveBaseStremioMeta(

@@ -13,6 +13,34 @@ import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
 import type { ProviderFetch } from '../artwork/types.js';
+import {
+  LIST_PAGE_SIZE,
+  type AccountCatalogDescriptor,
+  type ListCatalogItem,
+  type ListCatalogPage,
+} from '../lists/types.js';
+
+/** `mal.user.{status}` catalogs → MAL list statuses. */
+export const MAL_USER_LIST_STATUSES: Record<string, string> = {
+  watching: 'watching',
+  completed: 'completed',
+  on_hold: 'on_hold',
+  dropped: 'dropped',
+  plan_to_watch: 'plan_to_watch',
+};
+
+export const MAL_ACCOUNT_CATALOGS: AccountCatalogDescriptor[] = Object.keys(
+  MAL_USER_LIST_STATUSES,
+).map((status) => ({
+  provider: 'mal',
+  providerCatalogId: `user.${status}`,
+  mediaTypes: ['anime'],
+  name: `MyAnimeList ${status
+    .split('_')
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')}`,
+  requiresCredential: true,
+}));
 
 export interface MalWatchStateFixture {
   mal?: number;
@@ -280,5 +308,84 @@ export class MalTrackingAdapter implements ProviderAdapter {
     }
 
     return entries;
+  }
+
+  /** `user.{status}` catalog page via the official MAL list API. */
+  async getCatalogPage(
+    ctx: ProviderContext,
+    input: { providerCatalogId: string; mediaType: 'movie' | 'series' | 'anime'; page?: number },
+  ): Promise<ListCatalogPage> {
+    const status = MAL_USER_LIST_STATUSES[input.providerCatalogId.replace(/^user\./, '')];
+    if (!status) {
+      throw new ProviderError({
+        code: 'unsupported',
+        providerId: this.id,
+        message: `MAL catalog ${input.providerCatalogId} is not supported`,
+        retryable: false,
+      });
+    }
+    if (!this.accessToken) {
+      throw new ProviderError({
+        code: 'auth',
+        providerId: this.id,
+        message: 'MAL access token is required for user list catalogs',
+        retryable: false,
+      });
+    }
+    const page = input.page ?? 1;
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      Authorization: `Bearer ${this.accessToken}`,
+      'X-Correlation-Id': ctx.correlationId,
+    };
+    if (this.clientId) headers['X-MAL-CLIENT-ID'] = this.clientId;
+    const params = new URLSearchParams({
+      status,
+      limit: String(LIST_PAGE_SIZE),
+      offset: String((page - 1) * LIST_PAGE_SIZE),
+      sort: 'list_updated_at',
+      fields: 'list_status,main_picture,start_date,mean',
+    });
+    const response = await this.fetchImpl(
+      `https://api.myanimelist.net/v2/users/@me/animelist?${params.toString()}`,
+      { method: 'GET', signal: ctx.signal, headers },
+    );
+    if (!response.ok) {
+      throw new ProviderError({
+        code: response.status === 401 ? 'auth' : 'upstream',
+        providerId: this.id,
+        message: `MAL user list failed (${response.status})`,
+        retryable: response.status >= 500,
+      });
+    }
+    const body = (await response.json()) as {
+      data?: Array<{
+        node?: {
+          id?: number;
+          title?: string;
+          main_picture?: { large?: string; medium?: string };
+          start_date?: string;
+          mean?: number;
+        };
+      }>;
+      paging?: { next?: string };
+    };
+    const items: ListCatalogItem[] = [];
+    (body.data ?? []).forEach((entry, index) => {
+      const node = entry.node;
+      if (node?.id === undefined) return;
+      const year = node.start_date ? Number(node.start_date.slice(0, 4)) : undefined;
+      items.push({
+        publicId: `mal:${node.id}`,
+        mediaType: 'anime',
+        name: node.title ?? `MAL ${node.id}`,
+        year: Number.isFinite(year) ? year : undefined,
+        rating: node.mean,
+        posterUrl: node.main_picture?.large ?? node.main_picture?.medium,
+        position: (page - 1) * LIST_PAGE_SIZE + index + 1,
+        externalIds: { mal: node.id },
+      });
+    });
+    return { items, hasMore: Boolean(body.paging?.next) };
   }
 }

@@ -40,6 +40,8 @@ export {
 export {
   createSmartDiscoveryProposal,
   createRankedListCatalogProposal,
+  rankedListToStaticItems,
+  rankedItemPublicId,
   applyConfirmedProposal,
 } from './proposals.js';
 

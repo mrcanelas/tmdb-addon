@@ -12,6 +12,12 @@ import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
 import type { ProviderFetch } from '../artwork/types.js';
+import {
+  sliceListPage,
+  type AccountCatalogDescriptor,
+  type ListCatalogItem,
+  type ListCatalogPage,
+} from '../lists/types.js';
 
 export interface AnilistWatchStateFixture {
   anilist?: number;
@@ -123,6 +129,47 @@ const VIEWER_ID_QUERY = `
 query MetaLayerViewerId {
   Viewer {
     id
+  }
+}
+`;
+
+/** `anilist.user.{status}` catalogs. */
+export const ANILIST_USER_LIST_STATUSES: Record<string, string> = {
+  current: 'CURRENT',
+  planning: 'PLANNING',
+  completed: 'COMPLETED',
+  paused: 'PAUSED',
+  dropped: 'DROPPED',
+  repeating: 'REPEATING',
+};
+
+export const ANILIST_ACCOUNT_CATALOGS: AccountCatalogDescriptor[] = Object.keys(
+  ANILIST_USER_LIST_STATUSES,
+).map((status) => ({
+  provider: 'anilist',
+  providerCatalogId: `user.${status}`,
+  mediaTypes: ['anime'],
+  name: `AniList ${status[0].toUpperCase() + status.slice(1)}`,
+  requiresCredential: true,
+}));
+
+const USER_LIST_QUERY = `
+query MetaLayerUserList($userId: Int!, $status: MediaListStatus!) {
+  MediaListCollection(userId: $userId, type: ANIME, status: $status, sort: UPDATED_TIME_DESC) {
+    lists {
+      entries {
+        score
+        media {
+          id
+          idMal
+          format
+          seasonYear
+          averageScore
+          title { romaji english native }
+          coverImage { large }
+        }
+      }
+    }
   }
 }
 `;
@@ -313,5 +360,122 @@ export class AnilistTrackingAdapter implements ProviderAdapter {
     }
 
     return entries;
+  }
+
+  /** `user.{status}` catalog page from the viewer's MediaListCollection. */
+  async getCatalogPage(
+    ctx: ProviderContext,
+    input: { providerCatalogId: string; mediaType: 'movie' | 'series' | 'anime'; page?: number },
+  ): Promise<ListCatalogPage> {
+    const statusKey = input.providerCatalogId.replace(/^user\./, '');
+    const status = ANILIST_USER_LIST_STATUSES[statusKey];
+    if (!status) {
+      throw new ProviderError({
+        code: 'unsupported',
+        providerId: this.id,
+        message: `AniList catalog ${input.providerCatalogId} is not supported`,
+        retryable: false,
+      });
+    }
+    if (!this.accessToken) {
+      throw new ProviderError({
+        code: 'auth',
+        providerId: this.id,
+        message: 'AniList access token is required for user list catalogs',
+        retryable: false,
+      });
+    }
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.accessToken}`,
+      'X-Correlation-Id': ctx.correlationId,
+    };
+    const viewer = await this.graphql<{ Viewer?: { id?: number } | null }>(
+      ctx,
+      headers,
+      VIEWER_ID_QUERY,
+    );
+    const userId = viewer.Viewer?.id;
+    if (userId === undefined) {
+      throw new ProviderError({
+        code: 'upstream',
+        providerId: this.id,
+        message: 'AniList Viewer id missing',
+        retryable: false,
+      });
+    }
+    const data = await this.graphql<{
+      MediaListCollection?: {
+        lists?: Array<{
+          entries?: Array<{
+            score?: number;
+            media?: {
+              id?: number;
+              idMal?: number | null;
+              format?: string;
+              seasonYear?: number | null;
+              averageScore?: number | null;
+              title?: { romaji?: string; english?: string; native?: string };
+              coverImage?: { large?: string };
+            };
+          } | null>;
+        } | null>;
+      } | null;
+    }>(ctx, headers, USER_LIST_QUERY, { userId, status });
+
+    const items: ListCatalogItem[] = [];
+    for (const list of data.MediaListCollection?.lists ?? []) {
+      for (const entry of list?.entries ?? []) {
+        const media = entry?.media;
+        if (media?.id === undefined) continue;
+        items.push({
+          publicId: `anilist:${media.id}`,
+          mediaType: 'anime',
+          name: media.title?.english || media.title?.romaji || media.title?.native || `AniList ${media.id}`,
+          year: media.seasonYear ?? undefined,
+          rating: typeof media.averageScore === 'number' ? media.averageScore / 10 : undefined,
+          posterUrl: media.coverImage?.large,
+          position: items.length + 1,
+          externalIds: {
+            anilist: media.id,
+            ...(media.idMal != null ? { mal: media.idMal } : {}),
+          },
+        });
+      }
+    }
+    return sliceListPage(items, input.page ?? 1);
+  }
+
+  private async graphql<T>(
+    ctx: ProviderContext,
+    headers: Record<string, string>,
+    query: string,
+    variables?: Record<string, unknown>,
+  ): Promise<T> {
+    const response = await this.fetchImpl(this.graphqlUrl, {
+      method: 'POST',
+      signal: ctx.signal,
+      headers,
+      body: JSON.stringify(variables ? { query, variables } : { query }),
+    });
+    if (!response.ok) {
+      throw new ProviderError({
+        code: response.status === 401 ? 'auth' : 'upstream',
+        providerId: this.id,
+        message: `AniList request failed (${response.status})`,
+        retryable: response.status >= 500,
+      });
+    }
+    const body = (await response.json()) as { errors?: Array<{ message?: string }>; data?: T };
+    if (body.errors?.length || !body.data) {
+      throw new ProviderError({
+        code: 'upstream',
+        providerId: this.id,
+        message: body.errors?.[0]?.message ?? 'AniList GraphQL error',
+        retryable: false,
+      });
+    }
+    return body.data;
   }
 }

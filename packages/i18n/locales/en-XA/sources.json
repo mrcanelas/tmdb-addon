@@ -102,5 +102,19 @@
   "sources.publicmetadb.errors.listsFailed": "Çøûld ñøt løåd yøûr lîsts.Çøûld ñø",
   "sources.publicmetadb.errors.picksFailed": "Çøûld ñøt løåd yøûr pîçks.Çøûld ñø",
   "sources.publicmetadb.errors.nothingSelected": "Séléçt åt léåst øñé çåtåløg tø împørt.Séléçt åt lé",
-  "sources.publicmetadb.errors.importFailed": "Çåtåløg împørt fåîléd.Çåtåløg"
+  "sources.publicmetadb.errors.importFailed": "Çåtåløg împørt fåîléd.Çåtåløg",
+  "sources.actions.catalogs": "ÇåtåløgsÇåt",
+  "sources.accountCatalogs.title": "{{name}} çåtåløgs çå",
+  "sources.accountCatalogs.loading": "Løådîñg åvåîlåblé çåtåløgs…Løådîñg å",
+  "sources.accountCatalogs.listTitle": "Åvåîlåblé çåtåløgsÅvåîlå",
+  "sources.accountCatalogs.listHint": "Pîçk thé åççøûñt lîsts tø ådd tø Çåtåløg Stûdîø. Îtéms åré délîvéréd lîvé frøm yøûr åççøûñt.Pîçk thé åççøûñt lîsts tø åd",
+  "sources.accountCatalogs.publicOnlyHint": "Çøññéçt Çøñ{{name}} tø ûñløçk pérsøñål lîsts. Pûblîç çåtåløgs åré åvåîlåblé ñøw. tø ûñløçk pérsøñål",
+  "sources.accountCatalogs.import": "Ådd Åd{{count}} çåtåløg(s) çåt",
+  "sources.accountCatalogs.importing": "Åddîñg…Ådd",
+  "sources.accountCatalogs.importSuccess": "Åddéd Åd{{imported}} çåtåløg(s). Skîppéd  çåtålø{{skipped}} dûplîçåté(s). dûpl",
+  "sources.accountCatalogs.reason.PROVIDER_DISABLED": "{{name}} îs dîsåbléd øñ thîs îñståñçé. îs dîsåb",
+  "sources.accountCatalogs.reason.SOURCE_CREDENTIAL_MISSING": "Çøññéçt Çøñ{{name}} îñ Tråçkîñg (ør ådd yøûr ÅPÎ kéy) tø lîst îts çåtåløgs. îñ Tråçkîñg (ør ",
+  "sources.accountCatalogs.reason.PROVIDER_UNAVAILABLE": "{{name}} îs ñøt çøñfîgûréd øñ thîs îñståñçé ør dîd ñøt réspøñd. îs ñøt çøñfîgûré",
+  "sources.accountCatalogs.errors.loadFailed": "Çøûld ñøt løåd åççøûñt çåtåløgs.Çøûld ñøt ",
+  "sources.accountCatalogs.errors.importFailed": "Çøûld ñøt ådd thé séléçtéd çåtåløgs.Çøûld ñøt å"
 }

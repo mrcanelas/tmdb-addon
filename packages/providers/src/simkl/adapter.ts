@@ -12,6 +12,32 @@ import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
 import type { ProviderFetch } from '../artwork/types.js';
+import {
+  publicIdFromExternalIds,
+  sliceListPage,
+  type AccountCatalogDescriptor,
+  type ListCatalogItem,
+  type ListCatalogPage,
+} from '../lists/types.js';
+
+/** SIMKL library statuses exposed as catalogs (`simkl.watchlist` = plan to watch). */
+export const SIMKL_STATUS_CATALOGS: Record<string, string> = {
+  watchlist: 'plantowatch',
+  watching: 'watching',
+  completed: 'completed',
+  hold: 'hold',
+  dropped: 'dropped',
+};
+
+export const SIMKL_ACCOUNT_CATALOGS: AccountCatalogDescriptor[] = Object.keys(
+  SIMKL_STATUS_CATALOGS,
+).map((id) => ({
+  provider: 'simkl',
+  providerCatalogId: id,
+  mediaTypes: ['movie', 'series', 'anime'],
+  name: `SIMKL ${id === 'watchlist' ? 'Watchlist' : id[0].toUpperCase() + id.slice(1)}`,
+  requiresCredential: true,
+}));
 
 export interface SimklWatchStateFixture {
   imdb?: string;
@@ -124,13 +150,20 @@ function coerceTmdb(value: unknown): number | undefined {
   return undefined;
 }
 
-type SimklIds = { imdb?: string; tmdb?: string | number; simkl?: number };
+type SimklIds = { imdb?: string; tmdb?: string | number; simkl?: number; mal?: string | number };
+type SimklMedia = { ids?: SimklIds; title?: string; year?: number; poster?: string };
 type SimklSyncItem = {
   status?: string;
-  movie?: { ids?: SimklIds };
-  show?: { ids?: SimklIds };
-  anime?: { ids?: SimklIds };
+  user_rating?: number;
+  movie?: SimklMedia;
+  show?: SimklMedia;
+  anime?: SimklMedia;
 };
+
+function simklPosterUrl(poster: string | undefined): string | undefined {
+  if (!poster) return undefined;
+  return poster.startsWith('http') ? poster : `https://simkl.in/posters/${poster}_m.jpg`;
+}
 
 function mapSimklStatus(
   status: string | undefined,
@@ -323,5 +356,92 @@ export class SimklTrackingAdapter implements ProviderAdapter {
     }
 
     return entries;
+  }
+
+  /**
+   * Library catalog for one status (`watchlist` → plantowatch, `watching`, …).
+   * SIMKL returns the whole library segment; MetaLayer paginates client-side.
+   */
+  async getCatalogPage(
+    ctx: ProviderContext,
+    input: {
+      providerCatalogId: string;
+      mediaType: 'movie' | 'series' | 'anime';
+      page?: number;
+    },
+  ): Promise<ListCatalogPage> {
+    const status = SIMKL_STATUS_CATALOGS[input.providerCatalogId];
+    if (!status) {
+      throw new ProviderError({
+        code: 'unsupported',
+        providerId: this.id,
+        message: `SIMKL catalog ${input.providerCatalogId} is not supported`,
+        retryable: false,
+      });
+    }
+    if (!this.accessToken || !this.clientId) {
+      throw new ProviderError({
+        code: 'auth',
+        providerId: this.id,
+        message: 'SIMKL access token and client id are required for library catalogs',
+        retryable: false,
+      });
+    }
+    const segment =
+      input.mediaType === 'movie' ? 'movies' : input.mediaType === 'anime' ? 'anime' : 'shows';
+    const url =
+      `https://api.simkl.com/sync/all-items/${segment}/${status}` +
+      `?extended=full&${simklQuery(this.clientId)}`;
+    const response = await this.fetchImpl(url, {
+      method: 'GET',
+      signal: ctx.signal,
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': `${SIMKL_APP_NAME}/${SIMKL_APP_VERSION}`,
+        Authorization: `Bearer ${this.accessToken}`,
+        'X-Correlation-Id': ctx.correlationId,
+      },
+    });
+    if (!response.ok) {
+      throw new ProviderError({
+        code: response.status === 401 ? 'auth' : 'upstream',
+        providerId: this.id,
+        message: `SIMKL library catalog failed (${response.status})`,
+        retryable: response.status >= 500,
+      });
+    }
+    const body = ((await response.json()) ?? {}) as Record<string, SimklSyncItem[] | null>;
+    const raw = body[segment] ?? [];
+    const items: ListCatalogItem[] = [];
+    raw.forEach((entry, index) => {
+      const media = entry.movie ?? entry.anime ?? entry.show;
+      if (!media?.ids) return;
+      const tmdb = coerceTmdb(media.ids.tmdb);
+      const publicId = publicIdFromExternalIds(
+        { imdb: media.ids.imdb, tmdb },
+        input.mediaType === 'anime' && media.ids.mal !== undefined
+          ? `mal:${media.ids.mal}`
+          : media.ids.simkl !== undefined
+            ? `simkl:${media.ids.simkl}`
+            : undefined,
+      );
+      if (!publicId) return;
+      items.push({
+        publicId,
+        mediaType: input.mediaType,
+        name: media.title ?? publicId,
+        year: media.year,
+        rating: entry.user_rating,
+        posterUrl: simklPosterUrl(media.poster),
+        position: index + 1,
+        externalIds: {
+          ...(media.ids.imdb ? { imdb: media.ids.imdb } : {}),
+          ...(tmdb !== undefined ? { tmdb } : {}),
+          ...(media.ids.simkl !== undefined ? { simkl: media.ids.simkl } : {}),
+          ...(media.ids.mal !== undefined ? { mal: media.ids.mal } : {}),
+        },
+      });
+    });
+    return sliceListPage(items, input.page ?? 1);
   }
 }

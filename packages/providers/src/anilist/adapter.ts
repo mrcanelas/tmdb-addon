@@ -98,6 +98,31 @@ export class AnilistProviderAdapter implements ProviderAdapter {
     return (data.Page?.media ?? []).map((raw) => mapAnilistCatalogItem(raw));
   }
 
+  async searchAnime(
+    ctx: ProviderContext,
+    query: string,
+    page = 1,
+  ): Promise<AnimeCatalogItem[]> {
+    const data = await this.graphql<{
+      Page?: { media?: Array<Record<string, unknown>> };
+    }>(
+      ctx,
+      `query ($page: Int, $search: String) {
+        Page(page: $page, perPage: 20) {
+          media(type: ANIME, search: $search, sort: [SEARCH_MATCH]) {
+            id
+            idMal
+            title { romaji english native }
+            coverImage { large }
+            format
+          }
+        }
+      }`,
+      { page, search: query },
+    );
+    return (data.Page?.media ?? []).map((raw) => mapAnilistCatalogItem(raw));
+  }
+
   async getAnime(ctx: ProviderContext, id: number): Promise<AnimeMetadataSummary> {
     const data = await this.graphql<{ Media?: Record<string, unknown> }>(
       ctx,

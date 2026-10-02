@@ -12,12 +12,18 @@ import type { CacheStore } from '@metalayer/cache';
 import { ProviderError } from '@metalayer/providers';
 import {
   findCatalogByManifestId,
-  loadCatalogWindow,
-  parseSkip,
+  parseCatalogExtra,
   resolveStremioMeta,
   stremioType,
   type SecretResolver,
 } from '../stremio/catalog-meta.js';
+import { loadCatalogWindow } from '../stremio/catalog-window.js';
+import {
+  SEARCH_PAGE_SIZE,
+  isSearchCatalogId,
+  searchMediaTypesFor,
+  searchStremio,
+} from '../stremio/search.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -38,8 +44,8 @@ function vaultSecretResolver(
   app: { configStore: ConfigurationStore },
   configId: string,
 ): SecretResolver {
-  return async (provider) =>
-    app.configStore.getSecretPlaintext(configId, provider);
+  return async (provider, kind) =>
+    app.configStore.getSecretPlaintext(configId, provider, kind ?? 'api_key');
 }
 
 function resolveEffectiveConfig(
@@ -107,6 +113,40 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
     );
     if ('error' in effective) return effective.error;
 
+    const extra = parseCatalogExtra(request.params.extra);
+
+    if (isSearchCatalogId(request.params.id)) {
+      const mediaType = request.params.type;
+      if (
+        !extra.search ||
+        (mediaType !== 'movie' && mediaType !== 'series' && mediaType !== 'anime') ||
+        !searchMediaTypesFor(effective).includes(mediaType)
+      ) {
+        return { metas: [] };
+      }
+      try {
+        const result = await searchStremio(app, effective, {
+          query: extra.search,
+          mediaType,
+          skip: extra.skip,
+          correlationId: request.correlationId,
+          getSecret: vaultSecretResolver(app, view.configId),
+        });
+        return {
+          ...(result.warnings.length ? { warnings: result.warnings } : {}),
+          metas: result.metas.slice(0, SEARCH_PAGE_SIZE).map((meta) => ({
+            id: meta.id,
+            type: stremioType(meta.type),
+            name: meta.name,
+            poster: meta.poster ?? undefined,
+            releaseInfo: meta.releaseInfo,
+          })),
+        };
+      } catch {
+        return { metas: [] };
+      }
+    }
+
     const catalog = findCatalogByManifestId(
       effective.catalogs,
       request.params.type,
@@ -116,7 +156,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
       return { metas: [] };
     }
 
-    const skip = parseSkip(request.params.extra);
+    const skip = extra.skip;
 
     try {
       const result = await loadCatalogWindow(
@@ -126,6 +166,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
         skip,
         request.correlationId,
         vaultSecretResolver(app, view.configId),
+        { profileId: request.params.profileId },
       );
       return {
         ...(result.warnings.length ? { warnings: result.warnings } : {}),

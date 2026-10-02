@@ -11,12 +11,18 @@ import type { CacheStore } from '@metalayer/cache';
 import { buildStremioManifest } from '../stremio/build-manifest.js';
 import {
   findCatalogByManifestId,
-  loadCatalogMetas,
-  parseSkip,
+  parseCatalogExtra,
   resolveStremioMeta,
   stremioType,
   type SecretResolver,
 } from '../stremio/catalog-meta.js';
+import { loadCatalogWindow } from '../stremio/catalog-window.js';
+import {
+  SEARCH_PAGE_SIZE,
+  isSearchCatalogId,
+  searchMediaTypesFor,
+  searchStremio,
+} from '../stremio/search.js';
 
 const require = createRequire(import.meta.url);
 const { LEGACY } = require('@metalayer/identity') as {
@@ -115,20 +121,53 @@ export const legacyStremioRoutes: FastifyPluginAsync = async (app) => {
     correlationId: string,
   ) {
     const { config, secrets } = resolveLegacyPlan(catalogChoices);
+    const parsedExtra = parseCatalogExtra(extra);
+
+    if (isSearchCatalogId(id)) {
+      if (
+        !parsedExtra.search ||
+        (type !== 'movie' && type !== 'series' && type !== 'anime') ||
+        !searchMediaTypesFor(config).includes(type)
+      ) {
+        return { metas: [] };
+      }
+      try {
+        const result = await searchStremio(app, config, {
+          query: parsedExtra.search,
+          mediaType: type,
+          skip: parsedExtra.skip,
+          correlationId,
+          getSecret: memorySecretResolver(secrets),
+        });
+        return {
+          metas: result.metas.slice(0, SEARCH_PAGE_SIZE).map((meta) => ({
+            id: meta.id,
+            type: stremioType(meta.type),
+            name: meta.name,
+            poster: meta.poster ?? undefined,
+            releaseInfo: meta.releaseInfo,
+          })),
+        };
+      } catch {
+        return { metas: [] };
+      }
+    }
+
     const catalog = findCatalogByManifestId(config.catalogs, type, id);
     if (!catalog) {
       return { metas: [] };
     }
 
-    const skip = parseSkip(extra);
-    const page = Math.floor(skip / LEGACY_PAGE_SIZE) + 1;
+    const skip = parsedExtra.skip;
 
     try {
-      const { metas } = await loadCatalogMetas(
+      // Same materialized window as the native route; legacy blobs carry
+      // request-scoped secrets, so the shared buffer is keyed by config only.
+      const { metas } = await loadCatalogWindow(
         app,
         config,
         catalog,
-        page,
+        skip,
         correlationId,
         memorySecretResolver(secrets),
       );

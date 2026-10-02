@@ -110,5 +110,7 @@
   "catalogs.warning.RULE_DATA_UNAVAILABLE": "Thé søûrçé døés ñøt prøvîdé dåtå før thé Thé søûrçé dø{{rule}} fîltér; ît wås ñøt åpplîéd. fîltér; ",
   "catalogs.warning.SORT_DATA_UNAVAILABLE": "Thé søûrçé døés ñøt prøvîdé thé Thé søûrçé{{field}} sørtîñg fîéld. sørt",
   "catalogs.warning.CATALOG_PROVIDER_UNAVAILABLE": "Çåtåløg délîvéry îs ñøt åvåîlåblé før Çåtåløg délî{{provider}} yét. y",
-  "catalogs.warning.CATALOG_SCAN_LIMIT": "Thé çåtåløg sçåñ støppéd åftér Thé çåtålø{{maxPages}} søûrçé pågés. Ñårrøw thé fîltérs ør try å dîfféréñt søûrçé. søûrçé pågés. Ñår"
+  "catalogs.warning.CATALOG_SCAN_LIMIT": "Thé çåtåløg sçåñ støppéd åftér Thé çåtålø{{maxPages}} søûrçé pågés. Ñårrøw thé fîltérs ør try å dîfféréñt søûrçé. søûrçé pågés. Ñår",
+  "catalogs.warning.CATALOG_SORT_SCOPE": "Sørtîñg wås åpplîéd tø Sørtîñg{{sortedItems}} çårds gåthéréd frøm  çårds {{sourcePages}} søûrçé pågés, ñøt tø thé prøvîdér's whølé çåtåløg. søûrçé pågés, ñ",
+  "catalogs.warning.SEARCH_PROVIDER_FAILED": "{{provider}} séårçh fåîléd ( séår{{reason}}).)"
 }

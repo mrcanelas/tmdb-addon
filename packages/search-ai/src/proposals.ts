@@ -1,10 +1,11 @@
 import { createCatalogInstance } from '@metalayer/catalogs';
-import type { CatalogDefinition, RuleSet } from '@metalayer/config';
+import type { CatalogDefinition, RuleSet, StaticCatalogItem } from '@metalayer/config';
 import type {
   AiProposal,
   AiProposalKind,
   DiscoveryPlan,
   RankedListResult,
+  ResolvedRankedItem,
 } from './types.js';
 import { buildExplanation } from './explain.js';
 import { discoveryPlanToRuleSet } from './discovery.js';
@@ -40,21 +41,49 @@ export function createSmartDiscoveryProposal(
   };
 }
 
+/** Public Stremio id for a resolved ranked item (IMDb preferred, then TMDB). */
+export function rankedItemPublicId(item: ResolvedRankedItem): string | undefined {
+  const imdb = item.externalIds.imdb;
+  if (typeof imdb === 'string' && /^tt\d+$/.test(imdb)) return imdb;
+  const tmdb = item.externalIds.tmdb;
+  if (tmdb !== undefined && tmdb !== '') return `tmdb:${tmdb}`;
+  const anilist = item.externalIds.anilist;
+  if (anilist !== undefined && anilist !== '') return `anilist:${anilist}`;
+  return undefined;
+}
+
+/** Materialize resolved, non-duplicate ranked items in rank order (AGENTS.md §16.3). */
+export function rankedListToStaticItems(result: RankedListResult): StaticCatalogItem[] {
+  return [...result.items]
+    .filter((item) => item.resolved && item.duplicateOfRank === undefined)
+    .sort((a, b) => a.rank - b.rank)
+    .flatMap((item) => {
+      const id = rankedItemPublicId(item);
+      if (!id) return [];
+      return [
+        {
+          type: item.mediaType,
+          id,
+          name: item.title,
+          ...(item.year !== undefined ? { year: item.year } : {}),
+        },
+      ];
+    });
+}
+
 export function createRankedListCatalogProposal(
   result: RankedListResult,
   name?: string,
   now = new Date(),
 ): AiProposal {
-  const resolvedCount = result.items.filter(
-    (item) => item.resolved && item.duplicateOfRank === undefined,
-  ).length;
+  const staticItems = rankedListToStaticItems(result);
 
   return {
     id: proposalId(),
     kind: 'ranked-list-catalog',
     summary: {
       code: 'RANKED_LIST_SUMMARY',
-      params: { count: resolvedCount },
+      params: { count: staticItems.length },
     },
     explanation: result.explanation,
     catalogDraft: {
@@ -64,6 +93,7 @@ export function createRankedListCatalogProposal(
       originalName: name ?? `AI: ${result.prompt.slice(0, 48)}`,
       customName: name,
       tags: ['ai', 'ranked-list'],
+      staticItems,
     },
     createdAt: now.toISOString(),
   };

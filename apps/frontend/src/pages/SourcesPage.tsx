@@ -7,6 +7,10 @@ import { ConnectedSourcesPanel } from '@/components/sources/ConnectedSourcesPane
 import { SourceCatalogCard } from '@/components/sources/SourceCatalogCard';
 import { SourceConfigureModal } from '@/components/sources/SourceConfigureModal';
 import { PublicMetaDBConfigureModal } from '@/components/sources/PublicMetaDBConfigureModal';
+import {
+  ACCOUNT_CATALOG_PROVIDER_IDS,
+  AccountCatalogsModal,
+} from '@/components/sources/AccountCatalogsModal';
 import { EmptyState } from '@/components/metalayer/EmptyState';
 import { ErrorState } from '@/components/metalayer/ErrorState';
 import { LoadingState } from '@/components/metalayer/LoadingState';
@@ -32,6 +36,7 @@ export function SourcesPage() {
   const [configureSource, setConfigureSource] = useState<PublicSource | null>(
     null,
   );
+  const [catalogsSource, setCatalogsSource] = useState<PublicSource | null>(null);
 
   const filtered = useMemo(
     () => filterSources(sources, { query, category }),
@@ -158,6 +163,12 @@ export function SourcesPage() {
                         key={source.id}
                         source={source}
                         onConfigure={openConfigure}
+                        onCatalogs={
+                          ACCOUNT_CATALOG_PROVIDER_IDS.has(source.id) &&
+                          source.categories.includes('catalog')
+                            ? setCatalogsSource
+                            : undefined
+                        }
                       />
                     ))}
                   </div>
@@ -180,6 +191,16 @@ export function SourcesPage() {
           </div>
         </aside>
       </div>
+
+      {catalogsSource ? (
+        <AccountCatalogsModal
+          source={catalogsSource}
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) setCatalogsSource(null);
+          }}
+        />
+      ) : null}
 
       {configureSource?.id === 'publicmetadb' ? (
         <PublicMetaDBConfigureModal

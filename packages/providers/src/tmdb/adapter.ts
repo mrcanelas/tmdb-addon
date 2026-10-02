@@ -347,6 +347,63 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     );
   }
 
+  async searchSeries(
+    ctx: ProviderContext,
+    query: string,
+    page = 1,
+  ): Promise<TmdbSeriesSummary[]> {
+    return this.withCache(
+      ctx,
+      'search-tv',
+      `${query.toLowerCase()}#${page}`,
+      async () => {
+        const raw = await this.requestJson<{
+          results?: Array<Record<string, unknown>>;
+        }>(ctx, '/search/tv', {
+          query,
+          page: String(page),
+        });
+        return (raw.results ?? []).map((item) =>
+          mapSeries(item, this.stremioPublicId),
+        );
+      },
+    );
+  }
+
+  /**
+   * Text search returning lightweight catalog cards (genres, rating, votes)
+   * so search-scoped rules can run without per-card metadata calls.
+   */
+  async searchCatalogItems(
+    ctx: ProviderContext,
+    input: { query: string; mediaType: 'movie' | 'series'; page?: number },
+  ): Promise<{ items: TmdbCatalogItem[]; totalPages: number }> {
+    const page = input.page ?? 1;
+    const tmdbType = input.mediaType === 'movie' ? 'movie' : 'tv';
+    return this.withCache(
+      ctx,
+      'search-catalog',
+      `${tmdbType}:${input.query.toLowerCase()}#${page}`,
+      async () => {
+        const raw = await this.requestJson<{
+          results?: Array<Record<string, unknown>>;
+          total_pages?: number;
+        }>(ctx, `/search/${tmdbType}`, {
+          query: input.query,
+          page: String(page),
+          include_adult: 'false',
+        });
+        return {
+          items: (raw.results ?? []).map((item) =>
+            mapCatalogItem(item, input.mediaType, this.stremioPublicId),
+          ),
+          totalPages:
+            typeof raw.total_pages === 'number' ? raw.total_pages : page,
+        };
+      },
+    );
+  }
+
   /**
    * Lightweight catalog page for Studio preview (trending/popular/top_rated/…).
    */
@@ -358,23 +415,142 @@ export class TmdbProviderAdapter implements ProviderAdapter {
       page?: number;
     },
   ): Promise<TmdbCatalogItem[]> {
+    return (await this.getCatalogPageDetailed(ctx, input)).items;
+  }
+
+  /** Catalog page with upstream pagination facts so callers do not guess `hasMore`. */
+  async getCatalogPageDetailed(
+    ctx: ProviderContext,
+    input: {
+      providerCatalogId: string;
+      mediaType: 'movie' | 'series' | 'anime';
+      page?: number;
+    },
+  ): Promise<{ items: TmdbCatalogItem[]; totalPages: number; page: number }> {
     const page = input.page ?? 1;
     const tmdbType = input.mediaType === 'movie' ? 'movie' : 'tv';
     const path = resolveCatalogPath(input.providerCatalogId, tmdbType);
 
     return this.withCache(
       ctx,
-      'catalog-page',
+      'catalog-page-v2',
       `${tmdbType}:${input.providerCatalogId}#${page}`,
       async () => {
         const raw = await this.requestJson<{
           results?: Array<Record<string, unknown>>;
+          total_pages?: number;
         }>(ctx, path, { page: String(page) });
-        return (raw.results ?? []).map((item) =>
+        const items = (raw.results ?? []).map((item) =>
           mapCatalogItem(item, input.mediaType, this.stremioPublicId),
         );
+        // TMDB caps list pagination at 500 pages.
+        const totalPages =
+          typeof raw.total_pages === 'number' && raw.total_pages > 0
+            ? Math.min(raw.total_pages, 500)
+            : items.length >= 20
+              ? page + 1
+              : page;
+        return { items, totalPages, page };
       },
     );
+  }
+
+  /**
+   * TMDB account catalogs (AGENTS.md §8.2 "TMDB account lists").
+   * `providerCatalogId`: `account.watchlist`, `account.favorites`,
+   * `account.list.{listId}` (legacy aliases `watchlist`, `favorites`, `list.{id}`).
+   * Account responses are never cached: they are personal and session-scoped.
+   */
+  async getAccountCatalogPage(
+    ctx: ProviderContext,
+    input: {
+      providerCatalogId: string;
+      mediaType: 'movie' | 'series' | 'anime';
+      page?: number;
+      sessionId: string;
+    },
+  ): Promise<{ items: TmdbCatalogItem[]; totalPages: number; page: number }> {
+    if (input.mediaType === 'anime') return { items: [], totalPages: 0, page: 1 };
+    const page = input.page ?? 1;
+    const tmdbType = input.mediaType === 'movie' ? 'movie' : 'tv';
+    const catalogId = input.providerCatalogId.replace(/^account\./, '');
+    const sessionQuery = { session_id: input.sessionId, page: String(page) };
+
+    if (catalogId === 'watchlist' || catalogId === 'favorites') {
+      const account = await this.requestJson<{ id?: number }>(ctx, '/account', {
+        session_id: input.sessionId,
+      });
+      if (typeof account.id !== 'number') {
+        throw new ProviderError({
+          code: 'auth',
+          providerId: this.id,
+          message: 'TMDB session did not resolve an account id',
+          retryable: false,
+        });
+      }
+      const segment = catalogId === 'watchlist' ? 'watchlist' : 'favorite';
+      const raw = await this.requestJson<{
+        results?: Array<Record<string, unknown>>;
+        total_pages?: number;
+      }>(ctx, `/account/${account.id}/${segment}/${tmdbType}`, {
+        ...sessionQuery,
+        sort_by: 'created_at.desc',
+      });
+      return {
+        items: (raw.results ?? []).map((item) =>
+          mapCatalogItem(item, input.mediaType, this.stremioPublicId),
+        ),
+        totalPages: typeof raw.total_pages === 'number' ? raw.total_pages : page,
+        page,
+      };
+    }
+
+    if (catalogId.startsWith('list.')) {
+      const listId = encodeURIComponent(catalogId.slice('list.'.length));
+      // v3 lists are unpaginated and mixed; filter by media_type client-side.
+      const raw = await this.requestJson<{
+        items?: Array<Record<string, unknown>>;
+      }>(ctx, `/list/${listId}`, { session_id: input.sessionId });
+      const matching = (raw.items ?? []).filter(
+        (item) => item.media_type === tmdbType,
+      );
+      const start = (page - 1) * 20;
+      return {
+        items: matching
+          .slice(start, start + 20)
+          .map((item) => mapCatalogItem(item, input.mediaType, this.stremioPublicId)),
+        totalPages: Math.max(1, Math.ceil(matching.length / 20)),
+        page,
+      };
+    }
+
+    throw new ProviderError({
+      code: 'unsupported',
+      providerId: this.id,
+      message: `TMDB account catalog ${input.providerCatalogId} is not supported`,
+      retryable: false,
+    });
+  }
+
+  /** Created lists of the session account (Studio source picker). */
+  async getAccountLists(
+    ctx: ProviderContext,
+    sessionId: string,
+  ): Promise<Array<{ id: number; name: string; itemCount?: number }>> {
+    const account = await this.requestJson<{ id?: number }>(ctx, '/account', {
+      session_id: sessionId,
+    });
+    if (typeof account.id !== 'number') return [];
+    const raw = await this.requestJson<{
+      results?: Array<{ id?: number; name?: string; item_count?: number }>;
+    }>(ctx, `/account/${account.id}/lists`, { session_id: sessionId });
+    return (raw.results ?? [])
+      .filter((list) => typeof list.id === 'number')
+      .map((list) => ({
+        id: list.id!,
+        name: list.name ?? `List ${list.id}`,
+        itemCount: list.item_count,
+      }));
   }
 
   private async withCache<T>(

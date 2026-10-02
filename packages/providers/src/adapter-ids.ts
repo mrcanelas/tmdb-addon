@@ -16,6 +16,7 @@ export function listAdapterProviderIds(): string[] {
     'kitsu',
     'trakt',
     'simkl',
+    'mdblist',
     'publicmetadb',
   ];
 }

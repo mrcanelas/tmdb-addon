@@ -1,7 +1,8 @@
-import { ProviderError } from '../core/errors.js';
+import { ProviderError, classifyHttpStatus } from '../core/errors.js';
 import {
   DEFAULT_PROVIDER_HTTP_POLICY,
   ProviderHealthTracker,
+  withRetry,
   type ProviderAdapter,
   type ProviderContext,
   type ProviderHealthSnapshot,
@@ -12,6 +13,73 @@ import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
 import type { ProviderFetch } from '../artwork/types.js';
+import {
+  LIST_PAGE_SIZE,
+  publicIdFromExternalIds,
+  type AccountCatalogDescriptor,
+  type ListCatalogItem,
+  type ListCatalogPage,
+} from '../lists/types.js';
+
+/** Trakt catalogs MetaLayer can serve (AGENTS.md §8.2, §12.2). */
+export const TRAKT_ACCOUNT_CATALOGS: AccountCatalogDescriptor[] = [
+  {
+    provider: 'trakt',
+    providerCatalogId: 'watchlist',
+    mediaTypes: ['movie', 'series'],
+    name: 'Trakt Watchlist',
+    requiresCredential: true,
+  },
+  {
+    provider: 'trakt',
+    providerCatalogId: 'recommendations',
+    mediaTypes: ['movie', 'series'],
+    name: 'Trakt Recommendations',
+    requiresCredential: true,
+  },
+  {
+    provider: 'trakt',
+    providerCatalogId: 'trending',
+    mediaTypes: ['movie', 'series'],
+    name: 'Trakt Trending',
+    requiresCredential: false,
+  },
+  {
+    provider: 'trakt',
+    providerCatalogId: 'popular',
+    mediaTypes: ['movie', 'series'],
+    name: 'Trakt Popular',
+    requiresCredential: false,
+  },
+];
+
+interface TraktIds {
+  trakt?: number;
+  slug?: string;
+  imdb?: string;
+  tmdb?: number;
+}
+
+interface TraktMediaObject {
+  title?: string;
+  year?: number;
+  ids?: TraktIds;
+  rating?: number;
+  images?: { poster?: string[] };
+}
+
+interface TraktListEntry {
+  type?: 'movie' | 'show' | 'season' | 'episode' | 'person';
+  rank?: number;
+  movie?: TraktMediaObject;
+  show?: TraktMediaObject;
+}
+
+export interface TraktUserList {
+  slug: string;
+  name: string;
+  itemCount?: number;
+}
 
 export interface TraktWatchStateFixture {
   imdb?: string;
@@ -307,4 +375,159 @@ export class TraktTrackingAdapter implements ProviderAdapter {
 
     return entries;
   }
+
+  /** Personal lists of the connected account (for the Studio source picker). */
+  async getUserLists(ctx?: ProviderContext): Promise<TraktUserList[]> {
+    const body = await this.requestJson<
+      Array<{ name?: string; ids?: { slug?: string }; item_count?: number }>
+    >(ctx, 'https://api.trakt.tv/users/me/lists', { auth: true });
+    return body
+      .filter((list) => list.ids?.slug)
+      .map((list) => ({
+        slug: String(list.ids!.slug),
+        name: list.name ?? String(list.ids!.slug),
+        itemCount: list.item_count,
+      }));
+  }
+
+  /**
+   * Catalog page for `watchlist`, `recommendations`, `trending`, `popular`
+   * and `list.{slug}` (personal list). Items keep list order (`position`).
+   */
+  async getCatalogPage(
+    ctx: ProviderContext,
+    input: {
+      providerCatalogId: string;
+      mediaType: 'movie' | 'series' | 'anime';
+      page?: number;
+    },
+  ): Promise<ListCatalogPage> {
+    if (input.mediaType === 'anime') return { items: [], hasMore: false };
+    const mediaType: 'movie' | 'series' = input.mediaType;
+    const page = input.page ?? 1;
+    const segment = mediaType === 'movie' ? 'movies' : 'shows';
+    const pageQuery = `page=${page}&limit=${LIST_PAGE_SIZE}&extended=images`;
+
+    let path: string;
+    let auth = false;
+    switch (true) {
+      case input.providerCatalogId === 'watchlist':
+        path = `https://api.trakt.tv/sync/watchlist/${segment}/rank?${pageQuery}`;
+        auth = true;
+        break;
+      case input.providerCatalogId === 'recommendations':
+        path = `https://api.trakt.tv/recommendations/${segment}?${pageQuery}&ignore_collected=true`;
+        auth = true;
+        break;
+      case input.providerCatalogId === 'trending':
+        path = `https://api.trakt.tv/${segment}/trending?${pageQuery}`;
+        break;
+      case input.providerCatalogId === 'popular':
+        path = `https://api.trakt.tv/${segment}/popular?${pageQuery}`;
+        break;
+      case input.providerCatalogId.startsWith('list.'): {
+        const slug = encodeURIComponent(input.providerCatalogId.slice('list.'.length));
+        path = `https://api.trakt.tv/users/me/lists/${slug}/items/${segment}?${pageQuery}`;
+        auth = true;
+        break;
+      }
+      default:
+        throw new ProviderError({
+          code: 'unsupported',
+          providerId: this.id,
+          message: `Trakt catalog ${input.providerCatalogId} is not supported`,
+          retryable: false,
+        });
+    }
+
+    const raw = await this.requestJson<Array<TraktListEntry | TraktMediaObject>>(
+      ctx,
+      path,
+      { auth },
+    );
+    const items: ListCatalogItem[] = [];
+    raw.forEach((entry, index) => {
+      const media = unwrapTraktMedia(entry, mediaType);
+      if (!media) return;
+      const publicId = publicIdFromExternalIds(
+        { imdb: media.ids?.imdb, tmdb: media.ids?.tmdb },
+        media.ids?.slug ? `trakt:${media.ids.slug}` : undefined,
+      );
+      if (!publicId) return;
+      const poster = media.images?.poster?.[0];
+      items.push({
+        publicId,
+        mediaType,
+        name: media.title ?? publicId,
+        year: media.year,
+        rating: media.rating,
+        posterUrl: poster ? (poster.startsWith('http') ? poster : `https://${poster}`) : undefined,
+        position: (entry as TraktListEntry).rank ?? (page - 1) * LIST_PAGE_SIZE + index + 1,
+        externalIds: {
+          ...(media.ids?.imdb ? { imdb: media.ids.imdb } : {}),
+          ...(media.ids?.tmdb !== undefined ? { tmdb: media.ids.tmdb } : {}),
+          ...(media.ids?.trakt !== undefined ? { trakt: media.ids.trakt } : {}),
+        },
+      });
+    });
+    return { items, hasMore: raw.length >= LIST_PAGE_SIZE };
+  }
+
+  private async requestJson<T>(
+    ctx: ProviderContext | undefined,
+    url: string,
+    options: { auth: boolean },
+  ): Promise<T> {
+    if (!this.clientId) {
+      throw new ProviderError({
+        code: 'auth',
+        providerId: this.id,
+        message: 'TRAKT_CLIENT_ID is required for Trakt catalogs',
+        retryable: false,
+      });
+    }
+    if (options.auth && !this.accessToken) {
+      throw new ProviderError({
+        code: 'auth',
+        providerId: this.id,
+        message: 'Trakt access token is required for this catalog',
+        retryable: false,
+      });
+    }
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'trakt-api-version': '2',
+      'trakt-api-key': this.clientId,
+    };
+    if (this.accessToken) headers.Authorization = `Bearer ${this.accessToken}`;
+    if (ctx?.correlationId) headers['X-Correlation-Id'] = ctx.correlationId;
+
+    return withRetry({
+      providerId: this.id,
+      policy: this.policy,
+      health: this.health,
+      signal: ctx?.signal,
+      execute: async (signal) => {
+        const response = await this.fetchImpl(url, { method: 'GET', signal, headers });
+        if (!response.ok) throw classifyHttpStatus(response.status, this.id);
+        return (await response.json()) as T;
+      },
+    });
+  }
+}
+
+function unwrapTraktMedia(
+  entry: TraktListEntry | TraktMediaObject,
+  mediaType: 'movie' | 'series',
+): TraktMediaObject | undefined {
+  const wrapped = entry as TraktListEntry;
+  if (wrapped.movie || wrapped.show) {
+    if (wrapped.type && wrapped.type !== (mediaType === 'movie' ? 'movie' : 'show')) {
+      return undefined;
+    }
+    return mediaType === 'movie' ? wrapped.movie : wrapped.show;
+  }
+  const bare = entry as TraktMediaObject;
+  return bare.ids ? bare : undefined;
 }

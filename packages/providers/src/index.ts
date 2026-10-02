@@ -165,17 +165,40 @@ export type {
 } from './mal/tracking.js';
 export { KitsuProviderAdapter } from './kitsu/adapter.js';
 export type { KitsuAdapterOptions } from './kitsu/adapter.js';
-export { TraktTrackingAdapter, buildTraktAuthorizeUrl, exchangeTraktAuthorizationCode, refreshTraktAccessToken } from './trakt/adapter.js';
+export {
+  TRAKT_ACCOUNT_CATALOGS,
+  TraktTrackingAdapter,
+  buildTraktAuthorizeUrl,
+  exchangeTraktAuthorizationCode,
+  refreshTraktAccessToken,
+} from './trakt/adapter.js';
 export type {
   TraktAdapterOptions,
+  TraktUserList,
   TraktWatchStateFixture,
   TraktOAuthTokens,
 } from './trakt/adapter.js';
 export {
+  SIMKL_ACCOUNT_CATALOGS,
+  SIMKL_STATUS_CATALOGS,
   SimklTrackingAdapter,
   buildSimklAuthorizeUrl,
   exchangeSimklAuthorizationCode,
 } from './simkl/adapter.js';
+export { ANILIST_ACCOUNT_CATALOGS, ANILIST_USER_LIST_STATUSES } from './anilist/tracking.js';
+export { MAL_ACCOUNT_CATALOGS, MAL_USER_LIST_STATUSES } from './mal/tracking.js';
+export { MDBLIST_BASE_URL, MdblistAdapter } from './mdblist/adapter.js';
+export type { MdblistAdapterOptions, MdblistListSummary } from './mdblist/adapter.js';
+export {
+  LIST_PAGE_SIZE,
+  publicIdFromExternalIds,
+  sliceListPage,
+} from './lists/types.js';
+export type {
+  AccountCatalogDescriptor,
+  ListCatalogItem,
+  ListCatalogPage,
+} from './lists/types.js';
 export type {
   SimklAdapterOptions,
   SimklOAuthTokens,

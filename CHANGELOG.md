@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 ## [Unreleased]
 
+### Release track (beta.2)
+
+- Native Stremio text search: `metalayer.search` catalogs per media type, TMDB and anime provider search, search-only rules (`config.search`), live `/search/combined`.
+- Materialized catalog window: cursor-based pagination resumes from the shared buffer, sorting plans run over the gathered window (`CATALOG_SORT_SCOPE`), TMDB `hasMore` from `total_pages`, scan/sort budgets via `METALAYER_CATALOG_SCAN_PAGES` / `METALAYER_CATALOG_SORT_PAGES`. Legacy route and Studio preview share the path.
+- Account and AI catalogs are delivered live: Trakt (watchlist, recommendations, personal lists, trending, popular), new MDBList adapter (user lists, legacy `mdblist.{id}` ids), TMDB account watchlist/favorites/lists, SIMKL library statuses, AniList and MAL user lists. AI Ranked List proposals persist `staticItems` and are served in rank order. Missing credentials yield `SOURCE_CREDENTIAL_MISSING` warnings and never poison the catalog window cache.
+- Studio source picker: `GET/POST /api/v1/configurations/:configId/catalog-sources[/import]` and a *Catalogs* action on Sources cards list only instance-enabled, connected providers (§8.1.1).
+
 ### Beta delivery hardening
 
 - Fix plain-Node production startup by bundling internal TypeScript packages.

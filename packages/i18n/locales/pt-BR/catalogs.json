@@ -110,5 +110,7 @@
   "catalogs.warning.RULE_DATA_UNAVAILABLE": "A fonte não fornece dados para o filtro {{rule}}; ele não foi aplicado.",
   "catalogs.warning.SORT_DATA_UNAVAILABLE": "A fonte não fornece o campo {{field}} para ordenação.",
   "catalogs.warning.CATALOG_PROVIDER_UNAVAILABLE": "A entrega de catálogos de {{provider}} ainda não está disponível.",
-  "catalogs.warning.CATALOG_SCAN_LIMIT": "A busca foi limitada a {{maxPages}} páginas da fonte. Ajuste os filtros ou tente outra fonte."
+  "catalogs.warning.CATALOG_SCAN_LIMIT": "A busca foi limitada a {{maxPages}} páginas da fonte. Ajuste os filtros ou tente outra fonte.",
+  "catalogs.warning.CATALOG_SORT_SCOPE": "A ordenação foi aplicada a {{sortedItems}} cartões reunidos de {{sourcePages}} páginas da fonte, não ao catálogo inteiro do provedor.",
+  "catalogs.warning.SEARCH_PROVIDER_FAILED": "A busca em {{provider}} falhou ({{reason}})."
 }

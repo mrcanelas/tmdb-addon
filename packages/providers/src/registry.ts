@@ -139,7 +139,7 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     requiresOAuth: true,
     capabilities: metadataBase({
       metadataFields: ['rating', 'externalIds'],
-      catalogFeatures: ['personalLists', 'recommendations', 'trending'],
+      catalogFeatures: ['personalLists', 'recommendations', 'trending', 'popular'],
       supportsTracking: true,
       supportsOAuth: true,
       supportsAgeRating: false,
