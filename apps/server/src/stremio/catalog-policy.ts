@@ -64,10 +64,17 @@ export function applyPolicy(
 /** Lightweight page policy shared by Studio and Stremio; never N metadata calls per card. */
 export function applyCatalogPolicy(
   metas: CatalogMetaPreview[], config: MetaLayerConfig, catalog: CatalogDefinition,
-  options: { sort?: boolean } = {},
+  options: { sort?: boolean; profileRules?: RuleSet } = {},
 ): { metas: CatalogMetaPreview[]; warnings: CatalogWarning[] } {
+  // Profile routes call `applyProfileToConfig` first (rules → globalRules,
+  // sorting → globalSorting). Optional `profileRules` supports callers that
+  // keep the profile layer separate and want full inheritance here.
   return applyPolicy(metas, {
-    rules: resolveEffectiveRules({ global: config.globalRules, catalog: catalog.rules }),
+    rules: resolveEffectiveRules({
+      global: config.globalRules,
+      profile: options.profileRules,
+      catalog: catalog.rules,
+    }),
     plan: catalog.sorting ?? config.globalSorting,
     seedKey: catalog.instanceId,
     fallbackProvider: catalog.provider,

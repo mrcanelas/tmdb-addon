@@ -105,6 +105,7 @@ export function catalogWindowCacheKey(
       catalogs: config.catalogs,
       globalRules: config.globalRules,
       globalSorting: config.globalSorting ?? null,
+      presentation: config.presentation ?? null,
       localization: {
         metadataLocale: config.localization.metadataLocale,
         availabilityRegion: config.localization.availabilityRegion ?? null,
