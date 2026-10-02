@@ -17,10 +17,12 @@ import { unsupportedLocaleAdapter } from '../locale/adapters.js';
 import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
-import type {
-  AnimeCatalogItem,
-  AnimeMetadataSummary,
-  AnimeProviderFetch,
+import {
+  ANIME_EPISODES_MAX_PAGES,
+  type AnimeCatalogItem,
+  type AnimeEpisode,
+  type AnimeMetadataSummary,
+  type AnimeProviderFetch,
 } from '../anime/types.js';
 
 export interface AnilistAdapterOptions {
@@ -163,6 +165,82 @@ export class AnilistProviderAdapter implements ProviderAdapter {
     };
   }
 
+  /**
+   * Episode list in AniList entry numbering (AGENTS.md §10.11).
+   * Combines `streamingEpisodes` (titles / thumbnails) with the paginated
+   * `airingSchedule` (dates). Entries without either still yield numbered
+   * placeholders when `episodes` is known, so Stremio can list them.
+   */
+  async getEpisodes(ctx: ProviderContext, id: number): Promise<AnimeEpisode[]> {
+    const byNumber = new Map<number, AnimeEpisode>();
+    let declared: number | undefined;
+
+    for (let page = 1; page <= ANIME_EPISODES_MAX_PAGES; page += 1) {
+      const data = await this.graphql<{
+        Media?: {
+          episodes?: number | null;
+          streamingEpisodes?: Array<{ title?: string; thumbnail?: string }> | null;
+          airingSchedule?: {
+            pageInfo?: { hasNextPage?: boolean };
+            nodes?: Array<{ episode?: number; airingAt?: number }>;
+          } | null;
+        } | null;
+      }>(
+        ctx,
+        `query ($id: Int, $page: Int) {
+          Media(id: $id, type: ANIME) {
+            episodes
+            ${page === 1 ? 'streamingEpisodes { title thumbnail }' : ''}
+            airingSchedule(page: $page, perPage: 50) {
+              pageInfo { hasNextPage }
+              nodes { episode airingAt }
+            }
+          }
+        }`,
+        { id, page },
+      );
+      if (!data.Media) {
+        throw new ProviderError({
+          code: 'not_found',
+          providerId: this.id,
+          message: `AniList anime ${id} not found`,
+          retryable: false,
+        });
+      }
+      if (typeof data.Media.episodes === 'number') declared = data.Media.episodes;
+
+      for (const [index, item] of (data.Media.streamingEpisodes ?? []).entries()) {
+        const number = parseStreamingEpisodeNumber(item.title) ?? index + 1;
+        const current = byNumber.get(number) ?? { number };
+        byNumber.set(number, {
+          ...current,
+          title: cleanStreamingTitle(item.title) ?? current.title,
+          thumbnailUrl: item.thumbnail ?? current.thumbnailUrl,
+        });
+      }
+      for (const node of data.Media.airingSchedule?.nodes ?? []) {
+        if (typeof node.episode !== 'number' || node.episode < 1) continue;
+        const current = byNumber.get(node.episode) ?? { number: node.episode };
+        byNumber.set(node.episode, {
+          ...current,
+          airDate:
+            typeof node.airingAt === 'number'
+              ? new Date(node.airingAt * 1000).toISOString()
+              : current.airDate,
+        });
+      }
+      if (!data.Media.airingSchedule?.pageInfo?.hasNextPage) break;
+    }
+
+    if (declared && declared > 0) {
+      for (let number = 1; number <= declared; number += 1) {
+        if (!byNumber.has(number)) byNumber.set(number, { number });
+      }
+    }
+
+    return [...byNumber.values()].sort((a, b) => a.number - b.number);
+  }
+
   private async graphql<T>(
     ctx: ProviderContext,
     query: string,
@@ -201,6 +279,19 @@ export class AnilistProviderAdapter implements ProviderAdapter {
       },
     });
   }
+}
+
+/** AniList streaming titles look like "Episode 12 - Title"; recover the number. */
+function parseStreamingEpisodeNumber(title: string | undefined): number | undefined {
+  if (!title) return undefined;
+  const match = /^\s*episode\s+(\d+)/i.exec(title);
+  return match ? Number(match[1]) : undefined;
+}
+
+function cleanStreamingTitle(title: string | undefined): string | undefined {
+  if (!title) return undefined;
+  const cleaned = title.replace(/^\s*episode\s+\d+\s*[-–:]\s*/i, '').trim();
+  return cleaned.length > 0 ? cleaned : undefined;
 }
 
 function resolveAnilistSort(catalogId: string): string {

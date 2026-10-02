@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   FRIBB_FIXTURE,
+  FribbSourceError,
+  buildAnimeVideos,
+  findFribbRow,
   fribbRowsToProviderIds,
+  isAllowedFribbUrl,
+  loadFribbMappings,
   mapAbsoluteToCour,
   mapCourToAbsolute,
   normalizeAnimeFormat,
+  parseFribbPayload,
   pickAnimeTitle,
 } from './index.js';
 

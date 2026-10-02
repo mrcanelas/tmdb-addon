@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   DEFAULT_PRESENTATION,
   PresentationConfigSchema,
+  type PresentationConfig,
 } from './presentation.js';
 
 /**
@@ -192,6 +193,8 @@ export const ResolvableFieldSchema = z.enum([
   'voteCount',
   'releaseDate',
   'externalIds',
+  'episodes',
+  'episodeOrder',
 ]);
 
 export const DEFAULT_FIELD_PROVIDERS: Record<string, string[]> = {
@@ -205,12 +208,30 @@ export const DEFAULT_FIELD_PROVIDERS: Record<string, string[]> = {
   voteCount: ['tmdb'],
   releaseDate: ['tmdb', 'imdb'],
   externalIds: ['tmdb', 'imdb'],
+  /** Episode structure (AGENTS.md §10.11). Anime defaults are overridden per media type. */
+  episodes: ['tmdb', 'anilist', 'mal', 'kitsu'],
+  episodeOrder: ['tmdb', 'anilist', 'mal', 'kitsu'],
 };
+
+/** Anime episode structure prefers anime-native providers (AGENTS.md §17). */
+export const DEFAULT_ANIME_EPISODE_PROVIDERS: string[] = ['anilist', 'mal', 'kitsu', 'tmdb'];
 
 /** Ordered provider chains per resolvable field (AGENTS.md §10.3). */
 export const FieldProvidersSchema = z
   .record(z.array(z.string().min(1)).min(1))
   .default(DEFAULT_FIELD_PROVIDERS);
+
+/**
+ * Tracking providers selectable per profile (AGENTS.md §20 / §21.2).
+ * Connection tokens remain in the Secret Vault — this only picks which provider
+ * the profile prefers for watch-state / hide-watched style features.
+ */
+export const ProfileTrackingProviderSchema = z.enum([
+  'trakt',
+  'simkl',
+  'anilist',
+  'mal',
+]);
 
 /** Profile under one MetaLayer configuration (AGENTS.md §21). */
 export const ProfileDefinitionSchema = z.object({
@@ -224,6 +245,17 @@ export const ProfileDefinitionSchema = z.object({
    * in this order. Missing IDs are skipped.
    */
   catalogInstanceIds: z.array(z.string().min(1)).optional(),
+  /** Profile rule overrides (keys set here win over `globalRules`). */
+  rules: RuleSetSchema.optional(),
+  /** Profile sorting plan; replaces `globalSorting` when set. */
+  sorting: SortingPlanSchema.optional(),
+  /**
+   * Partial presentation overrides deep-merged onto config `presentation`
+   * (same naming as MetaLayerConfig — not a separate “appearance” field).
+   */
+  presentation: PresentationConfigSchema.partial().optional(),
+  /** Preferred tracking provider for this profile. */
+  trackingProvider: ProfileTrackingProviderSchema.optional(),
 });
 
 export const MetaLayerConfigSchema = z.object({
@@ -278,6 +310,9 @@ export type SortingPlan = z.infer<typeof SortingPlanSchema>;
 export type ResolvableField = z.infer<typeof ResolvableFieldSchema>;
 export type FieldProviders = z.infer<typeof FieldProvidersSchema>;
 export type ProfileDefinition = z.infer<typeof ProfileDefinitionSchema>;
+export type ProfileTrackingProvider = z.infer<
+  typeof ProfileTrackingProviderSchema
+>;
 export type StaticCatalogItem = z.infer<typeof StaticCatalogItemSchema>;
 export type CatalogDefinition = z.infer<typeof CatalogDefinitionSchema>;
 export type MetaLayerConfig = z.infer<typeof MetaLayerConfigSchema>;
@@ -354,6 +389,40 @@ export function filterCatalogsForProfile(
   return ordered.map((catalog, index) => ({ ...catalog, position: index }));
 }
 
+/**
+ * Thin rule merge for profiles (AGENTS.md §13.4).
+ * Defined keys on `profile` override `global`. Does not import `@metalayer/rules`
+ * (avoids a config→rules cycle); the server catalog path still runs
+ * `resolveEffectiveRules` over the resulting `globalRules` + catalog rules.
+ */
+export function mergeProfileRules(
+  global: RuleSet,
+  profile?: RuleSet,
+): RuleSet {
+  if (!profile) return global;
+  const merged: RuleSet = { ...global };
+  for (const [key, value] of Object.entries(profile) as Array<
+    [keyof RuleSet, RuleSet[keyof RuleSet]]
+  >) {
+    if (value !== undefined) {
+      (merged as Record<string, unknown>)[key] = value;
+    }
+  }
+  return merged;
+}
+
+/** Shallow-merge presentation overrides onto the base presentation config. */
+export function mergePresentation(
+  base: PresentationConfig,
+  override?: Partial<PresentationConfig>,
+): PresentationConfig {
+  if (!override) return base;
+  return PresentationConfigSchema.parse({
+    ...base,
+    ...override,
+  });
+}
+
 /** Apply a profile's overrides onto a config snapshot for manifest/serving. */
 export function applyProfileToConfig(
   config: MetaLayerConfig,
@@ -367,5 +436,8 @@ export function applyProfileToConfig(
       config.catalogs,
       profile.catalogInstanceIds,
     ),
+    globalRules: mergeProfileRules(config.globalRules, profile.rules),
+    globalSorting: profile.sorting ?? config.globalSorting,
+    presentation: mergePresentation(config.presentation, profile.presentation),
   };
 }

@@ -20,10 +20,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, TriangleAlert, X } from 'lucide-react';
 import { Button, Card, Checkbox } from '@metalayer/shared-ui';
 import type {
+  EpisodeOrderType,
   FieldResolutionPlan,
   LocalePreference,
   ResolutionStep,
 } from '@metalayer/config';
+import { EpisodeOrderTypeSchema } from '@metalayer/config';
 import { cn } from '@/lib/utils';
 import { sourceLabel } from '@/lib/source-presentation';
 import {
@@ -41,6 +43,8 @@ export interface ResolutionChainBuilderProps {
   onChange: (value: FieldResolutionPlan) => void;
   providerOptions: string[];
   allowLocales?: boolean;
+  /** Show the episode order-type priority row (AGENTS.md §10.11). */
+  allowOrderTypes?: boolean;
   disabled?: boolean;
   showEffectiveOrder?: boolean;
   /**
@@ -74,6 +78,22 @@ function localeLabel(
     default:
       return t('resolution.locale.unknown');
   }
+}
+
+const ORDER_TYPE_KEYS: Record<EpisodeOrderType, string> = {
+  aired: 'resolution.orderType.aired',
+  absolute: 'resolution.orderType.absolute',
+  dvd: 'resolution.orderType.dvd',
+  production: 'resolution.orderType.production',
+  'provider-default': 'resolution.orderType.providerDefault',
+  'community-corrected': 'resolution.orderType.communityCorrected',
+};
+
+function orderTypeLabel(
+  orderType: EpisodeOrderType,
+  t: (key: string) => string,
+): string {
+  return t(ORDER_TYPE_KEYS[orderType] ?? 'resolution.orderType.providerDefault');
 }
 
 function SortableChipRow({
@@ -159,27 +179,33 @@ function buildStepsFromSimple(plan: FieldResolutionPlan): ResolutionStep[] {
   const locales = plan.locales?.length
     ? plan.locales
     : [{ type: 'any-language' as const }];
+  const orderTypes: Array<EpisodeOrderType | undefined> = plan.orderTypes?.length
+    ? plan.orderTypes
+    : [undefined];
   const steps: ResolutionStep[] = [];
+  const push = (
+    provider: string,
+    locale: LocalePreference,
+    orderType: EpisodeOrderType | undefined,
+  ) => {
+    steps.push({
+      id: `${provider}-${localeKey(locale, steps.length)}-${orderType ?? ''}`,
+      provider,
+      locale,
+      ...(orderType ? { orderType } : {}),
+      enabled: true,
+    });
+  };
   if (plan.strategy === 'provider-first') {
     for (const provider of providers) {
-      for (const locale of locales) {
-        steps.push({
-          id: `${provider}-${localeKey(locale, steps.length)}`,
-          provider,
-          locale,
-          enabled: true,
-        });
+      for (const orderType of orderTypes) {
+        for (const locale of locales) push(provider, locale, orderType);
       }
     }
   } else {
     for (const locale of locales) {
       for (const provider of providers) {
-        steps.push({
-          id: `${provider}-${localeKey(locale, steps.length)}`,
-          provider,
-          locale,
-          enabled: true,
-        });
+        for (const orderType of orderTypes) push(provider, locale, orderType);
       }
     }
   }
@@ -194,17 +220,27 @@ export function ResolutionChainBuilder({
   onChange,
   providerOptions,
   allowLocales = true,
+  allowOrderTypes = false,
   disabled = false,
   showEffectiveOrder = true,
   availability,
   footer,
 }: ResolutionChainBuilderProps) {
   const { t } = useTranslation('resolution');
-  const [addMenu, setAddMenu] = useState<'provider' | 'locale' | null>(null);
+  const [addMenu, setAddMenu] = useState<
+    'provider' | 'locale' | 'orderType' | null
+  >(null);
 
   const plan = useMemo(() => coerceToSimplePlan(value), [value]);
   const providers = useMemo(() => plan.providers ?? [], [plan.providers]);
   const locales = useMemo(() => plan.locales ?? [], [plan.locales]);
+  const orderTypes = useMemo<EpisodeOrderType[]>(
+    () => plan.orderTypes ?? [],
+    [plan.orderTypes],
+  );
+  const orderTypeChoices = EpisodeOrderTypeSchema.options.filter(
+    (orderType) => !orderTypes.includes(orderType),
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -214,12 +250,17 @@ export function ResolutionChainBuilder({
   );
 
   const effectivePreview = useMemo<
-    Array<{ provider: string; locale?: LocalePreference }>
+    Array<{
+      provider: string;
+      locale?: LocalePreference;
+      orderType?: EpisodeOrderType;
+    }>
   >(
     () =>
       buildStepsFromSimple(plan).map((step) => ({
         provider: step.provider,
         locale: step.locale,
+        orderType: step.orderType,
       })),
     [plan],
   );
@@ -272,6 +313,15 @@ export function ResolutionChainBuilder({
     const newIndex = ids.indexOf(String(over.id));
     if (oldIndex < 0 || newIndex < 0) return;
     commit({ ...plan, locales: arrayMove(locales, oldIndex, newIndex) });
+  }
+
+  function onOrderTypeDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderTypes.indexOf(String(active.id) as EpisodeOrderType);
+    const newIndex = orderTypes.indexOf(String(over.id) as EpisodeOrderType);
+    if (oldIndex < 0 || newIndex < 0) return;
+    commit({ ...plan, orderTypes: arrayMove(orderTypes, oldIndex, newIndex) });
   }
 
   const preferLocalized = plan.strategy !== 'provider-first';
@@ -503,6 +553,97 @@ export function ResolutionChainBuilder({
           </div>
         ) : null}
 
+        {allowOrderTypes ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {t('resolution.orderTypes')}
+                </p>
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.orderTypesHint')}
+                </p>
+              </div>
+              <div className="relative">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isDisabled={disabled || orderTypeChoices.length === 0}
+                  onPress={() =>
+                    setAddMenu((current) =>
+                      current === 'orderType' ? null : 'orderType',
+                    )
+                  }
+                >
+                  <Plus className="size-3.5" aria-hidden />
+                  {t('resolution.addOrderTypeShort')}
+                </Button>
+                {addMenu === 'orderType' ? (
+                  <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                    {orderTypeChoices.map((orderType) => (
+                      <button
+                        key={orderType}
+                        type="button"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default"
+                        onClick={() => {
+                          commit({
+                            ...plan,
+                            orderTypes: [...orderTypes, orderType],
+                          });
+                          setAddMenu(null);
+                        }}
+                      >
+                        {orderTypeLabel(orderType, t)}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={onOrderTypeDragEnd}
+            >
+              <SortableContext
+                items={orderTypes}
+                strategy={horizontalListSortingStrategy}
+              >
+                <ul className="flex flex-wrap items-center gap-2">
+                  {orderTypes.map((orderType) => {
+                    const label = orderTypeLabel(orderType, t);
+                    return (
+                      <SortableChipRow
+                        key={orderType}
+                        id={orderType}
+                        label={label}
+                        disabled={disabled}
+                        removeLabel={t('resolution.removeNamed', {
+                          item: label,
+                        })}
+                        onRemove={() =>
+                          commit({
+                            ...plan,
+                            orderTypes: orderTypes.filter(
+                              (item) => item !== orderType,
+                            ),
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </ul>
+              </SortableContext>
+            </DndContext>
+            {orderTypes.length === 0 ? (
+              <p className="text-xs ml-text-muted">
+                {t('resolution.orderTypesEmpty')}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="space-y-3">
             <p className="text-sm font-medium text-foreground">
@@ -641,12 +782,20 @@ export function ResolutionChainBuilder({
                             </td>
                             <td className="px-3 py-2">
                               <span className="flex items-center gap-2 ml-text-muted">
-                                <LocaleFlag locale={row.locale} />
-                                <span className="truncate">
-                                  {row.locale
-                                    ? localeLabel(row.locale, t)
-                                    : t('resolution.locale.any')}
-                                </span>
+                                {row.orderType ? (
+                                  <span className="truncate">
+                                    {orderTypeLabel(row.orderType, t)}
+                                  </span>
+                                ) : (
+                                  <>
+                                    <LocaleFlag locale={row.locale} />
+                                    <span className="truncate">
+                                      {row.locale
+                                        ? localeLabel(row.locale, t)
+                                        : t('resolution.locale.any')}
+                                    </span>
+                                  </>
+                                )}
                               </span>
                             </td>
                           </tr>

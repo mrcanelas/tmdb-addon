@@ -377,6 +377,7 @@ export function FieldsPage() {
                   onChange={(plan) => updateField(editableSelected, plan)}
                   providerOptions={selectedEntry.providerOptions}
                   allowLocales={selectedEntry.allowLocales}
+                  allowOrderTypes={selectedEntry.allowOrderTypes === true}
                   availability={fieldAvailability}
                   footer={
                     <>

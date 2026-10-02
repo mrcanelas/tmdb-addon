@@ -43,6 +43,45 @@ describe('Field Resolution Chains compiler', () => {
     ]);
   });
 
+  it('propagates orderTypes onto expanded episode-order steps (AGENTS.md §10.11)', () => {
+    const steps = expandPlanSteps(
+      planFromProviderChain(
+        ['anilist', 'mal'],
+        [{ type: 'provider-default' }],
+        'provider-first',
+        { orderTypes: ['absolute', 'aired'] },
+      ),
+    );
+    expect(steps.map((step) => `${step.provider}:${step.orderType}`)).toEqual([
+      'anilist:absolute',
+      'anilist:aired',
+      'mal:absolute',
+      'mal:aired',
+    ]);
+  });
+
+  it('seeds media-type default order types for episode fields without explicit orderTypes', () => {
+    const anime = compileResolutionPlan({
+      field: 'episodeOrder',
+      mediaType: 'anime',
+      fieldProviders: { episodeOrder: ['anilist'] },
+      metadataLocale: 'en-US',
+    });
+    expect(anime.generatedSteps.map((step) => step.orderType)).toEqual([
+      'absolute',
+      'provider-default',
+    ]);
+
+    const series = compileResolutionPlan({
+      field: 'episodeOrder',
+      mediaType: 'series',
+      fieldProviders: { episodeOrder: ['tmdb'] },
+      metadataLocale: 'en-US',
+    });
+    expect(series.generatedSteps[0]?.orderType).toBe('aired');
+    expect(series.effectivePlanHash).not.toBe(anime.effectivePlanHash);
+  });
+
   it('expands explicit steps as-is', () => {
     const steps = expandPlanSteps({
       version: 1,

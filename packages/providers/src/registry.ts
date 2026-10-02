@@ -30,6 +30,8 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     requiresCredential: true,
     requiresOAuth: true,
     capabilities: metadataBase({
+      mediaTypes: ['movie', 'series', 'anime'],
+      metadataFields: ['title', 'description', 'poster', 'background', 'genres', 'cast', 'episodes', 'externalIds'],
       supportsDigitalRelease: true,
       supportsOAuth: true,
       catalogFeatures: ['trending', 'popular', 'topRated', 'search', 'personalLists'],
@@ -235,6 +237,7 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     requiresOAuth: true,
     capabilities: metadataBase({
       mediaTypes: ['anime', 'movie', 'series'],
+      metadataFields: ['title', 'description', 'poster', 'episodes', 'externalIds'],
       catalogFeatures: ['trending', 'popular', 'topRated', 'search', 'personalLists'],
       supportsTracking: true,
       supportsOAuth: true,
@@ -252,6 +255,7 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     requiresOAuth: true,
     capabilities: metadataBase({
       mediaTypes: ['anime'],
+      metadataFields: ['title', 'description', 'poster', 'episodes', 'externalIds'],
       catalogFeatures: ['trending', 'popular', 'topRated', 'search', 'personalLists'],
       supportsTracking: true,
       supportsOAuth: true,
@@ -269,6 +273,7 @@ export const PROVIDER_REGISTRY: ProviderDefinition[] = [
     requiresOAuth: true,
     capabilities: metadataBase({
       mediaTypes: ['anime'],
+      metadataFields: ['title', 'description', 'poster', 'episodes', 'externalIds'],
       catalogFeatures: ['trending', 'popular', 'topRated', 'search'],
       supportsTracking: true,
       supportsOAuth: true,

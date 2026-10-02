@@ -51,6 +51,8 @@ export interface FieldRailEntry {
   editable: boolean;
   /** Prefer locales in the builder. */
   allowLocales: boolean;
+  /** Episode-structure fields expose an order-type priority (AGENTS.md §10.11). */
+  allowOrderTypes?: boolean;
   providerOptions: string[];
   /** Lucide-ish glyph key for the rail icon. */
   icon:
@@ -286,9 +288,10 @@ export const FIELD_REGISTRY: FieldRailEntry[] = [
     group: 'episodeStructure',
     category: 'episode',
     kind: 'resolution',
-    editable: false,
+    editable: true,
     allowLocales: false,
-    providerOptions: ['tvdb', 'tmdb', 'kitsu', 'anilist'],
+    allowOrderTypes: true,
+    providerOptions: ['tmdb', 'anilist', 'mal', 'kitsu', 'tvdb'],
     icon: 'list',
   },
   {

@@ -1,4 +1,5 @@
 import type {
+  EpisodeOrderType,
   FieldResolutionPlan,
   LocalePreference,
   ResolutionConfig,
@@ -7,7 +8,9 @@ import type {
 } from '@metalayer/config';
 import {
   FieldResolutionPlanSchema,
+  defaultOrderTypesForMediaType,
   getPlanForField,
+  isEpisodeStructureField,
   resolutionConfigFromFieldProviders,
   type FieldProviders,
 } from '@metalayer/config';
@@ -76,30 +79,39 @@ export function expandPlanSteps(plan: FieldResolutionPlan): ResolutionStep[] {
     parsed.locales && parsed.locales.length > 0
       ? parsed.locales
       : ([{ type: 'any-language' }] as LocalePreference[]);
+  // Episode-order preferences expand onto every provider × locale attempt
+  // (AGENTS.md §10.11). Plans without orderTypes keep a single untyped pass.
+  const orderTypes: Array<EpisodeOrderType | undefined> =
+    parsed.orderTypes && parsed.orderTypes.length > 0
+      ? parsed.orderTypes
+      : [undefined];
 
   const steps: ResolutionStep[] = [];
   let index = 0;
+  const push = (
+    provider: string,
+    locale: LocalePreference,
+    orderType: EpisodeOrderType | undefined,
+  ) => {
+    steps.push({
+      id: `${provider}-${index++}`,
+      provider,
+      locale,
+      ...(orderType ? { orderType } : {}),
+      enabled: true,
+    });
+  };
 
   if (parsed.strategy === 'locale-first') {
     for (const locale of locales) {
       for (const provider of providers) {
-        steps.push({
-          id: `${provider}-${index++}`,
-          provider,
-          locale,
-          enabled: true,
-        });
+        for (const orderType of orderTypes) push(provider, locale, orderType);
       }
     }
   } else {
     for (const provider of providers) {
-      for (const locale of locales) {
-        steps.push({
-          id: `${provider}-${index++}`,
-          provider,
-          locale,
-          enabled: true,
-        });
+      for (const orderType of orderTypes) {
+        for (const locale of locales) push(provider, locale, orderType);
       }
     }
   }
@@ -162,6 +174,17 @@ export function compileResolutionPlan(input: {
     plan = {
       ...plan,
       locales: defaultLocales(input.metadataLocale, input.fallbackLocales),
+    };
+  }
+
+  if (
+    plan.strategy !== 'explicit' &&
+    isEpisodeStructureField(String(input.field)) &&
+    (!plan.orderTypes || plan.orderTypes.length === 0)
+  ) {
+    plan = {
+      ...plan,
+      orderTypes: defaultOrderTypesForMediaType(input.mediaType),
     };
   }
 

@@ -24,6 +24,14 @@ export {
 } from './edges.js';
 
 export {
+  buildCourEdges,
+  buildEpisodeEdges,
+  courNodeId,
+  episodeNodeId,
+  type CourMappingInput,
+} from './episodes.js';
+
+export {
   resolveIdentityMapping,
   findProviderId,
   type ResolveIdentityInput,

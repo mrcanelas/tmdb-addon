@@ -17,10 +17,12 @@ import { unsupportedLocaleAdapter } from '../locale/adapters.js';
 import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
-import type {
-  AnimeCatalogItem,
-  AnimeMetadataSummary,
-  AnimeProviderFetch,
+import {
+  ANIME_EPISODES_MAX_PAGES,
+  type AnimeCatalogItem,
+  type AnimeEpisode,
+  type AnimeMetadataSummary,
+  type AnimeProviderFetch,
 } from '../anime/types.js';
 
 export interface KitsuAdapterOptions {
@@ -122,6 +124,41 @@ export class KitsuProviderAdapter implements ProviderAdapter {
   ): Promise<{ kitsu: number }> {
     await this.getAnime(ctx, id);
     return { kitsu: id };
+  }
+
+  /** Paginated `/anime/{id}/episodes` (JSON:API, 20 per page) in Kitsu numbering. */
+  async getEpisodes(ctx: ProviderContext, id: number): Promise<AnimeEpisode[]> {
+    const episodes: AnimeEpisode[] = [];
+    const limit = 20;
+    for (let page = 0; page < ANIME_EPISODES_MAX_PAGES; page += 1) {
+      const raw = await this.requestJson<{
+        data?: Array<{ attributes?: Record<string, unknown> }>;
+        links?: { next?: string };
+      }>(
+        ctx,
+        `/anime/${id}/episodes?page[limit]=${limit}&page[offset]=${page * limit}&sort=number`,
+      );
+      for (const item of raw.data ?? []) {
+        const attrs = item.attributes ?? {};
+        const number = Number(attrs.number);
+        if (!Number.isFinite(number) || number < 1) continue;
+        const titles = (attrs.titles ?? {}) as Record<string, string | undefined>;
+        const thumbnail = attrs.thumbnail as { original?: string } | undefined;
+        episodes.push({
+          number,
+          title:
+            (typeof attrs.canonicalTitle === 'string' && attrs.canonicalTitle) ||
+            titles.en ||
+            titles.en_jp ||
+            undefined,
+          airDate: typeof attrs.airdate === 'string' ? attrs.airdate : undefined,
+          thumbnailUrl: thumbnail?.original ?? undefined,
+          overview: typeof attrs.synopsis === 'string' ? attrs.synopsis : undefined,
+        });
+      }
+      if (!raw.links?.next || (raw.data ?? []).length < limit) break;
+    }
+    return episodes.sort((a, b) => a.number - b.number);
   }
 
   private async requestJson<T>(ctx: ProviderContext, path: string): Promise<T> {

@@ -58,10 +58,14 @@ Behavior rules:
 - Fields the capability model cannot express (runtime, certification, directors, writers, release dates) are **not** filtered — hiding providers for an undeclared constraint would be a false negative.
 - While `/api/v1/sources` is loading or unreachable, availability is `undefined` and nothing is filtered.
 
+## Episode order
+
+`episodes` and `episodeOrder` are resolvable fields. Plans may set `orderTypes` (`aired`, `absolute`, `dvd`, `production`, `provider-default`, `community-corrected`). The compiler expands provider × locale × order-type attempts; anime defaults to absolute → aired → provider-default. The Resolution Chain Builder exposes an order-type priority list when the field allows it. Native anime meta walks this chain to build `videos[]` (`docs/anime.md`).
+
 ## Still follow-up
 
 - Profile / catalog / title inheritance UI
-- Episode-order chains and credits/facts field persistence
+- Credits/facts field persistence beyond the current set
 - Server-side `resolution/compile` should also mark unavailable providers (the UI gate is client-side today)
 - Capability model lacks fields for runtime / certification / release dates / writers
 - Dedicated artwork ranking polish beyond default `no-language` chains

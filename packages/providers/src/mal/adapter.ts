@@ -17,10 +17,12 @@ import { unsupportedLocaleAdapter } from '../locale/adapters.js';
 import type { ProviderLocaleAdapter } from '../locale/types.js';
 import { getProvider } from '../registry.js';
 import type { ProviderDefinition } from '../types.js';
-import type {
-  AnimeCatalogItem,
-  AnimeMetadataSummary,
-  AnimeProviderFetch,
+import {
+  ANIME_EPISODES_MAX_PAGES,
+  type AnimeCatalogItem,
+  type AnimeEpisode,
+  type AnimeMetadataSummary,
+  type AnimeProviderFetch,
 } from '../anime/types.js';
 
 export interface JikanAdapterOptions {
@@ -122,6 +124,33 @@ export class MalJikanProviderAdapter implements ProviderAdapter {
   ): Promise<{ mal: number }> {
     const anime = await this.getAnime(ctx, id);
     return { mal: anime.id };
+  }
+
+  /** Paginated `/anime/{id}/episodes` (100 per page) in MAL numbering. */
+  async getEpisodes(ctx: ProviderContext, id: number): Promise<AnimeEpisode[]> {
+    const episodes: AnimeEpisode[] = [];
+    for (let page = 1; page <= ANIME_EPISODES_MAX_PAGES; page += 1) {
+      const raw = await this.requestJson<{
+        data?: Array<Record<string, unknown>>;
+        pagination?: { has_next_page?: boolean };
+      }>(ctx, `/anime/${id}/episodes?page=${page}`);
+      for (const item of raw.data ?? []) {
+        const number = Number(item.mal_id);
+        if (!Number.isFinite(number) || number < 1) continue;
+        episodes.push({
+          number,
+          title:
+            (typeof item.title === 'string' && item.title) ||
+            (typeof item.title_romanji === 'string' && item.title_romanji) ||
+            undefined,
+          airDate: typeof item.aired === 'string' ? item.aired : undefined,
+          filler: item.filler === true,
+          recap: item.recap === true,
+        });
+      }
+      if (!raw.pagination?.has_next_page) break;
+    }
+    return episodes.sort((a, b) => a.number - b.number);
   }
 
   private async requestJson<T>(ctx: ProviderContext, path: string): Promise<T> {

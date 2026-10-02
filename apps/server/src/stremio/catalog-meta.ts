@@ -32,6 +32,8 @@ import {
   loadAccountCatalogPage,
   loadStaticCatalogPage,
 } from './account-catalogs.js';
+import { resolveAnimeEpisodeOrder } from './anime-episodes.js';
+import type { AnimeVideo } from '@metalayer/anime';
 
 /**
  * Resolves a per-configuration secret. `kind` defaults to `api_key`;
@@ -368,13 +370,37 @@ async function resolveBaseStremioMeta(
         anime.titles.romaji ||
         anime.titles.native ||
         anime.publicId;
+      const isMovie = anime.format === 'movie';
+
+      // Episode structure via the effective `episodeOrder` chain (AGENTS.md §10.11).
+      let videos: AnimeVideo[] = [];
+      if (!isMovie) {
+        try {
+          const resolvedCorrections =
+            options.configIdForCorrections && app.correctionRegistry
+              ? app.correctionRegistry
+                  .listResolved(options.configIdForCorrections)
+                  .filter((item) => `${item.target.provider}:${item.target.id}` === anime.publicId)
+              : [];
+          const order = await resolveAnimeEpisodeOrder(app, config, {
+            provider: provider as 'anilist' | 'mal' | 'kitsu',
+            id: anilistId,
+            anime,
+            ctx,
+            corrections: resolvedCorrections,
+          });
+          videos = order.videos;
+        } catch {
+          videos = [];
+        }
+      }
+
       return {
         status: 200,
         body: {
           meta: {
             id: anime.publicId,
-            type:
-              anime.format === 'movie' ? ('movie' as const) : ('series' as const),
+            type: isMovie ? ('movie' as const) : ('series' as const),
             name,
             poster: anime.posterUrl ?? undefined,
             description: anime.description,
@@ -382,6 +408,12 @@ async function resolveBaseStremioMeta(
               anime.averageScore !== undefined
                 ? anime.averageScore.toFixed(1)
                 : undefined,
+            ...(isMovie
+              ? {}
+              : {
+                  videos,
+                  behaviorHints: { hasScheduledVideos: videos.length > 0 },
+                }),
           },
         },
       };

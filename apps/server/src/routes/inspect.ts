@@ -20,6 +20,12 @@ import {
 } from '@metalayer/providers';
 import type { ConfigurationStore } from '@metalayer/persistence';
 import { gatherLiveBag } from '../stremio/gather-fields.js';
+import {
+  loadAnimeSummary,
+  parseAnimePublicId,
+  resolveAnimeEpisodeOrder,
+  type AnimeEpisodeOrderResult,
+} from '../stremio/anime-episodes.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -170,10 +176,60 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
     try {
       let bag: ProviderFieldBag;
       let publicId: string | undefined;
+      let episodeOrder: AnimeEpisodeOrderResult | undefined;
 
       if (body.contributions) {
         bag = asBag(body.contributions);
         publicId = body.id;
+      } else if (body.id && parseAnimePublicId(body.id)) {
+        // Anime ids resolve through anime-native adapters; the episode-order
+        // chain is reported with every attempt (AGENTS.md §10.11, §11).
+        const ctx = {
+          correlationId: request.correlationId,
+          locale: view.config.localization.metadataLocale,
+        };
+        const loaded = await loadAnimeSummary(app, body.id, ctx);
+        if (!loaded) {
+          throw new ProviderError({
+            code: 'not_found',
+            providerId: 'anilist',
+            message: `Anime ${body.id} not found`,
+            retryable: false,
+          });
+        }
+        const { anime, provider } = loaded;
+        const contribution = <T>(value: T | undefined) =>
+          value === undefined ? [] : [{ provider, value, confidence: 0.9 }];
+        bag = {
+          title: contribution(anime.titles.english ?? anime.titles.romaji ?? anime.titles.native),
+          originalTitle: contribution(anime.titles.native ?? anime.titles.romaji),
+          description: contribution(anime.description),
+          poster: contribution(anime.posterUrl ?? undefined),
+          rating: contribution(anime.averageScore),
+          externalIds: [
+            {
+              provider,
+              value: {
+                anilist: anime.externalIds.anilist,
+                mal: anime.externalIds.mal,
+                kitsu: anime.externalIds.kitsu,
+              },
+              confidence: 0.9,
+            },
+          ],
+        };
+        publicId = anime.publicId;
+        if (anime.format !== 'movie') {
+          episodeOrder = await resolveAnimeEpisodeOrder(app, view.config, {
+            provider,
+            id: loaded.id,
+            anime,
+            ctx,
+            corrections: app.correctionRegistry
+              ?.listResolved(request.params.configId)
+              .filter((item) => `${item.target.provider}:${item.target.id}` === anime.publicId),
+          });
+        }
       } else {
         const live = await gatherLiveBag(app, view.config, {
           getSecret: provider => app.configStore.getSecretPlaintext(request.params.configId, provider),
@@ -213,7 +269,22 @@ export const inspectRoutes: FastifyPluginAsync = async (app) => {
         identity: {
           mapping: identityMapping,
           diagnostics: buildIdentityDiagnostics(identityMapping, precedenceScore),
+          ...(episodeOrder ? { episodeEdges: episodeOrder.edges } : {}),
         },
+        ...(episodeOrder
+          ? {
+              episodeOrder: {
+                attempts: episodeOrder.attempts,
+                selectedProvider: episodeOrder.selectedProvider,
+                orderType: episodeOrder.orderType,
+                fallbackUsed: episodeOrder.fallbackUsed,
+                effectivePlanHash: episodeOrder.effectivePlanHash,
+                identity: episodeOrder.identity,
+                videoCount: episodeOrder.videos.length,
+                warnings: episodeOrder.warnings,
+              },
+            }
+          : {}),
         correlationId: request.correlationId,
       };
     } catch (error) {

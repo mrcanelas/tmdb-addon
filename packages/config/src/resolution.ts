@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  DEFAULT_ANIME_EPISODE_PROVIDERS,
   DEFAULT_FIELD_PROVIDERS,
   ResolvableFieldSchema,
   type FieldProviders,
@@ -70,6 +71,11 @@ export const FieldResolutionPlanSchema = z
     providers: z.array(z.string().min(1)).optional(),
     locales: z.array(LocalePreferenceSchema).optional(),
     regions: z.array(RegionPreferenceSchema).optional(),
+    /**
+     * Episode-order preferences for `episodes` / `episodeOrder` plans (AGENTS.md §10.11).
+     * Expanded onto every generated step for locale-first / provider-first strategies.
+     */
+    orderTypes: z.array(EpisodeOrderTypeSchema).optional(),
     steps: z.array(ResolutionStepSchema).optional(),
     skipEmpty: z.boolean().default(true),
     skipInvalid: z.boolean().default(true),
@@ -117,6 +123,24 @@ export const ResolutionConfigSchema = z.object({
 export type LocalePreference = z.infer<typeof LocalePreferenceSchema>;
 export type RegionPreference = z.infer<typeof RegionPreferenceSchema>;
 export type ResolutionStrategy = z.infer<typeof ResolutionStrategySchema>;
+export type EpisodeOrderType = z.infer<typeof EpisodeOrderTypeSchema>;
+export type ArtworkType = z.infer<typeof ArtworkTypeSchema>;
+
+/** Fields whose plans carry `orderTypes` (episode structure, AGENTS.md §10.11). */
+export const EPISODE_STRUCTURE_FIELDS: ReadonlySet<string> = new Set(['episodes', 'episodeOrder']);
+
+export function isEpisodeStructureField(field: string): boolean {
+  return EPISODE_STRUCTURE_FIELDS.has(field);
+}
+
+/** Default order preference: series air order; anime absolute numbering. */
+export function defaultOrderTypesForMediaType(
+  mediaType?: 'movie' | 'series' | 'anime',
+): EpisodeOrderType[] {
+  return mediaType === 'anime'
+    ? ['absolute', 'provider-default']
+    : ['aired', 'provider-default'];
+}
 export type ResolutionStep = z.infer<typeof ResolutionStepSchema>;
 export type FieldResolutionPlan = z.infer<typeof FieldResolutionPlanSchema>;
 export type MediaResolutionConfig = z.infer<typeof MediaResolutionConfigSchema>;
@@ -137,12 +161,14 @@ export function planFromProviderChain(
     { type: 'original-language' },
   ],
   strategy: ResolutionStrategy = 'provider-first',
+  options: { orderTypes?: EpisodeOrderType[] } = {},
 ): FieldResolutionPlan {
   return FieldResolutionPlanSchema.parse({
     version: 1,
     strategy,
     providers,
     locales,
+    orderTypes: options.orderTypes,
     skipEmpty: true,
     skipInvalid: true,
     stopAfterFirstValid: true,
@@ -177,13 +203,33 @@ export function resolutionConfigFromFieldProviders(
       : ['poster', 'background', 'logo'].includes(field)
         ? [...locales.filter(locale => locale.type !== 'original-language'), { type: 'no-language' }, { type: 'any-language' }]
         : [{ type: 'provider-default' }];
-    fields[field] = planFromProviderChain(providers, fieldLocales, strategy);
+    fields[field] = planFromProviderChain(providers, fieldLocales, strategy, {
+      orderTypes: isEpisodeStructureField(field)
+        ? defaultOrderTypesForMediaType('series')
+        : undefined,
+    });
+  }
+
+  // Anime episode structure: anime-native providers first, absolute numbering (AGENTS.md §10.11, §17).
+  const animeFields: Record<string, FieldResolutionPlan> = {};
+  for (const field of EPISODE_STRUCTURE_FIELDS) {
+    const explicit = fieldProviders[field];
+    const providers =
+      explicit && explicit.some((provider) => ['anilist', 'mal', 'kitsu'].includes(provider))
+        ? explicit
+        : DEFAULT_ANIME_EPISODE_PROVIDERS;
+    animeFields[field] = planFromProviderChain(
+      providers,
+      [{ type: 'provider-default' }],
+      'provider-first',
+      { orderTypes: defaultOrderTypesForMediaType('anime') },
+    );
   }
 
   return ResolutionConfigSchema.parse({
     version: 1,
     defaults: { fields },
-    mediaTypes: {},
+    mediaTypes: { anime: { fields: animeFields } },
   });
 }
 

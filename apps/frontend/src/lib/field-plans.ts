@@ -5,6 +5,8 @@ import type {
   ResolutionConfig,
 } from '@metalayer/config';
 import {
+  defaultOrderTypesForMediaType,
+  isEpisodeStructureField,
   localePreferencesFromLocalization,
   planFromProviderChain,
 } from '@metalayer/config';
@@ -25,6 +27,7 @@ export type EditableFieldId = Extract<
   | 'voteCount'
   | 'releaseDate'
   | 'externalIds'
+  | 'episodeOrder'
 >;
 
 /** @deprecated Prefer EDITABLE_FIELD_IDS / field-registry. */
@@ -143,6 +146,12 @@ export function ensureFieldPlan(
     );
   }
 
+  if (isEpisodeStructureField(field)) {
+    return planFromProviderChain(providers.slice(0, 4), locales, 'provider-first', {
+      orderTypes: defaultOrderTypesForMediaType('series'),
+    });
+  }
+
   return planFromProviderChain(
     providers.slice(0, 3),
     locales,
@@ -254,11 +263,23 @@ export function coerceToSimplePlan(
     }
   }
 
+  const orderTypes =
+    plan.orderTypes && plan.orderTypes.length > 0
+      ? plan.orderTypes
+      : [
+          ...new Set(
+            (plan.steps ?? [])
+              .map((step) => step.orderType)
+              .filter((orderType): orderType is NonNullable<typeof orderType> => orderType != null),
+          ),
+        ];
+
   return {
     ...plan,
     strategy: 'locale-first',
     providers,
     locales: locales.length > 0 ? locales : [{ type: 'any-language' }],
+    orderTypes: orderTypes.length > 0 ? orderTypes : undefined,
     steps: undefined,
   };
 }

@@ -134,9 +134,12 @@ export type {
 
 export type {
   AnimeCatalogItem,
+  AnimeEpisode,
+  AnimeEpisodesPage,
   AnimeMetadataSummary,
   AnimeProviderFetch,
 } from './anime/types.js';
+export { ANIME_EPISODES_MAX_PAGES } from './anime/types.js';
 export { AnilistProviderAdapter } from './anilist/adapter.js';
 export type { AnilistAdapterOptions } from './anilist/adapter.js';
 export {
