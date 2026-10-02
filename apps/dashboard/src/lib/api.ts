@@ -105,6 +105,37 @@ export function fetchUpdates() {
 export function fetchSettings() {
   return apiFetch<{
     mode: string;
-    settings: Array<{ key: string; description: string; reload: string }>;
+    restartPending?: boolean;
+    settings: RuntimeSettingView[];
   }>('/api/v1/dashboard/settings');
+}
+
+export interface RuntimeSettingView {
+  key: string;
+  description: string;
+  reload: string;
+  type: 'boolean' | 'string' | 'number' | 'url';
+  editable: boolean;
+  secret: boolean;
+  source: 'env' | 'stored' | 'default';
+  value: string | number | boolean | null;
+  configured: boolean;
+  restartRequired: boolean;
+}
+
+export function updateSetting(key: string, value: unknown) {
+  return apiFetch<{ setting: RuntimeSettingView; restartRequired: boolean }>(
+    `/api/v1/dashboard/settings/${encodeURIComponent(key)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ value }),
+    },
+  );
+}
+
+export function clearSetting(key: string) {
+  return apiFetch<{ setting: RuntimeSettingView; restartRequired: boolean }>(
+    `/api/v1/dashboard/settings/${encodeURIComponent(key)}`,
+    { method: 'DELETE' },
+  );
 }

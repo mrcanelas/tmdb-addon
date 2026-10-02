@@ -120,6 +120,33 @@ describe('@metalayer/persistence', () => {
     }
   });
 
+  it('persists instance settings across sqlite restarts', async () => {
+    const dbPath = join(tmpdir(), `metalayer-instance-settings-${Date.now()}.sqlite`);
+
+    try {
+      const first = new SqliteConfigurationStore({
+        sqlitePath: dbPath,
+        encryptionKey: TEST_KEY,
+      });
+      await first.setInstanceSetting('METALAYER_TELEMETRY_ENABLED', 'true');
+      expect(await first.getInstanceSetting('METALAYER_TELEMETRY_ENABLED')).toBe('true');
+      await first.close();
+
+      const second = new SqliteConfigurationStore({
+        sqlitePath: dbPath,
+        encryptionKey: TEST_KEY,
+      });
+      expect(await second.listInstanceSettings()).toEqual({
+        METALAYER_TELEMETRY_ENABLED: 'true',
+      });
+      expect(await second.deleteInstanceSetting('METALAYER_TELEMETRY_ENABLED')).toBe(true);
+      expect(await second.getInstanceSetting('METALAYER_TELEMETRY_ENABLED')).toBeNull();
+      await second.close();
+    } finally {
+      rmSync(dbPath, { force: true });
+    }
+  });
+
   it('stores instance vault secrets without configuration ids', async () => {
     await store.upsertInstanceVaultSecret('fanart', 'api_key', 'fanart-secret');
 

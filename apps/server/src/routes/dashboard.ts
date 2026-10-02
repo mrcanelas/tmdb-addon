@@ -2,7 +2,6 @@ import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { createRequire } from 'node:module';
 import { createApiError } from '@metalayer/api-errors';
 import {
-  RUNTIME_SETTINGS,
   buildHealthSnapshot,
   buildSafeBackup,
   resolveDeploymentMode,
@@ -172,12 +171,87 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
   app.get('/dashboard/settings', async (request, reply) => {
     const access = requireOperator(request);
     if (!access.ok) return reply.status(access.status).send(access.body);
+    const settings = app.runtimeSettings.list();
     return {
-      settings: RUNTIME_SETTINGS,
+      settings,
       mode: resolveDeploymentMode(),
+      restartPending: settings.some((setting) => setting.restartRequired),
       correlationId: request.correlationId,
     };
   });
+
+  app.put<{ Params: { key: string }; Body: { value?: unknown } }>(
+    '/dashboard/settings/:key',
+    async (request, reply) => {
+      const access = requireOperator(request);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+      try {
+        const result = await app.runtimeSettings.set(
+          request.params.key,
+          request.body?.value,
+        );
+        return {
+          setting: result.setting,
+          restartRequired: result.restartRequired,
+          correlationId: request.correlationId,
+        };
+      } catch (error) {
+        const rawCode =
+          error && typeof error === 'object' && 'code' in error
+            ? String((error as { code: unknown }).code)
+            : 'VALIDATION_FAILED';
+        const code =
+          rawCode === 'SETTING_NOT_FOUND'
+            ? 'CONFIGURATION_NOT_FOUND'
+            : rawCode === 'SETTING_NOT_EDITABLE'
+              ? 'VALIDATION_FAILED'
+              : 'VALIDATION_FAILED';
+        const status = code === 'CONFIGURATION_NOT_FOUND' ? 404 : 400;
+        return reply.status(status).send(
+          createApiError({
+            code,
+            message: error instanceof Error ? error.message : 'Invalid setting',
+            correlationId: request.correlationId,
+            params: { key: request.params.key },
+          }),
+        );
+      }
+    },
+  );
+
+  app.delete<{ Params: { key: string } }>(
+    '/dashboard/settings/:key',
+    async (request, reply) => {
+      const access = requireOperator(request);
+      if (!access.ok) return reply.status(access.status).send(access.body);
+      try {
+        const result = await app.runtimeSettings.clear(request.params.key);
+        return {
+          setting: result.setting,
+          restartRequired: result.restartRequired,
+          correlationId: request.correlationId,
+        };
+      } catch (error) {
+        const rawCode =
+          error && typeof error === 'object' && 'code' in error
+            ? String((error as { code: unknown }).code)
+            : 'VALIDATION_FAILED';
+        const code =
+          rawCode === 'SETTING_NOT_FOUND'
+            ? 'CONFIGURATION_NOT_FOUND'
+            : 'VALIDATION_FAILED';
+        const status = code === 'CONFIGURATION_NOT_FOUND' ? 404 : 400;
+        return reply.status(status).send(
+          createApiError({
+            code,
+            message: error instanceof Error ? error.message : 'Invalid setting',
+            correlationId: request.correlationId,
+            params: { key: request.params.key },
+          }),
+        );
+      }
+    },
+  );
 
   app.get('/dashboard/providers', async (request, reply) => {
     const access = requireOperator(request);

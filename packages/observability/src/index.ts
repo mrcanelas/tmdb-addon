@@ -5,6 +5,7 @@ export type {
   LogEntry,
   HealthSnapshot,
   RuntimeSettingDeclaration,
+  RuntimeSettingType,
 } from './types.js';
 
 export { MetricsRegistry } from './metrics.js';

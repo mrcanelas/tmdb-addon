@@ -84,6 +84,12 @@ CREATE TABLE IF NOT EXISTS instance_vault_secrets (
   updated_at TEXT NOT NULL,
   UNIQUE(provider, kind)
 );
+
+CREATE TABLE IF NOT EXISTS instance_settings (
+  key TEXT PRIMARY KEY NOT NULL,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;
 
 /**
@@ -606,6 +612,41 @@ export class PostgresConfigurationStore implements ConfigurationStore {
       ],
     );
     return next;
+  }
+
+  async listInstanceSettings(): Promise<Record<string, string>> {
+    const result = await this.pool.query<{ key: string; value: string }>(
+      `SELECT key, value FROM instance_settings ORDER BY key`,
+    );
+    const settings: Record<string, string> = {};
+    for (const row of result.rows) {
+      settings[row.key] = row.value;
+    }
+    return settings;
+  }
+
+  async getInstanceSetting(key: string): Promise<string | null> {
+    const result = await this.pool.query<{ value: string }>(
+      `SELECT value FROM instance_settings WHERE key = $1`,
+      [key],
+    );
+    return result.rows[0]?.value ?? null;
+  }
+
+  async setInstanceSetting(key: string, value: string): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO instance_settings (key, value, updated_at)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (key) DO UPDATE SET
+         value = EXCLUDED.value,
+         updated_at = EXCLUDED.updated_at`,
+      [key, value, new Date().toISOString()],
+    );
+  }
+
+  async deleteInstanceSetting(key: string): Promise<boolean> {
+    const result = await this.pool.query(`DELETE FROM instance_settings WHERE key = $1`, [key]);
+    return (result.rowCount ?? 0) > 0;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {

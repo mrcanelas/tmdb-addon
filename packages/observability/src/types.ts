@@ -55,8 +55,16 @@ export interface HealthSnapshot {
   activeConfigurations?: number;
 }
 
+export type RuntimeSettingType = 'boolean' | 'string' | 'number' | 'url';
+
 export interface RuntimeSettingDeclaration {
   key: string;
   description: string;
   reload: 'hot' | 'worker-restart' | 'process-restart' | 'immutable';
+  /** Value type for validation and Dashboard editors. Defaults to string when omitted. */
+  type?: RuntimeSettingType;
+  /** When false or omitted for bootstrap keys, Dashboard cannot mutate the value. */
+  editable?: boolean;
+  /** When true, API responses mask the value and UI uses replace-only input. */
+  secret?: boolean;
 }

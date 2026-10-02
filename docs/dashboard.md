@@ -12,7 +12,7 @@ Protect with `METALAYER_DASHBOARD_TOKEN` (`x-metalayer-dashboard-token`).
 
 Overview, Health, **Providers**, Users, Configurations, Requests, Errors, Cache, Database, Workers, Logs, Security, Backups, Updates, **Settings**.
 
-Beta MVP exposes a thinner subset (overview, logs, backups, updates) and will grow toward Providers/Settings for Admin-first configuration.
+Beta MVP includes overview, health, logs, backups, updates, **Providers**, and editable **Settings**.
 
 ## Admin-first configuration
 
@@ -21,9 +21,11 @@ Prefer Admin over new env vars for day-two operations:
 | Area | Examples |
 |---|---|
 | Providers | Fanart API key; Trakt / SIMKL / AniList / MAL `CLIENT_ID` + `CLIENT_SECRET`; optional instance TMDB key; enable/disable |
-| Settings | `REDIS_URL`, `POSTGRES_URL` (after Lite bootstrap), cache limits/TTLs, TMDB proxy, telemetry, tracking-refresh scheduler |
+| Settings | Telemetry, tracking-refresh, catalog scan/sort budgets, cache TTLs, rate limits, TMDB proxy, `REDIS_URL`, `POSTGRES_URL` |
 
 Remain in environment (bootstrap): encryption key (+ ring), dashboard token, ports / public base URL, first-boot SQLite path.
+
+Settings API: `GET/PUT/DELETE /api/v1/dashboard/settings[/:key]`. Values persist in `instance_settings` (secrets masked on read). Hot keys apply in-process; `process-restart` keys set a restart-pending flag.
 
 ### Configure availability gate
 

@@ -152,6 +152,10 @@ export interface ConfigurationStore {
     providerId: string,
     state: InstanceProviderStoredState,
   ): Promise<InstanceProviderStoredState>;
+  listInstanceSettings(): Promise<Record<string, string>>;
+  getInstanceSetting(key: string): Promise<string | null>;
+  setInstanceSetting(key: string, value: string): Promise<void>;
+  deleteInstanceSetting(key: string): Promise<boolean>;
   listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]>;
   getRevision(
     configId: string,
@@ -226,6 +230,12 @@ function ensureSchema(db: DatabaseSync): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       UNIQUE(provider, kind)
+    );
+
+    CREATE TABLE IF NOT EXISTS instance_settings (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL
     );
   `);
 }
@@ -734,6 +744,41 @@ export class SqliteConfigurationStore implements ConfigurationStore {
         new Date().toISOString(),
       );
     return next;
+  }
+
+  async listInstanceSettings(): Promise<Record<string, string>> {
+    const rows = this.db
+      .prepare(`SELECT key, value FROM instance_settings ORDER BY key`)
+      .all() as Array<{ key: string; value: string }>;
+    const settings: Record<string, string> = {};
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+    return settings;
+  }
+
+  async getInstanceSetting(key: string): Promise<string | null> {
+    const row = this.db
+      .prepare(`SELECT value FROM instance_settings WHERE key = ?`)
+      .get(key) as { value: string } | undefined;
+    return row?.value ?? null;
+  }
+
+  async setInstanceSetting(key: string, value: string): Promise<void> {
+    this.db
+      .prepare(
+        `INSERT INTO instance_settings (key, value, updated_at)
+         VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET
+           value = excluded.value,
+           updated_at = excluded.updated_at`,
+      )
+      .run(key, value, new Date().toISOString());
+  }
+
+  async deleteInstanceSetting(key: string): Promise<boolean> {
+    const result = this.db.prepare(`DELETE FROM instance_settings WHERE key = ?`).run(key);
+    return Number(result.changes ?? 0) > 0;
   }
 
   async listRevisions(configId: string): Promise<ConfigurationRevisionSummary[]> {
