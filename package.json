@@ -1,7 +1,7 @@
 {
-  "name": "tmdb-addon",
-  "version": "3.1.7",
-  "description": "MetaLayer monorepo (legacy package name retained during migration)",
+  "name": "metalayer",
+  "version": "1.0.0-rc.1",
+  "description": "MetaLayer monorepo — metadata orchestration for Stremio",
   "private": true,
   "packageManager": "pnpm@11.8.0",
   "engines": {
@@ -24,12 +24,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:perf": "vitest run apps/server/src/performance.harness.test.ts",
+    "test:integration": "vitest run packages/persistence/src/postgres-store.test.ts packages/cache/src/redis.test.ts",
+    "test:e2e": "node scripts/e2e-smoke.mjs",
     "typecheck": "pnpm -F \"./packages/**\" -F \"./apps/**\" -r --if-present typecheck",
     "i18n:check": "pnpm -F @metalayer/i18n i18n:check",
     "i18n:pseudo": "pnpm -F @metalayer/i18n i18n:pseudo",
     "metalayer:upgrade-check": "node ./scripts/metalayer-upgrade-check.mjs",
     "metalayer:vault-reencrypt": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-vault-reencrypt.ts",
     "metalayer:tracking-refresh": "pnpm -F @metalayer/server exec tsx ../../scripts/metalayer-tracking-refresh.ts",
+    "metalayer:backup": "node ./scripts/metalayer-backup.mjs",
+    "metalayer:restore": "node ./scripts/metalayer-restore.mjs",
     "test:production": "node scripts/smoke-production.mjs"
   },
   "repository": {

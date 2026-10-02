@@ -34,12 +34,14 @@ import {
 } from '@metalayer/security';
 import { correlationPlugin } from './plugins/correlation.js';
 import { corsPlugin } from './plugins/cors.js';
+import { rateLimitPlugin } from './plugins/rate-limit.js';
 import { spaStaticPlugin } from './plugins/spa-static.js';
 import { apiV1Routes } from './routes/api-v1.js';
 import { nativeManifestRoutes } from './routes/native-manifest.js';
 import { nativeStremioRoutes } from './routes/native-stremio.js';
 import { legacyStremioRoutes } from './routes/legacy-stremio.js';
 import { InstanceProviderSettings } from './instance-provider-settings.js';
+import { RuntimeSettings } from './runtime-settings.js';
 
 export interface BuildAppOptions {
   logger?: boolean;
@@ -54,6 +56,7 @@ export interface BuildAppOptions {
   providerHealth?: ProviderHealthRegistry;
   providerCache?: CacheStore;
   instanceProviders?: InstanceProviderSettings;
+  runtimeSettings?: RuntimeSettings;
   correctionRegistry?: CorrectionRegistry;
   metrics?: MetricsRegistry;
   logBuffer?: BoundedLogBuffer;
@@ -72,6 +75,7 @@ declare module 'fastify' {
     providerHealth: ProviderHealthRegistry;
     providerCache: CacheStore;
     instanceProviders: InstanceProviderSettings;
+    runtimeSettings: RuntimeSettings;
     correctionRegistry: CorrectionRegistry;
     metrics: MetricsRegistry;
     logBuffer: BoundedLogBuffer;
@@ -156,12 +160,19 @@ export async function buildApp(options: BuildAppOptions = {}) {
       options.env ?? process.env,
       await store.listInstanceProviderStates(),
     );
+  const runtimeSettings =
+    options.runtimeSettings ??
+    new RuntimeSettings(store, options.env ?? process.env);
+  if (!options.runtimeSettings) {
+    await runtimeSettings.load();
+  }
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
   app.decorate('providerHealth', providerHealth);
   app.decorate('providerCache', providerCache);
   app.decorate('instanceProviders', instanceProviders);
+  app.decorate('runtimeSettings', runtimeSettings);
   app.decorate('correctionRegistry', correctionRegistry);
   app.decorate('metrics', metrics);
   app.decorate('logBuffer', logBuffer);
@@ -203,6 +214,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   await app.register(corsPlugin);
   await app.register(correlationPlugin);
+  await app.register(rateLimitPlugin);
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
   await app.register(nativeStremioRoutes);

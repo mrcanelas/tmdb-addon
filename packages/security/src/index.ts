@@ -30,3 +30,11 @@ export {
   type OAuthTrackingProvider,
   type OAuthRedirectAllowOptions,
 } from './oauth-redirect.js';
+
+export {
+  assertSafeRemoteUrl,
+  safeFetch,
+  SsrfBlockedError,
+  type AssertSafeRemoteUrlOptions,
+  type SafeFetchOptions,
+} from './ssrf.js';

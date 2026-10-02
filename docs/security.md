@@ -56,7 +56,12 @@ Tracking OAuth callbacks for Trakt, SIMKL, AniList, and MAL require a `state` va
 | OAuth callbacks accepted codes without validating `state`/nonce (Trakt/SIMKL/AniList; MAL partial) | Medium | Fixed — shared `beginOAuthSession` / `assertOAuthCallbackState` |
 | Fastify redact paths omitted `req.body.apiKey` | Low | Fixed — added to `FASTIFY_LOG_REDACT_PATHS` |
 
-Residual / follow-up (not Phase M blockers): deeper SSRF audit of custom URL artwork fetches, full operator threat model for multi-tenant Server mode, independent external pen-test before stable `1.0.0`.
+Residual / follow-up (not Phase M blockers): full operator threat model for multi-tenant Server mode, independent external pen-test before stable `1.0.0`.
+
+## SSRF and rate limits (beta.2+)
+
+- `assertSafeRemoteUrl` / `safeFetch` in `@metalayer/security` block non-HTTPS, loopback, link-local, and RFC1918 targets; optional host allowlists; redirect re-validation; response size and timeout caps. Fribb live fetch keeps a dedicated allowlist in `@metalayer/anime`.
+- In-process rate limiting on the Fastify app (`apps/server/src/plugins/rate-limit.ts`) returns `429` / `RATE_LIMITED`. Tunables: `METALAYER_RATE_LIMIT_MAX`, `METALAYER_RATE_LIMIT_WINDOW_MS` (Dashboard Settings once W5 lands).
 
 ## Related
 

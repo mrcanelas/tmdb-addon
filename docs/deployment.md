@@ -171,6 +171,7 @@ Requires Trakt/MAL OAuth **client** credentials from Admin Providers (or env def
 - Do not bake encryption keys or dashboard tokens into Docker images.
 - Telemetry stays off unless `METALAYER_TELEMETRY_ENABLED=true`.
 - Default backups never include vault plaintext.
+- Instance file backup/restore: `pnpm metalayer:backup --out ./backups` and `pnpm metalayer:restore --from <artifact>` (SQLite copy or `pg_dump`/`pg_restore`). Keep `METALAYER_ENCRYPTION_KEY` offline — never inside the backup archive. Full gate checklist: `docs/release-gates.md`.
 
 
 ### Production build and beta images

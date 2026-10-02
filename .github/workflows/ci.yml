@@ -80,7 +80,7 @@ jobs:
         env:
           POSTGRES_URL: postgres://metalayer:test-only@localhost:5432/metalayer
           REDIS_URL: redis://localhost:6379
-        run: pnpm exec vitest run packages/persistence/src/postgres-store.test.ts packages/cache/src/redis.test.ts
+        run: pnpm test:integration
 
   docker-smoke:
     runs-on: ubuntu-latest
