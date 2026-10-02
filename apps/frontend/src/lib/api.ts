@@ -536,6 +536,7 @@ export async function mutateCatalog(
   body: {
     action: StudioCatalogAction;
     customName?: string;
+    name?: { default: string; values?: Record<string, string> };
     toIndex?: number;
     tags?: string[];
     group?: string | null;

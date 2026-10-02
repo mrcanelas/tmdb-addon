@@ -86,5 +86,5 @@ them in stored order with 20-item pages; rules and sorting still apply.
 
 ## Still follow-up
 
-- Richer localized catalog display-name editing end-to-end in UI
 - Broader provider preview coverage beyond current adapters
+- AI Ranked List save UX polish (items already persist as `staticItems`)

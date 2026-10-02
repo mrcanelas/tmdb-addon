@@ -28,6 +28,7 @@ import {
   Plus,
   Search,
   Upload,
+  X,
 } from "lucide-react";
 import {
   bootstrapCatalogDraft,
@@ -35,6 +36,7 @@ import {
   createStudioCatalog,
   exportStudioCatalogs,
   fetchCatalogs,
+  fetchLocalization,
   importStudioCatalogs,
   mutateCatalog,
   previewCatalogResults,
@@ -50,6 +52,7 @@ import {
   Card,
   Chip,
   Input,
+  Modal,
   Table,
   Tabs,
   toast,
@@ -71,12 +74,39 @@ import {
 } from "@/components/catalogs/catalog-selection";
 import { cn } from "@/lib/utils";
 
+const RENAME_LOCALE_OPTIONS = ["en-US", "pt-BR", "es-ES"] as const;
+
 function displayName(catalog: CatalogListItem, locale: string): string {
   return resolveCatalogDisplayName(catalog as CatalogDefinition, locale);
 }
 
+function buildRenameLocaleRows(
+  existingValues: Record<string, string> | undefined,
+  metadataLocale?: string,
+  fallbacks: string[] = [],
+): string[] {
+  const ordered = new Set<string>();
+  if (metadataLocale) ordered.add(metadataLocale);
+  for (const locale of fallbacks) {
+    if (locale) ordered.add(locale);
+  }
+  for (const locale of Object.keys(existingValues ?? {})) {
+    ordered.add(locale);
+  }
+  return [...ordered];
+}
+
+type CatalogRenameDialog = {
+  kind: "rename";
+  catalogId: string;
+  defaultName: string;
+  values: Record<string, string>;
+  localeRows: string[];
+  addLocale: string | null;
+};
+
 type CatalogEditDialog =
-  | { kind: "rename"; catalogId: string; value: string }
+  | CatalogRenameDialog
   | { kind: "tags"; catalogId: string; value: string }
   | { kind: "group"; catalogId: string; value: string };
 
@@ -220,6 +250,7 @@ export function CatalogStudioPage() {
     action: StudioCatalogAction,
     extra?: {
       customName?: string;
+      name?: { default: string; values?: Record<string, string> };
       toIndex?: number;
       tags?: string[];
       group?: string | null;
@@ -369,15 +400,46 @@ export function CatalogStudioPage() {
     }
   }
 
-  function openEditDialog(
+  async function openEditDialog(
     kind: CatalogEditDialog["kind"],
     catalog: CatalogListItem,
   ) {
     if (kind === "rename") {
+      const existingValues = { ...(catalog.name?.values ?? {}) };
+      let metadataLocale: string | undefined;
+      let fallbacks: string[] = [];
+      const session = readCatalogSession();
+      if (session) {
+        try {
+          const result = await fetchLocalization(
+            session.configId,
+            session.editCredential,
+          );
+          metadataLocale = result.localization.metadataLocale;
+          fallbacks = result.localization.metadataFallbackLocales ?? [];
+        } catch {
+          // Still open with existing catalog values.
+        }
+      }
+      const localeRows = buildRenameLocaleRows(
+        existingValues,
+        metadataLocale,
+        fallbacks,
+      );
+      const values = { ...existingValues };
+      for (const locale of localeRows) {
+        if (!(locale in values)) values[locale] = "";
+      }
       setEditDialog({
-        kind,
+        kind: "rename",
         catalogId: catalog.instanceId,
-        value: displayName(catalog, i18n.language),
+        defaultName:
+          catalog.name?.default ??
+          catalog.customName ??
+          catalog.originalName,
+        values,
+        localeRows,
+        addLocale: null,
       });
       return;
     }
@@ -398,12 +460,25 @@ export function CatalogStudioPage() {
 
   async function submitEditDialog() {
     if (!editDialog) return;
+    if (editDialog.kind === "rename") {
+      const defaultName = editDialog.defaultName.trim();
+      if (!defaultName) return;
+      const values = Object.fromEntries(
+        Object.entries(editDialog.values)
+          .map(([locale, value]) => [locale, value.trim()] as const)
+          .filter(([, value]) => value.length > 0),
+      );
+      await runAction(editDialog.catalogId, "rename", {
+        name: {
+          default: defaultName,
+          values: Object.keys(values).length > 0 ? values : undefined,
+        },
+      });
+      setEditDialog(null);
+      return;
+    }
     const { kind, catalogId, value } = editDialog;
-    if (kind === "rename") {
-      const trimmed = value.trim();
-      if (!trimmed) return;
-      await runAction(catalogId, "rename", { customName: trimmed });
-    } else if (kind === "tags") {
+    if (kind === "tags") {
       await runAction(catalogId, "setTags", {
         tags: value
           .split(",")
@@ -540,23 +615,35 @@ export function CatalogStudioPage() {
     await persistOrder(reindexed);
   }
 
-  const dialogTitle =
-    editDialog?.kind === "rename"
-      ? t("catalogs.dialog.renameTitle")
-      : editDialog?.kind === "tags"
-        ? t("catalogs.dialog.tagsTitle")
-        : editDialog?.kind === "group"
-          ? t("catalogs.dialog.groupTitle")
-          : "";
+  const promptDialog =
+    editDialog?.kind === "tags" || editDialog?.kind === "group"
+      ? editDialog
+      : null;
+  const renameDialog = editDialog?.kind === "rename" ? editDialog : null;
 
-  const dialogLabel =
-    editDialog?.kind === "rename"
-      ? t("catalogs.renamePrompt")
-      : editDialog?.kind === "tags"
-        ? t("catalogs.tagsPrompt")
-        : editDialog?.kind === "group"
-          ? t("catalogs.groupPrompt")
-          : "";
+  const promptDialogTitle =
+    promptDialog?.kind === "tags"
+      ? t("catalogs.dialog.tagsTitle")
+      : promptDialog?.kind === "group"
+        ? t("catalogs.dialog.groupTitle")
+        : "";
+
+  const promptDialogLabel =
+    promptDialog?.kind === "tags"
+      ? t("catalogs.tagsPrompt")
+      : promptDialog?.kind === "group"
+        ? t("catalogs.groupPrompt")
+        : "";
+
+  const renameAddOptions = renameDialog
+    ? [
+        ...new Set([
+          ...RENAME_LOCALE_OPTIONS,
+          ...Object.keys(renameDialog.values),
+          ...renameDialog.localeRows,
+        ]),
+      ].filter((locale) => !renameDialog.localeRows.includes(locale))
+    : [];
 
   const allVisibleSelected =
     visibleCatalogs.length > 0 &&
@@ -842,13 +929,13 @@ export function CatalogStudioPage() {
       </div>
 
       <StudioPromptDialog
-        open={editDialog !== null}
-        title={dialogTitle}
-        label={dialogLabel}
-        value={editDialog?.value ?? ""}
+        open={promptDialog !== null}
+        title={promptDialogTitle}
+        label={promptDialogLabel}
+        value={promptDialog?.value ?? ""}
         onChange={(value) => {
-          if (!editDialog) return;
-          setEditDialog({ ...editDialog, value });
+          if (!promptDialog) return;
+          setEditDialog({ ...promptDialog, value });
         }}
         onConfirm={() => {
           void submitEditDialog();
@@ -857,6 +944,154 @@ export function CatalogStudioPage() {
         confirmLabel={t("catalogs.dialog.confirm")}
         cancelLabel={t("catalogs.dialog.cancel")}
       />
+
+      <Modal.Backdrop
+        isOpen={renameDialog !== null}
+        onOpenChange={(next) => {
+          if (!next) setEditDialog(null);
+        }}
+        variant="blur"
+        isDismissable
+      >
+        <Modal.Container size="md" placement="center">
+          <Modal.Dialog aria-labelledby="catalog-rename-title">
+            <Modal.CloseTrigger />
+            <Modal.Header>
+              <Modal.Heading id="catalog-rename-title">
+                {t("catalogs.dialog.renameTitle")}
+              </Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              {renameDialog ? (
+                <div className="grid gap-4">
+                  <label className="grid gap-1 text-sm text-foreground">
+                    <span>{t("catalogs.rename.defaultLabel")}</span>
+                    <Input
+                      type="text"
+                      value={renameDialog.defaultName}
+                      onChange={(event) =>
+                        setEditDialog({
+                          ...renameDialog,
+                          defaultName: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                  <div className="grid gap-2">
+                    <span className="text-sm text-foreground">
+                      {t("catalogs.rename.localeValuesLabel")}
+                    </span>
+                    {renameDialog.localeRows.map((locale) => (
+                      <div
+                        key={locale}
+                        className="flex items-end gap-2"
+                      >
+                        <label className="grid min-w-0 flex-1 gap-1 text-sm">
+                          <span className="ml-text-muted">{locale}</span>
+                          <Input
+                            type="text"
+                            value={renameDialog.values[locale] ?? ""}
+                            onChange={(event) =>
+                              setEditDialog({
+                                ...renameDialog,
+                                values: {
+                                  ...renameDialog.values,
+                                  [locale]: event.target.value,
+                                },
+                              })
+                            }
+                          />
+                        </label>
+                        <Button
+                          type="button"
+                          variant="tertiary"
+                          onPress={() => {
+                            const { [locale]: _removed, ...rest } =
+                              renameDialog.values;
+                            setEditDialog({
+                              ...renameDialog,
+                              values: rest,
+                              localeRows: renameDialog.localeRows.filter(
+                                (row) => row !== locale,
+                              ),
+                            });
+                          }}
+                        >
+                          {t("catalogs.rename.removeLocale")}
+                        </Button>
+                      </div>
+                    ))}
+                    {renameAddOptions.length > 0 ? (
+                      <div className="flex items-end gap-2">
+                        <label className="grid min-w-0 flex-1 gap-1 text-sm">
+                          <span className="ml-text-muted">
+                            {t("catalogs.rename.addLocale")}
+                          </span>
+                          <select
+                            className="h-10 rounded-md border border-border bg-surface px-3 text-foreground"
+                            value={renameDialog.addLocale ?? ""}
+                            onChange={(event) =>
+                              setEditDialog({
+                                ...renameDialog,
+                                addLocale: event.target.value || null,
+                              })
+                            }
+                          >
+                            <option value="">—</option>
+                            {renameAddOptions.map((locale) => (
+                              <option key={locale} value={locale}>
+                                {locale}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          isDisabled={!renameDialog.addLocale}
+                          onPress={() => {
+                            const locale = renameDialog.addLocale;
+                            if (!locale) return;
+                            setEditDialog({
+                              ...renameDialog,
+                              localeRows: [...renameDialog.localeRows, locale],
+                              values: {
+                                ...renameDialog.values,
+                                [locale]: renameDialog.values[locale] ?? "",
+                              },
+                              addLocale: null,
+                            });
+                          }}
+                        >
+                          {t("catalogs.rename.addLocale")}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                type="button"
+                variant="tertiary"
+                onPress={() => setEditDialog(null)}
+              >
+                {t("catalogs.dialog.cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onPress={() => {
+                  void submitEditDialog();
+                }}
+              >
+                {t("catalogs.dialog.confirm")}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </section>
   );
 }

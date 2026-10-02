@@ -9,6 +9,7 @@ export {
   setCatalogEnabled,
   setCatalogShowInHome,
   createCatalogInstance,
+  type CatalogLocalizedName,
 } from './studio.js';
 
 export {

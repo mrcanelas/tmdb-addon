@@ -94,6 +94,47 @@ describe('@metalayer/catalogs studio', () => {
     expect(toManifestCatalogEntries(catalogs)).toHaveLength(2);
   });
 
+  it('renames with localized name object and preserves values on string rename', () => {
+    let catalogs = [
+      createCatalogInstance({
+        provider: 'tmdb',
+        providerCatalogId: 'trending',
+        mediaType: 'movie',
+        originalName: 'Trending',
+        name: {
+          default: 'Trending',
+          values: { 'pt-BR': 'Em alta' },
+        },
+      }),
+    ];
+
+    catalogs = renameCatalog(catalogs, catalogs[0].instanceId, {
+      default: 'Trending Movies',
+      values: {
+        'pt-BR': 'Filmes em alta',
+        'es-ES': 'Películas en tendencia',
+      },
+    });
+    expect(catalogs[0].customName).toBe('Trending Movies');
+    expect(catalogs[0].name).toEqual({
+      default: 'Trending Movies',
+      values: {
+        'pt-BR': 'Filmes em alta',
+        'es-ES': 'Películas en tendencia',
+      },
+    });
+
+    catalogs = renameCatalog(catalogs, catalogs[0].instanceId, 'Hot');
+    expect(catalogs[0].customName).toBe('Hot');
+    expect(catalogs[0].name).toEqual({
+      default: 'Hot',
+      values: {
+        'pt-BR': 'Filmes em alta',
+        'es-ES': 'Películas en tendencia',
+      },
+    });
+  });
+
   it('resolves localized catalog names with language fallback', () => {
     const localized = catalog({
       instanceId: 'loc',

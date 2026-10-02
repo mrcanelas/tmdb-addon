@@ -80,23 +80,45 @@ export function toManifestCatalogEntries(
     }));
 }
 
+/** Localized catalog display name (`CatalogDefinition.name`). */
+export type CatalogLocalizedName = {
+  default: string;
+  values?: Record<string, string>;
+};
+
+/**
+ * Rename a catalog instance.
+ * String form keeps existing `name.values` (backward compatible).
+ * Object form sets `customName` to `default` and stores `name` as provided.
+ */
 export function renameCatalog(
   catalogs: CatalogDefinition[],
   instanceId: string,
-  customName: string,
+  nameInput: string | CatalogLocalizedName,
 ): CatalogDefinition[] {
-  return catalogs.map((catalog) =>
-    catalog.instanceId === instanceId
-      ? {
-          ...catalog,
-          customName,
-          name: {
-            default: customName,
-            values: catalog.name?.values,
-          },
-        }
-      : catalog,
-  );
+  return catalogs.map((catalog) => {
+    if (catalog.instanceId !== instanceId) return catalog;
+
+    if (typeof nameInput === 'string') {
+      return {
+        ...catalog,
+        customName: nameInput,
+        name: {
+          default: nameInput,
+          values: catalog.name?.values,
+        },
+      };
+    }
+
+    return {
+      ...catalog,
+      customName: nameInput.default,
+      name: {
+        default: nameInput.default,
+        values: nameInput.values,
+      },
+    };
+  });
 }
 
 export function duplicateCatalog(

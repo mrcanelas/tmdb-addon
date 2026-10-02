@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import { z } from 'zod';
 import {
   createMergedCatalog,
   createRotatedCatalog,
@@ -21,6 +22,11 @@ import type { ConfigurationStore } from '@metalayer/persistence';
 import type { CacheStore } from '@metalayer/cache';
 import type { ProviderHealthRegistry, TmdbFetch } from '@metalayer/providers';
 import { CATALOG_PAGE_SIZE, loadCatalogWindow } from '../stremio/catalog-window.js';
+
+const CatalogLocalizedNameSchema = z.object({
+  default: z.string().min(1),
+  values: z.record(z.string()).optional(),
+});
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -218,6 +224,7 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
         | 'setTags'
         | 'setGroup';
       customName?: string;
+      name?: { default: string; values?: Record<string, string> };
       toIndex?: number;
       tags?: string[];
       group?: string | null;
@@ -246,19 +253,57 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
     }
 
     switch (body.action) {
-      case 'rename':
+      case 'rename': {
+        if (body.name !== undefined) {
+          const parsed = CatalogLocalizedNameSchema.safeParse(body.name);
+          if (!parsed.success) {
+            return reply.status(400).send(
+              createApiError({
+                code: 'VALIDATION_FAILED',
+                message: 'name must include a non-empty default string',
+                correlationId: request.correlationId,
+                params: { field: 'name' },
+              }),
+            );
+          }
+          const defaultName = parsed.data.default.trim();
+          if (!defaultName) {
+            return reply.status(400).send(
+              createApiError({
+                code: 'VALIDATION_FAILED',
+                message: 'name.default is required for rename',
+                correlationId: request.correlationId,
+                params: { field: 'name' },
+              }),
+            );
+          }
+          const values = parsed.data.values
+            ? Object.fromEntries(
+                Object.entries(parsed.data.values)
+                  .map(([locale, value]) => [locale, value.trim()] as const)
+                  .filter(([, value]) => value.length > 0),
+              )
+            : undefined;
+          catalogs = renameCatalog(catalogs, instanceId, {
+            default: defaultName,
+            values:
+              values && Object.keys(values).length > 0 ? values : undefined,
+          });
+          break;
+        }
         if (!body.customName?.trim()) {
           return reply.status(400).send(
             createApiError({
               code: 'VALIDATION_FAILED',
-              message: 'customName is required for rename',
+              message: 'name or customName is required for rename',
               correlationId: request.correlationId,
-              params: { field: 'customName' },
+              params: { field: 'name' },
             }),
           );
         }
         catalogs = renameCatalog(catalogs, instanceId, body.customName.trim());
         break;
+      }
       case 'duplicate':
         catalogs = duplicateCatalog(catalogs, instanceId, {
           copySuffix: body.copySuffix,
