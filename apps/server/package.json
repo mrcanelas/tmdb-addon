@@ -1,0 +1,49 @@
+{
+  "name": "@metalayer/server",
+  "version": "1.0.0-rc.2",
+  "private": true,
+  "description": "MetaLayer HTTP API (Fastify) — management routes and future native Stremio routes",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit -p tsconfig.json && node build.mjs",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@fastify/static": "^10.1.0",
+    "@metalayer/anime": "workspace:*",
+    "@metalayer/api-errors": "workspace:*",
+    "@metalayer/cache": "workspace:*",
+    "@metalayer/catalogs": "workspace:*",
+    "@metalayer/config": "workspace:*",
+    "@metalayer/corrections": "workspace:*",
+    "@metalayer/identity": "workspace:*",
+    "@metalayer/identity-graph": "workspace:*",
+    "@metalayer/metadata-resolver": "workspace:*",
+    "@metalayer/observability": "workspace:*",
+    "@metalayer/persistence": "workspace:*",
+    "@metalayer/providers": "workspace:*",
+    "@metalayer/rules": "workspace:*",
+    "@metalayer/search-ai": "workspace:*",
+    "@metalayer/security": "workspace:*",
+    "@metalayer/sorting": "workspace:*",
+    "@metalayer/tracking": "workspace:*",
+    "dotenv": "^16.5.0",
+    "fastify": "^5.4.0",
+    "fastify-plugin": "^6.0.0",
+    "ioredis": "^5.11.1",
+    "lz-string": "^1.5.0",
+    "pg": "^8.22.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.5.3"
+  }
+}

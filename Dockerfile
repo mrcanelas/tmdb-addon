@@ -1,42 +1,48 @@
-# Etapa de construção do frontend
-FROM node:20-alpine AS builder
+# MetaLayer Server — API + configure/admin SPAs (also the Beamup build).
+# Build from repo root:
+#   docker build -t metalayer-server .
 
+FROM node:22-alpine AS deps
 WORKDIR /app
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY apps/frontend/package.json apps/frontend/
+COPY apps/dashboard/package.json apps/dashboard/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --network-concurrency=8
 
-# Copia os arquivos de configuração primeiro
-COPY package*.json ./
+FROM deps AS build
+COPY apps/server ./apps/server
+COPY apps/frontend ./apps/frontend
+COPY apps/dashboard ./apps/dashboard
+COPY tsconfig.base.json ./
+RUN pnpm -F @metalayer/server build \
+  && pnpm -F @metalayer/frontend build \
+  && pnpm -F @metalayer/dashboard build
 
-# Instala as dependências
-RUN npm install
-
-# Copia o restante do código fonte
-COPY . .
-
-# Build da aplicação React
-RUN npm run build
-
-# Etapa de produção
-FROM node:20-alpine AS runner
-
+FROM node:22-alpine AS runner
 WORKDIR /app
-
-# Copia apenas os arquivos necessários
-COPY package*.json ./
-
-# Instala apenas dependências de produção
-RUN npm install --production
-
-# Copia os arquivos do servidor
-COPY --from=builder /app/addon ./addon
-
-# Copia os arquivos buildados do React
-COPY --from=builder /app/dist ./dist
-
-# Copia a pasta public com as imagens
-COPY --from=builder /app/public ./public
-
-# Exposição da porta
-EXPOSE 1337
-
-# Comando para iniciar o servidor
-ENTRYPOINT ["node", "addon/server.js"] 
+RUN corepack enable \
+  && addgroup -S metalayer \
+  && adduser -S metalayer -G metalayer
+ENV NODE_ENV=production \
+    METALAYER_DEPLOYMENT_MODE=server \
+    METALAYER_API_HOST=0.0.0.0 \
+    METALAYER_API_PORT=1338 \
+    METALAYER_TELEMETRY_ENABLED=false \
+    METALAYER_CONFIGURE_DIST=/app/apps/frontend/dist \
+    METALAYER_ADMIN_DIST=/app/apps/dashboard/dist
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --prod --network-concurrency=8
+COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=build /app/apps/frontend/dist ./apps/frontend/dist
+COPY --from=build /app/apps/dashboard/dist ./apps/dashboard/dist
+COPY apps/server/package.json ./apps/server/
+RUN mkdir -p /data && chown -R metalayer:metalayer /data /app
+USER metalayer
+VOLUME ["/data"]
+EXPOSE 1338
+CMD ["node", "apps/server/dist/index.js"]

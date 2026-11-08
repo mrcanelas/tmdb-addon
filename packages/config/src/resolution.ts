@@ -1,0 +1,254 @@
+import { z } from 'zod';
+import {
+  DEFAULT_ANIME_EPISODE_PROVIDERS,
+  DEFAULT_FIELD_PROVIDERS,
+  ResolvableFieldSchema,
+  type FieldProviders,
+  type ResolvableField,
+} from './schema.js';
+
+/** AGENTS.md §10 — Field Resolution Chains schemas. */
+
+export const LocalePreferenceSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('locale'),
+    value: z.string().min(2),
+  }),
+  z.object({ type: z.literal('original-language') }),
+  z.object({ type: z.literal('no-language') }),
+  z.object({ type: z.literal('any-language') }),
+  z.object({ type: z.literal('provider-default') }),
+]);
+
+export const RegionPreferenceSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('region'),
+    value: z.string().length(2),
+  }),
+  z.object({ type: z.literal('configuration-region') }),
+  z.object({ type: z.literal('profile-region') }),
+  z.object({ type: z.literal('provider-default') }),
+]);
+
+export const ResolutionStrategySchema = z.enum([
+  'locale-first',
+  'provider-first',
+  'explicit',
+]);
+
+export const EpisodeOrderTypeSchema = z.enum([
+  'aired',
+  'absolute',
+  'dvd',
+  'production',
+  'provider-default',
+  'community-corrected',
+]);
+
+export const ArtworkTypeSchema = z.enum([
+  'poster',
+  'background',
+  'logo',
+  'episode-thumbnail',
+]);
+
+export const ResolutionStepSchema = z.object({
+  id: z.string().min(1),
+  provider: z.string().min(1),
+  locale: LocalePreferenceSchema.optional(),
+  region: RegionPreferenceSchema.optional(),
+  orderType: EpisodeOrderTypeSchema.optional(),
+  imageType: ArtworkTypeSchema.optional(),
+  minimumConfidence: z.number().min(0).max(1).optional(),
+  required: z.boolean().optional(),
+  enabled: z.boolean().default(true),
+});
+
+export const FieldResolutionPlanSchema = z
+  .object({
+    version: z.literal(1),
+    strategy: ResolutionStrategySchema,
+    providers: z.array(z.string().min(1)).optional(),
+    locales: z.array(LocalePreferenceSchema).optional(),
+    regions: z.array(RegionPreferenceSchema).optional(),
+    /**
+     * Episode-order preferences for `episodes` / `episodeOrder` plans (AGENTS.md §10.11).
+     * Expanded onto every generated step for locale-first / provider-first strategies.
+     */
+    orderTypes: z.array(EpisodeOrderTypeSchema).optional(),
+    steps: z.array(ResolutionStepSchema).optional(),
+    skipEmpty: z.boolean().default(true),
+    skipInvalid: z.boolean().default(true),
+    minimumConfidence: z.number().min(0).max(1).optional(),
+    useGlobalFallback: z.boolean().optional(),
+    useProviderDefaultFallback: z.boolean().optional(),
+    stopAfterFirstValid: z.boolean().default(true),
+  })
+  .superRefine((plan, ctx) => {
+    if (plan.strategy === 'explicit') {
+      if (!plan.steps || plan.steps.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'explicit strategy requires steps',
+          path: ['steps'],
+        });
+      }
+      return;
+    }
+    if (!plan.providers || plan.providers.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${plan.strategy} strategy requires providers`,
+        path: ['providers'],
+      });
+    }
+  });
+
+export const MediaResolutionConfigSchema = z.object({
+  fields: z.record(FieldResolutionPlanSchema).default({}),
+});
+
+export const ResolutionConfigSchema = z.object({
+  version: z.literal(1),
+  defaults: MediaResolutionConfigSchema.default({ fields: {} }),
+  mediaTypes: z
+    .object({
+      movie: MediaResolutionConfigSchema.optional(),
+      series: MediaResolutionConfigSchema.optional(),
+      anime: MediaResolutionConfigSchema.optional(),
+    })
+    .default({}),
+});
+
+export type LocalePreference = z.infer<typeof LocalePreferenceSchema>;
+export type RegionPreference = z.infer<typeof RegionPreferenceSchema>;
+export type ResolutionStrategy = z.infer<typeof ResolutionStrategySchema>;
+export type EpisodeOrderType = z.infer<typeof EpisodeOrderTypeSchema>;
+export type ArtworkType = z.infer<typeof ArtworkTypeSchema>;
+
+/** Fields whose plans carry `orderTypes` (episode structure, AGENTS.md §10.11). */
+export const EPISODE_STRUCTURE_FIELDS: ReadonlySet<string> = new Set(['episodes', 'episodeOrder']);
+
+export function isEpisodeStructureField(field: string): boolean {
+  return EPISODE_STRUCTURE_FIELDS.has(field);
+}
+
+/** Default order preference: series air order; anime absolute numbering. */
+export function defaultOrderTypesForMediaType(
+  mediaType?: 'movie' | 'series' | 'anime',
+): EpisodeOrderType[] {
+  return mediaType === 'anime'
+    ? ['absolute', 'provider-default']
+    : ['aired', 'provider-default'];
+}
+export type ResolutionStep = z.infer<typeof ResolutionStepSchema>;
+export type FieldResolutionPlan = z.infer<typeof FieldResolutionPlanSchema>;
+export type MediaResolutionConfig = z.infer<typeof MediaResolutionConfigSchema>;
+export type ResolutionConfig = z.infer<typeof ResolutionConfigSchema>;
+
+export function parseResolutionConfig(input: unknown): ResolutionConfig {
+  return ResolutionConfigSchema.parse(input);
+}
+
+/**
+ * Build a provider-first plan from a legacy ordered provider chain.
+ * Locales default to preferred metadata locale → en-US → original-language.
+ */
+export function planFromProviderChain(
+  providers: string[],
+  locales: LocalePreference[] = [
+    { type: 'locale', value: 'en-US' },
+    { type: 'original-language' },
+  ],
+  strategy: ResolutionStrategy = 'provider-first',
+  options: { orderTypes?: EpisodeOrderType[] } = {},
+): FieldResolutionPlan {
+  return FieldResolutionPlanSchema.parse({
+    version: 1,
+    strategy,
+    providers,
+    locales,
+    orderTypes: options.orderTypes,
+    skipEmpty: true,
+    skipInvalid: true,
+    stopAfterFirstValid: true,
+  });
+}
+
+/** Convert legacy `fieldProviders` map into a ResolutionConfig defaults block. */
+export function resolutionConfigFromFieldProviders(
+  fieldProviders: FieldProviders,
+  metadataLocale = 'en-US',
+  fallbackLocales: string[] = [],
+): ResolutionConfig {
+  const locales: LocalePreference[] = [
+    { type: 'locale', value: metadataLocale },
+    ...fallbackLocales.map((value) => ({
+      type: 'locale' as const,
+      value,
+    })),
+    { type: 'original-language' },
+  ];
+
+  const fields: Record<string, FieldResolutionPlan> = {};
+  for (const field of ResolvableFieldSchema.options) {
+    const providers =
+      fieldProviders[field] ?? DEFAULT_FIELD_PROVIDERS[field] ?? ['tmdb'];
+    const strategy =
+      field === 'title' || field === 'description' || field === 'originalTitle'
+        ? 'locale-first'
+        : 'provider-first';
+    const fieldLocales: LocalePreference[] = field === 'title' || field === 'description'
+      ? locales
+      : ['poster', 'background', 'logo'].includes(field)
+        ? [...locales.filter(locale => locale.type !== 'original-language'), { type: 'no-language' }, { type: 'any-language' }]
+        : [{ type: 'provider-default' }];
+    fields[field] = planFromProviderChain(providers, fieldLocales, strategy, {
+      orderTypes: isEpisodeStructureField(field)
+        ? defaultOrderTypesForMediaType('series')
+        : undefined,
+    });
+  }
+
+  // Anime episode structure: anime-native providers first, absolute numbering (AGENTS.md §10.11, §17).
+  const animeFields: Record<string, FieldResolutionPlan> = {};
+  for (const field of EPISODE_STRUCTURE_FIELDS) {
+    const explicit = fieldProviders[field];
+    const providers =
+      explicit && explicit.some((provider) => ['anilist', 'mal', 'kitsu'].includes(provider))
+        ? explicit
+        : DEFAULT_ANIME_EPISODE_PROVIDERS;
+    animeFields[field] = planFromProviderChain(
+      providers,
+      [{ type: 'provider-default' }],
+      'provider-first',
+      { orderTypes: defaultOrderTypesForMediaType('anime') },
+    );
+  }
+
+  return ResolutionConfigSchema.parse({
+    version: 1,
+    defaults: { fields },
+    mediaTypes: { anime: { fields: animeFields } },
+  });
+}
+
+export function defaultResolutionConfig(
+  metadataLocale = 'en-US',
+): ResolutionConfig {
+  return resolutionConfigFromFieldProviders(
+    DEFAULT_FIELD_PROVIDERS,
+    metadataLocale,
+  );
+}
+
+export function getPlanForField(
+  config: ResolutionConfig,
+  field: ResolvableField | string,
+  mediaType?: 'movie' | 'series' | 'anime',
+): FieldResolutionPlan | undefined {
+  const mediaOverride = mediaType
+    ? config.mediaTypes[mediaType]?.fields[field]
+    : undefined;
+  return mediaOverride ?? config.defaults.fields[field];
+}

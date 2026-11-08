@@ -1,0 +1,22 @@
+{
+  "id": "tmdb-addon",
+  "version": "3.1.7",
+  "name": "The Movie Database Addon",
+  "description": "Fixture manifest for contract tests",
+  "resources": ["catalog", "meta"],
+  "types": ["movie", "series"],
+  "idPrefixes": ["tmdb:"],
+  "behaviorHints": {
+    "configurable": true,
+    "configurationRequired": false
+  },
+  "catalogs": [
+    {
+      "id": "tmdb.popular",
+      "type": "movie",
+      "name": "Popular",
+      "pageSize": 20,
+      "extra": []
+    }
+  ]
+}

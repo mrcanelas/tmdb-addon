@@ -1,0 +1,78 @@
+name: Publish MetaLayer Docker images (GHCR)
+
+on:
+  push:
+    tags:
+      - 'metalayer-v*'
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  metalayer-images:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set release tags
+        id: tags
+        run: |
+          TAG="${GITHUB_REF_NAME#metalayer-v}"
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$ ]]; then
+            echo 'Invalid release tag'
+            exit 1
+          fi
+          for package in package.json apps/server/package.json; do
+            test "$(jq -r .version "$package")" = "$TAG"
+          done
+          test "$(node -p 'require("./packages/identity").METALAYER.version')" = "$TAG"
+          CHANNEL=
+          if [[ "$TAG" == *-* ]]; then
+            CHANNEL="${TAG#*-}"
+            CHANNEL="${CHANNEL%%.*}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Lite
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.lite
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/metalayer-lite:${{ steps.tags.outputs.tag }}
+
+      - name: Build and push Server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/metalayer-server:${{ steps.tags.outputs.tag }}
+
+      - name: Promote the prerelease channel after both images are published
+        if: steps.tags.outputs.channel != ''
+        env:
+          TAG: ${{ steps.tags.outputs.tag }}
+          CHANNEL: ${{ steps.tags.outputs.channel }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          for mode in lite server; do
+            image="ghcr.io/$OWNER/metalayer-$mode"
+            docker buildx imagetools create --tag "$image:$CHANNEL" "$image:$TAG"
+          done

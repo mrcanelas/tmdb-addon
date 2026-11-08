@@ -1,0 +1,35 @@
+{
+  "name": "@metalayer/dashboard",
+  "version": "1.0.0-beta.1",
+  "private": true,
+  "description": "MetaLayer operator dashboard (greenfield)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@heroui/react": "^3.2.2",
+    "@heroui/styles": "^3.2.2",
+    "@metalayer/i18n": "workspace:*",
+    "@metalayer/shared-ui": "workspace:*",
+    "i18next": "^25.2.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-i18next": "^15.5.2",
+    "react-router-dom": "^6.30.0"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.3.22",
+    "@rsbuild/plugin-react": "^1.3.2",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^5.5.3"
+  }
+}

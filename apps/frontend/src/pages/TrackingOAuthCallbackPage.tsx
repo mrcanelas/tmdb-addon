@@ -1,0 +1,91 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useTrackingCallbackMutation } from '@/api/hooks/use-tracking';
+import type { TrackingOAuthProvider } from '@/lib/api';
+import { usePageHeader } from '@/contexts/page-title';
+import { LoadingState } from '@/components/metalayer/LoadingState';
+import { ErrorState } from '@/components/metalayer/ErrorState';
+
+const OAUTH_PROVIDERS = new Set<TrackingOAuthProvider>([
+  'trakt',
+  'simkl',
+  'anilist',
+  'mal',
+]);
+
+function brandLabel(provider: TrackingOAuthProvider): string {
+  switch (provider) {
+    case 'simkl':
+      return 'SIMKL';
+    case 'anilist':
+      return 'AniList';
+    case 'mal':
+      return 'MyAnimeList';
+    default:
+      return 'Trakt';
+  }
+}
+
+export function TrackingOAuthCallbackPage() {
+  const { t } = useTranslation(['tracking', 'common']);
+  const { provider: providerParam } = useParams<{ provider: string }>();
+  const [params] = useSearchParams();
+  const provider = (
+    OAUTH_PROVIDERS.has(providerParam as TrackingOAuthProvider)
+      ? providerParam
+      : 'trakt'
+  ) as TrackingOAuthProvider;
+  const brand = brandLabel(provider);
+  usePageHeader(
+    t('tracking.oauth.title', { provider: brand }),
+    t('tracking.oauth.intro', { provider: brand }),
+  );
+  const callbackMutation = useTrackingCallbackMutation(provider);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const code = params.get('code');
+    if (!code || callbackMutation.isPending || done) return;
+    if (!OAUTH_PROVIDERS.has(providerParam as TrackingOAuthProvider)) {
+      setDone(true);
+      return;
+    }
+    const redirectUri = `${window.location.origin}/configure/oauth/${provider}/callback`;
+    const oauthState = params.get('state') ?? undefined;
+    void callbackMutation
+      .mutateAsync({ code, redirectUri, state: oauthState })
+      .then(() => {
+        setDone(true);
+        window.close();
+      })
+      .catch(() => {
+        setDone(true);
+      });
+  }, [params, callbackMutation, done, provider, providerParam]);
+
+  const invalidProvider = !OAUTH_PROVIDERS.has(
+    providerParam as TrackingOAuthProvider,
+  );
+
+  return (
+    <section className="space-y-6 p-6">
+      {invalidProvider ? (
+        <ErrorState message={t('tracking.oauth.error', { provider: brand })} />
+      ) : null}
+      {!invalidProvider && callbackMutation.isPending ? (
+        <LoadingState
+          label={t('tracking.oauth.connecting', { provider: brand })}
+        />
+      ) : null}
+      {!invalidProvider && callbackMutation.isError ? (
+        <ErrorState message={t('tracking.oauth.error', { provider: brand })} />
+      ) : null}
+      {!invalidProvider && callbackMutation.isSuccess ? (
+        <p className="text-sm text-foreground" role="status">
+          {t('tracking.oauth.success', { provider: brand })}
+        </p>
+      ) : null}
+    </section>
+  );
+}

@@ -1,0 +1,74 @@
+import { toManifestCatalogEntries } from '@metalayer/catalogs';
+import type { MetaLayerConfig } from '@metalayer/config';
+import {
+  SEARCH_CATALOG_ID,
+  searchCatalogName,
+  searchMediaTypesFor,
+} from './search.js';
+
+export interface ManifestIdentity {
+  manifestId: string;
+  manifestName: string;
+  version: string;
+}
+
+export function buildStremioManifest(
+  config: MetaLayerConfig,
+  identity: ManifestIdentity,
+  description: string,
+  options: { pageSize?: number } = {},
+) {
+  const pageSize = options.pageSize ?? 20;
+  const locale = config.localization.metadataLocale;
+  const catalogs: Array<{
+    id: string;
+    type: string;
+    name: string;
+    pageSize?: number;
+    extra: Array<{ name: string; isRequired: boolean }>;
+    extraSupported: string[];
+  }> = toManifestCatalogEntries(
+    config.catalogs,
+    locale,
+    config.presentation,
+  ).map(({ id, type, name }) => ({
+    id,
+    type,
+    name,
+    ...(pageSize !== undefined ? { pageSize } : {}),
+    extra: [{ name: 'skip', isRequired: false }],
+    extraSupported: ['skip'],
+  }));
+
+  // Search catalogs require `search`, so Stremio never renders them on Home.
+  for (const mediaType of searchMediaTypesFor(config)) {
+    catalogs.push({
+      id: SEARCH_CATALOG_ID,
+      type: mediaType,
+      name: searchCatalogName(mediaType, locale),
+      ...(pageSize !== undefined ? { pageSize } : {}),
+      extra: [
+        { name: 'search', isRequired: true },
+        { name: 'skip', isRequired: false },
+      ],
+      extraSupported: ['search', 'skip'],
+    });
+  }
+
+  const types = [...new Set(catalogs.flatMap((catalog) => catalog.type === 'anime' ? ['anime', 'movie', 'series'] : [catalog.type]))];
+
+  return {
+    id: identity.manifestId,
+    version: identity.version,
+    name: identity.manifestName,
+    description,
+    resources: catalogs.length > 0 ? ['catalog', 'meta'] : ['meta'],
+    types: types.length > 0 ? types : ['movie', 'series'],
+    idPrefixes: ['tt', 'tmdb:', 'anilist:', 'mal:', 'kitsu:'],
+    catalogs,
+    behaviorHints: {
+      configurable: true,
+      configurationRequired: false,
+    },
+  };
+}

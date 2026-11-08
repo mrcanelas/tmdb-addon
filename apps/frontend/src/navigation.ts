@@ -1,0 +1,357 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  Blocks,
+  Filter,
+  Heart,
+  House,
+  Layers,
+  LayoutDashboard,
+  LibraryBig,
+  Save,
+  ScanSearch,
+  UsersRound,
+} from 'lucide-react';
+
+/**
+ * Primary configure destinations (`docs/configure-navigation-contract.md`).
+ * Former modules live as tabs / deep links under these hubs.
+ */
+export type ConfigureModuleId =
+  | 'home'
+  | 'sources'
+  | 'rules'
+  | 'catalogs'
+  | 'metas'
+  | 'profiles'
+  | 'review'
+  | 'save-install'
+  | 'dashboard'
+  | 'donate';
+
+export type ConfigureNavKind = 'route' | 'external' | 'action';
+
+export interface ConfigureNavItem {
+  id: ConfigureModuleId;
+  labelKey: string;
+  /**
+   * When false, item is Advanced-only.
+   * Utility items (`dashboard`, `donate`) stay visible in Simple for now —
+   * Dashboard can flip to `false` later if Simple should hide operator entry.
+   */
+  simpleMode: boolean;
+  /** Separates primary modules from bottom utilities in the rail */
+  pinnedBottom?: boolean;
+  Icon: LucideIcon;
+  kind: ConfigureNavKind;
+  /** Internal React Router path (kind: route) */
+  path?: string;
+  /** Absolute or host path outside configure (kind: external) */
+  href?: string;
+  /** App action id (kind: action) */
+  action?: 'donate';
+}
+
+export const CONFIGURE_NAV: ConfigureNavItem[] = [
+  {
+    id: 'home',
+    path: '/',
+    labelKey: 'nav.home',
+    simpleMode: true,
+    kind: 'route',
+    Icon: House,
+  },
+  {
+    id: 'sources',
+    path: '/sources',
+    labelKey: 'nav.sources',
+    simpleMode: true,
+    kind: 'route',
+    Icon: Blocks,
+  },
+  {
+    id: 'rules',
+    path: '/rules',
+    labelKey: 'nav.rules',
+    simpleMode: true,
+    kind: 'route',
+    Icon: Filter,
+  },
+  {
+    id: 'catalogs',
+    path: '/catalogs',
+    labelKey: 'nav.catalogs',
+    simpleMode: true,
+    kind: 'route',
+    Icon: LibraryBig,
+  },
+  {
+    id: 'metas',
+    path: '/metas',
+    labelKey: 'nav.metas',
+    simpleMode: true,
+    kind: 'route',
+    Icon: Layers,
+  },
+  {
+    id: 'profiles',
+    path: '/profiles',
+    labelKey: 'nav.profiles',
+    simpleMode: false,
+    kind: 'route',
+    Icon: UsersRound,
+  },
+  {
+    id: 'review',
+    path: '/review',
+    labelKey: 'nav.review',
+    simpleMode: false,
+    kind: 'route',
+    Icon: ScanSearch,
+  },
+  {
+    id: 'save-install',
+    path: '/save-install',
+    labelKey: 'nav.saveInstall',
+    simpleMode: true,
+    kind: 'route',
+    Icon: Save,
+  },
+  {
+    id: 'dashboard',
+    // Resolved at click/render time — see resolveDashboardHref().
+    href: '/admin/',
+    labelKey: 'nav.dashboard',
+    simpleMode: true,
+    pinnedBottom: true,
+    kind: 'external',
+    Icon: LayoutDashboard,
+  },
+  {
+    id: 'donate',
+    labelKey: 'nav.donate',
+    simpleMode: true,
+    pinnedBottom: true,
+    kind: 'action',
+    action: 'donate',
+    Icon: Heart,
+  },
+];
+
+/** Public donation destinations (independent implementation — not AIOStreams code). */
+export const DONATE_OPTIONS = [
+  {
+    id: 'github-sponsors',
+    labelKey: 'donate.githubSponsors',
+    href: 'https://github.com/sponsors/mrcanelas',
+    Icon: Heart,
+  },
+  {
+    id: 'kofi',
+    labelKey: 'donate.kofi',
+    href: 'https://ko-fi.com/mrcanelas',
+    Icon: Heart,
+  },
+] as const;
+
+/**
+ * Operator Dashboard URL.
+ *
+ * Same-origin `/admin/` works when the API serves both SPAs.
+ * Configure Rsbuild (port 5174) must open Dashboard Rsbuild (5175) instead —
+ * otherwise React Router of Configure loads at `/admin` and errors with
+ * "base URL of /configure".
+ */
+export function resolveDashboardHref(fallback = '/admin/'): string {
+  const fromEnv =
+    typeof process !== 'undefined'
+      ? process.env.PUBLIC_METALAYER_DASHBOARD_URL?.trim()
+      : undefined;
+  if (fromEnv) {
+    return fromEnv.endsWith('/') ? fromEnv : `${fromEnv}/`;
+  }
+  if (typeof window !== 'undefined' && window.location.port === '5174') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:5175/admin/`;
+  }
+  return fallback.endsWith('/') ? fallback : `${fallback}/`;
+}
+
+/** Default entry path when jumping to a hub via Prev / Next. */
+export const CONFIGURE_HUB_ENTRY: Partial<Record<ConfigureModuleId, string>> = {
+  home: '/',
+  sources: '/sources',
+  rules: '/rules',
+  catalogs: '/catalogs',
+  metas: '/metas/fields',
+  profiles: '/profiles',
+  review: '/review/inspector',
+  'save-install': '/save-install',
+};
+
+export interface ConfigureSearchDestination {
+  id: string;
+  path: string;
+  /** Breadcrumb label keys, e.g. Metas → Language */
+  labelKeys: string[];
+  simpleMode: boolean;
+}
+
+/** Flat destinations for the header search modal. */
+export const CONFIGURE_SEARCH_DESTINATIONS: ConfigureSearchDestination[] = [
+  { id: 'home', path: '/', labelKeys: ['nav.home'], simpleMode: true },
+  {
+    id: 'sources-providers',
+    path: '/sources',
+    labelKeys: ['nav.sources'],
+    simpleMode: true,
+  },
+  {
+    id: 'sources-tracking',
+    path: '/sources/tracking',
+    labelKeys: ['nav.sources', 'nav.tracking'],
+    simpleMode: true,
+  },
+  {
+    id: 'sources-search',
+    path: '/sources/search',
+    labelKeys: ['nav.sources', 'nav.searchAi'],
+    simpleMode: true,
+  },
+  {
+    id: 'rules',
+    path: '/rules',
+    labelKeys: ['nav.rules'],
+    simpleMode: true,
+  },
+  {
+    id: 'catalogs',
+    path: '/catalogs',
+    labelKeys: ['nav.catalogs'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-fields',
+    path: '/metas/fields',
+    labelKeys: ['nav.metas', 'hub.metas.tab.fields'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-language',
+    path: '/metas/fields?field=general',
+    labelKeys: ['nav.metas', 'hub.metas.tab.language'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-appearance',
+    path: '/metas/fields?field=general',
+    labelKeys: ['nav.metas', 'hub.metas.tab.appearance'],
+    simpleMode: true,
+  },
+  {
+    id: 'metas-general',
+    path: '/metas/fields?field=general',
+    labelKeys: ['nav.metas', 'hub.metas.tab.general'],
+    simpleMode: true,
+  },
+  {
+    id: 'profiles',
+    path: '/profiles',
+    labelKeys: ['nav.profiles'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-inspector',
+    path: '/review/inspector',
+    labelKeys: ['nav.review', 'hub.review.tab.inspector'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-corrections',
+    path: '/review/corrections',
+    labelKeys: ['nav.review', 'hub.review.tab.corrections'],
+    simpleMode: false,
+  },
+  {
+    id: 'review-diagnostics',
+    path: '/review/diagnostics',
+    labelKeys: ['nav.review', 'hub.review.tab.diagnostics'],
+    simpleMode: false,
+  },
+  {
+    id: 'save-install',
+    path: '/save-install',
+    labelKeys: ['nav.saveInstall'],
+    simpleMode: true,
+  },
+];
+
+function normalizePath(pathname: string): string {
+  if (!pathname || pathname === '/') return '/';
+  return pathname.replace(/\/+$/, '') || '/';
+}
+
+export function matchConfigureHub(pathname: string): ConfigureModuleId {
+  const path = normalizePath(pathname);
+  if (path === '/') return 'home';
+
+  const ranked = CONFIGURE_NAV.filter(
+    (item) => item.kind === 'route' && item.path && item.path !== '/',
+  ).sort((a, b) => (b.path?.length ?? 0) - (a.path?.length ?? 0));
+
+  for (const item of ranked) {
+    const itemPath = item.path!;
+    if (path === itemPath || path.startsWith(`${itemPath}/`)) {
+      return item.id;
+    }
+  }
+
+  return 'home';
+}
+
+export function getVisibleConfigureNav(
+  mode: 'simple' | 'advanced',
+): ConfigureNavItem[] {
+  return CONFIGURE_NAV.filter(
+    (item) => mode === 'advanced' || item.simpleMode,
+  );
+}
+
+/** Route hubs only — used by header Prev / Next. */
+export function getConfigureRouteNav(
+  mode: 'simple' | 'advanced',
+): ConfigureNavItem[] {
+  return getVisibleConfigureNav(mode).filter((item) => item.kind === 'route');
+}
+
+/** Adjacent hub entry path for header Prev / Next (-1 | 1). */
+export function getAdjacentHubPath(
+  pathname: string,
+  mode: 'simple' | 'advanced',
+  direction: -1 | 1,
+): string | null {
+  const visible = getConfigureRouteNav(mode);
+  const currentId = matchConfigureHub(pathname);
+  const index = visible.findIndex((item) => item.id === currentId);
+  if (index < 0) return null;
+  const next = visible[index + direction];
+  if (!next?.path) return null;
+  return CONFIGURE_HUB_ENTRY[next.id] ?? next.path;
+}
+
+/** Legacy paths kept as redirects for bookmarks and existing links. */
+export const CONFIGURE_LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
+  { from: '/overview', to: '/' },
+  { from: '/home', to: '/' },
+  { from: '/catalog-studio', to: '/catalogs' },
+  { from: '/sorting', to: '/catalogs' },
+  { from: '/meta-builder', to: '/metas/fields' },
+  { from: '/resolution', to: '/metas/fields' },
+  { from: '/language-region', to: '/metas/fields?field=general' },
+  { from: '/appearance', to: '/metas/fields?field=general' },
+  { from: '/inspector', to: '/review/inspector' },
+  { from: '/corrections', to: '/review/corrections' },
+  { from: '/advanced', to: '/review/diagnostics' },
+  { from: '/diagnostics', to: '/review/diagnostics' },
+  { from: '/tracking', to: '/sources/tracking' },
+  { from: '/search-ai', to: '/sources/search' },
+];

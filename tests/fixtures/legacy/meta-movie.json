@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "id": "tmdb:106646",
+    "type": "movie",
+    "name": "The Wolf of Wall Street",
+    "poster": "https://image.tmdb.org/t/p/w500/poster.jpg",
+    "background": "https://image.tmdb.org/t/p/w1280/background.jpg",
+    "logo": "https://image.tmdb.org/t/p/w500/logo.png",
+    "description": "Example movie metadata",
+    "releaseInfo": "2013-12-25",
+    "runtime": "180 min",
+    "year": 2013,
+    "imdbRating": "8.2",
+    "genres": ["Crime", "Comedy", "Drama"],
+    "videos": [
+      {
+        "type": "Trailer",
+        "name": "Official Trailer",
+        "youtube_id": "abc123"
+      }
+    ]
+  }
+}

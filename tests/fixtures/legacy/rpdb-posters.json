@@ -1,0 +1,12 @@
+{
+  "language": "pt-BR",
+  "rpdbkey": "REDACTED_RPDB_KEY",
+  "tmdbPrefix": "true",
+  "catalogs": [
+    {
+      "id": "tmdb.popular",
+      "type": "movie",
+      "showInHome": true
+    }
+  ]
+}

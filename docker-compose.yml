@@ -1,9 +1,0 @@
-services:
-  tmdb-addon:
-    build: .
-    container_name: tmdb-addon
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    restart: unless-stopped

@@ -1,0 +1,17 @@
+{
+  "language": "en-US",
+  "traktAccessToken": "REDACTED_TRAKT_ACCESS",
+  "traktRefreshToken": "REDACTED_TRAKT_REFRESH",
+  "catalogs": [
+    {
+      "id": "trakt.watchlist",
+      "type": "movie",
+      "showInHome": true
+    },
+    {
+      "id": "trakt.recommendations",
+      "type": "series",
+      "showInHome": false
+    }
+  ]
+}

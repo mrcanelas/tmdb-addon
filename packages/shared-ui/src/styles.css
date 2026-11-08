@@ -1,0 +1,55 @@
+@import "./tokens.css";
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .ml-surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .ml-elevated {
+    background: var(--surface-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .ml-glass {
+    background: color-mix(in oklab, var(--surface) 82%, transparent);
+    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .ml-text-muted {
+    color: var(--muted);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

@@ -1,0 +1,50 @@
+# MetaLayer Lite — single container (API + SQLite + configure/admin SPAs)
+# Build from repo root:
+#   docker build -f docker/Dockerfile.lite -t metalayer-lite .
+
+FROM node:22-alpine AS deps
+WORKDIR /app
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY apps/frontend/package.json apps/frontend/
+COPY apps/dashboard/package.json apps/dashboard/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --network-concurrency=8
+
+FROM deps AS build
+COPY apps/server ./apps/server
+COPY apps/frontend ./apps/frontend
+COPY apps/dashboard ./apps/dashboard
+COPY tsconfig.base.json ./
+RUN pnpm -F @metalayer/server build \
+  && pnpm -F @metalayer/frontend build \
+  && pnpm -F @metalayer/dashboard build
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+RUN corepack enable \
+  && addgroup -S metalayer \
+  && adduser -S metalayer -G metalayer
+ENV NODE_ENV=production \
+    METALAYER_DEPLOYMENT_MODE=lite \
+    METALAYER_API_HOST=0.0.0.0 \
+    METALAYER_API_PORT=1338 \
+    METALAYER_SQLITE_PATH=/data/metalayer.sqlite \
+    METALAYER_TELEMETRY_ENABLED=false \
+    METALAYER_CONFIGURE_DIST=/app/apps/frontend/dist \
+    METALAYER_ADMIN_DIST=/app/apps/dashboard/dist
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --prod --network-concurrency=8
+COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=build /app/apps/frontend/dist ./apps/frontend/dist
+COPY --from=build /app/apps/dashboard/dist ./apps/dashboard/dist
+COPY apps/server/package.json ./apps/server/
+RUN mkdir -p /data && chown -R metalayer:metalayer /data /app
+USER metalayer
+VOLUME ["/data"]
+EXPOSE 1338
+# Secrets must be injected at runtime — never bake METALAYER_ENCRYPTION_KEY into the image.
+CMD ["node", "apps/server/dist/index.js"]

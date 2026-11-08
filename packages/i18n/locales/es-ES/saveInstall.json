@@ -1,0 +1,15 @@
+{
+  "saveInstall.title": "Guardar e instalar",
+  "saveInstall.intro": "Instala esta configuración de MetaLayer en Stremio. La URL del manifiesto nunca incluye secretos.",
+  "saveInstall.loading": "Preparando instalación…",
+  "saveInstall.loadError": "No se pudo preparar una configuración instalable.",
+  "saveInstall.section.manifest": "URL del manifiesto",
+  "saveInstall.manifestHint": "Añade esta URL en Stremio o ábrela con el enlace del protocolo Stremio.",
+  "saveInstall.copyUrl": "Copiar URL del manifiesto",
+  "saveInstall.openStremio": "Abrir en Stremio",
+  "saveInstall.copyOk": "URL del manifiesto copiada.",
+  "saveInstall.copyError": "No se pudo copiar la URL. Cópiala manualmente del campo de arriba.",
+  "saveInstall.section.config": "Configuración",
+  "saveInstall.configId": "ID de configuración",
+  "saveInstall.editHint": "Mantén la credencial de edición en privado. Solo vive en esta sesión del navegador y nunca forma parte de la URL de instalación."
+}

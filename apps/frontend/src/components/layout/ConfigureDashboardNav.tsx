@@ -1,0 +1,229 @@
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Tooltip } from '@metalayer/shared-ui';
+import {
+  CONFIGURE_NAV,
+  resolveDashboardHref,
+  type ConfigureNavItem,
+} from '@/navigation';
+import { cn } from '@/lib/utils';
+import { useConfigureUiStore } from '@/stores/ui-store';
+
+function NavItemVisual({
+  item,
+  label,
+  minimized,
+  isActive,
+}: {
+  item: ConfigureNavItem;
+  label: string;
+  minimized: boolean;
+  isActive: boolean;
+}) {
+  const Icon = item.Icon;
+  return (
+    <div
+      data-active={isActive || undefined}
+      className="group ms-3 flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150"
+    >
+      <Icon className="h-6 w-6 shrink-0 text-white" aria-hidden />
+      <span
+        className={cn(
+          'me-2 overflow-hidden truncate whitespace-nowrap text-white transition-all duration-300 ease-in-out',
+          minimized ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100',
+        )}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/** Show labels to the right of icon-only items when the rail is collapsed. */
+function NavItemTooltip({
+  label,
+  minimized,
+  children,
+}: {
+  label: string;
+  minimized: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip delay={0} closeDelay={0} isDisabled={!minimized}>
+      <Tooltip.Trigger className="block w-full">{children}</Tooltip.Trigger>
+      <Tooltip.Content placement="right" offset={10} showArrow>
+        <Tooltip.Arrow />
+        {label}
+      </Tooltip.Content>
+    </Tooltip>
+  );
+}
+
+/** Nav list + animated active rail — structure matches Avexado DashboardNav. */
+export function ConfigureDashboardNav({
+  forceExpanded = false,
+  onNavigate,
+}: {
+  forceExpanded?: boolean;
+  onNavigate?: () => void;
+} = {}) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const sidebarMinimized = useConfigureUiStore((s) => s.sidebarMinimized);
+  const minimized = forceExpanded ? false : sidebarMinimized;
+  const mode = useConfigureUiStore((s) => s.mode);
+  const openDonateModal = useConfigureUiStore((s) => s.openDonateModal);
+  const navRef = useRef<HTMLElement | null>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 });
+
+  const { topItems, bottomItems } = useMemo(() => {
+    const visible = CONFIGURE_NAV.filter(
+      (item) => mode === 'advanced' || item.simpleMode,
+    );
+    return {
+      topItems: visible.filter((item) => !item.pinnedBottom),
+      bottomItems: visible.filter((item) => item.pinnedBottom),
+    };
+  }, [mode]);
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (!navRef.current) return;
+      const activeItem = navRef.current.querySelector<HTMLElement>(
+        '[data-active="true"]',
+      );
+      if (!activeItem) {
+        setIndicatorStyle({ top: 0, height: 0 });
+        return;
+      }
+      const activeRect = activeItem.getBoundingClientRect();
+      const navRect = navRef.current.getBoundingClientRect();
+      const indicatorHeight = 24;
+      requestAnimationFrame(() => {
+        setIndicatorStyle({
+          top:
+            activeRect.top -
+            navRect.top +
+            activeRect.height / 2 -
+            indicatorHeight / 2,
+          height: indicatorHeight,
+        });
+      });
+    };
+
+    const timeoutId = window.setTimeout(updateIndicator, 0);
+    window.addEventListener('resize', updateIndicator);
+    const observer = new MutationObserver(updateIndicator);
+    if (navRef.current) {
+      observer.observe(navRef.current, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateIndicator);
+      observer.disconnect();
+    };
+  }, [location.pathname, minimized, topItems.length, bottomItems.length]);
+
+  const renderItem = (item: ConfigureNavItem) => {
+    const label = t(item.labelKey);
+
+    if (item.kind === 'external' && item.href) {
+      const href =
+        item.id === 'dashboard' ? resolveDashboardHref(item.href) : item.href;
+      return (
+        <div className="relative" key={item.id}>
+          <NavItemTooltip label={label} minimized={minimized}>
+            <a
+              href={href}
+              aria-label={label}
+              onClick={() => onNavigate?.()}
+            >
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={false}
+              />
+            </a>
+          </NavItemTooltip>
+        </div>
+      );
+    }
+
+    if (item.kind === 'action' && item.action === 'donate') {
+      return (
+        <div className="relative" key={item.id}>
+          <NavItemTooltip label={label} minimized={minimized}>
+            <button
+              type="button"
+              aria-label={label}
+              className="w-full appearance-none border-0 bg-transparent p-0 text-start"
+              onClick={() => {
+                openDonateModal();
+                onNavigate?.();
+              }}
+            >
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={false}
+              />
+            </button>
+          </NavItemTooltip>
+        </div>
+      );
+    }
+
+    if (item.kind !== 'route' || !item.path) return null;
+
+    return (
+      <div className="relative" key={item.id}>
+        <NavItemTooltip label={label} minimized={minimized}>
+          <NavLink
+            to={item.path}
+            end={item.path === '/'}
+            aria-label={label}
+            onClick={() => onNavigate?.()}
+          >
+            {({ isActive }) => (
+              <NavItemVisual
+                item={item}
+                label={label}
+                minimized={minimized}
+                isActive={isActive}
+              />
+            )}
+          </NavLink>
+        </NavItemTooltip>
+      </div>
+    );
+  };
+
+  return (
+    <nav
+      ref={navRef}
+      aria-label={t('nav.aria')}
+      className="relative flex h-full flex-col justify-between"
+    >
+      <span
+        aria-hidden
+        className="absolute start-0 h-6 w-1 rounded-e bg-white transition-all duration-300 ease-in-out"
+        style={{
+          top: `${indicatorStyle.top}px`,
+          opacity: indicatorStyle.height > 0 ? 1 : 0,
+        }}
+      />
+      <div className="grid items-start gap-2">{topItems.map(renderItem)}</div>
+      <div className="mb-2 grid items-start gap-2">
+        {bottomItems.map(renderItem)}
+      </div>
+    </nav>
+  );
+}

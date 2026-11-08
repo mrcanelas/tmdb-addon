@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'refactor/**']
+  pull_request:
+  workflow_call:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: i18n check
+        run: pnpm i18n:check
+
+      - name: Test
+        run: pnpm test --maxWorkers=2
+
+      - name: Build MetaLayer
+        run: pnpm build
+
+      - name: Smoke test production bundle and request-log redaction
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm test:production | tee /tmp/metalayer-smoke.log
+          if grep -q 'PRODUCTION_SMOKE_FAKE_SECRET' /tmp/metalayer-smoke.log; then
+            echo 'Request logs leaked the test credential'
+            exit 1
+          fi
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: metalayer
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: metalayer
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U metalayer"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Postgres and Redis integration contracts
+        env:
+          POSTGRES_URL: postgres://metalayer:test-only@localhost:5432/metalayer
+          REDIS_URL: redis://localhost:6379
+        run: pnpm test:integration
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mode: [lite, server]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, start and restart the distribution
+        env:
+          MODE: ${{ matrix.mode }}
+          METALAYER_IMAGE_TAG: ci
+          METALAYER_POSTGRES_PASSWORD: ci-only
+        run: |
+          export METALAYER_ENV_FILE="$RUNNER_TEMP/metalayer-smoke.env"
+          printf 'METALAYER_ENCRYPTION_KEY=%064d\nMETALAYER_DASHBOARD_TOKEN=ci-dashboard-token\n' 0 > "$METALAYER_ENV_FILE"
+          compose=(docker compose -f "docker/docker-compose.$MODE.yml")
+          trap '"${compose[@]}" logs; "${compose[@]}" down --volumes' EXIT
+          "${compose[@]}" up -d --build --wait
+          base=http://127.0.0.1:1338
+          curl --retry 15 --retry-all-errors --retry-delay 2 --max-time 5 -fsS "$base/api/v1/health" >/dev/null
+          for path in configure/ admin/ manifest.json; do curl -fsS "$base/$path" >/dev/null; done
+          health=$(curl -fsS -H 'x-metalayer-dashboard-token: ci-dashboard-token' "$base/api/v1/dashboard/health")
+          if [[ "$MODE" == server ]]; then
+            jq -e '.health.database.kind == "postgres" and .health.cache.kind == "redis"' <<< "$health"
+          else
+            jq -e '.health.database.kind == "sqlite" and .health.cache.kind == "memory"' <<< "$health"
+          fi
+          manifest=$(curl -fsS -H 'content-type: application/json' -d '{"editCredential":"docker-smoke-credential","name":"Docker smoke"}' "$base/api/v1/configurations" | jq -er .manifestPath)
+          "${compose[@]}" restart metalayer
+          curl --retry 15 --retry-all-errors --retry-delay 2 --max-time 5 -fsS "$base$manifest" | jq -e '.id == "community.metalayer"'

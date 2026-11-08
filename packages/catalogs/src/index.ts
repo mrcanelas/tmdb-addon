@@ -1,0 +1,47 @@
+export {
+  sortCatalogsByPosition,
+  reindexCatalogPositions,
+  resolveCatalogDisplayName,
+  toManifestCatalogEntries,
+  renameCatalog,
+  duplicateCatalog,
+  moveCatalog,
+  setCatalogEnabled,
+  setCatalogShowInHome,
+  createCatalogInstance,
+  type CatalogLocalizedName,
+} from './studio.js';
+
+export {
+  setCatalogTags,
+  setCatalogGroup,
+  deleteCatalog,
+  createMergedCatalog,
+  createRotatedCatalog,
+  exportCatalogDefinitions,
+  importCatalogDefinitions,
+} from './studio-extra.js';
+
+export { mergeMetas, type CatalogMetaPreview } from './merge.js';
+export {
+  catalogMetaToRuleCandidate,
+  filterMetasByEffectiveRules,
+  resolveCatalogEffectiveRules,
+} from './rules-filter.js';
+export { pickRotationSource, type RotationMode } from './rotation.js';
+export {
+  resolveCatalogResults,
+  type FetchCatalogLeaf,
+  type CatalogResolveResult,
+  type CatalogPreviewWarning,
+  type CatalogPreviewWarningCode,
+} from './resolve.js';
+export {
+  createPublicMetaDBListCatalogDrafts,
+  createPublicMetaDBPickCatalogDrafts,
+  createPublicMetaDBUpNextCatalogDraft,
+  detectPublicMetaDBListMediaTypes,
+  filterNewPublicMetaDBCatalogs,
+  type PublicMetaDBCatalogDraft,
+  type PublicMetaDBCatalogMediaType,
+} from './publicmetadb-catalogs.js';

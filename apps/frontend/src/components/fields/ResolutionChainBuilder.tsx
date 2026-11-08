@@ -1,0 +1,827 @@
+import { useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Plus, TriangleAlert, X } from 'lucide-react';
+import { Button, Card, Checkbox } from '@metalayer/shared-ui';
+import type {
+  EpisodeOrderType,
+  FieldResolutionPlan,
+  LocalePreference,
+  ResolutionStep,
+} from '@metalayer/config';
+import { EpisodeOrderTypeSchema } from '@metalayer/config';
+import { cn } from '@/lib/utils';
+import { sourceLabel } from '@/lib/source-presentation';
+import {
+  availabilityOf,
+  filterAvailableProviders,
+  type ProviderAvailability,
+} from '@/lib/provider-availability';
+import { coerceToSimplePlan } from '@/lib/field-plans';
+import { LocaleFlag, ProviderGlyph } from './field-icons';
+
+export interface ResolutionChainBuilderProps {
+  fieldLabel: string;
+  fieldDescription?: string;
+  value: FieldResolutionPlan;
+  onChange: (value: FieldResolutionPlan) => void;
+  providerOptions: string[];
+  allowLocales?: boolean;
+  /** Show the episode order-type priority row (AGENTS.md §10.11). */
+  allowOrderTypes?: boolean;
+  disabled?: boolean;
+  showEffectiveOrder?: boolean;
+  /**
+   * Instance availability per provider (AGENTS.md §8.1.1).
+   * Omit while loading — pickers must not hide providers on missing data.
+   */
+  availability?: Record<string, ProviderAvailability>;
+  footer?: ReactNode;
+}
+
+function localeKey(locale: LocalePreference, index: number): string {
+  if (locale.type === 'locale') return `locale:${locale.value}`;
+  return `${locale.type}:${index}`;
+}
+
+function localeLabel(
+  locale: LocalePreference,
+  t: (key: string, options?: Record<string, string>) => string,
+): string {
+  switch (locale.type) {
+    case 'locale':
+      return locale.value;
+    case 'original-language':
+      return t('resolution.locale.original');
+    case 'no-language':
+      return t('resolution.locale.noLanguage');
+    case 'any-language':
+      return t('resolution.locale.any');
+    case 'provider-default':
+      return t('resolution.locale.providerDefault');
+    default:
+      return t('resolution.locale.unknown');
+  }
+}
+
+const ORDER_TYPE_KEYS: Record<EpisodeOrderType, string> = {
+  aired: 'resolution.orderType.aired',
+  absolute: 'resolution.orderType.absolute',
+  dvd: 'resolution.orderType.dvd',
+  production: 'resolution.orderType.production',
+  'provider-default': 'resolution.orderType.providerDefault',
+  'community-corrected': 'resolution.orderType.communityCorrected',
+};
+
+function orderTypeLabel(
+  orderType: EpisodeOrderType,
+  t: (key: string) => string,
+): string {
+  return t(ORDER_TYPE_KEYS[orderType] ?? 'resolution.orderType.providerDefault');
+}
+
+function SortableChipRow({
+  id,
+  label,
+  leading,
+  warning,
+  disabled,
+  onRemove,
+  removeLabel,
+}: {
+  id: string;
+  label: string;
+  leading?: ReactNode;
+  /** Explains why the entry cannot resolve; renders a visible warning mark. */
+  warning?: string;
+  disabled?: boolean;
+  onRemove: () => void;
+  removeLabel: string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled });
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={cn(
+        'inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-xl border border-border bg-surface-secondary px-2 py-1.5',
+        warning && 'border-warning',
+        isDragging && 'z-20 opacity-90 shadow-md',
+      )}
+    >
+      <button
+        type="button"
+        className="cursor-grab touch-none p-0.5 text-muted active:cursor-grabbing"
+        aria-label={label}
+        disabled={disabled}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" aria-hidden />
+      </button>
+      {leading ? <span className="shrink-0">{leading}</span> : null}
+      <span className="max-w-40 truncate text-sm font-medium text-foreground">
+        {label}
+      </span>
+      {warning ? (
+        <span
+          className="inline-flex shrink-0 items-center text-warning"
+          title={warning}
+        >
+          <TriangleAlert className="size-3.5" aria-hidden />
+          <span className="sr-only">{warning}</span>
+        </span>
+      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        isIconOnly
+        isDisabled={disabled}
+        aria-label={removeLabel}
+        onPress={onRemove}
+      >
+        <X className="size-3.5" aria-hidden />
+      </Button>
+    </li>
+  );
+}
+
+function buildStepsFromSimple(plan: FieldResolutionPlan): ResolutionStep[] {
+  const providers = plan.providers ?? [];
+  const locales = plan.locales?.length
+    ? plan.locales
+    : [{ type: 'any-language' as const }];
+  const orderTypes: Array<EpisodeOrderType | undefined> = plan.orderTypes?.length
+    ? plan.orderTypes
+    : [undefined];
+  const steps: ResolutionStep[] = [];
+  const push = (
+    provider: string,
+    locale: LocalePreference,
+    orderType: EpisodeOrderType | undefined,
+  ) => {
+    steps.push({
+      id: `${provider}-${localeKey(locale, steps.length)}-${orderType ?? ''}`,
+      provider,
+      locale,
+      ...(orderType ? { orderType } : {}),
+      enabled: true,
+    });
+  };
+  if (plan.strategy === 'provider-first') {
+    for (const provider of providers) {
+      for (const orderType of orderTypes) {
+        for (const locale of locales) push(provider, locale, orderType);
+      }
+    }
+  } else {
+    for (const locale of locales) {
+      for (const provider of providers) {
+        for (const orderType of orderTypes) push(provider, locale, orderType);
+      }
+    }
+  }
+  return steps;
+}
+
+/** Field Resolution Chain editor for Metas → Fields (AGENTS.md §10.17). */
+export function ResolutionChainBuilder({
+  fieldLabel,
+  fieldDescription,
+  value,
+  onChange,
+  providerOptions,
+  allowLocales = true,
+  allowOrderTypes = false,
+  disabled = false,
+  showEffectiveOrder = true,
+  availability,
+  footer,
+}: ResolutionChainBuilderProps) {
+  const { t } = useTranslation('resolution');
+  const [addMenu, setAddMenu] = useState<
+    'provider' | 'locale' | 'orderType' | null
+  >(null);
+
+  const plan = useMemo(() => coerceToSimplePlan(value), [value]);
+  const providers = useMemo(() => plan.providers ?? [], [plan.providers]);
+  const locales = useMemo(() => plan.locales ?? [], [plan.locales]);
+  const orderTypes = useMemo<EpisodeOrderType[]>(
+    () => plan.orderTypes ?? [],
+    [plan.orderTypes],
+  );
+  const orderTypeChoices = EpisodeOrderTypeSchema.options.filter(
+    (orderType) => !orderTypes.includes(orderType),
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const effectivePreview = useMemo<
+    Array<{
+      provider: string;
+      locale?: LocalePreference;
+      orderType?: EpisodeOrderType;
+    }>
+  >(
+    () =>
+      buildStepsFromSimple(plan).map((step) => ({
+        provider: step.provider,
+        locale: step.locale,
+        orderType: step.orderType,
+      })),
+    [plan],
+  );
+
+  // Only instance-available providers can be added (§8.1.1). Providers already
+  // in the chain stay visible with a warning instead of vanishing (§4.3).
+  const availableProviders = filterAvailableProviders(
+    providerOptions.filter((provider) => !providers.includes(provider)),
+    availability,
+  );
+
+  const blockedProviders = useMemo(
+    () =>
+      providers
+        .map((provider) => ({
+          provider,
+          state: availabilityOf(availability, provider),
+        }))
+        .filter((entry) => !entry.state.available),
+    [providers, availability],
+  );
+
+  const localeChoices: LocalePreference[] = [
+    { type: 'locale', value: 'pt-BR' },
+    { type: 'locale', value: 'en-US' },
+    { type: 'original-language' },
+    { type: 'no-language' },
+    { type: 'any-language' },
+    { type: 'provider-default' },
+  ];
+
+  function commit(next: FieldResolutionPlan) {
+    onChange(coerceToSimplePlan(next));
+  }
+
+  function onProviderDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = providers.indexOf(String(active.id));
+    const newIndex = providers.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    commit({ ...plan, providers: arrayMove(providers, oldIndex, newIndex) });
+  }
+
+  function onLocaleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = locales.map((locale, index) => localeKey(locale, index));
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    commit({ ...plan, locales: arrayMove(locales, oldIndex, newIndex) });
+  }
+
+  function onOrderTypeDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderTypes.indexOf(String(active.id) as EpisodeOrderType);
+    const newIndex = orderTypes.indexOf(String(over.id) as EpisodeOrderType);
+    if (oldIndex < 0 || newIndex < 0) return;
+    commit({ ...plan, orderTypes: arrayMove(orderTypes, oldIndex, newIndex) });
+  }
+
+  const preferLocalized = plan.strategy !== 'provider-first';
+  const fallbackOriginal = locales.some(
+    (locale) => locale.type === 'original-language',
+  );
+
+  return (
+    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
+      <Card.Header className="shrink-0 space-y-1">
+        <Card.Title>{fieldLabel}</Card.Title>
+        {fieldDescription ? (
+          <Card.Description>{fieldDescription}</Card.Description>
+        ) : (
+          <Card.Description>{t('resolution.builderIntro')}</Card.Description>
+        )}
+      </Card.Header>
+
+      <Card.Content className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t('resolution.providers')}
+              </p>
+              <p className="text-xs ml-text-muted">
+                {t('resolution.providersHint')}
+              </p>
+            </div>
+            <div className="relative">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                isDisabled={disabled || availableProviders.length === 0}
+                onPress={() =>
+                  setAddMenu((current) =>
+                    current === 'provider' ? null : 'provider',
+                  )
+                }
+              >
+                <Plus className="size-3.5" aria-hidden />
+                {t('resolution.addProviderShort')}
+              </Button>
+              {addMenu === 'provider' ? (
+                <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-40 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                  {availableProviders.map((provider) => (
+                    <button
+                      key={provider}
+                      type="button"
+                      className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default"
+                      onClick={() => {
+                        commit({
+                          ...plan,
+                          providers: [...providers, provider],
+                        });
+                        setAddMenu(null);
+                      }}
+                    >
+                      <ProviderGlyph provider={provider} />
+                      {sourceLabel(provider)}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onProviderDragEnd}
+          >
+            <SortableContext
+              items={providers}
+              strategy={horizontalListSortingStrategy}
+            >
+              <ul className="flex flex-wrap items-center gap-2">
+                {providers.map((provider) => {
+                  const state = availabilityOf(availability, provider);
+                  return (
+                    <SortableChipRow
+                      key={provider}
+                      id={provider}
+                      label={sourceLabel(provider)}
+                      leading={<ProviderGlyph provider={provider} />}
+                      warning={
+                        state.available
+                          ? undefined
+                          : t(
+                              `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
+                              { provider: sourceLabel(provider) },
+                            )
+                      }
+                      disabled={disabled}
+                      removeLabel={t('resolution.removeNamed', {
+                        item: sourceLabel(provider),
+                      })}
+                      onRemove={() =>
+                        commit({
+                          ...plan,
+                          providers: providers.filter(
+                            (item) => item !== provider,
+                          ),
+                        })
+                      }
+                    />
+                  );
+                })}
+              </ul>
+            </SortableContext>
+          </DndContext>
+          {blockedProviders.length > 0 ? (
+            <p className="text-xs text-warning" role="status">
+              {t('resolution.availability.blockedProviders', {
+                providers: blockedProviders
+                  .map((entry) => sourceLabel(entry.provider))
+                  .join(', '),
+              })}
+            </p>
+          ) : null}
+          {availability && availableProviders.length === 0 ? (
+            <p className="text-xs ml-text-muted">
+              {t('resolution.availability.noneAvailable')}
+            </p>
+          ) : null}
+        </div>
+
+        {allowLocales ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {t('resolution.locales')}
+                </p>
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.localesHint')}
+                </p>
+              </div>
+              <div className="relative">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isDisabled={disabled}
+                  onPress={() =>
+                    setAddMenu((current) =>
+                      current === 'locale' ? null : 'locale',
+                    )
+                  }
+                >
+                  <Plus className="size-3.5" aria-hidden />
+                  {t('resolution.addLocaleShort')}
+                </Button>
+                {addMenu === 'locale' ? (
+                  <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                    {localeChoices.map((locale, index) => {
+                      const label = localeLabel(locale, t);
+                      const key = localeKey(locale, index);
+                      const exists = locales.some(
+                        (item, itemIndex) =>
+                          localeKey(item, itemIndex) === key ||
+                          (item.type === locale.type &&
+                            (locale.type !== 'locale' ||
+                              ('value' in item &&
+                                item.value === locale.value))),
+                      );
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          disabled={exists}
+                          className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default disabled:opacity-40"
+                          onClick={() => {
+                            commit({
+                              ...plan,
+                              locales: [...locales, locale],
+                            });
+                            setAddMenu(null);
+                          }}
+                        >
+                          <LocaleFlag locale={locale} />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={onLocaleDragEnd}
+            >
+              <SortableContext
+                items={locales.map((locale, index) =>
+                  localeKey(locale, index),
+                )}
+                strategy={horizontalListSortingStrategy}
+              >
+                <ul className="flex flex-wrap items-center gap-2">
+                  {locales.map((locale, index) => {
+                    const id = localeKey(locale, index);
+                    const label = localeLabel(locale, t);
+                    return (
+                      <SortableChipRow
+                        key={id}
+                        id={id}
+                        label={label}
+                        leading={<LocaleFlag locale={locale} />}
+                        disabled={disabled}
+                        removeLabel={t('resolution.removeNamed', {
+                          item: label,
+                        })}
+                        onRemove={() =>
+                          commit({
+                            ...plan,
+                            locales: locales.filter(
+                              (_, itemIndex) => itemIndex !== index,
+                            ),
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          </div>
+        ) : null}
+
+        {allowOrderTypes ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {t('resolution.orderTypes')}
+                </p>
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.orderTypesHint')}
+                </p>
+              </div>
+              <div className="relative">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isDisabled={disabled || orderTypeChoices.length === 0}
+                  onPress={() =>
+                    setAddMenu((current) =>
+                      current === 'orderType' ? null : 'orderType',
+                    )
+                  }
+                >
+                  <Plus className="size-3.5" aria-hidden />
+                  {t('resolution.addOrderTypeShort')}
+                </Button>
+                {addMenu === 'orderType' ? (
+                  <div className="absolute inset-e-0 top-full z-30 mt-1 grid min-w-44 gap-1 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                    {orderTypeChoices.map((orderType) => (
+                      <button
+                        key={orderType}
+                        type="button"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-start text-sm hover:bg-default"
+                        onClick={() => {
+                          commit({
+                            ...plan,
+                            orderTypes: [...orderTypes, orderType],
+                          });
+                          setAddMenu(null);
+                        }}
+                      >
+                        {orderTypeLabel(orderType, t)}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={onOrderTypeDragEnd}
+            >
+              <SortableContext
+                items={orderTypes}
+                strategy={horizontalListSortingStrategy}
+              >
+                <ul className="flex flex-wrap items-center gap-2">
+                  {orderTypes.map((orderType) => {
+                    const label = orderTypeLabel(orderType, t);
+                    return (
+                      <SortableChipRow
+                        key={orderType}
+                        id={orderType}
+                        label={label}
+                        disabled={disabled}
+                        removeLabel={t('resolution.removeNamed', {
+                          item: label,
+                        })}
+                        onRemove={() =>
+                          commit({
+                            ...plan,
+                            orderTypes: orderTypes.filter(
+                              (item) => item !== orderType,
+                            ),
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </ul>
+              </SortableContext>
+            </DndContext>
+            {orderTypes.length === 0 ? (
+              <p className="text-xs ml-text-muted">
+                {t('resolution.orderTypesEmpty')}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-foreground">
+              {t('resolution.options.label')}
+            </p>
+            {allowLocales ? (
+              <>
+                <Checkbox
+                  isSelected={preferLocalized}
+                  isDisabled={disabled}
+                  onChange={(isSelected) =>
+                    commit({
+                      ...plan,
+                      strategy: isSelected ? 'locale-first' : 'provider-first',
+                    })
+                  }
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <span>
+                      <span className="font-medium text-foreground">
+                        {t('resolution.options.preferLocalized')}
+                      </span>
+                      <span className="mt-0.5 block text-xs ml-text-muted">
+                        {t('resolution.options.preferLocalizedHint')}
+                      </span>
+                    </span>
+                  </Checkbox.Content>
+                </Checkbox>
+                <Checkbox
+                  isSelected={fallbackOriginal}
+                  isDisabled={disabled}
+                  onChange={(isSelected) => {
+                    if (isSelected) {
+                      if (fallbackOriginal) return;
+                      commit({
+                        ...plan,
+                        locales: [...locales, { type: 'original-language' }],
+                      });
+                      return;
+                    }
+                    commit({
+                      ...plan,
+                      locales: locales.filter(
+                        (locale) => locale.type !== 'original-language',
+                      ),
+                    });
+                  }}
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <span>
+                      <span className="font-medium text-foreground">
+                        {t('resolution.options.fallbackOriginal')}
+                      </span>
+                      <span className="mt-0.5 block text-xs ml-text-muted">
+                        {t('resolution.options.fallbackOriginalHint')}
+                      </span>
+                    </span>
+                  </Checkbox.Content>
+                </Checkbox>
+              </>
+            ) : null}
+            <Checkbox
+              isSelected={plan.skipEmpty}
+              isDisabled={disabled}
+              onChange={(isSelected) =>
+                commit({ ...plan, skipEmpty: isSelected })
+              }
+            >
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <span>
+                  <span className="font-medium text-foreground">
+                    {t('resolution.options.requireNonEmpty')}
+                  </span>
+                  <span className="mt-0.5 block text-xs ml-text-muted">
+                    {t('resolution.options.requireNonEmptyHint')}
+                  </span>
+                </span>
+              </Checkbox.Content>
+            </Checkbox>
+          </div>
+
+          {showEffectiveOrder ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                {t('resolution.effectiveOrder')}
+              </p>
+              {effectivePreview.length === 0 ? (
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.effectiveOrderEmpty')}
+                </p>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border">
+                  <table className="w-full border-collapse text-sm">
+                    <tbody>
+                      {effectivePreview.slice(0, 10).map((row, index) => {
+                        const state = availabilityOf(availability, row.provider);
+                        return (
+                          <tr
+                            key={`${row.provider}-${index}`}
+                            className="border-b border-border last:border-b-0"
+                          >
+                            <td className="w-8 px-3 py-2 text-xs tabular-nums ml-text-muted">
+                              {index + 1}
+                            </td>
+                            <td className="px-1 py-2">
+                              <span className="flex items-center gap-2">
+                                <ProviderGlyph provider={row.provider} />
+                                <span
+                                  className={cn(
+                                    'font-medium text-foreground',
+                                    !state.available &&
+                                      'line-through opacity-60',
+                                  )}
+                                >
+                                  {sourceLabel(row.provider)}
+                                </span>
+                                {!state.available ? (
+                                  <TriangleAlert
+                                    className="size-3.5 shrink-0 text-warning"
+                                    aria-label={t(
+                                      `resolution.availability.reason.${state.reason ?? 'unknownProvider'}`,
+                                      { provider: sourceLabel(row.provider) },
+                                    )}
+                                  />
+                                ) : null}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className="flex items-center gap-2 ml-text-muted">
+                                {row.orderType ? (
+                                  <span className="truncate">
+                                    {orderTypeLabel(row.orderType, t)}
+                                  </span>
+                                ) : (
+                                  <>
+                                    <LocaleFlag locale={row.locale} />
+                                    <span className="truncate">
+                                      {row.locale
+                                        ? localeLabel(row.locale, t)
+                                        : t('resolution.locale.any')}
+                                    </span>
+                                  </>
+                                )}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {effectivePreview.length > 10 ? (
+                <p className="text-xs ml-text-muted">
+                  {t('resolution.effectiveOrderMore', {
+                    count: effectivePreview.length - 10,
+                  })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </Card.Content>
+
+      {footer ? (
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-3">
+          {footer}
+        </div>
+      ) : null}
+    </Card>
+  );
+}
