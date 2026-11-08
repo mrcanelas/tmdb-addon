@@ -8,6 +8,7 @@ import {
 import {
   BoundedLogBuffer,
   MetricsRegistry,
+  safeTokenEquals,
 } from '@metalayer/observability';
 import {
   createMemoryConfigurationStore,
@@ -107,6 +108,9 @@ async function resolveStore(options: BuildAppOptions): Promise<ConfigurationStor
       encryptionKey: encryptionKeyRing,
     });
   }
+  if (env.NODE_ENV === 'production' && env.METALAYER_DEPLOYMENT_MODE === 'server') {
+    throw new Error('POSTGRES_URL is required in Server mode');
+  }
 
   if (!sqlitePath || sqlitePath === ':memory:') {
     return createMemoryConfigurationStore(encryptionKeyRing);
@@ -134,8 +138,15 @@ function buildLoggerOption(enabled: boolean) {
 }
 
 export async function buildApp(options: BuildAppOptions = {}) {
+  const env = options.env ?? process.env;
+  const protectAdmin = env.METALAYER_ADMIN_BASIC_AUTH === 'true';
+  const adminToken = env.METALAYER_DASHBOARD_TOKEN?.trim();
+  if (protectAdmin && !adminToken) {
+    throw new Error('METALAYER_DASHBOARD_TOKEN is required for Admin Basic authentication');
+  }
   const app = Fastify({
     logger: buildLoggerOption(options.logger ?? true),
+    trustProxy: env.METALAYER_TRUSTED_PROXIES?.split(',').map((proxy) => proxy.trim()).filter(Boolean) ?? false,
     routerOptions: {
       // Legacy compressed configs live in a path segment (can exceed Fastify's default 100).
       maxParamLength: 32_768,
@@ -143,11 +154,21 @@ export async function buildApp(options: BuildAppOptions = {}) {
   });
 
   const store = await resolveStore(options);
+  const runtimeSettings = options.runtimeSettings ?? new RuntimeSettings(store, env);
+  try {
+    if (!options.runtimeSettings) await runtimeSettings.load();
+  } catch (error) {
+    await store.close();
+    throw error;
+  }
+  const redisUrl = runtimeSettings.get('REDIS_URL');
+  if (!redisUrl && !options.providerCache && env.NODE_ENV === 'production' && env.METALAYER_DEPLOYMENT_MODE === 'server') {
+    await store.close();
+    throw new Error('REDIS_URL is required in Server mode');
+  }
   const providerCache =
     options.providerCache ??
-    (process.env.REDIS_URL
-      ? new RedisCache({ url: process.env.REDIS_URL })
-      : new MemoryCache());
+    (redisUrl ? new RedisCache({ url: redisUrl }) : new MemoryCache());
   const correctionRegistry =
     options.correctionRegistry ??
     new CorrectionRegistry();
@@ -160,12 +181,6 @@ export async function buildApp(options: BuildAppOptions = {}) {
       options.env ?? process.env,
       await store.listInstanceProviderStates(),
     );
-  const runtimeSettings =
-    options.runtimeSettings ??
-    new RuntimeSettings(store, options.env ?? process.env);
-  if (!options.runtimeSettings) {
-    await runtimeSettings.load();
-  }
 
   app.decorate('configStore', store);
   app.decorate('providerFetch', options.providerFetch);
@@ -215,6 +230,22 @@ export async function buildApp(options: BuildAppOptions = {}) {
   await app.register(corsPlugin);
   await app.register(correlationPlugin);
   await app.register(rateLimitPlugin);
+  if (protectAdmin) {
+    const isAdminPath = (url: string) => {
+      const path = url.split('?')[0];
+      return path === '/admin' || path?.startsWith('/admin/');
+    };
+    app.addHook('onRequest', async (request, reply) => {
+      if (!isAdminPath(request.url)) return;
+      const credentials = request.headers.authorization?.match(/^Basic (\S+)$/i)?.[1];
+      if (credentials && safeTokenEquals(Buffer.from(credentials, 'base64').toString('utf8'), `operator:${adminToken}`)) return;
+      return reply.header('www-authenticate', 'Basic realm="MetaLayer Admin"').code(401).send();
+    });
+    app.addHook('onSend', async (request, reply, payload) => {
+      if (isAdminPath(request.url)) reply.header('cache-control', 'private, no-store');
+      return payload;
+    });
+  }
   await app.register(apiV1Routes, { prefix: '/api/v1' });
   await app.register(nativeManifestRoutes);
   await app.register(nativeStremioRoutes);

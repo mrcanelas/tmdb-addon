@@ -101,6 +101,13 @@ describe('account and AI catalogs delivery (W2)', () => {
     expect(trakt?.url).not.toContain('trakt-access-token');
     expect(JSON.stringify(res.json())).not.toContain('trakt-access-token');
 
+    const other = await app.configStore.create({
+      config: createDefaultMetaLayerConfig({ name: 'Other', catalogs: [watchlist] }),
+      editCredential: 'other-edit-credential',
+    });
+    const isolated = await app.inject(`/c/${other.configId}/catalog/movie/trakt.watchlist.json`);
+    expect(isolated.json().metas).toEqual([]);
+
     await app.close();
   });
 

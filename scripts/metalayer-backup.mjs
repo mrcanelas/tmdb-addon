@@ -27,7 +27,7 @@ const manifest = {
   includesEncryptionKey: false,
   notes: [
     'Store METALAYER_ENCRYPTION_KEY separately — never inside this backup.',
-    'Restore with: pnpm metalayer:restore --from <dir>',
+    'Restore with: pnpm metalayer:restore --from <artifact>',
   ],
   artifacts: [],
 };
@@ -35,7 +35,7 @@ const manifest = {
 const sqlitePath = process.env.METALAYER_SQLITE_PATH;
 const postgresUrl = process.env.POSTGRES_URL;
 
-if (sqlitePath && sqlitePath !== ':memory:' && existsSync(sqlitePath)) {
+if (!postgresUrl && sqlitePath && sqlitePath !== ':memory:' && existsSync(sqlitePath)) {
   const target = join(outDir, `metalayer-${stamp}.sqlite`);
   copyFileSync(sqlitePath, target);
   manifest.artifacts.push({ kind: 'sqlite', path: basename(target) });
@@ -48,7 +48,7 @@ if (sqlitePath && sqlitePath !== ':memory:' && existsSync(sqlitePath)) {
     { encoding: 'utf8' },
   );
   if (result.status !== 0) {
-    console.error(result.stderr || result.stdout || 'pg_dump failed');
+    console.error(`pg_dump failed (${result.error?.code ?? result.status ?? 'unknown exit'}).`);
     console.error('Install PostgreSQL client tools or backup manually.');
     process.exit(1);
   }

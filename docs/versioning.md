@@ -6,7 +6,7 @@ MetaLayer follows Semantic Versioning. The product version line starts at `1.0.0
 
 | Channel | Version | Notes |
 |---|---|---|
-| Development | `1.0.0-rc.1` | Phase N — release candidate |
+| Development | `1.0.0-rc.2` | Phase N — release candidate |
 | Next | `1.0.0` | Phase O after `docs/release-gates.md` |
 | Stable goal | `1.0.0` | Phase O |
 

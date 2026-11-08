@@ -44,6 +44,7 @@ describe('@metalayer/server legacy Stremio compatibility routes', () => {
   });
 
   it('serves compressed legacy blob manifest and catalog', async () => {
+    const upstream: string[] = [];
     const compressed = compressToEncodedURIComponent(
       JSON.stringify({
         language: 'en-US',
@@ -64,6 +65,7 @@ describe('@metalayer/server legacy Stremio compatibility routes', () => {
       logger: false,
       store: createMemoryConfigurationStore(TEST_KEY),
       providerFetch: async (url) => {
+        upstream.push(new URL(String(url)).pathname);
         expect(String(url)).toContain('/trending/movie/week');
         return new Response(
           JSON.stringify({
@@ -100,6 +102,7 @@ describe('@metalayer/server legacy Stremio compatibility routes', () => {
     expect(catalog.statusCode).toBe(200);
     expect(catalog.json().metas).toHaveLength(1);
     expect(catalog.json().metas[0].name).toBe('Fight Club');
+    expect(upstream).toEqual(['/3/trending/movie/week']);
 
     const empty = await app.inject({
       method: 'GET',
@@ -109,6 +112,39 @@ describe('@metalayer/server legacy Stremio compatibility routes', () => {
     expect(empty.json()).toEqual({ metas: [] });
 
     await app.close();
+  });
+
+  it('preserves the legacy Futurama Hulu episode IDs', async () => {
+    const compressed = compressToEncodedURIComponent(JSON.stringify({ tmdbApiKey: 'test-key' }));
+    const requested: string[] = [];
+    const app = await buildApp({
+      logger: false,
+      store: createMemoryConfigurationStore(TEST_KEY),
+      providerFetch: async (input) => {
+        const path = new URL(String(input)).pathname;
+        requested.push(path);
+        if (path.includes('/find/')) return Response.json({ tv_results: [{ id: 615 }] });
+        if (path.endsWith('/episode_group/68d05adeb6c8bf2bb6cec5cf')) {
+          return Response.json({ groups: [
+            { order: 2, episodes: [{ name: 'Second season', episode_number: 14 }] },
+            { order: 1, episodes: [{ name: 'First season', episode_number: 3 }] },
+          ] });
+        }
+        if (path.endsWith('/tv/615')) {
+          return Response.json({ id: 615, name: 'Futurama', external_ids: { imdb_id: 'tt0149460' } });
+        }
+        return Response.json({}, { status: 404 });
+      },
+    });
+    try {
+      const response = await app.inject(`/${compressed}/meta/series/tt0149460.json`);
+      expect(response.statusCode).toBe(200);
+      expect(response.json().meta.videos.map(({ id }: { id: string }) => id))
+        .toEqual(['tt0149460:1:1', 'tt0149460:2:1']);
+      expect(requested.some((path) => path.includes('/season/'))).toBe(false);
+    } finally {
+      await app.close();
+    }
   });
 
   it('aliases tmdb.top to popular catalog results', async () => {

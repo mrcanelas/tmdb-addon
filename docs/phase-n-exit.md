@@ -1,10 +1,10 @@
 # Phase N — Release candidate
 
-Status: **in progress** — entered at `1.0.0-rc.1`.
+Status: **in progress** — candidate `1.0.0-rc.2`.
 
 ## Entry
 
-Phase M deferrals closed in code through `1.0.0-beta.3` (search, catalog window, account/AI catalogs, anime episodes, localized names, profile overrides, editable Settings, hardening). Product version is `1.0.0-rc.1` (`packages/identity`).
+Phase M delivered search, catalog windows, account and AI catalogs, anime episodes, localized names, profile overrides, and Dashboard settings. RC.2 addresses release blockers in security, legacy delivery, and deployment.
 
 ## RC rules
 

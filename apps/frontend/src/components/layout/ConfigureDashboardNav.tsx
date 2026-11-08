@@ -2,7 +2,11 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from '@metalayer/shared-ui';
-import { CONFIGURE_NAV, type ConfigureNavItem } from '@/navigation';
+import {
+  CONFIGURE_NAV,
+  resolveDashboardHref,
+  type ConfigureNavItem,
+} from '@/navigation';
 import { cn } from '@/lib/utils';
 import { useConfigureUiStore } from '@/stores/ui-store';
 
@@ -130,11 +134,13 @@ export function ConfigureDashboardNav({
     const label = t(item.labelKey);
 
     if (item.kind === 'external' && item.href) {
+      const href =
+        item.id === 'dashboard' ? resolveDashboardHref(item.href) : item.href;
       return (
         <div className="relative" key={item.id}>
           <NavItemTooltip label={label} minimized={minimized}>
             <a
-              href={item.href}
+              href={href}
               aria-label={label}
               onClick={() => onNavigate?.()}
             >

@@ -1,6 +1,6 @@
-# MetaLayer Server — API + configure/admin SPAs (pair with Redis compose).
+# MetaLayer Server — API + configure/admin SPAs (also the Beamup build).
 # Build from repo root:
-#   docker build -f docker/Dockerfile.server -t metalayer-server .
+#   docker build -t metalayer-server .
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -10,7 +10,7 @@ COPY apps/server/package.json apps/server/
 COPY apps/frontend/package.json apps/frontend/
 COPY apps/dashboard/package.json apps/dashboard/
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --network-concurrency=8
 
 FROM deps AS build
 COPY apps/server ./apps/server
@@ -36,7 +36,7 @@ ENV NODE_ENV=production \
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/server/package.json apps/server/
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod --network-concurrency=8
 COPY --from=build /app/apps/server/dist ./apps/server/dist
 COPY --from=build /app/apps/frontend/dist ./apps/frontend/dist
 COPY --from=build /app/apps/dashboard/dist ./apps/dashboard/dist

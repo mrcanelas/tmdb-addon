@@ -3,24 +3,24 @@ services:
   metalayer:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.server
-    image: ghcr.io/metalayer/metalayer-server:latest
+      dockerfile: Dockerfile
+    image: ghcr.io/mrcanelas/metalayer-server:${METALAYER_IMAGE_TAG:-latest}
     container_name: metalayer-server
     ports:
-      - "1338:1338"
+      - "${METALAYER_BIND_ADDRESS:-127.0.0.1}:${METALAYER_HOST_PORT:-1338}:1338"
     environment:
       METALAYER_DEPLOYMENT_MODE: server
       METALAYER_API_PORT: "1338"
-      POSTGRES_URL: postgresql://metalayer:metalayer@postgres:5432/metalayer
+      POSTGRES_URL: postgresql://metalayer:${METALAYER_POSTGRES_PASSWORD:?Set a hex Postgres password}@postgres:5432/metalayer
       REDIS_URL: redis://redis:6379
       METALAYER_TELEMETRY_ENABLED: "false"
     env_file:
-      - ../.env
+      - ${METALAYER_ENV_FILE:-../.env}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
   redis:
@@ -29,13 +29,18 @@ services:
     restart: unless-stopped
     volumes:
       - metalayer_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   postgres:
     image: postgres:16-alpine
     container_name: metalayer-postgres
     environment:
       POSTGRES_USER: metalayer
-      POSTGRES_PASSWORD: metalayer
+      POSTGRES_PASSWORD: ${METALAYER_POSTGRES_PASSWORD:?Set a hex Postgres password}
       POSTGRES_DB: metalayer
     volumes:
       - metalayer_postgres:/var/lib/postgresql/data

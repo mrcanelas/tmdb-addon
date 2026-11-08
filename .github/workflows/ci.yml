@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, 'feat/**', 'fix/**', 'refactor/**']
   pull_request:
+  workflow_call:
 
 jobs:
   quality:
@@ -34,7 +35,7 @@ jobs:
         run: pnpm i18n:check
 
       - name: Test
-        run: pnpm test
+        run: pnpm test --maxWorkers=2
 
       - name: Build MetaLayer
         run: pnpm build
@@ -89,20 +90,26 @@ jobs:
         mode: [lite, server]
     steps:
       - uses: actions/checkout@v4
-      - name: Build and start distribution
+      - name: Build, start and restart the distribution
         env:
           MODE: ${{ matrix.mode }}
+          METALAYER_IMAGE_TAG: ci
+          METALAYER_POSTGRES_PASSWORD: ci-only
         run: |
-          docker build -f "docker/Dockerfile.$MODE" -t metalayer-test .
-          docker run -d --name metalayer-test -p 1338:1338 \
-            -e METALAYER_ENCRYPTION_KEY=$(printf '0%.0s' {1..64}) metalayer-test
-          for attempt in {1..20}; do
-            if curl -fsS http://localhost:1338/configure/ >/dev/null; then
-              curl -fsS http://localhost:1338/admin/ >/dev/null
-              curl -fsS http://localhost:1338/manifest.json >/dev/null
-              exit 0
-            fi
-            sleep 2
-          done
-          docker logs metalayer-test
-          exit 1
+          export METALAYER_ENV_FILE="$RUNNER_TEMP/metalayer-smoke.env"
+          printf 'METALAYER_ENCRYPTION_KEY=%064d\nMETALAYER_DASHBOARD_TOKEN=ci-dashboard-token\n' 0 > "$METALAYER_ENV_FILE"
+          compose=(docker compose -f "docker/docker-compose.$MODE.yml")
+          trap '"${compose[@]}" logs; "${compose[@]}" down --volumes' EXIT
+          "${compose[@]}" up -d --build --wait
+          base=http://127.0.0.1:1338
+          curl --retry 15 --retry-connrefused --retry-delay 2 -fsS "$base/api/v1/health" >/dev/null
+          for path in configure/ admin/ manifest.json; do curl -fsS "$base/$path" >/dev/null; done
+          health=$(curl -fsS -H 'x-metalayer-dashboard-token: ci-dashboard-token' "$base/api/v1/dashboard/health")
+          if [[ "$MODE" == server ]]; then
+            jq -e '.health.database.kind == "postgres" and .health.cache.kind == "redis"' <<< "$health"
+          else
+            jq -e '.health.database.kind == "sqlite" and .health.cache.kind == "memory"' <<< "$health"
+          fi
+          manifest=$(curl -fsS -H 'content-type: application/json' -d '{"editCredential":"docker-smoke-credential","name":"Docker smoke"}' "$base/api/v1/configurations" | jq -er .manifestPath)
+          "${compose[@]}" restart metalayer
+          curl --retry 15 --retry-connrefused --retry-delay 2 -fsS "$base$manifest" | jq -e '.id == "community.metalayer"'

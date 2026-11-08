@@ -11,6 +11,8 @@ import {
 export const CATALOG_PAGE_SIZE = 20;
 
 export interface CatalogWindowOptions {
+  /** Native configuration scope, including for authenticated Studio previews. */
+  configId?: string;
   /** Profile id when serving `/c/:configId/p/:profileId/...`; part of the cache key. */
   profileId?: string;
   /** Max upstream pages fetched during one request (protects public instances). */
@@ -95,12 +97,13 @@ function planNeedsGlobalSort(plan?: SortingPlan): boolean {
 export function catalogWindowCacheKey(
   config: MetaLayerConfig,
   catalog: CatalogDefinition,
-  profileId?: string,
+  scope: Pick<CatalogWindowOptions, 'configId' | 'profileId'>,
 ): string {
   const hash = createHash('sha256');
   hash.update(
     JSON.stringify({
-      profileId: profileId ?? null,
+      configId: scope.configId ?? null,
+      profileId: scope.profileId ?? null,
       instanceId: catalog.instanceId,
       catalogs: config.catalogs,
       globalRules: config.globalRules,
@@ -114,7 +117,7 @@ export function catalogWindowCacheKey(
       identity: config.identity,
     }),
   );
-  return `catalog-window:v1:${hash.digest('hex')}`;
+  return `catalog-window:v2:${hash.digest('hex')}`;
 }
 
 const DEGRADED_WARNINGS = new Set([
@@ -142,7 +145,7 @@ export async function loadCatalogWindow(
   options: CatalogWindowOptions = {},
 ): Promise<CatalogWindowResult> {
   const budgets = resolveCatalogWindowOptions(app, options);
-  const key = catalogWindowCacheKey(config, catalog, options.profileId);
+  const key = catalogWindowCacheKey(config, catalog, options);
   const target = Math.max(0, skip) + CATALOG_PAGE_SIZE;
   const plan = catalog.sorting ?? config.globalSorting;
   const globalSort = planNeedsGlobalSort(plan);

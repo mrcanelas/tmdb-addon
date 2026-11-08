@@ -161,7 +161,7 @@ export function SettingsPage() {
                   ) : (
                     <input
                       className="h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground"
-                      type={setting.type === 'number' ? 'number' : 'text'}
+                      type={setting.secret ? 'password' : setting.type === 'number' ? 'number' : 'text'}
                       placeholder={
                         setting.secret
                           ? setting.configured

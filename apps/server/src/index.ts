@@ -61,7 +61,7 @@ if (!process.env.METALAYER_SQLITE_PATH) {
   process.env.METALAYER_SQLITE_PATH = resolve(monorepoRoot, 'data', 'metalayer.sqlite');
 }
 
-const port = Number(process.env.METALAYER_API_PORT ?? 1338);
+const port = Number(process.env.PORT ?? process.env.METALAYER_API_PORT ?? 1338);
 const host = process.env.METALAYER_API_HOST ?? '0.0.0.0';
 
 const app = await buildApp();

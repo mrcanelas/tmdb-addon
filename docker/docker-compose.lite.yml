@@ -4,10 +4,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.lite
-    image: ghcr.io/metalayer/metalayer-lite:latest
+    image: ghcr.io/mrcanelas/metalayer-lite:${METALAYER_IMAGE_TAG:-latest}
     container_name: metalayer-lite
     ports:
-      - "1338:1338"
+      - "${METALAYER_BIND_ADDRESS:-127.0.0.1}:${METALAYER_HOST_PORT:-1338}:1338"
     environment:
       METALAYER_DEPLOYMENT_MODE: lite
       METALAYER_API_PORT: "1338"
@@ -17,7 +17,7 @@ services:
       # METALAYER_ENCRYPTION_KEY:
       # METALAYER_DASHBOARD_TOKEN:
     env_file:
-      - ../.env
+      - ${METALAYER_ENV_FILE:-../.env}
     volumes:
       - metalayer_lite_data:/data
     restart: unless-stopped

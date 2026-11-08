@@ -25,7 +25,7 @@ describe('field registry', () => {
     expect(isEditableFieldId('title')).toBe(true);
     expect(isEditableFieldId('logo')).toBe(true);
     expect(isEditableFieldId('tagline')).toBe(false);
-    expect(isEditableFieldId('episodeOrder')).toBe(false);
+    expect(isEditableFieldId('episodeOrder')).toBe(true);
     expect(listEditableFields().every((entry) => entry.editable)).toBe(true);
   });
 

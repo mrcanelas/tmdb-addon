@@ -21,9 +21,11 @@ export function buildHealthSnapshot(input: {
   startedAt: Date;
   activeConfigurations?: number;
   env?: NodeJS.ProcessEnv;
+  redisConfigured?: boolean;
 }): HealthSnapshot {
   const env = input.env ?? process.env;
   const mode = resolveDeploymentMode(env);
+  const redisConfigured = input.redisConfigured ?? Boolean(env.REDIS_URL);
   const metrics = input.metrics.snapshot();
   const uptimeSeconds = Math.max(
     0,
@@ -46,8 +48,8 @@ export function buildHealthSnapshot(input: {
       pathConfigured: Boolean(env.METALAYER_SQLITE_PATH || env.POSTGRES_URL),
     },
     cache: {
-      kind: env.REDIS_URL ? 'redis' : 'memory',
-      redisConfigured: Boolean(env.REDIS_URL),
+      kind: redisConfigured ? 'redis' : 'memory',
+      redisConfigured,
     },
     telemetryEnabled: env.METALAYER_TELEMETRY_ENABLED === 'true',
     queueDepth: Number(env.METALAYER_QUEUE_DEPTH ?? 0) || 0,
@@ -59,23 +61,23 @@ export const RUNTIME_SETTINGS: RuntimeSettingDeclaration[] = [
   {
     key: 'METALAYER_TELEMETRY_ENABLED',
     description: 'Anonymous telemetry toggle (default false)',
-    reload: 'hot',
+    reload: 'process-restart',
     type: 'boolean',
-    editable: true,
+    editable: false,
   },
   {
     key: 'METALAYER_TRACKING_REFRESH_ENABLED',
     description: 'Proactive OAuth tracking token refresh scheduler',
-    reload: 'hot',
+    reload: 'process-restart',
     type: 'boolean',
-    editable: true,
+    editable: false,
   },
   {
     key: 'METALAYER_TRACKING_REFRESH_INTERVAL_MS',
     description: 'Tracking token refresh interval in milliseconds (min 60000)',
-    reload: 'hot',
+    reload: 'process-restart',
     type: 'number',
-    editable: true,
+    editable: false,
   },
   {
     key: 'METALAYER_CATALOG_SCAN_PAGES',
@@ -92,33 +94,11 @@ export const RUNTIME_SETTINGS: RuntimeSettingDeclaration[] = [
     editable: true,
   },
   {
-    key: 'METALAYER_CACHE_TTL_MANIFEST_MS',
-    description: 'Manifest response cache TTL in milliseconds',
+    key: 'METALAYER_CATALOG_WINDOW_TTL_MS',
+    description: 'Lifetime of cached catalog windows in milliseconds',
     reload: 'hot',
     type: 'number',
     editable: true,
-  },
-  {
-    key: 'METALAYER_CACHE_TTL_CATALOG_MS',
-    description: 'Catalog response cache TTL in milliseconds',
-    reload: 'hot',
-    type: 'number',
-    editable: true,
-  },
-  {
-    key: 'METALAYER_CACHE_TTL_META_MS',
-    description: 'Meta response cache TTL in milliseconds',
-    reload: 'hot',
-    type: 'number',
-    editable: true,
-  },
-  {
-    key: 'METALAYER_TMDB_PROXY_URL',
-    description: 'Optional TMDB HTTP proxy URL (may include credentials)',
-    reload: 'process-restart',
-    type: 'url',
-    editable: true,
-    secret: true,
   },
   {
     key: 'METALAYER_RATE_LIMIT_MAX',
@@ -144,10 +124,10 @@ export const RUNTIME_SETTINGS: RuntimeSettingDeclaration[] = [
   },
   {
     key: 'POSTGRES_URL',
-    description: 'PostgreSQL for Server mode',
-    reload: 'process-restart',
+    description: 'PostgreSQL connection configured at process bootstrap',
+    reload: 'immutable',
     type: 'url',
-    editable: true,
+    editable: false,
     secret: true,
   },
   {

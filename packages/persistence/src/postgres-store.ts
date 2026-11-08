@@ -110,12 +110,29 @@ export class PostgresConfigurationStore implements ConfigurationStore {
   }): Promise<PostgresConfigurationStore> {
     const pool = new Pool({ connectionString: options.connectionString });
     const store = new PostgresConfigurationStore(pool, options.encryptionKey);
-    await store.ensureSchema();
-    return store;
+    try {
+      await store.ensureSchema();
+      return store;
+    } catch (error) {
+      await pool.end();
+      throw error;
+    }
   }
 
   private async ensureSchema(): Promise<void> {
-    await this.pool.query(SCHEMA_SQL);
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Concurrent boots must serialize CREATE TABLE IF NOT EXISTS on an empty database.
+      await client.query('SELECT pg_advisory_xact_lock(1620188820)');
+      await client.query(SCHEMA_SQL);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   private async nextRevisionNumber(

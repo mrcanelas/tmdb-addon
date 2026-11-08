@@ -161,8 +161,8 @@ export const legacyStremioRoutes: FastifyPluginAsync = async (app) => {
     const skip = parsedExtra.skip;
 
     try {
-      // Same materialized window as the native route; legacy blobs carry
-      // request-scoped secrets, so the shared buffer is keyed by config only.
+      // A TMDB API key gives access to public catalog data. Legacy account
+      // credentials have no persistent configuration scope for private results.
       const { metas } = await loadCatalogWindow(
         app,
         config,
@@ -170,6 +170,7 @@ export const legacyStremioRoutes: FastifyPluginAsync = async (app) => {
         skip,
         correlationId,
         memorySecretResolver(secrets),
+        { bypassCache: Object.keys(secrets).some((key) => key !== 'tmdb') },
       );
       return {
         metas: metas.map((meta) => ({
@@ -207,6 +208,7 @@ export const legacyStremioRoutes: FastifyPluginAsync = async (app) => {
       id,
       correlationId,
       memorySecretResolver(secrets),
+      { legacyEpisodeOrder: true },
     );
     return reply.status(result.status).send(result.body);
   }

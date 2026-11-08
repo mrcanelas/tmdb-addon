@@ -10,11 +10,11 @@ Canonical ops rules: `AGENTS.md` §24–§25. Admin-first instance config: ADR 0
 
 | Class | Examples | Where |
 |---|---|---|
-| Bootstrap / sovereignty | `METALAYER_ENCRYPTION_KEY` (+ ring), `METALAYER_DASHBOARD_TOKEN`, `METALAYER_API_PORT` / public base URL / `HOST_NAME`, first-boot `METALAYER_SQLITE_PATH` | Environment only |
-| Instance (Admin target) | Trakt/SIMKL/AniList/MAL client id+secret, Fanart API key, optional instance TMDB key, `REDIS_URL`, `POSTGRES_URL`, TMDB proxy, cache limits, telemetry / tracking-refresh flags | Dashboard + vault (env still accepted as defaults until UI ships fully) |
+| Bootstrap / sovereignty | Vault key ring, dashboard token, listen port, public base URL, trusted proxy addresses, SQLite path, `POSTGRES_URL` | Environment only |
+| Instance | OAuth app credentials, provider API keys, `REDIS_URL`, catalog window and rate limits | Dashboard Providers or Settings, with environment fallback |
 | Per-config | User API keys, user OAuth tokens, catalogs, rules, resolution | `/configure` |
 
-Until Admin Providers/Settings APIs land, existing env vars remain the practical way to supply instance credentials. New work must not *require* additional env vars when an Admin setting can host them.
+Postgres stays in bootstrap for 1.0 because the server needs a connection before it can read the instance vault. Telemetry and tracking-refresh flags are managed through environment settings. The Dashboard exposes only settings with a runtime consumer as editable.
 
 ## MetaLayer Lite (personal / family)
 
@@ -68,18 +68,18 @@ The API serves built SPAs from `apps/frontend/dist` and `apps/dashboard/dist` (o
 ```text
 API container
 Postgres configuration + vault store
-Redis sidecar (provisioned; shared cache wiring follows)
+Redis shared cache
 Operator dashboard token required
-Rate limiting / horizontal scaling later
+In-process rate limiting
 ```
 
 ```bash
 docker compose -f docker/docker-compose.server.yml up -d --build
 ```
 
-Set `POSTGRES_URL` (Compose sets it automatically) and `METALAYER_ENCRYPTION_KEY`. When `POSTGRES_URL` is present, the API uses `PostgresConfigurationStore` instead of SQLite. Lite remains SQLite via `METALAYER_SQLITE_PATH`. Moving `POSTGRES_URL` / `REDIS_URL` into Admin Settings remains the long-term target (restart-declared).
+Set a URL-safe hex `METALAYER_POSTGRES_PASSWORD` in Compose's environment or `.env`. Existing Compose installations should supply their current database password before upgrading. Compose assembles `POSTGRES_URL` and starts Redis. Outside Compose, supply both service URLs. Production Server requires Postgres and Redis.
 
-When `REDIS_URL` is set, provider/identity caches use `RedisCache` (shared across instances). Without it, the API keeps an in-process `MemoryCache` (Lite default).
+The Admin Settings Redis override is encrypted and takes effect on restart. During a rolling upgrade from RC.1, start one instance first to move legacy plaintext settings into the vault. Previous database snapshots can contain old plaintext settings and require the same protection as credentials. The archived Postgres and proxy values are not used to start the process.
 
 ## GHCR images
 
@@ -88,11 +88,21 @@ Workflow: `.github/workflows/metalayer-docker.yml`
 Tags:
 
 ```text
-ghcr.io/<owner>/metalayer-lite:<version>
-ghcr.io/<owner>/metalayer-server:<version>
+ghcr.io/mrcanelas/metalayer-lite:<version>
+ghcr.io/mrcanelas/metalayer-server:<version>
 ```
 
-Trigger with tag `metalayer-v1.0.0-alpha.1` or workflow dispatch.
+Use `METALAYER_IMAGE_TAG=<version>` with Compose and `up -d --no-build --pull always` to install a published tag. The release workflow validates the tagged commit and publishes both versioned images. Prereleases also advance their own channel. Advance `latest` after both stable images and the public instance pass smoke tests. See [release gates](./release-gates.md).
+
+## Beamup
+
+Use a separate Docker app such as `metalayer-staging-docker` on Beamup. The existing `beamup` remote in the original checkout is for TMDB Addon. Record the exact staging URL and Git remote provided by Beamup and push the validated RC SHA to that app's deployment branch from a separate checkout.
+
+Configure external TLS-enabled Postgres and Redis services for the app. Set the vault key, the Dashboard token, `METALAYER_PUBLIC_BASE_URL` to the app's HTTPS origin, and `METALAYER_ADMIN_BASIC_AUTH=true`. The Server Dockerfile is at the repository root and the server listens on Beamup's `PORT` when supplied. Confirm proxy addresses with the host and set only those addresses in `METALAYER_TRUSTED_PROXIES`. Verify that direct connections and forged forwarding headers cannot bypass rate limits.
+
+Test `/configure/`, `/api/v1/health` and a saved native manifest after a redeploy. Confirm unauthenticated `/admin/` returns 401 and that HTTPS Basic authentication works with username `operator` and the Dashboard token as the password. The Dashboard API continues to require its token. Check upstream cache behavior and access-log redaction before accepting legacy URLs or OAuth traffic.
+
+For stable, prefer the validated GHCR Server digest. Where Beamup only exposes Git deployment, deploy a separate Docker project ref whose Dockerfile starts with `FROM ghcr.io/mrcanelas/metalayer-server@sha256:<validated-digest>`. Keep the last known-good ref and the matching vault key available for rollback. [Beamup deployment documentation](https://github.com/Stremio/stremio-beamup-cli)
 
 ## Operator dashboard
 
@@ -113,7 +123,7 @@ pnpm metalayer:upgrade-check
 
 Always:
 
-1. Create a dashboard backup (secrets excluded).
+1. Take a full database backup. Dashboard exports are for portable configuration.
 2. Preserve `METALAYER_ENCRYPTION_KEY` (or keep previous keys in `METALAYER_ENCRYPTION_PREVIOUS_KEYS` during a planned rotation).
 3. Rebuild/restart containers.
 4. Verify `/api/v1/health` and dashboard overview.
@@ -171,7 +181,7 @@ Requires Trakt/MAL OAuth **client** credentials from Admin Providers (or env def
 - Do not bake encryption keys or dashboard tokens into Docker images.
 - Telemetry stays off unless `METALAYER_TELEMETRY_ENABLED=true`.
 - Default backups never include vault plaintext.
-- Instance file backup/restore: `pnpm metalayer:backup --out ./backups` and `pnpm metalayer:restore --from <artifact>` (SQLite copy or `pg_dump`/`pg_restore`). Keep `METALAYER_ENCRYPTION_KEY` offline — never inside the backup archive. Full gate checklist: `docs/release-gates.md`.
+- Instance backup and restore use `pnpm metalayer:backup --out ./backups` and `pnpm metalayer:restore --from <artifact>`. Stop Lite before copying its SQLite file and restore into an isolated path. For Postgres, use `pg_dump` and restore into a fresh database before switching traffic. Keep the vault key offline, separate from the backup. Verify a known manifest and vaulted credential before reopening traffic.
 
 
 ### Production build and beta images

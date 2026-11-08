@@ -1,6 +1,6 @@
 # Release gates (maintainer)
 
-This checklist is **not** satisfied by unit tests alone. Close each item before tagging `metalayer-v1.0.0`.
+Complete the prerelease and staging gates before tagging `metalayer-v1.0.0`. Complete the final publication gates before announcing the release.
 
 Canonical policy: `AGENTS.md` §38–§42. Delivery notes: `docs/beta-readiness.md`.
 
@@ -48,7 +48,8 @@ Using maintainer-owned test accounts:
 
 ## Performance and security
 
-- [ ] `pnpm test:perf` (strict) against real provider keys meets or documents gaps vs `AGENTS.md` §34
+- [ ] Strict local harness passes and staging measurements with real provider keys report cold and warm p95 against `AGENTS.md` §34
+- [ ] Configure and Dashboard reviewed in en-US, pt-BR, es-ES, en-XA and ar-XB on narrow screens
 - [ ] Security review (peer or external) signed in `docs/security.md`
 - [ ] Migration review of legacy import fixtures + live legacy URL signed in `docs/migration-from-tmdb-addon.md`
 
@@ -56,6 +57,10 @@ Using maintainer-owned test accounts:
 
 - [ ] `1.0.0-rc.1` (or later) runs in staging for ≥7 days with no critical defects
 - [ ] Release notes in `CHANGELOG.md` list deferred items explicitly
-- [ ] Tag `metalayer-v1.0.0` (Docker channel `latest`)
+- [ ] Publish both versioned images from `metalayer-v1.0.0` and verify amd64 and arm64
+- [ ] Verify production using the published Server digest and confirm the legacy Beamup URL still serves the old addon
+- [ ] Promote both verified images to `latest` and announce the official install URL
 
 When an item is done, check it here and note the date/environment in the PR or release discussion — do not mark gates complete solely because CI passed.
+
+Record the candidate SHA, public HTTPS origin, image digests, start/end of soak, and links to the test evidence. Keep URLs containing legacy payloads, private manifest IDs or OAuth secrets out of release evidence. Restart the soak after a critical fix.

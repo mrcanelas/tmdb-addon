@@ -5,12 +5,13 @@ import { RedisCache } from './redis.js';
 const redisUrl = process.env.REDIS_URL;
 
 describe.runIf(Boolean(redisUrl))('@metalayer/cache redis', () => {
-  let cache: RedisCache;
+  let cache: RedisCache | undefined;
 
   afterEach(async () => {
     if (cache) {
       await cache.clear();
       await cache.close();
+      cache = undefined;
     }
   });
 
@@ -34,12 +35,11 @@ describe.runIf(Boolean(redisUrl))('@metalayer/cache redis', () => {
 
   it('pings redis', async () => {
     const client = new Redis(redisUrl!);
-    cache = new RedisCache({
-      url: redisUrl!,
-      client,
-      keyPrefix: 'metalayer:test:ping:',
-    });
-    expect(await cache.ping()).toBe(true);
-    await client.quit();
+    try {
+      const pingCache = new RedisCache({ url: redisUrl!, client });
+      expect(await pingCache.ping()).toBe(true);
+    } finally {
+      await client.quit();
+    }
   });
 });

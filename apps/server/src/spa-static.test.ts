@@ -83,4 +83,26 @@ describe('@metalayer/server spa static', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toContain('data-app="admin"');
   });
+
+  it('can require credentials for Admin HTML and assets behind a hosted proxy', async () => {
+    const token = 'test-dashboard-token';
+    const app = await buildApp({
+      logger: false, encryptionKey: TEST_KEY, configureDist, adminDist,
+      env: { METALAYER_ADMIN_BASIC_AUTH: 'true', METALAYER_DASHBOARD_TOKEN: token },
+    });
+    try {
+      expect((await app.inject('/configure/')).statusCode).toBe(200);
+      for (const url of ['/admin', '/admin/', '/admin/static/js/app.js']) {
+        expect((await app.inject(url)).statusCode).toBe(401);
+      }
+      const response = await app.inject({
+        url: '/admin/',
+        headers: { authorization: `Basic ${Buffer.from(`operator:${token}`).toString('base64')}` },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['cache-control']).toBe('private, no-store');
+    } finally {
+      await app.close();
+    }
+  });
 });

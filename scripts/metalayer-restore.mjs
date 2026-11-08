@@ -46,11 +46,11 @@ if (source.endsWith('.pg.dump') || source.endsWith('.dump')) {
   }
   const result = spawnSync(
     'pg_restore',
-    ['--clean', '--if-exists', `--dbname=${postgresUrl}`, source],
+    ['--single-transaction', '--exit-on-error', '--clean', '--if-exists', `--dbname=${postgresUrl}`, source],
     { encoding: 'utf8' },
   );
   if (result.status !== 0) {
-    console.error(result.stderr || result.stdout || 'pg_restore failed');
+    console.error(`pg_restore failed (${result.error?.code ?? result.status ?? 'unknown exit'}).`);
     process.exit(1);
   }
   console.log('Restored Postgres dump. Restart MetaLayer with the matching encryption key.');

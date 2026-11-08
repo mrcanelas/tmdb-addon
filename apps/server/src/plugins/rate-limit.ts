@@ -15,42 +15,33 @@ interface Bucket {
   resetAt: number;
 }
 
-function clientKey(request: { ip: string; headers: Record<string, unknown> }): string {
-  const forwarded = request.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0]!.trim();
-  }
-  return request.ip || 'unknown';
-}
-
 /**
  * Lightweight in-process rate limiter for public Stremio + management APIs.
- * Limits are overridable via METALAYER_RATE_LIMIT_MAX / _WINDOW_MS (W5 settings).
+ * Fastify resolves client addresses through explicitly trusted proxies.
  */
 const rateLimitPluginImpl: FastifyPluginAsync<RateLimitOptions> = async (
   app: FastifyInstance,
   options,
 ) => {
-  const max =
-    options.max ??
-    (Number(process.env.METALAYER_RATE_LIMIT_MAX ?? 120) || 120);
-  const timeWindowMs =
-    options.timeWindowMs ??
-    (Number(process.env.METALAYER_RATE_LIMIT_WINDOW_MS ?? 60_000) || 60_000);
   const skip = options.skipPathPrefixes ?? [
     '/configure',
-    '/admin',
-    '/health',
-    '/dashboard/health',
+    '/api/v1/health',
   ];
   const buckets = new Map<string, Bucket>();
+  const maxKey = 'METALAYER_RATE_LIMIT_MAX';
+  const windowKey = 'METALAYER_RATE_LIMIT_WINDOW_MS';
+  const resetWindow = app.runtimeSettings.subscribe(windowKey, () => buckets.clear());
+  const positive = (value: number | undefined, fallback: number) =>
+    value !== undefined && Number.isSafeInteger(value) && value > 0 ? value : fallback;
 
   app.addHook('onRequest', async (request, reply) => {
     const path = request.url.split('?')[0] ?? request.url;
     if (skip.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
       return;
     }
-    const key = clientKey(request);
+    const max = options.max ?? positive(app.runtimeSettings.getNumber(maxKey), 120);
+    const timeWindowMs = options.timeWindowMs ?? positive(app.runtimeSettings.getNumber(windowKey), 60_000);
+    const key = request.ip;
     const now = Date.now();
     let bucket = buckets.get(key);
     if (!bucket || bucket.resetAt <= now) {
@@ -76,10 +67,11 @@ const rateLimitPluginImpl: FastifyPluginAsync<RateLimitOptions> = async (
     for (const [key, bucket] of buckets) {
       if (bucket.resetAt <= now) buckets.delete(key);
     }
-  }, Math.max(30_000, timeWindowMs));
+  }, 30_000);
   janitor.unref?.();
   app.addHook('onClose', async () => {
     clearInterval(janitor);
+    resetWindow();
   });
 };
 

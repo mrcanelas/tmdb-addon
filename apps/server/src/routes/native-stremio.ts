@@ -166,7 +166,7 @@ export const nativeStremioRoutes: FastifyPluginAsync = async (app) => {
         skip,
         request.correlationId,
         vaultSecretResolver(app, view.configId),
-        { profileId: request.params.profileId },
+        { configId: view.configId, profileId: request.params.profileId },
       );
       return {
         ...(result.warnings.length ? { warnings: result.warnings } : {}),

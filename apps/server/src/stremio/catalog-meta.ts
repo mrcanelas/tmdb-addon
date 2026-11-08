@@ -331,6 +331,11 @@ export async function loadCatalogMetas(
   return loadCatalogPage(app, config, catalog, page, correlationId, getSecret);
 }
 
+interface StremioMetaOptions {
+  configIdForCorrections?: string;
+  legacyEpisodeOrder?: boolean;
+}
+
 async function resolveBaseStremioMeta(
   app: StremioAppContext,
   config: MetaLayerConfig,
@@ -338,7 +343,7 @@ async function resolveBaseStremioMeta(
   publicId: string,
   correlationId: string,
   getSecret: SecretResolver,
-  options: { configIdForCorrections?: string } = {},
+  options: StremioMetaOptions = {},
 ): Promise<
   | { status: 200; body: { meta: Record<string, unknown> } }
   | { status: 404 | 502; body: { meta: null } }
@@ -468,11 +473,13 @@ async function resolveBaseStremioMeta(
         );
         const includeSpecials =
           correctionsReferenceSpecialSeason(seriesCorrections);
-        const episodes = await adapter.getSeriesEpisodes(
-          { ...ctx, apiKey },
-          series,
-          { includeSpecials },
-        );
+        // The legacy addon exposed Futurama with Hulu season and episode IDs.
+        const groupedEpisodes = options.legacyEpisodeOrder && series.id === 615
+          ? await adapter.getEpisodeGroup({ ...ctx, apiKey }, '68d05adeb6c8bf2bb6cec5cf').catch(() => [])
+          : [];
+        const episodes = groupedEpisodes.length
+          ? groupedEpisodes
+          : await adapter.getSeriesEpisodes({ ...ctx, apiKey }, series, { includeSpecials });
         videos = applyEpisodeCorrectionsToVideos(
           episodes.map((episode) => {
             const id = series.imdbId
@@ -558,7 +565,7 @@ export async function resolveStremioMeta(
   publicId: string,
   correlationId: string,
   getSecret: SecretResolver,
-  options: { configIdForCorrections?: string } = {},
+  options: StremioMetaOptions = {},
 ): Promise<{ status: 200; body: { meta: Record<string, unknown> } } | { status: 404 | 502; body: { meta: null } }> {
   const base = await resolveBaseStremioMeta(app, config, type, publicId, correlationId, getSecret, options);
   if (base.status !== 200) return base;

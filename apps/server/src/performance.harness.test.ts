@@ -35,7 +35,7 @@ async function timeRequest(
   const response = await run();
   const elapsed = performance.now() - started;
   expect(response.statusCode).toBeGreaterThanOrEqual(200);
-  expect(response.statusCode).toBeLessThan(500);
+  expect(response.statusCode).toBeLessThan(300);
   return elapsed;
 }
 

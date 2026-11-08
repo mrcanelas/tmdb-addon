@@ -246,6 +246,20 @@ export class TmdbProviderAdapter implements ProviderAdapter {
     );
   }
 
+  async getEpisodeGroup(ctx: ProviderContext, groupId: string): Promise<TmdbEpisodeSummary[]> {
+    return this.withCache(ctx, 'tv-episode-group', groupId, async () => {
+      const raw = await this.requestJson<{
+        groups?: Array<{ order: number; episodes: Array<Record<string, unknown>> }>;
+      }>(ctx, `/tv/episode_group/${groupId}`);
+      return (raw.groups ?? [])
+        .filter((group) => Number.isSafeInteger(group.order) && Array.isArray(group.episodes))
+        .sort((a, b) => a.order - b.order)
+        .flatMap((group) => group.episodes.map((episode, index) =>
+          mapEpisode({ ...episode, episode_number: index + 1 }, group.order),
+        ));
+    });
+  }
+
   /**
    * Load regular-season episodes (skips season 0 specials). Caps concurrency
    * for very long-running shows.

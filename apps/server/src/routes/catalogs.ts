@@ -417,7 +417,10 @@ export const catalogsRoutes: FastifyPluginAsync = async (app) => {
           );
         },
         // Ad-hoc keys / locale overrides must not seed the public window.
-        { bypassCache: Boolean(request.body?.apiKey || request.query.locale || request.query.region) },
+        {
+          configId: view.configId,
+          bypassCache: Boolean(request.body?.apiKey || request.query.locale || request.query.region),
+        },
       );
 
       return {

@@ -12,6 +12,9 @@ export default defineConfig({
       'process.env.PUBLIC_METALAYER_API_BASE': JSON.stringify(
         process.env.PUBLIC_METALAYER_API_BASE || '',
       ),
+      'process.env.PUBLIC_METALAYER_DASHBOARD_URL': JSON.stringify(
+        process.env.PUBLIC_METALAYER_DASHBOARD_URL || '',
+      ),
     },
   },
   resolve: {

@@ -2,6 +2,15 @@
 
 Operator UI for MetaLayer instances (`apps/dashboard`, basename `/admin`). Product rules: `AGENTS.md` §24. Deployment: `docs/deployment.md`. ADR: `docs/adr/0008-admin-first-instance-config.md`.
 
+## How to open
+
+| Mode | URL |
+|---|---|
+| API serves both SPAs (after `pnpm build`) | `http://localhost:1338/admin/` |
+| Dashboard Rsbuild only | `pnpm -F @metalayer/dashboard dev` → `http://localhost:5175/admin/` |
+
+Do **not** open `/admin` on the Configure Rsbuild port (`5174`). That app has basename `/configure` and React Router will error. The Configure nav “Dashboard” link resolves to port `5175` in that case (override with `PUBLIC_METALAYER_DASHBOARD_URL`).
+
 ## Audience
 
 Instance operators only. Never mix with end-user `/configure` flows.

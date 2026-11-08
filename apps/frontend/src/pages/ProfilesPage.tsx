@@ -230,7 +230,7 @@ export function ProfilesPage() {
                       >
                         {profile.name}
                         {!profile.enabled ? (
-                          <span className="ml-text-muted ml-2 text-xs">
+                          <span className="ml-text-muted ms-2 text-xs">
                             ({t('profiles.disabled')})
                           </span>
                         ) : null}

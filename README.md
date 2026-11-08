@@ -4,7 +4,7 @@ Your metadata. Your catalogs. Your way.
 
 MetaLayer is the complete metadata orchestration layer for Stremio — the successor to the TMDB Addon for Stremio. It combines, resolves, filters, enriches, explains, and corrects metadata from multiple sources before delivering it to Stremio.
 
-This repository is the MetaLayer monorepo. The npm root package name remains `tmdb-addon` during the migration test window; product identity is MetaLayer (`community.metalayer`).
+This repository is the MetaLayer monorepo. The native Stremio manifest identity is `community.metalayer`.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ Use MetaLayer images under `docker/`:
 # Lite (SQLite)
 docker compose -f docker/docker-compose.lite.yml up
 
-# Server (documented Postgres / Redis path)
+# Server (set METALAYER_POSTGRES_PASSWORD in .env first)
 docker compose -f docker/docker-compose.server.yml up
 ```
 

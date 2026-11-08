@@ -8,6 +8,12 @@ import type { ConfigurationStore } from '@metalayer/persistence';
 import type { RuntimeSettingsReader } from './stremio/catalog-meta.js';
 
 const MASKED_SECRET = '********';
+const VAULT_KIND = 'session';
+const SECRET_SETTING_KEYS = ['REDIS_URL', 'POSTGRES_URL', 'METALAYER_TMDB_PROXY_URL'];
+
+function vaultKey(key: string): string {
+  return `runtime-setting:${key}`;
+}
 
 const DEFAULT_VALUES: Record<string, string> = {
   METALAYER_TELEMETRY_ENABLED: 'false',
@@ -15,9 +21,7 @@ const DEFAULT_VALUES: Record<string, string> = {
   METALAYER_TRACKING_REFRESH_INTERVAL_MS: String(6 * 60 * 60 * 1000),
   METALAYER_CATALOG_SCAN_PAGES: '25',
   METALAYER_CATALOG_SORT_PAGES: '10',
-  METALAYER_CACHE_TTL_MANIFEST_MS: '60000',
-  METALAYER_CACHE_TTL_CATALOG_MS: '120000',
-  METALAYER_CACHE_TTL_META_MS: '300000',
+  METALAYER_CATALOG_WINDOW_TTL_MS: '600000',
   METALAYER_RATE_LIMIT_MAX: '120',
   METALAYER_RATE_LIMIT_WINDOW_MS: '60000',
 };
@@ -42,9 +46,11 @@ export interface RuntimeSettingView {
 export type RuntimeSettingsStore = Pick<
   ConfigurationStore,
   | 'listInstanceSettings'
-  | 'getInstanceSetting'
   | 'setInstanceSetting'
   | 'deleteInstanceSetting'
+  | 'getInstanceSecretPlaintext'
+  | 'upsertInstanceVaultSecret'
+  | 'deleteInstanceVaultSecret'
 >;
 
 type Subscriber = (value: string | undefined) => void;
@@ -98,7 +104,7 @@ function validateValue(type: RuntimeSettingType, value: unknown): string {
     return serializeStoredValue(type, parsed);
   }
   if (type === 'number') {
-    const parsed = z.coerce.number().finite().parse(value);
+    const parsed = z.coerce.number().int().positive().max(2_147_483_647).parse(value);
     return String(parsed);
   }
   if (type === 'url') {
@@ -125,8 +131,25 @@ export class RuntimeSettings implements RuntimeSettingsReader {
   async load(): Promise<void> {
     const stored = await this.store.listInstanceSettings();
     this.overrides.clear();
+    for (const key of SECRET_SETTING_KEYS) {
+      const legacy = stored[key];
+      const provider = vaultKey(key);
+      let secret = await this.store.getInstanceSecretPlaintext(provider, VAULT_KIND);
+      if (legacy !== undefined) {
+        if (secret === null && legacy) {
+          await this.store.upsertInstanceVaultSecret(provider, VAULT_KIND, legacy);
+          secret = legacy;
+        }
+        await this.store.deleteInstanceSetting(key);
+      }
+      if (secret && key === 'REDIS_URL') this.overrides.set(key, secret);
+      delete stored[key];
+    }
     for (const [key, value] of Object.entries(stored)) {
-      this.overrides.set(key, value);
+      const declaration = declarationFor(key);
+      if (declaration && isEditable(declaration) && !declaration.secret) {
+        this.overrides.set(key, value);
+      }
     }
   }
 
@@ -215,7 +238,15 @@ export class RuntimeSettings implements RuntimeSettingsReader {
 
     const type = settingType(declaration);
     const storedValue = validateValue(type, value);
-    await this.store.setInstanceSetting(key, storedValue);
+    if (declaration.secret) {
+      const url = new URL(storedValue);
+      if (!['redis:', 'rediss:'].includes(url.protocol) || !url.hostname) {
+        throw new Error('Invalid Redis connection URL');
+      }
+      await this.store.upsertInstanceVaultSecret(vaultKey(key), VAULT_KIND, storedValue);
+    } else {
+      await this.store.setInstanceSetting(key, storedValue);
+    }
     this.overrides.set(key, storedValue);
 
     const restartRequired = declaration.reload === 'process-restart';
@@ -246,7 +277,11 @@ export class RuntimeSettings implements RuntimeSettingsReader {
       });
     }
 
-    await this.store.deleteInstanceSetting(key);
+    if (declaration.secret) {
+      await this.store.deleteInstanceVaultSecret(vaultKey(key), VAULT_KIND);
+    } else {
+      await this.store.deleteInstanceSetting(key);
+    }
     this.overrides.delete(key);
 
     const restartRequired = declaration.reload === 'process-restart';

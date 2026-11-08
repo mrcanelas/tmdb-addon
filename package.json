@@ -1,6 +1,6 @@
 {
   "name": "metalayer",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "MetaLayer monorepo — metadata orchestration for Stremio",
   "private": true,
   "packageManager": "pnpm@11.8.0",
@@ -8,7 +8,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "pnpm -F core -F server -F frontend --parallel dev",
+    "dev": "pnpm -F core -F server -F frontend -F dashboard --parallel dev",
     "dev:core": "pnpm -F core dev",
     "dev:server": "pnpm -F server dev",
     "dev:frontend": "pnpm -F frontend dev",
@@ -24,7 +24,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:perf": "vitest run apps/server/src/performance.harness.test.ts",
-    "test:integration": "vitest run packages/persistence/src/postgres-store.test.ts packages/cache/src/redis.test.ts",
+    "test:integration": "vitest run packages/persistence/src/postgres-store.test.ts packages/cache/src/redis.test.ts apps/server/src/runtime-settings.test.ts",
     "test:e2e": "node scripts/e2e-smoke.mjs",
     "typecheck": "pnpm -F \"./packages/**\" -F \"./apps/**\" -r --if-present typecheck",
     "i18n:check": "pnpm -F @metalayer/i18n i18n:check",

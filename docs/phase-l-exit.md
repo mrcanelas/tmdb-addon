@@ -11,7 +11,7 @@ Status: **complete** — operator dashboard API/UI, observability (metrics/logs)
 | Metrics | Done | `MetricsRegistry` + request hooks |
 | Backups | Done | `POST /dashboard/backups` excludes secrets |
 | MetaLayer Lite | Done | `docker/Dockerfile.lite` + compose |
-| MetaLayer Server | Done | `docker/Dockerfile.server` + Redis compose |
+| MetaLayer Server | Done | Root `Dockerfile` + Postgres and Redis compose |
 | Docker | Done | Lite/Server Dockerfiles |
 | GHCR | Done | `.github/workflows/metalayer-docker.yml` |
 | Hosted deployment | Documented | `docs/deployment.md` |

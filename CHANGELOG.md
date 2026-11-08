@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/) as define
 
 - Maintainer gates tracked in [release-gates.md](docs/release-gates.md).
 
+## [1.0.0-rc.2] — 2026-11-08
+
+- Move credential-bearing Dashboard settings into the instance vault. Redis settings take effect after restart. Postgres remains a bootstrap setting.
+- Use trusted proxy addresses for rate limiting, keep public health reachable, and scope private catalog windows to their native configurations.
+- Preserve Futurama's Hulu episode IDs on legacy routes and verify that legacy catalog previews use lightweight list responses.
+- Exercise both Docker distributions with persistent stores in CI. Serve the Server image on Beamup's assigned port and optionally require HTTPS Basic authentication for the Admin UI.
+- Release gates still include real client and provider checks, independent sign-off, and the staging soak.
+- Catalog sorting covers the configured window. Filters that depend on unavailable provider facts emit warnings. Expanded field inheritance and artwork ranking remain follow-ups.
+
 ## [1.0.0-rc.1] — 2026-10-02
 
 ### Release candidate

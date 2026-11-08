@@ -118,6 +118,7 @@ export const CONFIGURE_NAV: ConfigureNavItem[] = [
   },
   {
     id: 'dashboard',
+    // Resolved at click/render time — see resolveDashboardHref().
     href: '/admin/',
     labelKey: 'nav.dashboard',
     simpleMode: true,
@@ -151,6 +152,29 @@ export const DONATE_OPTIONS = [
     Icon: Heart,
   },
 ] as const;
+
+/**
+ * Operator Dashboard URL.
+ *
+ * Same-origin `/admin/` works when the API serves both SPAs.
+ * Configure Rsbuild (port 5174) must open Dashboard Rsbuild (5175) instead —
+ * otherwise React Router of Configure loads at `/admin` and errors with
+ * "base URL of /configure".
+ */
+export function resolveDashboardHref(fallback = '/admin/'): string {
+  const fromEnv =
+    typeof process !== 'undefined'
+      ? process.env.PUBLIC_METALAYER_DASHBOARD_URL?.trim()
+      : undefined;
+  if (fromEnv) {
+    return fromEnv.endsWith('/') ? fromEnv : `${fromEnv}/`;
+  }
+  if (typeof window !== 'undefined' && window.location.port === '5174') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:5175/admin/`;
+  }
+  return fallback.endsWith('/') ? fallback : `${fallback}/`;
+}
 
 /** Default entry path when jumping to a hub via Prev / Next. */
 export const CONFIGURE_HUB_ENTRY: Partial<Record<ConfigureModuleId, string>> = {

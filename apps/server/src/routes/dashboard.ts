@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { createRequire } from 'node:module';
 import { createApiError } from '@metalayer/api-errors';
+import { RedisCache } from '@metalayer/cache';
 import {
   buildHealthSnapshot,
   buildSafeBackup,
@@ -68,6 +69,10 @@ function parseSecretKind(value: string): SecretKind | null {
 }
 
 export const dashboardRoutes: FastifyPluginAsync = async (app) => {
+  app.addHook('onRequest', async (_request, reply) => {
+    reply.header('cache-control', 'private, no-store');
+  });
+
   app.get('/dashboard/overview', async (request, reply) => {
     const access = requireOperator(request);
     if (!access.ok) return reply.status(access.status).send(access.body);
@@ -78,6 +83,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
       version: METALAYER.version,
       startedAt: app.startedAt,
       activeConfigurations: configIds.length,
+      redisConfigured: app.providerCache instanceof RedisCache,
     });
 
     return {
@@ -112,6 +118,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         version: METALAYER.version,
         startedAt: app.startedAt,
         activeConfigurations: (await app.configStore.listConfigIds()).length,
+        redisConfigured: app.providerCache instanceof RedisCache,
       }),
       providers: app.providerHealth.snapshotAll(),
       correlationId: request.correlationId,
@@ -210,7 +217,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(status).send(
           createApiError({
             code,
-            message: error instanceof Error ? error.message : 'Invalid setting',
+            message: 'Invalid setting',
             correlationId: request.correlationId,
             params: { key: request.params.key },
           }),
@@ -244,7 +251,7 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(status).send(
           createApiError({
             code,
-            message: error instanceof Error ? error.message : 'Invalid setting',
+            message: 'Invalid setting',
             correlationId: request.correlationId,
             params: { key: request.params.key },
           }),
