@@ -102,7 +102,7 @@ jobs:
           trap '"${compose[@]}" logs; "${compose[@]}" down --volumes' EXIT
           "${compose[@]}" up -d --build --wait
           base=http://127.0.0.1:1338
-          curl --retry 15 --retry-connrefused --retry-delay 2 -fsS "$base/api/v1/health" >/dev/null
+          curl --retry 15 --retry-all-errors --retry-delay 2 --max-time 5 -fsS "$base/api/v1/health" >/dev/null
           for path in configure/ admin/ manifest.json; do curl -fsS "$base/$path" >/dev/null; done
           health=$(curl -fsS -H 'x-metalayer-dashboard-token: ci-dashboard-token' "$base/api/v1/dashboard/health")
           if [[ "$MODE" == server ]]; then
@@ -112,4 +112,4 @@ jobs:
           fi
           manifest=$(curl -fsS -H 'content-type: application/json' -d '{"editCredential":"docker-smoke-credential","name":"Docker smoke"}' "$base/api/v1/configurations" | jq -er .manifestPath)
           "${compose[@]}" restart metalayer
-          curl --retry 15 --retry-connrefused --retry-delay 2 -fsS "$base$manifest" | jq -e '.id == "community.metalayer"'
+          curl --retry 15 --retry-all-errors --retry-delay 2 --max-time 5 -fsS "$base$manifest" | jq -e '.id == "community.metalayer"'

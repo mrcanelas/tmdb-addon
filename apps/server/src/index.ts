@@ -66,8 +66,17 @@ const host = process.env.METALAYER_API_HOST ?? '0.0.0.0';
 
 const app = await buildApp();
 
+function shutdown() {
+  void app.close().catch((error) => {
+    app.log.error(error);
+    process.exitCode = 1;
+  });
+}
+
 try {
   await app.listen({ port, host });
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
   app.log.info(`MetaLayer API listening on http://${host}:${port}`);
 
   if (isTrackingRefreshEnabled()) {

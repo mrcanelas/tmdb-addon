@@ -102,6 +102,8 @@ Configure external TLS-enabled Postgres and Redis services for the app. Set the 
 
 Test `/configure/`, `/api/v1/health` and a saved native manifest after a redeploy. Confirm unauthenticated `/admin/` returns 401 and that HTTPS Basic authentication works with username `operator` and the Dashboard token as the password. The Dashboard API continues to require its token. Check upstream cache behavior and access-log redaction before accepting legacy URLs or OAuth traffic.
 
+Run `METALAYER_E2E_BASE_URL=https://<staging-host> pnpm test:e2e` for a live health and legacy manifest smoke test. With the Dashboard token already loaded into the shell environment, the same command also verifies that the Admin UI requires credentials and the authenticated Dashboard API is reachable.
+
 For stable, prefer the validated GHCR Server digest. Where Beamup only exposes Git deployment, deploy a separate Docker project ref whose Dockerfile starts with `FROM ghcr.io/mrcanelas/metalayer-server@sha256:<validated-digest>`. Keep the last known-good ref and the matching vault key available for rollback. [Beamup deployment documentation](https://github.com/Stremio/stremio-beamup-cli)
 
 ## Operator dashboard
