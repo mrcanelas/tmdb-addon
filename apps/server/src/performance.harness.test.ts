@@ -80,6 +80,10 @@ describe('@metalayer/server performance harness (§34)', () => {
     app = await buildApp({
       logger: false,
       store,
+      env: {
+        // The benchmark shares one injected client across all routes.
+        METALAYER_RATE_LIMIT_MAX: String(6 * (ITERATIONS + 2) + 1),
+      },
       providerFetch: async (input) => {
         const url = String(input);
         if (url.includes('/trending/')) {
@@ -185,7 +189,7 @@ describe('@metalayer/server performance harness (§34)', () => {
         }),
       ITERATIONS,
     );
-  });
+  }, Math.max(5_000, ITERATIONS * 300));
 
   it('measures configuration read p95', async () => {
     await measure(
@@ -200,7 +204,7 @@ describe('@metalayer/server performance harness (§34)', () => {
         }),
       ITERATIONS,
     );
-  });
+  }, Math.max(5_000, ITERATIONS * 300));
 
   it('measures configuration save p95', async () => {
     await measure(

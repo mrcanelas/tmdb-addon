@@ -79,7 +79,7 @@ docker compose -f docker/docker-compose.server.yml up -d --build
 
 Set a URL-safe hex `METALAYER_POSTGRES_PASSWORD` in Compose's environment or `.env`. Existing Compose installations should supply their current database password before upgrading. Compose assembles `POSTGRES_URL` and starts Redis. Outside Compose, supply both service URLs. Production Server requires Postgres and Redis.
 
-The Admin Settings Redis override is encrypted and takes effect on restart. During a rolling upgrade from RC.1, start one instance first to move legacy plaintext settings into the vault. Previous database snapshots can contain old plaintext settings and require the same protection as credentials. The archived Postgres and proxy values are not used to start the process.
+The Admin Settings Redis override is encrypted and takes effect on restart. During a rolling upgrade from RC.1, start one instance first to move legacy plaintext settings into the vault. If you previously stored credential-bearing URLs through Dashboard Settings, rotate those credentials after migration. Old snapshots and database storage may still contain their original values. The archived Postgres and proxy values are not used to start the process.
 
 ## GHCR images
 
