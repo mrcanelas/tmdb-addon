@@ -15,6 +15,7 @@ function pickLogo(logos, language, originalLanguage) {
     .map(logo => {
       let score = 0;
       const logoLang = logo.lang;
+      const logoBaseLang = logoLang.split("-")[0]; // TMDB logos are 'en-US', fanart logos are 'en'
       if (logoLang === fullLang) {
         score = 4;
       }
@@ -24,10 +25,10 @@ function pickLogo(logos, language, originalLanguage) {
       else if (logoLang === baseLang) {
         score = 2;
       }
-      else if (logoLang === 'en') {
+      else if (logoBaseLang === 'en') {
         score = 1;
       }
-      else if (logoLang === originalLanguage && logoLang !== 'en') {
+      else if (logoBaseLang === originalLanguage && logoBaseLang !== 'en') {
         score = 0.5;
       }
 
